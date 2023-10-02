@@ -1,5 +1,4 @@
-import { expect } from "chai";
-import { 
+import hre, { 
     ethers, 
     upgrades
 } from "hardhat";
@@ -9,12 +8,15 @@ import {
     loadFixture,
 } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 
+import { 
+    expect 
+} from "chai";
+
 import {
     getParamFromEvent
-} from './helpers/events';
+} from '../scripts/helpers/events';
 
-// Read config
-const configFile = require('../config');
+import appConfig from "../config";
 
 /**
  * Crafting tests
@@ -26,8 +28,7 @@ describe("Crafting Contract", function () {
     const REVERT_MODE = false;
 
     // Config
-    const network = "development";
-    const config = configFile.network[network];
+    const config = appConfig.networks[hre.network.name];
 
     // Roles
     const SYSTEM_ROLE = ethers.keccak256(ethers.toUtf8Bytes("SYSTEM_ROLE"));
@@ -137,8 +138,7 @@ describe("Crafting Contract", function () {
         const [deployer, system, account1, other, treasury] = (
             await ethers.getSigners()).map(s => s.address);
 
-        // Artifacts
-        const CryptopiaAccountFactory = await ethers.getContractFactory("CryptopiaAccount"); 
+        // Factories
         const CryptopiaAccountRegisterFactory = await ethers.getContractFactory("CryptopiaAccountRegister"); 
         const CryptopiaPlayerRegisterFactory = await ethers.getContractFactory("CryptopiaPlayerRegister"); 
         const CryptopiaInventoriesFactory = await ethers.getContractFactory("CryptopiaInventories");
@@ -171,7 +171,6 @@ describe("Crafting Contract", function () {
         ).waitForDeployment();
 
         const whitelistAddress = await whitelistProxy.getAddress();
-        const whitelistInstance = await ethers.getContractAt("Whitelist", whitelistAddress);
 
         // Deploy Account register
         const accountRegisterProxy = await (

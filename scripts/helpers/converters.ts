@@ -8,6 +8,7 @@ declare global {
     toBytes28(): string;
     toBytes26(): string;
     toWei(): string;
+    toKeccak256(): string;
   }
 
   interface Number {
@@ -63,5 +64,12 @@ String.prototype.toBytes26 = function() {
   let input = Number(this).toString();
   return ethers.parseEther(input).toString();
  };
+
+/**
+ * Convert string to keccak256
+ */
+String.prototype.toKeccak256 = function() {
+  return ethers.keccak256(ethers.toUtf8Bytes(String(this)));
+};
 
 export {};

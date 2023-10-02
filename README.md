@@ -23,15 +23,6 @@ git clone https://github.com/cryptopia-com/cryptopia-world-contracts.git
 npm install
 ```
 
-## Configuration
-
-Create a `.env` file in the root directory and add the following:
-```env
-INFURA_PROJECT_ID=Your_Infura_Project_ID
-PRIVATE_KEY=Your_Ethereum_Private_Key
-```
-Replace the placeholders with your actual Infura Project ID and Ethereum private key.
-
 ## Compilation
 
 Compile the contracts with Hardhat:

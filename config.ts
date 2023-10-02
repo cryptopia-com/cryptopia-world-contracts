@@ -1,7 +1,7 @@
-module.exports = {
-    network: {
+const config : AppConfig = {
+    networks: {
         development: {
-            migrate: false,
+            migrate: true,
             CryptopiaTreasury: {
                 address: "0x37eEf262526Fc4895A632b44d6e430918c67a58A"
             },
@@ -957,10 +957,14 @@ module.exports = {
                     ]
                 }
             }
-        }, 
-        mainnet: {
-            
         }
     }
 };
-  
+
+export default config;
+
+interface AppConfig {
+    networks: {
+        [key: string]: any;
+    };
+}

@@ -14,41 +14,50 @@ Welcome to the Cryptopia World Contracts repository. These Ethereum smart contra
 ## Installation
 
 1. **Clone the Repository**
-\`\`\`bash
+```bash
 git clone https://github.com/cryptopia-com/cryptopia-world-contracts.git
-\`\`\`
+```
 
 2. **Install Dependencies**
-\`\`\`bash
+```bash
 npm install
-\`\`\`
+```
+
+## Configuration
+
+Create a `.env` file in the root directory and add the following:
+```env
+INFURA_PROJECT_ID=Your_Infura_Project_ID
+PRIVATE_KEY=Your_Ethereum_Private_Key
+```
+Replace the placeholders with your actual Infura Project ID and Ethereum private key.
 
 ## Compilation
 
 Compile the contracts with Hardhat:
-\`\`\`bash
+```bash
 npx hardhat compile
-\`\`\`
+```
 
 ## Deployment
 
 Deploy contracts to your preferred network:
-\`\`\`bash
+```bash
 npx hardhat run scripts/deploy.js --network <network-name>
-\`\`\`
+```
 
 ## Testing
 
 Run tests with Hardhat:
-\`\`\`bash
+```bash
 npx hardhat test
-\`\`\`
+```
 
 ## Features
 
 - **Decentralization**: Built to prioritize strong decentralization.
 - **Balanced Economics**: Supports both Tycoon and Adventurer strategies.
-- **Technological Innovations**: Includes features like Multisig Wallets.
+- **Technological Innovations**: Includes features like Multisig Wallets and P2P Mesh Network.
 
 ## License
 

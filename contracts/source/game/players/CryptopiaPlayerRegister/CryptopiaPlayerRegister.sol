@@ -7,10 +7,10 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 
 import "../../../accounts/AccountEnums.sol";
-import "../../../accounts/CryptopiaAccountRegister/ICryptopiaAccountRegister.sol";
+import "../../../accounts/IAccountRegister.sol";
 import "../../../tokens/ERC721/CryptopiaShipToken/ICryptopiaShipToken.sol";
 import "../../inventories/CryptopiaInventories/ICryptopiaInventories.sol";
-import "../../crafting/CryptopiaCrafting/ICryptopiaCrafting.sol";
+import "../../crafting/ICrafting.sol";
 import "../../GameEnums.sol";
 import "./ICryptopiaPlayerRegister.sol";
 
@@ -177,7 +177,7 @@ contract CryptopiaPlayerRegister is ICryptopiaPlayerRegister, Initializable, Acc
         external 
         returns (address payable account)
     {
-        account = ICryptopiaAccountRegister(accountRegisterContract)
+        account = IAccountRegister(accountRegisterContract)
             .create(owners, required, dailyLimit, username, sex);
 
         // Emits RegisterAccount
@@ -191,10 +191,10 @@ contract CryptopiaPlayerRegister is ICryptopiaPlayerRegister, Initializable, Acc
         public virtual override 
     {
         require(!_isRegistered(msg.sender), "CryptopiaPlayerRegister: Account is already registered as a player");
-        require(ICryptopiaAccountRegister(accountRegisterContract).isRegistered(msg.sender), "CryptopiaPlayerRegister: Account is not registered with CryptopiaAccountRegister");
+        require(IAccountRegister(accountRegisterContract).isRegistered(msg.sender), "CryptopiaPlayerRegister: Account is not registered with CryptopiaAccountRegister");
 
         // Read account data
-        (bytes32 username, AccountEnums.Sex sex) = ICryptopiaAccountRegister(accountRegisterContract)
+        (bytes32 username, AccountEnums.Sex sex) = IAccountRegister(accountRegisterContract)
             .getAccountData(msg.sender);
 
         // Emits RegisterAccount
@@ -244,7 +244,7 @@ contract CryptopiaPlayerRegister is ICryptopiaPlayerRegister, Initializable, Acc
             uint ship
         )
     {
-        (username,) = ICryptopiaAccountRegister(accountRegisterContract)
+        (username,) = IAccountRegister(accountRegisterContract)
             .getAccountData(player);
         faction = playerDatas[player].faction;
         subFaction = playerDatas[player].subFaction;
@@ -291,7 +291,7 @@ contract CryptopiaPlayerRegister is ICryptopiaPlayerRegister, Initializable, Acc
             uint[] memory ship
         )
     {
-        (username,) = ICryptopiaAccountRegister(accountRegisterContract)
+        (username,) = IAccountRegister(accountRegisterContract)
             .getAccountDatas(players);
         faction = new GameEnums.Faction[](players.length);
         subFaction = new GameEnums.SubFaction[](players.length);
@@ -536,7 +536,7 @@ contract CryptopiaPlayerRegister is ICryptopiaPlayerRegister, Initializable, Acc
             .setShipInventory(playerData.ship, inventory);
 
         // Setup crafting
-        ICryptopiaCrafting(craftingContract)
+        ICrafting(craftingContract)
             .setCraftingSlots(account, CRAFTING_SLOTS_BASE);
 
         // Emit

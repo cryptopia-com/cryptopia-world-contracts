@@ -6,12 +6,12 @@ import "@openzeppelin/contracts-upgradeable/interfaces/IERC1820RegistryUpgradeab
 import "@openzeppelin/contracts-upgradeable/token/ERC777/IERC777RecipientUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
 
-import "../MultisigWallet/MultiSigWallet.sol";
-import "./ICryptopiaAccount.sol";
+import "./multisig/MultiSigWallet.sol";
+import "../IAccount.sol";
 
 /// @title Cryptopia Account
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-contract CryptopiaAccount is ICryptopiaAccount, Initializable, MultiSigWallet, IERC777RecipientUpgradeable, IERC721ReceiverUpgradeable {
+contract CryptopiaAccount is IAccount, Initializable, MultiSigWallet, IERC777RecipientUpgradeable, IERC721ReceiverUpgradeable {
 
     /**
      * Storage

@@ -3,7 +3,7 @@ pragma solidity ^0.8.12 <0.9.0;
 
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 
-import "../../accounts/CryptopiaAccountRegister/ICryptopiaAccountRegister.sol";
+import "../../accounts/IAccountRegister.sol";
 import "../AvatarEnums.sol";
 import "./ICryptopiaAvatarRegister.sol";
 
@@ -213,7 +213,7 @@ contract CryptopiaAvatarRegister is ICryptopiaAvatarRegister, ContextUpgradeable
     {
         address account = _msgSender();
         require(
-            ICryptopiaAccountRegister(accountRegisterContract).isRegistered(account), 
+            IAccountRegister(accountRegisterContract).isRegistered(account), 
             "CryptopiaAvatarRegister: Not registered"
         );
 

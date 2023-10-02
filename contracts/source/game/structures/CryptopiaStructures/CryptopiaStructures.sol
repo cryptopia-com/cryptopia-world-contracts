@@ -9,7 +9,6 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol"
 
 import "./ICryptopiaStructures.sol";
 import "../../map/CryptopiaMap/ICryptopiaMap.sol";
-import "../../../accounts/CryptopiaAccountRegister/ICryptopiaAccountRegister.sol";
 import "../../../tokens/ERC721/ICryptopiaERC721.sol";
 import "../../../tokens/ERC721/CryptopiaTitleDeedToken/ICryptopiaTitleDeedToken.sol";
 import "../../../tokens/ERC721/CryptopiaBlueprintToken/ICryptopiaBlueprintToken.sol";

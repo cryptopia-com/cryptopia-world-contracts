@@ -4,13 +4,14 @@ pragma solidity ^0.8.12 <0.9.0;
 import "@openzeppelin/contracts-upgradeable/utils/Create2Upgradeable.sol";
 
 import "../AccountEnums.sol";
-import "./ICryptopiaAccountRegister.sol";
-import "../CryptopiaAccount/CryptopiaAccount.sol";
+import "../IAccountErrors.sol";
+import "../IAccountRegister.sol";
+import "./CryptopiaAccount.sol";
 
 /// @title Cryptopia Account Register
 /// @notice Creates and registers accountDatas
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-contract CryptopiaAccountRegister is ICryptopiaAccountRegister {
+contract CryptopiaAccountRegister is IAccountRegister, IAccountErrors {
 
     struct AccountData
     {
@@ -55,51 +56,39 @@ contract CryptopiaAccountRegister is ICryptopiaAccountRegister {
 
 
     /**
-     * Events
-     */
-    /// @dev Emited when an account is created
-    /// @param sender The addres that created the account (tx.origin)
-    /// @param account The address of the newly created account (smart-contract)
-    /// @param username The unique username of the newly created account (smart-contract)
-    /// @param sex {Undefined, Male, Female}
-    event CreateAccount(address indexed sender, address indexed account, bytes32 indexed username, AccountEnums.Sex sex);
-
-    /// @dev Emited when a friend request is added
-    /// @param sender The addres that added the friend request
-    /// @param receiver The address that `sender` requests to be friends with
-    /// @param relationship The type of friendship
-    event AddFriendRequest(address indexed sender, address indexed receiver, AccountEnums.Relationship indexed relationship);
-
-    /// @dev Emited when a friend request is removed
-    /// @param sender The addres that added the friend request
-    /// @param receiver The address that `sender` requested to be friends with
-    /// @param relationship The type of friendship
-    event RemoveFriendRequest(address indexed sender, address indexed receiver, AccountEnums.Relationship indexed relationship);
-
-    /// @dev Emited when a friend request is accepted
-    /// @param sender The addres that added the friend request
-    /// @param receiver The address that `sender` requested to be friends with
-    /// @param relationship The type of friendship
-    event AcceptFriendRequest(address indexed sender, address indexed receiver, AccountEnums.Relationship indexed relationship);
-
-
-    /**
      * Modifiers
      */
     /// @dev Only allow if `account` is registered
     /// @param account The account to check
-    modifier onlyRegistered(address account) {
-        require(_isRegistered(account), " CryptopiaAccountRegister: Not registered");
+    modifier onlyRegistered(address account) 
+    {
+        if (!_isRegistered(account)) 
+        {
+            revert AccountNotRegistered(account);
+        }
+
         _;
     }
 
 
     /// @dev Only allow validated username
     /// @param username The username to check 
-    modifier onlyValidUsername(bytes32 username) {
+    modifier onlyValidUsername(bytes32 username) 
+    {
         (bool isValid, string memory reason) = _validateUsername(username);
-        require(isValid, string.concat(" CryptopiaAccountRegister: Invalid Username; Reason: ", reason));
-        require(usernameToAccount[username] == address(0), " CryptopiaAccountRegister: Duplicate Username");
+
+        // Ensure valid username
+        if (!isValid) 
+        {
+            revert AccountInvalidUsername(username, reason);
+        }
+
+        // Ensure username is not taken
+        if (usernameToAccount[username] != address(0)) 
+        {
+            revert AccountDupicateUsername(username);
+        }
+
         _;
     }
 
@@ -411,10 +400,29 @@ contract CryptopiaAccountRegister is ICryptopiaAccountRegister {
         internal 
         onlyRegistered(msg.sender) 
     {
-        require(_validateRelationship(friend_relationship), " CryptopiaAccountRegister: Invalid relationship");
-        require(_isRegistered(friend_account), " CryptopiaAccountRegister: Friend is not a registred account");
-        require(!_isFriend(msg.sender, friend_account), " CryptopiaAccountRegister: Already friends");
-        require(!_hasPendingFriendRequest(msg.sender, friend_account), " CryptopiaAccountRegister: Pending friend request exists");
+        // Ensure valid relationship
+        if (!_validateRelationship(friend_relationship))
+        {
+            revert AccountInvalidRelationship(friend_relationship);
+        }
+
+        // Ensure that the friend account is registered
+        if (!_isRegistered(friend_account))
+        {
+            revert AccountNotRegistered(friend_account);
+        }
+
+        // Ensure that the friend account is not already a friend
+        if (_isFriend(msg.sender, friend_account))
+        {
+            revert AccountAlreadyFriends(friend_account);
+        }
+
+        // Ensure that there is no pending friend request already for the friend account
+        if (_hasPendingFriendRequest(msg.sender, friend_account))
+        {
+            revert AccountDuplicateFriendRequest(friend_account);
+        }
 
         // Add 
         accountDatas[msg.sender].friendRequests[friend_account] = friend_relationship;
@@ -429,7 +437,11 @@ contract CryptopiaAccountRegister is ICryptopiaAccountRegister {
     function _removeFriendRequest(address friend_account) 
         internal 
     {
-        require(_hasPendingFriendRequest(msg.sender, friend_account), " CryptopiaAccountRegister: Pending friend request does not exists");
+        // Ensure that the friend account is registered
+        if (!_hasPendingFriendRequest(msg.sender, friend_account))
+        {
+            revert AccountMissingFriendRequest(friend_account);
+        }
 
         // Remove 
         AccountEnums.Relationship relationship = accountDatas[msg.sender].friendRequests[friend_account];

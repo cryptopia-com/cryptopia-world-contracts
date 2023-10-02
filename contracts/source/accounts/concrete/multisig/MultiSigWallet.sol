@@ -2,7 +2,7 @@
 pragma solidity ^0.8.12 < 0.9.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "./IMultiSigWallet.sol";
+import "../../multisig/IMultiSigWallet.sol";
 
 /// @title Multisignature wallet - Allows multiple parties to agree on transactions before execution.
 /// @author Stefan George - <stefan.george@consensys.net> (modified by Frank Bonnet <frankbonnet@outlook.com>)

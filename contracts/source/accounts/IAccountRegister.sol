@@ -1,12 +1,41 @@
 // SPDX-License-Identifier: ISC
 pragma solidity ^0.8.12 < 0.9.0;
 
-import "../AccountEnums.sol";
+import "./AccountEnums.sol";
 
 /// @title Cryptopia Account Register
 /// @notice Creates and registers accounts
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-interface ICryptopiaAccountRegister {
+interface IAccountRegister {
+
+    /**
+     * Events
+     */
+    /// @dev Emited when an account is created
+    /// @param sender The addres that created the account (tx.origin)
+    /// @param account The address of the newly created account (smart-contract)
+    /// @param username The unique username of the newly created account (smart-contract)
+    /// @param sex {Undefined, Male, Female}
+    event CreateAccount(address indexed sender, address indexed account, bytes32 indexed username, AccountEnums.Sex sex);
+
+    /// @dev Emited when a friend request is added
+    /// @param sender The addres that added the friend request
+    /// @param receiver The address that `sender` requests to be friends with
+    /// @param relationship The type of friendship
+    event AddFriendRequest(address indexed sender, address indexed receiver, AccountEnums.Relationship indexed relationship);
+
+    /// @dev Emited when a friend request is removed
+    /// @param sender The addres that added the friend request
+    /// @param receiver The address that `sender` requested to be friends with
+    /// @param relationship The type of friendship
+    event RemoveFriendRequest(address indexed sender, address indexed receiver, AccountEnums.Relationship indexed relationship);
+
+    /// @dev Emited when a friend request is accepted
+    /// @param sender The addres that added the friend request
+    /// @param receiver The address that `sender` requested to be friends with
+    /// @param relationship The type of friendship
+    event AcceptFriendRequest(address indexed sender, address indexed receiver, AccountEnums.Relationship indexed relationship);
+    
 
     /// @dev Allows verified creation of a Cryptopia account. Use of create2 allows identical addresses across networks
     /// @param owners List of initial owners

@@ -1,7 +1,6 @@
 const config : AppConfig = {
     networks: {
         development: {
-            migrate: true,
             CryptopiaTreasury: {
                 address: "0x37eEf262526Fc4895A632b44d6e430918c67a58A"
             },
@@ -563,7 +562,6 @@ const config : AppConfig = {
             }
         }, 
         mumbai: {
-            migrate: true,
             CryptopiaTreasury: {
                 account: ""
             },

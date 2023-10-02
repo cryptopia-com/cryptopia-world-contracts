@@ -1,22 +1,18 @@
-import hre, { 
-    ethers, 
-    upgrades
-} from "hardhat";
-
-import {
-    time,
-    loadFixture,
-} from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import { expect } from "chai";
+import { ethers, upgrades} from "hardhat";
+import { getParamFromEvent} from '../scripts/helpers/events';
+import appConfig from "../config";
+import "../scripts/helpers/converters.ts";
 
 import { 
-    expect 
-} from "chai";
-
-import {
-    getParamFromEvent
-} from '../scripts/helpers/events';
-
-import appConfig from "../config";
+    CryptopiaAccount,
+    CryptopiaAccountRegister,
+    CryptopiaPlayerRegister,
+    CryptopiaInventories,
+    CryptopiaShipToken,
+    CryptopiaToolToken,
+    CryptopiaCrafting
+} from "../typechain-types";
 
 /**
  * Crafting tests
@@ -28,10 +24,28 @@ describe("Crafting Contract", function () {
     const REVERT_MODE = false;
 
     // Config
-    const config = appConfig.networks[hre.network.name];
+    const config = appConfig.networks.development;
 
     // Roles
-    const SYSTEM_ROLE = ethers.keccak256(ethers.toUtf8Bytes("SYSTEM_ROLE"));
+    const SYSTEM_ROLE = "SYSTEM_ROLE".toKeccak256();
+
+    // Accounts
+    let deployer: string;
+    let system: string;
+    let account1: string;
+    let other: string;
+    let treasury: string;
+
+    // Contracts
+    let registeredAccountInstance: CryptopiaAccount;
+    let unregisteredAccountInstance: CryptopiaAccount;
+    
+    let accountRegisterInstance: CryptopiaAccountRegister;
+    let playerRegisterInstance: CryptopiaPlayerRegister;
+    let inventoriesInstance: CryptopiaInventories;
+    let shipTokenInstance: CryptopiaShipToken;
+    let toolTokenInstance: CryptopiaToolToken;
+    let craftingInstance: CryptopiaCrafting;
 
     // Mock Data
     const assets: any[] = [
@@ -88,11 +102,11 @@ describe("Crafting Contract", function () {
                 ingredients: [
                     {
                         asset: "WOOD",
-                        amount: ethers.parseEther("2.0")
+                        amount: "2".toWei()
                     },
                     {
                         asset: "FE26",
-                        amount: ethers.parseEther("1.0")
+                        amount: "1".toWei()
                     }
                 ]
             }
@@ -123,7 +137,7 @@ describe("Crafting Contract", function () {
                 ingredients: [
                     {
                         asset: "AU29",
-                        amount: ethers.parseEther("3.0")
+                        amount: "3".toWei()
                     }
                 ]
             }
@@ -131,11 +145,12 @@ describe("Crafting Contract", function () {
     ];
 
     /**
-     * Deploy Crafting fixture
+     * Deploy Crafting Contracts
      */
-    async function deployCraftingFixture() 
-    {
-        const [deployer, system, account1, other, treasury] = (
+    before(async () => {
+
+        // Accounts
+        [deployer, system, account1, other, treasury] = (
             await ethers.getSigners()).map(s => s.address);
 
         // Factories
@@ -157,7 +172,7 @@ describe("Crafting Contract", function () {
         ).waitForDeployment();
 
         const inventoriesAddress = await inventoriesProxy.getAddress();
-        const inventoriesInstance = await ethers.getContractAt("CryptopiaInventories", inventoriesAddress);
+        inventoriesInstance = await ethers.getContractAt("CryptopiaInventories", inventoriesAddress);
 
         // Deploy Whitelist
         const whitelistProxy = await (
@@ -178,7 +193,7 @@ describe("Crafting Contract", function () {
         ).waitForDeployment();
 
         const accountRegisterAddress = await accountRegisterProxy.getAddress();
-        const accountRegisterInstance = await ethers.getContractAt("CryptopiaAccountRegister", accountRegisterAddress);
+        accountRegisterInstance = await ethers.getContractAt("CryptopiaAccountRegister", accountRegisterAddress);
 
         // Deploy Ships
         const shipTokenProxy = await (
@@ -192,7 +207,7 @@ describe("Crafting Contract", function () {
         ).waitForDeployment();
 
         const shipTokenAddress = await shipTokenProxy.getAddress();
-        const shipTokenInstance = await ethers.getContractAt("CryptopiaShipToken", shipTokenAddress);
+        shipTokenInstance = await ethers.getContractAt("CryptopiaShipToken", shipTokenAddress);
 
         // Deploy Crafting
         const craftingProxy = await (
@@ -204,7 +219,7 @@ describe("Crafting Contract", function () {
         ).waitForDeployment();
 
         const craftingAddress = await craftingProxy.getAddress();
-        const craftingInstance = await ethers.getContractAt("CryptopiaCrafting", craftingAddress);
+        craftingInstance = await ethers.getContractAt("CryptopiaCrafting", craftingAddress);
 
         // Deploy Player Register
         const playerRegisterProxy = await (await upgrades.deployProxy(
@@ -220,7 +235,7 @@ describe("Crafting Contract", function () {
             ])).waitForDeployment();
 
         const playerRegisterAddress = await playerRegisterProxy.getAddress();
-        const playerRegisterInstance = await ethers.getContractAt("CryptopiaPlayerRegister", playerRegisterAddress);
+        playerRegisterInstance = await ethers.getContractAt("CryptopiaPlayerRegister", playerRegisterAddress);
 
         // Deploy Tools
         const toolTokenProxy = await (await upgrades.deployProxy(
@@ -234,7 +249,7 @@ describe("Crafting Contract", function () {
             ])).waitForDeployment();
 
         const toolTokenAddress = await toolTokenProxy.getAddress();
-        const toolTokenInstance = await ethers.getContractAt("CryptopiaToolToken", toolTokenAddress);
+        toolTokenInstance = await ethers.getContractAt("CryptopiaToolToken", toolTokenAddress);
 
         // Grant roles
         await inventoriesInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
@@ -280,62 +295,142 @@ describe("Crafting Contract", function () {
             [account1], 1, 0, "Registered_Username".toBytes32(), 0, 0);
         const createRegisteredAccountReceipt = await createRegisteredAccountResponse.wait();
         const registeredAccount = getParamFromEvent(playerRegisterInstance, createRegisteredAccountReceipt, "account", "RegisterPlayer");
-        const registeredAccountInstance = await ethers.getContractAt("CryptopiaAccount", registeredAccount);
+        registeredAccountInstance = await ethers.getContractAt("CryptopiaAccount", registeredAccount);
 
         // Create unregistered account
         const createUnregisteredAccountResponse = await accountRegisterInstance.create(
             [other], 1, 0, "Unregistered_Username".toBytes32(), 0);
             const createUnregisteredAccountReceipt = await createUnregisteredAccountResponse.wait();
         const unregisteredAccount = getParamFromEvent(accountRegisterInstance, createUnregisteredAccountReceipt, "account", "CreateAccount");
-        const unregisteredAccountInstance = await ethers.getContractAt("CryptopiaAccount", unregisteredAccount);
-
-        return { 
-            craftingInstance, 
-            toolTokenInstance, 
-            registeredAccountInstance, 
-            unregisteredAccountInstance, 
-            account1, 
-            other 
-        };
-    }
+        unregisteredAccountInstance = await ethers.getContractAt("CryptopiaAccount", unregisteredAccount);
+    });
 
     /**
-     * Test crafting recipes 
+     * Test Crafting 
      */
-    describe("Recipes", function () {
+    describe("Crafting", function () {
 
         it("Player should not be able to craft with an invalid recipe", async () => {
         
-            // Load fixture
-            const { 
-                craftingInstance, 
-                toolTokenInstance, 
-                registeredAccountInstance, 
-                unregisteredAccountInstance, 
-                account1, 
-                other 
-            } = await loadFixture(deployCraftingFixture);
-
             // Setup
             const slot = 2;
             const inventory = 1; // Backpack
             const invalidRecipe = "invalidRecipe".toBytes32();
+            const toolTokenAddress = await toolTokenInstance.getAddress();
 
-            const callData = craftingInstance.interface.encodeFunctionData(
-                "craft", [await toolTokenInstance.getAddress(), invalidRecipe, slot, inventory]);
+            const callData = craftingInstance.interface
+                .encodeFunctionData("craft", [toolTokenAddress, invalidRecipe, slot, inventory]);
 
             // Act
             const signer = await ethers.provider.getSigner(account1);
-            const operation = registeredAccountInstance.connect(signer).submitTransaction(
-                await craftingInstance.getAddress(), 0, callData);
+            const operation = registeredAccountInstance
+                .connect(signer)
+                .submitTransaction(await craftingInstance.getAddress(), 0, callData);
 
             // Assert
             if (REVERT_MODE) {
-                await expect(operation).to.be.revertedWith(
-                    "CryptopiaCrafting: Invalid recipe");
+                await expect(operation).to.be
+                    .revertedWithCustomError(craftingInstance, "CraftingInvalidRecipe")
+                    .withArgs(toolTokenAddress, invalidRecipe);
             } else {
                 await expect(operation).to.emit(
                     registeredAccountInstance, "ExecutionFailure");
+            }
+        });
+
+        it("Player should not be able to claim from an empty slot", async () => {
+    
+            // Setup
+            const emptySlot = 2;
+            const inventory = 1; // Backpack
+    
+            const callData = craftingInstance.interface.encodeFunctionData(
+                "claim", [emptySlot, inventory]);
+    
+            // Act
+            const signer = await ethers.provider.getSigner(account1);
+            const operation = registeredAccountInstance
+                .connect(signer)
+                .submitTransaction(await craftingInstance.getAddress(), 0, callData);
+    
+            // Assert
+            if (REVERT_MODE) {
+                await expect(operation).to.be
+                    .revertedWithCustomError(craftingInstance, "CraftingSlotIsEmpty")
+                    .withArgs(account1, emptySlot);
+            } else {
+                await expect(operation).to.emit(
+                    registeredAccountInstance, "ExecutionFailure");
+            }
+        });
+
+        it("Player should not be able to claim from a slot in another inventory", async () => {
+
+            // Setup
+            const slot = 1;
+            const otherInventory = 2; // Other inventory
+    
+            const callData = craftingInstance.interface
+                .encodeFunctionData("claim", [slot, otherInventory]);
+    
+            // Act
+            const signer = await ethers.provider.getSigner(account1);
+            const operation = registeredAccountInstance
+                .connect(signer)
+                .submitTransaction(await craftingInstance.getAddress(), 0, callData);
+    
+            // Assert
+            if (REVERT_MODE) {
+                await expect(operation).to.be
+                    .revertedWithCustomError(craftingInstance, "CraftingInvalidInventory")
+                    .withArgs(otherInventory);
+            } else {
+                await expect(operation).to.emit(
+                    registeredAccountInstance, "ExecutionFailure");
+            }
+        });
+
+        it("Player should not be able to craft or claim if not registered", async () => {
+
+            // Setup
+            const slot = 1;
+            const inventory = 1; // Backpack
+            const tool = config.ERC721.CryptopiaToolToken.tools[0];
+            const recipe = tool.name.toBytes32();
+            const toolTokenAddress = await toolTokenInstance.getAddress();
+            const craftingAddress = await craftingInstance.getAddress();
+    
+            const callDataCraft = craftingInstance.interface
+                .encodeFunctionData("craft", [toolTokenAddress, recipe, slot, inventory]);
+    
+            const callDataClaim = craftingInstance.interface
+                .encodeFunctionData("claim", [slot, inventory]);
+    
+            // Act
+            const signer = await ethers.provider.getSigner(other);
+            const operationCraft = unregisteredAccountInstance
+                .connect(signer)
+                .submitTransaction(craftingAddress, 0, callDataCraft);
+    
+            const operationClaim = unregisteredAccountInstance
+                .connect(signer)
+                .submitTransaction(craftingAddress, 0, callDataClaim);
+    
+            // Assert
+            if (REVERT_MODE) {
+                await expect(operationCraft).to.be
+                    .revertedWithCustomError(accountRegisterInstance, "AccountNotRegistered")
+                    .withArgs(other);
+    
+                await expect(operationClaim).to.be
+                    .revertedWithCustomError(accountRegisterInstance, "AccountNotRegistered")
+                    .withArgs(other);
+            } else {
+                await expect(operationCraft).to
+                    .emit(unregisteredAccountInstance, "ExecutionFailure");
+    
+                await expect(operationClaim).to
+                    .emit(unregisteredAccountInstance, "ExecutionFailure");
             }
         });
     });

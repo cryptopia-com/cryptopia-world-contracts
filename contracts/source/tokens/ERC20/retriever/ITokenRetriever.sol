@@ -1,20 +1,12 @@
 // SPDX-License-Identifier: ISC
 pragma solidity ^0.8.12 < 0.9.0;
 
-/**
- * ITokenRetriever
- *
- * Allows tokens to be retrieved from a contract
- *
- * #created 29/09/2017
- * #author HFB
- */
+/// @title ITokenRetriever
+/// @notice Interface for retrieving tokens from a contract.
+/// @author Frank Bonnet
 interface ITokenRetriever {
 
-    /**
-     * Extracts tokens from the contract
-     *
-     * @param _tokenContract The address of ERC20 compatible token
-     */
+    /// @notice Extracts tokens from the contract.
+    /// @param _tokenContract The address of the ERC20 compatible token.
     function retrieveTokens(address _tokenContract) external;
 }

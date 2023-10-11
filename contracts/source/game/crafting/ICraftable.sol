@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: ISC
 pragma solidity ^0.8.12 < 0.9.0;
 
-import "../../game/inventories/InventoryEnums.sol";
+import "../inventories/types/InventoryEnums.sol";
 
 /// @title Craftable interface
 /// @dev Allows a Non-fungible token (ERC721) to be crafted
@@ -13,7 +13,7 @@ interface ICraftable {
     /// @param player The player to craft the item for
     /// @param inventory The inventory to mint the item into
     /// @return uint The token ID of the crafted item
-    function craft(bytes32 item, address player, InventoryEnums.Inventories inventory) 
+    function craft(bytes32 item, address player, Inventory inventory) 
         external 
         returns (uint);
 }

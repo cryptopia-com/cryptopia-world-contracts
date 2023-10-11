@@ -3,15 +3,15 @@ pragma solidity ^0.8.12 <0.9.0;
 
 import "@openzeppelin/contracts-upgradeable/utils/Create2Upgradeable.sol";
 
-import "../AccountEnums.sol";
-import "../IAccountErrors.sol";
+import "../types/AccountEnums.sol";
+import "../errors/AccountErrors.sol";
 import "../IAccountRegister.sol";
 import "./CryptopiaAccount.sol";
 
 /// @title Cryptopia Account Register
 /// @notice Creates and registers accountDatas
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-contract CryptopiaAccountRegister is IAccountRegister, IAccountErrors {
+contract CryptopiaAccountRegister is IAccountRegister {
 
     struct AccountData
     {
@@ -19,40 +19,84 @@ contract CryptopiaAccountRegister is IAccountRegister, IAccountErrors {
         bytes32 username;
 
         // Optional sex {Undefined, Male, Female}
-        AccountEnums.Sex sex;
+        Sex sex;
 
-        mapping (address => AccountEnums.Relationship) friends;
+        mapping (address => Relationship) friends;
         address[] friendsIndex;
 
-        mapping (address => AccountEnums.Relationship) friendRequests;
-    }
-
-    struct AvatarData
-    {
-        // Required {Male, Female}
-        AccountEnums.Gender gender;
-
-        uint8 bodyWeight;
-        uint8 bodyShape;
-
-        uint8 hairStyleIndex;
-        uint8 eyeColorIndex;
-        uint8 skinColorIndex;
-
-        uint8 defaultHatIndex;
-        uint8 defaultShirtIndex;
-        uint8 defaultPantsIndex;
-        uint8 defaultShoesIndex;
+        mapping (address => Relationship) friendRequests;
     }
 
 
     /**
      * Storage
      */
-    uint constant USERNAME_MIN_LENGTH = 3;
+    uint immutable USERNAME_MIN_LENGTH = 3;
 
     mapping(bytes32 => address) public usernameToAccount;
     mapping (address => AccountData) public accountDatas;
+
+
+    /**
+     * Events
+     */
+    /// @dev Emited when an account is created
+    /// @param sender The addres that created the account (tx.origin)
+    /// @param account The address of the newly created account (smart-contract)
+    /// @param username The unique username of the newly created account (smart-contract)
+    /// @param sex {Undefined, Male, Female}
+    event CreateAccount(address indexed sender, address indexed account, bytes32 indexed username, Sex sex);
+
+    /// @dev Emited when a friend request is added
+    /// @param sender The addres that added the friend request
+    /// @param receiver The address that `sender` requests to be friends with
+    /// @param relationship The type of friendship
+    event AddFriendRequest(address indexed sender, address indexed receiver, Relationship indexed relationship);
+
+    /// @dev Emited when a friend request is removed
+    /// @param sender The addres that added the friend request
+    /// @param receiver The address that `sender` requested to be friends with
+    /// @param relationship The type of friendship
+    event RemoveFriendRequest(address indexed sender, address indexed receiver, Relationship indexed relationship);
+
+    /// @dev Emited when a friend request is accepted
+    /// @param sender The addres that added the friend request
+    /// @param receiver The address that `sender` requested to be friends with
+    /// @param relationship The type of friendship
+    event AcceptFriendRequest(address indexed sender, address indexed receiver, Relationship indexed relationship);
+
+
+    /**
+     * Errors
+     */
+    // @dev Emitted when `username` is invalid
+    /// @param username The username that is invalid
+    /// @param reason The reason why the username is invalid
+    error InvalidUsername(bytes32 username, string reason);
+
+    /// @dev Emitted when `username` is already taken
+    /// @param username The username that is already taken
+    error DupicateUsername(bytes32 username);
+
+    /// @dev Emitted when `relationship` is invalid
+    /// @param relationship The relationship that is invalid
+    error InvalidRelationship(Relationship relationship);
+
+    /// @dev Emitted when a `account` is invalid for a friend request
+    /// @param account The account that is invalid for a friend request
+    error InvalidFriendRequest(address account);
+
+    /// @dev Emitted when `account` is already a friend
+    /// @param account The account that is already a friend
+    error AlreadyFriends(address account);
+
+    /// @dev Emitted when there is already a pending friend request for `account` 
+    /// @param account The account that already has a pending friend request
+    error DuplicateFriendRequest(address account);
+
+    /// @dev Emitted when there is no pending friend request for `account`
+    /// @param account The account that has no pending friend request
+    error MissingFriendRequest(address account);
 
 
     /**
@@ -66,7 +110,6 @@ contract CryptopiaAccountRegister is IAccountRegister, IAccountErrors {
         {
             revert AccountNotRegistered(account);
         }
-
         _;
     }
 
@@ -80,15 +123,14 @@ contract CryptopiaAccountRegister is IAccountRegister, IAccountErrors {
         // Ensure valid username
         if (!isValid) 
         {
-            revert AccountInvalidUsername(username, reason);
+            revert InvalidUsername(username, reason);
         }
 
         // Ensure username is not taken
         if (usernameToAccount[username] != address(0)) 
         {
-            revert AccountDupicateUsername(username);
+            revert DupicateUsername(username);
         }
-
         _;
     }
 
@@ -103,7 +145,7 @@ contract CryptopiaAccountRegister is IAccountRegister, IAccountErrors {
     /// @param username Unique username
     /// @param sex {Undefined, Male, Female}
     /// @return account Returns wallet address
-    function create(address[] memory owners, uint required, uint dailyLimit, bytes32 username, AccountEnums.Sex sex)
+    function create(address[] memory owners, uint required, uint dailyLimit, bytes32 username, Sex sex)
         public virtual override 
         onlyValidUsername(username)
         returns (address payable account)
@@ -137,7 +179,7 @@ contract CryptopiaAccountRegister is IAccountRegister, IAccountErrors {
         public virtual override view 
         returns (
             bytes32 username,
-            AccountEnums.Sex sex
+            Sex sex
         )
     {
         username = accountDatas[account].username;
@@ -153,22 +195,17 @@ contract CryptopiaAccountRegister is IAccountRegister, IAccountErrors {
         public virtual override view  
         returns (
             bytes32[] memory username,
-            AccountEnums.Sex[] memory sex
+            Sex[] memory sex
         )
     {
         username = new bytes32[](accounts.length);
-        sex = new AccountEnums.Sex[](accounts.length);
+        sex = new Sex[](accounts.length);
         for (uint i = 0; i < accounts.length; i++)
         {
             if (_isRegistered(accounts[i]))
             {
                 username[i] = accountDatas[accounts[i]].username;
                 sex[i] = accountDatas[accounts[i]].sex;
-            }
-            else 
-            {
-                username[i] = 0;
-                sex[i] = AccountEnums.Sex.Undefined;
             }
         }
     }
@@ -196,7 +233,7 @@ contract CryptopiaAccountRegister is IAccountRegister, IAccountErrors {
         returns (
             address friend_account, 
             bytes32 friend_username,
-            AccountEnums.Relationship friend_relationship
+            Relationship friend_relationship
         )
     {
         friend_account = accountDatas[account].friendsIndex[index];
@@ -217,12 +254,12 @@ contract CryptopiaAccountRegister is IAccountRegister, IAccountErrors {
         returns (
             address[] memory friend_accounts, 
             bytes32[] memory friend_usernames,
-            AccountEnums.Relationship[] memory friend_relationships
+            Relationship[] memory friend_relationships
         )
     {
         friend_accounts = new address[](take);
         friend_usernames = new bytes32[](take);
-        friend_relationships = new AccountEnums.Relationship[](take);
+        friend_relationships = new Relationship[](take);
 
         uint index = skip;
         for (uint i = 0; i < take; i++)
@@ -252,7 +289,7 @@ contract CryptopiaAccountRegister is IAccountRegister, IAccountErrors {
     /// @param other The other (right) account to test
     /// @param relationship The type of relationship to test
     /// @return bool True if `account` and `other` have 'relationship'
-    function hasRelationsip(address account, address other, AccountEnums.Relationship relationship) 
+    function hasRelationsip(address account, address other, Relationship relationship) 
         public override view
         returns (bool)
     {
@@ -275,7 +312,7 @@ contract CryptopiaAccountRegister is IAccountRegister, IAccountErrors {
     /// @dev Request friendship with `friend_account` for `msg.sender`
     /// @param friend_account The account to add the friend request for
     /// @param friend_relationship The type of relationship that is requested
-    function addFriendRequest(address friend_account, AccountEnums.Relationship friend_relationship) 
+    function addFriendRequest(address friend_account, Relationship friend_relationship) 
         public override 
     {
         _addFriendRequest(friend_account, friend_relationship);
@@ -285,7 +322,7 @@ contract CryptopiaAccountRegister is IAccountRegister, IAccountErrors {
     /// @dev Request friendship with `friend_accounts` for `msg.sender`
     /// @param friend_accounts The accounts to add the friend requests for
     /// @param friend_relationships The type of relationships that are requested
-    function addFriendRequests(address[] memory friend_accounts, AccountEnums.Relationship[] memory friend_relationships) 
+    function addFriendRequests(address[] memory friend_accounts, Relationship[] memory friend_relationships) 
        public override 
     {
         for (uint i = 0; i < friend_accounts.length; i++)
@@ -344,7 +381,7 @@ contract CryptopiaAccountRegister is IAccountRegister, IAccountErrors {
     /// @param account Address of account contract instantiation
     /// @param username Unique username
     /// @param sex {Undefined, Male, Female}
-    function _register(address account, bytes32 username, AccountEnums.Sex sex) 
+    function _register(address account, bytes32 username, Sex sex) 
         internal 
     {
         // Register
@@ -376,7 +413,7 @@ contract CryptopiaAccountRegister is IAccountRegister, IAccountErrors {
         internal view
         returns (bool)
     {
-        return accountDatas[account].friends[other] != AccountEnums.Relationship.None;
+        return accountDatas[account].friends[other] != Relationship.None;
     }
 
 
@@ -388,22 +425,28 @@ contract CryptopiaAccountRegister is IAccountRegister, IAccountErrors {
         internal view
         returns (bool)
     {
-        return accountDatas[account].friendRequests[other] != AccountEnums.Relationship.None && 
-               accountDatas[other].friendRequests[account] != AccountEnums.Relationship.None;
+        return accountDatas[account].friendRequests[other] != Relationship.None && 
+               accountDatas[other].friendRequests[account] != Relationship.None;
     }
 
 
     /// @dev Request friendship with `friend_account` for `msg.sender`
     /// @param friend_account The account to add the friend request for
     /// @param friend_relationship The type of relationship that is requested
-    function _addFriendRequest(address friend_account, AccountEnums.Relationship friend_relationship) 
+    function _addFriendRequest(address friend_account, Relationship friend_relationship) 
         internal 
         onlyRegistered(msg.sender) 
     {
         // Ensure valid relationship
         if (!_validateRelationship(friend_relationship))
         {
-            revert AccountInvalidRelationship(friend_relationship);
+            revert InvalidRelationship(friend_relationship);
+        }
+
+        // Ensure user isn't sending a friend request to themselves
+        if (msg.sender == friend_account)
+        {
+            revert InvalidFriendRequest(friend_account);
         }
 
         // Ensure that the friend account is registered
@@ -415,13 +458,13 @@ contract CryptopiaAccountRegister is IAccountRegister, IAccountErrors {
         // Ensure that the friend account is not already a friend
         if (_isFriend(msg.sender, friend_account))
         {
-            revert AccountAlreadyFriends(friend_account);
+            revert AlreadyFriends(friend_account);
         }
 
         // Ensure that there is no pending friend request already for the friend account
         if (_hasPendingFriendRequest(msg.sender, friend_account))
         {
-            revert AccountDuplicateFriendRequest(friend_account);
+            revert DuplicateFriendRequest(friend_account);
         }
 
         // Add 
@@ -440,12 +483,12 @@ contract CryptopiaAccountRegister is IAccountRegister, IAccountErrors {
         // Ensure that the friend account is registered
         if (!_hasPendingFriendRequest(msg.sender, friend_account))
         {
-            revert AccountMissingFriendRequest(friend_account);
+            revert MissingFriendRequest(friend_account);
         }
 
         // Remove 
-        AccountEnums.Relationship relationship = accountDatas[msg.sender].friendRequests[friend_account];
-        accountDatas[msg.sender].friendRequests[friend_account] = AccountEnums.Relationship.None;
+        Relationship relationship = accountDatas[msg.sender].friendRequests[friend_account];
+        accountDatas[msg.sender].friendRequests[friend_account] = Relationship.None;
 
         // Emit
         emit RemoveFriendRequest(msg.sender, friend_account, relationship);
@@ -457,11 +500,14 @@ contract CryptopiaAccountRegister is IAccountRegister, IAccountErrors {
     function _acceptFriendRequest(address friend_account) 
         internal 
     {
-        require(_hasPendingFriendRequest(friend_account, msg.sender), "");
+        if (!_hasPendingFriendRequest(friend_account, msg.sender))
+        {
+            revert MissingFriendRequest(friend_account);
+        }
 
         // Remove friend request
-        AccountEnums.Relationship relationship = accountDatas[friend_account].friendRequests[msg.sender];
-        accountDatas[friend_account].friendRequests[msg.sender] = AccountEnums.Relationship.None;
+        Relationship relationship = accountDatas[friend_account].friendRequests[msg.sender];
+        accountDatas[friend_account].friendRequests[msg.sender] = Relationship.None;
 
         // Add friendship
         accountDatas[msg.sender].friends[friend_account] = relationship;
@@ -519,10 +565,10 @@ contract CryptopiaAccountRegister is IAccountRegister, IAccountErrors {
     /// @dev Validate `relationship`
     /// @param relationship The relationship value to test
     /// @return bool True if `relationship` is valid
-    function _validateRelationship(AccountEnums.Relationship relationship)
+    function _validateRelationship(Relationship relationship)
         internal pure 
         returns (bool)
     {
-        return relationship > AccountEnums.Relationship.None && relationship <= AccountEnums.Relationship.Spouse;
+        return relationship > Relationship.None && relationship <= Relationship.Spouse;
     }
 }

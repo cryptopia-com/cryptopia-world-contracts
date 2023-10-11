@@ -1,48 +1,12 @@
 // SPDX-License-Identifier: ISC
 pragma solidity ^0.8.12 < 0.9.0;
 
-import "../../game/inventories/InventoryEnums.sol";
+import "../inventories/types/InventoryEnums.sol";
 
 /// @title Crafting interface
 /// @dev Allows the player to craft Non-fungible tokens (ERC721) based on recepies
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface ICrafting {
-
-    /**
-     * Events
-     */
-    /// @dev Called when the crafting `slotCount` of `player` was updated
-    /// @param player The player whos slot count was modified
-    /// @param slotCount the new slot count
-    event CraftingSlotCountChange(address indexed player, uint slotCount);
-
-    /// @dev Called when the `asset` `recipe` was mutated
-    /// @param asset The address of the ERC721 contract
-    /// @param recipe The recipe (name) that was mutated
-    event CraftingRecipeMutation(address indexed asset, bytes32 indexed recipe);
-
-    /// @dev Called when the `player` learned `asset` `recipe` 
-    /// @param player The player that learned the recipe
-    /// @param asset The address of the ERC721 contract
-    /// @param recipe The recipe (name) that was learned
-    event CraftingLearn(address indexed player, address indexed asset, bytes32 indexed recipe);
-
-    /// @dev Called when the crafting of `asset` `recipe` was started by `player`
-    /// @param player The player that is crafting the item
-    /// @param asset The address of the ERC721 contract
-    /// @param recipe The recipe (name) that is crafted
-    /// @param slot The slot used to craft the item
-    /// @param finished The datetime at which the item can be claimed
-    event CraftingStart(address indexed player, address indexed asset, bytes32 indexed recipe, uint slot, uint finished);
-
-    /// @dev Called when the crafted `asset` item in `slot` was claimed by `player`
-    /// @param player The player that crafted the item
-    /// @param asset The address of the ERC721 contract
-    /// @param item The item (recipe) that was crafted
-    /// @param slot The slot used to craft the item
-    /// @param tokenId The token ID of the crafted item
-    event CraftingClaim(address indexed player, address indexed asset, bytes32 indexed item, uint slot, uint tokenId);
-    
 
     /** 
      * Admin functions
@@ -255,14 +219,14 @@ interface ICrafting {
     /// @param recipe The name of the recipe to craft
     /// @param slot The index (non-zero based) of the crafting slot to use
     /// @param inventory The inventory space to deduct ingredients from ({Ship|Backpack})
-    function craft(address asset, bytes32 recipe, uint slot, InventoryEnums.Inventories inventory) 
+    function craft(address asset, bytes32 recipe, uint slot, Inventory inventory) 
         external;
 
 
     /// @dev Claims (mints) the previously crafted item (ERC721) in `slot` after sufficient crafting time has passed (started by calling craft(..)) 
     /// @param slot The number (non-zero based) of the slot to claim
     /// @param inventory The inventory space to mint the crafted item into ({Ship|Backpack}) 
-    function claim(uint slot, InventoryEnums.Inventories inventory)
+    function claim(uint slot, Inventory inventory)
         external;
 
 

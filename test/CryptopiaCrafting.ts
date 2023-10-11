@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers, upgrades} from "hardhat";
+import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { getParamFromEvent} from '../scripts/helpers/events';
-import appConfig from "../config";
 import "../scripts/helpers/converters.ts";
 
 import { 
@@ -17,21 +17,27 @@ import {
 /**
  * Crafting tests
  * 
+ * Test cases:
+ * 
+ * Basic crafting:
+ * - Player should not be able to craft with an invalid recipe
+ * - Player should not be able to claim from an empty slot
+ * - Player should not be able to claim from a slot in another inventory
+ * - Player should not be able to craft or claim if not registered
  */
 describe("Crafting Contract", function () {
 
     // Settings
     const REVERT_MODE = false;
 
-    // Config
-    const config = appConfig.networks.development;
-
     // Roles
     const SYSTEM_ROLE = "SYSTEM_ROLE".toKeccak256();
+    const MINTER_ROLE = "MINTER_ROLE".toKeccak256();
 
     // Accounts
     let deployer: string;
     let system: string;
+    let minter: string;
     let account1: string;
     let other: string;
     let treasury: string;
@@ -50,50 +56,109 @@ describe("Crafting Contract", function () {
     // Mock Data
     const assets: any[] = [
         {
+            symbol: "MEAT",
+            name: "Meat",
+            resource: 1,
+            weight: 50, // 0.5kg
+            contractAddress: "",
+            contractInstance: {}
+        },
+        {
             symbol: "WOOD",
             name: "Wood",
+            resource: 3,
             weight: 50, // 0.5kg
+            contractAddress: "",
+            contractInstance: {}
+        },
+        {
+            symbol: "STONE",
+            name: "Stone",
+            resource: 4,
+            weight: 100, // 1kg
+            contractAddress: "",
             contractInstance: {}
         },
         {
             symbol: "FE26",
             name: "Iron",
+            resource: 7,
             weight: 100, // 1kg
+            contractAddress: "",
             contractInstance: {}
         },
         {
             symbol: "AU29",
             name: "Gold",
-            weight: 100, // 1kg
+            resource: 11,
+            weight: 200, // 2kg
+            contractAddress: "",
             contractInstance: {}
         }
     ];
 
-    const craftableItems = [
+    const tools = [
         {
-            name: "MockTool1",
+            name: "Stone Axe",
             rarity: 1,
             level: 1,
-            stats: [90, 100, 100, 100, 10, 20, 30],
+            stats: {
+                durability: 90, 
+                multiplier_cooldown: 100, 
+                multiplier_xp: 100, 
+                multiplier_effectiveness: 100, 
+                value1: 10, 
+                value2: 20, 
+                value3: 30
+            },
             minting: [
-                { 1: ['1', 'ether'] }, // Meat
-                { 3: ['1', 'ether'] } // Wood
+                { 
+                    asset: "MEAT",
+                    amount: ['1.0', 'ether'] 
+                }, 
+                { 
+                    asset: "WOOD",
+                    amount: ['1.0', 'ether'] 
+                }
             ],
             recipe: {
                 level: 1,
                 learnable: false,
-                craftingTime: 0,
-                ingredients: []
+                craftingTime: 300, // 5 min
+                ingredients: [
+                    {
+                        asset: "WOOD",
+                        amount:['2.0', 'ether']
+                    },
+                    {
+                        asset: "STONE",
+                        amount: ['1.0', 'ether']
+                    }
+                ]
             }
         },
         {
-            name: "MockTool2",
+            name: "Iron Axe",
             rarity: 1,
             level: 1,
-            stats: [95, 110, 110, 120, 11, 22, 33],
+            stats: {
+                durability: 95, 
+                multiplier_cooldown: 110, 
+                multiplier_xp: 110, 
+                multiplier_effectiveness: 110, 
+                value1: 11, 
+                value2: 22, 
+                value3: 33
+            },
             minting: [
-                { 1: ['1', 'ether'] }, // Meat
-                { 3: ['1', 'ether'] } // Wood
+                { 
+                    asset: "MEAT",
+                    amount: ['1.0', 'ether'] 
+                }, 
+                { 
+                    asset: "WOOD",
+                    amount: ['1.0', 'ether'] 
+                }
             ],
             recipe: {
                 level: 1,
@@ -102,42 +167,11 @@ describe("Crafting Contract", function () {
                 ingredients: [
                     {
                         asset: "WOOD",
-                        amount: "2".toWei()
+                        amount: ['2.0', 'ether']
                     },
                     {
                         asset: "FE26",
-                        amount: "1".toWei()
-                    }
-                ]
-            }
-        },
-        {
-            name: "MockWearable1",
-            rarity: 1,
-            level: 1,
-            stats: [100, 100, 100, 100, 1, 0, 0],
-            minting: [],
-            recipe: {
-                level: 1,
-                learnable: false,
-                craftingTime: 0,
-                ingredients: []
-            }
-        },
-        {
-            name: "MockWearable2",
-            rarity: 1,
-            level: 2,
-            stats: [100, 100, 100, 100, 3, 1, 1],
-            minting: [],
-            recipe: {
-                level: 2,
-                learnable: true,
-                craftingTime: 3600, // 60 min
-                ingredients: [
-                    {
-                        asset: "AU29",
-                        amount: "3".toWei()
+                        amount: ['1.0', 'ether']
                     }
                 ]
             }
@@ -145,18 +179,27 @@ describe("Crafting Contract", function () {
     ];
 
     /**
+     * Find asset by symbol
+     */
+    const findAsset = (symbol: string) => {
+        return assets.find(asset => asset.symbol === symbol);
+    };
+
+    /**
      * Deploy Crafting Contracts
      */
     before(async () => {
 
         // Accounts
-        [deployer, system, account1, other, treasury] = (
+        [deployer, system, minter, account1, other, treasury] = (
             await ethers.getSigners()).map(s => s.address);
 
         // Factories
         const CryptopiaAccountRegisterFactory = await ethers.getContractFactory("CryptopiaAccountRegister"); 
         const CryptopiaPlayerRegisterFactory = await ethers.getContractFactory("CryptopiaPlayerRegister"); 
         const CryptopiaInventoriesFactory = await ethers.getContractFactory("CryptopiaInventories");
+        const AssetTokenFactory = await ethers.getContractFactory("CryptopiaAssetToken");
+        const AssetRegisterFactory = await ethers.getContractFactory("CryptopiaAssetRegister");
         const CryptopiaShipTokenFactory = await ethers.getContractFactory("CryptopiaShipToken");
         const CryptopiaToolTokenFactory = await ethers.getContractFactory("CryptopiaToolToken");
         const CryptopiaCraftingFactory = await ethers.getContractFactory("CryptopiaCrafting");
@@ -194,6 +237,15 @@ describe("Crafting Contract", function () {
 
         const accountRegisterAddress = await accountRegisterProxy.getAddress();
         accountRegisterInstance = await ethers.getContractAt("CryptopiaAccountRegister", accountRegisterAddress);
+
+        // Deploy Asset Register
+        const assetRegisterProxy = await (
+            await upgrades.deployProxy(
+                AssetRegisterFactory, [])
+            ).waitForDeployment();
+
+        const assetRegisterAddress = await assetRegisterProxy.getAddress();
+        const assetRegisterInstance = await ethers.getContractAt("CryptopiaAssetRegister", assetRegisterAddress);
 
         // Deploy Ships
         const shipTokenProxy = await (
@@ -252,6 +304,7 @@ describe("Crafting Contract", function () {
         toolTokenInstance = await ethers.getContractAt("CryptopiaToolToken", toolTokenAddress);
 
         // Grant roles
+        await inventoriesInstance.grantRole(SYSTEM_ROLE, system);
         await inventoriesInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
         await inventoriesInstance.grantRole(SYSTEM_ROLE, craftingAddress);
         await inventoriesInstance.grantRole(SYSTEM_ROLE, toolTokenAddress);
@@ -259,16 +312,38 @@ describe("Crafting Contract", function () {
         await craftingInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
         await toolTokenInstance.grantRole(SYSTEM_ROLE, craftingAddress);
 
+        // Deploy assets
+        for (let asset of assets)
+        {
+            const assetTokenProxy = await (
+                await upgrades.deployProxy(
+                    AssetTokenFactory, 
+                    [
+                        asset.name, 
+                        asset.symbol, 
+                        [],
+                        whitelistAddress
+                    ])
+                ).waitForDeployment();
+
+            asset.contractAddress = await assetTokenProxy.getAddress();
+            asset.contractInstance = await ethers.getContractAt("CryptopiaAssetToken", asset.contractAddress);
+
+            await asset.contractInstance.grantRole(MINTER_ROLE, minter);
+            await assetRegisterInstance.registerAsset(asset.contractAddress, true, asset.resource);
+            await inventoriesInstance.setFungibleAsset(asset.contractAddress, asset.weight);
+        }
+
         // Setup Tools
         await inventoriesInstance.setNonFungibleAsset(
             await toolTokenProxy.getAddress(), true);
 
         // Add tools
         await toolTokenInstance.setTools(
-            config.ERC721.CryptopiaToolToken.tools.map((tool: any) => tool.name.toBytes32()),
-            config.ERC721.CryptopiaToolToken.tools.map((tool: any) => tool.rarity),
-            config.ERC721.CryptopiaToolToken.tools.map((tool: any) => tool.level),
-            config.ERC721.CryptopiaToolToken.tools.map((tool: any) => [
+            tools.map((tool: any) => tool.name.toBytes32()),
+            tools.map((tool: any) => tool.rarity),
+            tools.map((tool: any) => tool.level),
+            tools.map((tool: any) => [
                 tool.stats.durability, 
                 tool.stats.multiplier_cooldown, 
                 tool.stats.multiplier_xp, 
@@ -277,30 +352,28 @@ describe("Crafting Contract", function () {
                 tool.stats.value2, 
                 tool.stats.value3
             ]),
-            config.ERC721.CryptopiaToolToken.tools.map((tool: any) => tool.minting.map((item: any) => Object.keys(item)[0])),
-            config.ERC721.CryptopiaToolToken.tools.map((tool: any) => tool.minting.map((item: any) => ethers.parseUnits(item[Object.keys(item)[0]][0], item[Object.keys(item)[0]][1]))));
+            tools.map((tool: any) => tool.minting.map((item: any) => findAsset(item.asset).resource)),
+            tools.map((tool: any) => tool.minting.map((item: any) => ethers.parseUnits(item.amount[0], item.amount[1]))));
     
         // Add tool recipes
         await craftingInstance.setRecipes(
-            config.ERC721.CryptopiaToolToken.tools.map(() => toolTokenAddress),
-            config.ERC721.CryptopiaToolToken.tools.map((tool: any) => tool.name.toBytes32()),
-            config.ERC721.CryptopiaToolToken.tools.map((tool: any) => tool.recipe.level),
-            config.ERC721.CryptopiaToolToken.tools.map((tool: any) => tool.recipe.learnable),
-            config.ERC721.CryptopiaToolToken.tools.map((tool: any) => tool.recipe.craftingTime),
-            config.ERC721.CryptopiaToolToken.tools.map((tool: any) => tool.recipe.ingredients.map((ingredient: any) => Object.keys(ingredient)[0])),
-            config.ERC721.CryptopiaToolToken.tools.map((tool: any) => tool.recipe.ingredients.map((ingredient: any) => ethers.parseUnits(ingredient[Object.keys(ingredient)[0]][0], ingredient[Object.keys(ingredient)[0]][1]))));
+            tools.map(() => toolTokenAddress),
+            tools.map((tool: any) => tool.name.toBytes32()),
+            tools.map((tool: any) => tool.recipe.level),
+            tools.map((tool: any) => tool.recipe.learnable),
+            tools.map((tool: any) => tool.recipe.craftingTime),
+            tools.map((tool: any) => tool.recipe.ingredients.map((ingredient: any) => findAsset(ingredient.asset).contractAddress)),
+            tools.map((tool: any) => tool.recipe.ingredients.map((ingredient: any) => ethers.parseUnits(ingredient.amount[0], ingredient.amount[1]))));
 
         // Create registered account
-        const createRegisteredAccountResponse = await playerRegisterInstance.create(
-            [account1], 1, 0, "Registered_Username".toBytes32(), 0, 0);
-        const createRegisteredAccountReceipt = await createRegisteredAccountResponse.wait();
+        const createRegisteredAccountTransaction = await playerRegisterInstance.create([account1], 1, 0, "Registered_Username".toBytes32(), 0, 0);
+        const createRegisteredAccountReceipt = await createRegisteredAccountTransaction.wait();
         const registeredAccount = getParamFromEvent(playerRegisterInstance, createRegisteredAccountReceipt, "account", "RegisterPlayer");
         registeredAccountInstance = await ethers.getContractAt("CryptopiaAccount", registeredAccount);
 
         // Create unregistered account
-        const createUnregisteredAccountResponse = await accountRegisterInstance.create(
-            [other], 1, 0, "Unregistered_Username".toBytes32(), 0);
-            const createUnregisteredAccountReceipt = await createUnregisteredAccountResponse.wait();
+        const createUnregisteredAccountTransaction = await accountRegisterInstance.create([other], 1, 0, "Unregistered_Username".toBytes32(), 0);
+        const createUnregisteredAccountReceipt = await createUnregisteredAccountTransaction.wait();
         const unregisteredAccount = getParamFromEvent(accountRegisterInstance, createUnregisteredAccountReceipt, "account", "CreateAccount");
         unregisteredAccountInstance = await ethers.getContractAt("CryptopiaAccount", unregisteredAccount);
     });
@@ -395,13 +468,13 @@ describe("Crafting Contract", function () {
             // Setup
             const slot = 1;
             const inventory = 1; // Backpack
-            const tool = config.ERC721.CryptopiaToolToken.tools[0];
-            const recipe = tool.name.toBytes32();
-            const toolTokenAddress = await toolTokenInstance.getAddress();
+            const craftable = tools[0];
+            const recipe = craftable.name.toBytes32();
+            const craftableTokenAddress = await toolTokenInstance.getAddress();
             const craftingAddress = await craftingInstance.getAddress();
     
             const callDataCraft = craftingInstance.interface
-                .encodeFunctionData("craft", [toolTokenAddress, recipe, slot, inventory]);
+                .encodeFunctionData("craft", [craftableTokenAddress, recipe, slot, inventory]);
     
             const callDataClaim = craftingInstance.interface
                 .encodeFunctionData("claim", [slot, inventory]);
@@ -432,6 +505,92 @@ describe("Crafting Contract", function () {
                 await expect(operationClaim).to
                     .emit(unregisteredAccountInstance, "ExecutionFailure");
             }
+        });
+
+        it ("Player should not be able to craft an item with insufficient recources", async () => {
+
+            // Setup
+            const slot = 1;
+            const inventory = 1; // Backpack
+            const craftable = tools[0];
+            const recipeName = craftable.name.toBytes32();
+            const craftableTokenAddress = await toolTokenInstance.getAddress();
+            const craftingAddress = await craftingInstance.getAddress();
+
+            const callDataCraft = craftingInstance.interface
+                .encodeFunctionData("craft", [craftableTokenAddress, recipeName, slot, inventory]);
+    
+            // Act
+            const signer = await ethers.provider.getSigner(account1);
+            const operationCraft = registeredAccountInstance
+                .connect(signer)
+                .submitTransaction(craftingAddress, 0, callDataCraft);
+
+            // Assert (fail)
+            if (REVERT_MODE) {
+                await expect(operationCraft).to.be
+                    .revertedWithCustomError(inventoriesInstance, "InventoryInsufficientBalance")
+                    .withArgs(account1, findAsset("WOOD").contractAddress, ethers.parseUnits('2.0', 'ether'));
+            }
+        });
+
+        it("Player should be able to craft and claim an item", async () => {
+
+            // Setup
+            const slot = 1;
+            const inventory = 1; // Backpack
+            const craftable = tools[0];
+            const recipeName = craftable.name.toBytes32();
+            const craftableTokenAddress = await toolTokenInstance.getAddress();
+            const inventoriesAddress = await inventoriesInstance.getAddress();
+            const craftingAddress = await craftingInstance.getAddress();
+            const playerAddress = await registeredAccountInstance.getAddress();
+            const minterSigner = await ethers.provider.getSigner(minter);
+            const systemSigner = await ethers.provider.getSigner(system);
+    
+            // Ensure enough resources in inventory
+            for (let ingredient of craftable.recipe.ingredients)
+            {
+                const asset = findAsset(ingredient.asset);
+                const amount = ethers.parseUnits(ingredient.amount[0], ingredient.amount[1]);
+
+                // Mint asset
+                await asset.contractInstance
+                    .connect(minterSigner)
+                    .mintTo(inventoriesAddress, amount);
+
+                // Assign to player
+                await inventoriesInstance
+                    .connect(systemSigner)
+                    .assignFungibleToken(
+                        playerAddress,
+                        inventory,
+                        asset.contractAddress,
+                        amount);
+            }
+
+            const callDataCraft = craftingInstance.interface
+                .encodeFunctionData("craft", [craftableTokenAddress, recipeName, slot, inventory]);
+    
+            const callDataClaim = craftingInstance.interface
+                .encodeFunctionData("claim", [slot, inventory]);
+    
+            // Act
+            const signer = await ethers.provider.getSigner(account1);
+            await registeredAccountInstance
+                .connect(signer)
+                .submitTransaction(craftingAddress, 0, callDataCraft);
+
+            await time.increase(craftable.recipe.craftingTime);
+    
+            const claimTransaction = await registeredAccountInstance
+                .connect(signer)
+                .submitTransaction(craftingAddress, 0, callDataClaim);
+            const claimReceipt = await claimTransaction.wait();
+
+            // Assert
+            const craftedTool = getParamFromEvent(craftingInstance, claimReceipt, "tokenId", "CraftingClaim");
+            expect(craftedTool).to.be.equal(1);
         });
     });
 });

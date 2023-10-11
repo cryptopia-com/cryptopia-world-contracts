@@ -64,9 +64,6 @@ interface IMultiSigWallet {
         external;
 
 
-    /*
-     * Web3 call functions
-     */
     /// @dev Returns maximum withdraw amount.
     /// @return Returns amount.
     function calcMaxWithdraw()

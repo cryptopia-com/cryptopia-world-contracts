@@ -11,7 +11,7 @@ import "../IAccount.sol";
 
 /// @title Cryptopia Account
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-contract CryptopiaAccount is IAccount, Initializable, MultiSigWallet, IERC777RecipientUpgradeable, IERC721ReceiverUpgradeable {
+contract CryptopiaAccount is Initializable, MultiSigWallet, IAccount, IERC777RecipientUpgradeable, IERC721ReceiverUpgradeable {
 
     /**
      * Storage
@@ -19,6 +19,7 @@ contract CryptopiaAccount is IAccount, Initializable, MultiSigWallet, IERC777Rec
     address constant private ERC1820_ADDRESS = 0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24;
     bytes32 constant private ERC777_RECIPIENT_INTERFACE = keccak256("ERC777TokensRecipient");
 
+    /// @dev Unique username
     bytes32 public username;
 
     /** 

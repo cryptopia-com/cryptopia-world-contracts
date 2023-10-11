@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: ISC
 pragma solidity ^0.8.12 < 0.9.0;
 
-import "../../../source/tokens/ERC721/CryptopiaERC721.sol";
+import "../../../source/tokens/ERC721/concrete/CryptopiaERC721.sol";
 
 contract MockERC721Token is CryptopiaERC721 {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");

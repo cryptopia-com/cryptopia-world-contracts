@@ -5,16 +5,17 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 
-import "../../../game/inventories/CryptopiaInventories/ICryptopiaInventories.sol";
-import "../../../game/inventories/InventoryEnums.sol";
+import "../../players/errors/PlayerErrors.sol";
+import "../../inventories/types/InventoryEnums.sol";
+import "../../inventories/errors/InventoryErrors.sol";
+import "../../inventories/IInventories.sol";
 import "../ICraftable.sol";
 import "../ICrafting.sol";
-import "../ICraftingErrors.sol";
 
-/// @title Crafting 
+/// @title Cryptopia Crafting 
 /// @dev Allows the player to craft Non-fungible assets (ERC721) based on recepies
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-contract CryptopiaCrafting is ICrafting, ICraftingErrors, Initializable, AccessControlUpgradeable {
+contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting {
 
     struct Recipe 
     {
@@ -71,26 +72,99 @@ contract CryptopiaCrafting is ICrafting, ICraftingErrors, Initializable, AccessC
 
 
     /**
+     * Events
+     */
+    /// @dev Called when the crafting of `asset` `recipe` was started by `player`
+    /// @param player The player that is crafting the item
+    /// @param asset The address of the ERC721 contract
+    /// @param recipe The recipe (name) that is crafted
+    /// @param slot The slot used to craft the item
+    /// @param finished The datetime at which the item can be claimed
+    event CraftingStart(address indexed player, address indexed asset, bytes32 indexed recipe, uint slot, uint finished);
+
+    /// @dev Called when the crafted `asset` item in `slot` was claimed by `player`
+    /// @param player The player that crafted the item
+    /// @param asset The address of the ERC721 contract
+    /// @param item The item (recipe) that was crafted
+    /// @param slot The slot used to craft the item
+    /// @param tokenId The token ID of the crafted item
+    event CraftingClaim(address indexed player, address indexed asset, bytes32 indexed item, uint slot, uint tokenId);
+
+    /// @dev Called when the crafting `slotCount` of `player` was updated
+    /// @param player The player whos slot count was modified
+    /// @param slotCount the new slot count
+    event CraftingSlotCountChange(address indexed player, uint slotCount);
+
+    /// @dev Called when the `asset` `recipe` was mutated
+    /// @param asset The address of the ERC721 contract
+    /// @param recipe The recipe (name) that was mutated
+    event CraftingRecipeMutation(address indexed asset, bytes32 indexed recipe);
+
+    /// @dev Called when the `player` learned `asset` `recipe` 
+    /// @param player The player that learned the recipe
+    /// @param asset The address of the ERC721 contract
+    /// @param recipe The recipe (name) that was learned
+    event CraftingRecipeLearn(address indexed player, address indexed asset, bytes32 indexed recipe);
+
+
+    /**
+     * Errors
+     */
+    /// @dev Emitted when the crafting slot number is invalid or doesn't exist for the player
+    /// @param player The player who attempted to use the slot
+    /// @param slot The invalid slot number
+    error CraftingSlotInvalid(address player, uint slot);
+
+    /// @dev Emitted when the specified crafting slot is already in use
+    /// @param player The player who attempted to use the slot
+    /// @param slot The slot that's already in use
+    error CraftingSlotOccupied(address player, uint slot);
+
+    /// @dev Emitted when the crafting slot is empty
+    /// @param player The player that attempted to craft
+    /// @param slot The slot that was empty
+    error CraftingSlotIsEmpty(address player, uint slot);
+
+    /// @dev Emitted when the crafting slot is not ready
+    /// @param player The player that attempted to craft
+    /// @param slot The slot that was not ready
+    error CraftingSlotNotReady(address player, uint slot);
+
+    /// @dev Emitted when the recipe is invalid
+    /// @param asset The asset that was used in the recipe
+    /// @param recipe The recipe that was invalid
+    error CraftingRecipeInvalid(address asset, bytes32 recipe);
+
+    /// @dev Emitted when the recipe has not been learned by the player
+    /// @param player The player who attempted to craft
+    /// @param asset The asset associated with the recipe
+    /// @param recipe The recipe that hasn't been learned
+    error CraftingRecipeNotLearned(address player, address asset, bytes32 recipe);
+
+    
+    /**
      * Modifiers
      */
-    /// @dev Requires that `player` exists
+    /// @dev Requires that `player` is registered
     /// @param player address to check
-    modifier existingPlayer(address player)
+    modifier validPlayer(address player)
     {
-        require(playerData[player].slotCount > 0, "CryptopiaCrafting: Non-existing player");
+        if (playerData[player].slotCount == 0)
+        {
+            revert PlayerNotRegistered(player);
+        }
         _;
     }
 
 
     /// @dev Requires that `inventory` is not Wallet
     /// @param inventory inventory to check
-    modifier validInventory(InventoryEnums.Inventories inventory)
+    modifier validInventory(Inventory inventory)
     {
-        if (inventory == InventoryEnums.Inventories.Wallet)
+        if (inventory == Inventory.Wallet)
         {
-            revert CraftingInvalidInventory(inventory);
+            revert InventoryInvalid(inventory);
         }
-
         _;
     }
 
@@ -126,6 +200,7 @@ contract CryptopiaCrafting is ICrafting, ICraftingErrors, Initializable, AccessC
         // Emit
         emit CraftingSlotCountChange(player, slotCount);
     }
+    
 
     /// @dev Batch operation to set recepes
     /// @param asset The contract address of the asset to which the recipe applies
@@ -197,7 +272,7 @@ contract CryptopiaCrafting is ICrafting, ICraftingErrors, Initializable, AccessC
         playerData[player].learnedIndex[asset].push(recipe);
 
         // Emit
-        emit CraftingLearn(player, asset, recipe);
+        emit CraftingRecipeLearn(player, asset, recipe);
     }
 
 
@@ -545,34 +620,40 @@ contract CryptopiaCrafting is ICrafting, ICraftingErrors, Initializable, AccessC
     /// @param recipe The name of the recipe to craft
     /// @param slot The index (non-zero based) of the crafting slot to use
     /// @param inventory The inventory space to deduct ingredients from ({Ship|Backpack})
-    function craft(address asset, bytes32 recipe, uint slot, InventoryEnums.Inventories inventory) 
-        existingPlayer(msg.sender) 
+    function craft(address asset, bytes32 recipe, uint slot, Inventory inventory) 
+        validPlayer(msg.sender) 
         validInventory(inventory) 
         public virtual override  
     {
         // Require valid recipe
         if (recipes[asset][recipe].level == 0)
         {
-            revert CraftingInvalidRecipe(asset, recipe);
+            revert CraftingRecipeInvalid(asset, recipe);
         }
 
         // Check recipe not learnable or learned
-        if (recipes[asset][recipe].learnable)
+        if (recipes[asset][recipe].learnable && 
+            !playerData[msg.sender].learned[asset][recipe]) 
         {
-            require(
-                playerData[msg.sender].learned[asset][recipe], 
-                "CryptopiaCrafting: Recipe not learned"
-            );
+            revert CraftingRecipeNotLearned(msg.sender, asset, recipe);
+        }
+
+        // Require a valid slot
+        if (slot == 0 || slot > playerData[msg.sender].slotCount)
+        {
+            revert CraftingSlotInvalid(msg.sender, slot);
         }
 
         // Require free slot
-        require(slot > 0 && slot <= playerData[msg.sender].slotCount, "CryptopiaCrafting: Invalid slot");
-        require(playerData[msg.sender].slots[slot].finished == 0, "CryptopiaCrafting: Slot not free");
+        if (playerData[msg.sender].slots[slot].finished > 0)
+        {
+            revert CraftingSlotOccupied(msg.sender, slot);
+        }
 
         // Deduct resources (send to treasury) 
         for (uint i = 0; i < recipes[asset][recipe].ingredientsIndex.length; i++)
         {
-            ICryptopiaInventories(inventoriesContract)
+            IInventories(inventoriesContract)
                 .deductFungibleToken(
                     msg.sender, 
                     inventory, 
@@ -593,7 +674,7 @@ contract CryptopiaCrafting is ICrafting, ICraftingErrors, Initializable, AccessC
     /// @dev Claims (mints) the previously crafted item (ERC721) in `slot` after sufficient crafting time has passed (started by calling craft(..)) 
     /// @param slot The number (non-zero based) of the slot to claim
     /// @param inventory The inventory space to mint the crafted item into ({Ship|Backpack}) 
-    function claim(uint slot, InventoryEnums.Inventories inventory)
+    function claim(uint slot, Inventory inventory)
         validInventory(inventory)
         public virtual override 
     {

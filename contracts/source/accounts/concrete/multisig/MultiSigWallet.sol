@@ -2,36 +2,27 @@
 pragma solidity ^0.8.12 < 0.9.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+
+import "../../../errors/ArgumentErrors.sol";
 import "../../multisig/IMultiSigWallet.sol";
 
 /// @title Multisignature wallet - Allows multiple parties to agree on transactions before execution.
 /// @author Stefan George - <stefan.george@consensys.net> (modified by Frank Bonnet <frankbonnet@outlook.com>)
 contract MultiSigWallet is IMultiSigWallet, Initializable {
 
-    /*
-     *  Events
+    struct Transaction 
+    {
+        address destination;
+        uint value;
+        bytes data;
+        bool executed;
+    }
+
+    /** 
+     * Storage
      */
-    event Confirmation(address indexed sender, uint indexed transactionId);
-    event Revocation(address indexed sender, uint indexed transactionId);
-    event Submission(uint indexed transactionId);
-    event Execution(uint indexed transactionId);
-    event ExecutionFailure(uint indexed transactionId);
-    event Deposit(address indexed sender, uint value);
-    event OwnerAddition(address indexed owner);
-    event OwnerRemoval(address indexed owner);
-    event RequirementChange(uint required);
-    event DailyLimitChange(uint dailyLimit);
+    uint constant public MAX_OWNER_COUNT = 5;
 
-
-    /*
-     *  Constants
-     */
-    uint constant public MAX_OWNER_COUNT = 50;
-
-
-    /*
-     *  Storage
-     */
     mapping (uint => Transaction) public transactions;
     mapping (uint => mapping (address => bool)) public confirmations;
     mapping (address => bool) public isOwner;
@@ -42,88 +33,199 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
     uint public lastDay;
     uint public spentToday;
 
-    struct Transaction {
-        address destination;
-        uint value;
-        bytes data;
-        bool executed;
-    }
 
-    /*
-     *  Modifiers
+    /** 
+     *  Events
      */
-    modifier onlyWallet() {
-        require(msg.sender == address(this));
+    /// @dev Emitted when a confirmation is added by an owner
+    /// @param sender The sender of the confirmation
+    /// @param transactionId The transaction id of the transaction that was confirmed
+    event Confirmation(address indexed sender, uint indexed transactionId);
+
+    /// @dev Emitted when a confirmation is revoked by an owner
+    /// @param sender The sender of the revocation
+    /// @param transactionId The transaction id of the transaction that was revoked
+    event Revocation(address indexed sender, uint indexed transactionId);
+
+    /// @dev Emitted when a transaction is submitted
+    /// @param transactionId The transaction id of the transaction that was submitted
+    event Submission(uint indexed transactionId);
+
+    /// @dev Emitted when a transaction is executed after being confirmed
+    /// @param transactionId The transaction id of the transaction that was executed
+    event Execution(uint indexed transactionId);
+
+    /// @dev Emitted when a transaction fails execution
+    /// @param transactionId The transaction id of the transaction that failed execution
+    event ExecutionFailure(uint indexed transactionId);
+
+    /// @dev Emitted when native tokens are deposited
+    /// @param sender The sender of the native tokens
+    /// @param value The amount of native tokens that were deposited
+    event Deposit(address indexed sender, uint value);
+
+    /// @dev Emitted when an owner is added
+    /// @param owner The address of the owner that was added
+    event OwnerAddition(address indexed owner);
+
+    /// @dev Emitted when an owner is removed
+    /// @param owner The address of the owner that was removed
+    event OwnerRemoval(address indexed owner);
+
+    /// @dev Emitted when the required number of confirmations is changed
+    /// @param required The new number of required confirmations
+    event RequirementChange(uint required);
+
+    /// @dev Emitted when the daily limit is changed
+    /// @param dailyLimit The new daily limit
+    event DailyLimitChange(uint dailyLimit);
+
+
+    /**
+     * Errors
+     */
+    /// @dev Raised when a function is called by any address other than the multisig wallet itself
+    error OnlyWalletAllowed();
+
+    /// @dev Raised when trying to add an owner that already exists
+    error OwnerAlreadyExists(address owner);
+
+    /// @dev Raised when an operation requires an existing owner, but the address isn't an owner
+    error OwnerDoesNotExist(address owner);
+
+    /// @dev Raised when referencing a transaction that doesn't exist
+    error TransactionDoesNotExist(uint transactionId);
+
+    /// @dev Raised when a transaction has already been confirmed by an owner
+    error TransactionAlreadyConfirmed(uint transactionId, address owner);
+
+    /// @dev Raised when an owner tries to confirm a transaction that they haven't confirmed yet
+    error TransactionNotYetConfirmed(uint transactionId, address owner);
+
+    /// @dev Raised when trying to execute a transaction that has already been executed
+    error TransactionAlreadyExecuted(uint transactionId);
+
+    /// @dev Raised when an owner is invalid (either a duplicate or zero address)
+    error InvalidOwner(address account); 
+
+    /// @dev Raised when owner count or required confirmations are not set correctly
+    error InvalidOwnerCountOrRequirement(uint ownerCount, uint required);
+
+
+    /**
+     * Modifiers
+     */
+    /// @dev Ensures the function is only called by the multisig wallet itself.
+    modifier onlyWallet() 
+    {
+        if (msg.sender != address(this)) 
+        {
+            revert OnlyWalletAllowed();
+        }
         _;
     }
 
-
-    modifier ownerDoesNotExist(address owner) {
-        require(!isOwner[owner]);
+    /// @dev Ensures the specified address is not already an owner.
+    modifier ownerDoesNotExist(address owner) 
+    {
+        if (isOwner[owner]) 
+        {
+            revert OwnerAlreadyExists(owner);
+        }
         _;
     }
 
-
-    modifier ownerExists(address owner) {
-        require(isOwner[owner]);
+    /// @dev Ensures the specified address is an existing owner.
+    modifier ownerExists(address owner) 
+    {
+        if (!isOwner[owner]) 
+        {
+            revert OwnerDoesNotExist(owner);
+        }
         _;
     }
 
-
-    modifier transactionExists(uint transactionId) {
-        require(transactions[transactionId].destination != address(0));
+    /// @dev Ensures the transaction ID references an existing transaction.
+    modifier transactionExists(uint transactionId) 
+    {
+        if (transactions[transactionId].destination == address(0)) 
+        {
+            revert TransactionDoesNotExist(transactionId);
+        }
         _;
     }
 
-
-    modifier transactionConfirmed(uint transactionId, address owner) {
-        require(confirmations[transactionId][owner]);
+    /// @dev Ensures the transaction has been confirmed by the specified owner.
+    modifier transactionConfirmed(uint transactionId, address owner) 
+    {
+        if (!confirmations[transactionId][owner]) 
+        {
+            revert TransactionNotYetConfirmed(transactionId, owner);
+        }
         _;
     }
 
-
-    modifier transactionNotConfirmed(uint transactionId, address owner) {
-        require(!confirmations[transactionId][owner]);
+    /// @dev Ensures the transaction has not been confirmed by the specified owner.
+    modifier transactionNotConfirmed(uint transactionId, address owner) 
+    {
+        if (confirmations[transactionId][owner]) 
+        {
+            revert TransactionAlreadyConfirmed(transactionId, owner);
+        }
         _;
     }
 
-
-    modifier notExecuted(uint transactionId) {
-        require(!transactions[transactionId].executed);
+    /// @dev Ensures the specified transaction hasn't been executed yet.
+    modifier notExecuted(uint transactionId) 
+    {
+        if (transactions[transactionId].executed) 
+        {
+            revert TransactionAlreadyExecuted(transactionId);
+        }
         _;
     }
 
-
-    modifier notNull(address account) {
-        require(account != address(0));
+    /// @dev Ensures the provided address is non-zero.
+    modifier notNull(address account) 
+    {
+        if (account == address(0)) 
+        {
+            revert ArgumentZeroAddress(account);
+        }
         _;
     }
 
-
-    modifier validRequirement(uint ownerCount, uint _required) {
-        require(ownerCount <= MAX_OWNER_COUNT
-            && _required <= ownerCount
-            && _required != 0
-            && ownerCount != 0);
+    /// @dev Validates the requirements for owner count and confirmations needed.
+    modifier validRequirement(uint ownerCount, uint _required) 
+    {
+        if (ownerCount > MAX_OWNER_COUNT
+            || _required > ownerCount
+            || _required == 0
+            || ownerCount == 0) 
+        {
+            revert InvalidOwnerCountOrRequirement(ownerCount, _required);
+        }
         _;
     }
 
 
     /// @dev Fallback function allows to deposit ether.
-    receive() 
-        external payable
+    receive() external payable
     {
         if (msg.value > 0)
+        {
             emit Deposit(msg.sender, msg.value);
+        }
     }
 
 
     /// @dev Fallback function allows to deposit ether.
-    fallback() 
-        external payable
+    fallback() external payable
     {
         if (msg.value > 0)
+        {
             emit Deposit(msg.sender, msg.value);
+        }
     }
 
 
@@ -137,10 +239,16 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
     function __Multisig_init(address[] memory _owners, uint _required, uint _dailyLimit) 
         internal onlyInitializing
     {
-        for (uint i=0; i<_owners.length; i++) {
-            require(!isOwner[_owners[i]] && _owners[i] != address(0));
+        for (uint i = 0; i < _owners.length; i++) 
+        {
+            if (isOwner[_owners[i]] || _owners[i] == address(0)) 
+            {
+                revert InvalidOwner(_owners[i]);
+            }
+
             isOwner[_owners[i]] = true;
         }
+
         owners = _owners;
         required = _required;
         dailyLimit = _dailyLimit;
@@ -158,6 +266,7 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
     {
         isOwner[owner] = true;
         owners.push(owner);
+
         emit OwnerAddition(owner);
     }
 
@@ -170,14 +279,22 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
         ownerExists(owner)
     {
         isOwner[owner] = false;
-        for (uint i=0; i<owners.length - 1; i++)
-            if (owners[i] == owner) {
+        for (uint i = 0; i < owners.length - 1; i++)
+        {
+            if (owners[i] == owner) 
+            {
                 owners[i] = owners[owners.length - 1];
                 break;
             }
+        }
+            
         owners.pop();
+
         if (required > owners.length)
+        {
             changeRequirement(owners.length);
+        }
+            
         emit OwnerRemoval(owner);
     }
 
@@ -191,13 +308,18 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
         ownerExists(owner)
         ownerDoesNotExist(newOwner)
     {
-        for (uint i=0; i<owners.length; i++)
-            if (owners[i] == owner) {
+        for (uint i = 0; i < owners.length; i++) 
+        {
+            if (owners[i] == owner) 
+            {
                 owners[i] = newOwner;
                 break;
             }
+        }
+
         isOwner[owner] = false;
         isOwner[newOwner] = true;
+
         emit OwnerRemoval(owner);
         emit OwnerAddition(newOwner);
     }
@@ -294,7 +416,9 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
                 emit ExecutionFailure(transactionId);
                 txn.executed = false;
                 if (!_confirmed)
+                {
                     spentToday -= txn.value;
+                }
             }
         }
     }
@@ -310,9 +434,13 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
        public virtual override view
         returns (uint count)
     {
-        for (uint i=0; i<owners.length; i++)
+        for (uint i = 0; i < owners.length; i++) 
+        {
             if (confirmations[transactionId][owners[i]])
+            {
                 count += 1;
+            }
+        }
     }
 
 
@@ -324,10 +452,13 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
        public virtual override view
         returns (uint count)
     {
-        for (uint i=0; i<transactionCount; i++)
-            if (   pending && !transactions[i].executed
-                || executed && transactions[i].executed)
+        for (uint i = 0; i < transactionCount; i++)
+        {
+            if (pending && !transactions[i].executed || executed && transactions[i].executed)
+            {
                 count += 1;
+            }
+        }
     }
 
 
@@ -349,16 +480,23 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
         returns (address[] memory _confirmations)
     {
         address[] memory confirmationsTemp = new address[](owners.length);
-        uint count = 0;
+
         uint i;
-        for (i=0; i<owners.length; i++)
-            if (confirmations[transactionId][owners[i]]) {
+        uint count = 0;
+        for (i = 0; i < owners.length; i++)
+        {
+            if (confirmations[transactionId][owners[i]]) 
+            {
                 confirmationsTemp[count] = owners[i];
                 count += 1;
             }
+        }
+
         _confirmations = new address[](count);
-        for (i=0; i<count; i++)
+        for (i = 0; i < count; i++)
+        {
             _confirmations[i] = confirmationsTemp[i];
+        }
     }
 
 
@@ -467,12 +605,17 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
         internal
         returns (bool)
     {
-        if (block.timestamp > lastDay + 24 hours) {
+        if (block.timestamp > lastDay + 24 hours) 
+        {
             lastDay = block.timestamp;
             spentToday = 0;
         }
+
         if (spentToday + amount > dailyLimit || spentToday + amount < spentToday)
+        {
             return false;
+        }
+
         return true;
     }
 
@@ -494,6 +637,7 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
             data: data,
             executed: false
         });
+
         transactionCount += 1;
         emit Submission(transactionId);
     }

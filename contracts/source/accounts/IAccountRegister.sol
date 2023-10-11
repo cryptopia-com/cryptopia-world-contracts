@@ -1,41 +1,12 @@
 // SPDX-License-Identifier: ISC
 pragma solidity ^0.8.12 < 0.9.0;
 
-import "./AccountEnums.sol";
+import "./types/AccountEnums.sol";
 
 /// @title Cryptopia Account Register
 /// @notice Creates and registers accounts
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface IAccountRegister {
-
-    /**
-     * Events
-     */
-    /// @dev Emited when an account is created
-    /// @param sender The addres that created the account (tx.origin)
-    /// @param account The address of the newly created account (smart-contract)
-    /// @param username The unique username of the newly created account (smart-contract)
-    /// @param sex {Undefined, Male, Female}
-    event CreateAccount(address indexed sender, address indexed account, bytes32 indexed username, AccountEnums.Sex sex);
-
-    /// @dev Emited when a friend request is added
-    /// @param sender The addres that added the friend request
-    /// @param receiver The address that `sender` requests to be friends with
-    /// @param relationship The type of friendship
-    event AddFriendRequest(address indexed sender, address indexed receiver, AccountEnums.Relationship indexed relationship);
-
-    /// @dev Emited when a friend request is removed
-    /// @param sender The addres that added the friend request
-    /// @param receiver The address that `sender` requested to be friends with
-    /// @param relationship The type of friendship
-    event RemoveFriendRequest(address indexed sender, address indexed receiver, AccountEnums.Relationship indexed relationship);
-
-    /// @dev Emited when a friend request is accepted
-    /// @param sender The addres that added the friend request
-    /// @param receiver The address that `sender` requested to be friends with
-    /// @param relationship The type of friendship
-    event AcceptFriendRequest(address indexed sender, address indexed receiver, AccountEnums.Relationship indexed relationship);
-    
 
     /// @dev Allows verified creation of a Cryptopia account. Use of create2 allows identical addresses across networks
     /// @param owners List of initial owners
@@ -44,7 +15,7 @@ interface IAccountRegister {
     /// @param username Unique username
     /// @param sex {Undefined, Male, Female}
     /// @return account Returns wallet address
-    function create(address[] memory owners, uint required, uint dailyLimit, bytes32 username, AccountEnums.Sex sex) 
+    function create(address[] memory owners, uint required, uint dailyLimit, bytes32 username, Sex sex) 
         external 
         returns (address payable account);
 
@@ -65,7 +36,7 @@ interface IAccountRegister {
         external view 
         returns (
             bytes32 username,
-            AccountEnums.Sex sex
+            Sex sex
         );
 
 
@@ -77,7 +48,7 @@ interface IAccountRegister {
         external view 
         returns (
             bytes32[] memory username,
-            AccountEnums.Sex[] memory sex
+            Sex[] memory sex
         );
 
     
@@ -100,7 +71,7 @@ interface IAccountRegister {
         returns (
             address friend_account, 
             bytes32 friend_username,
-            AccountEnums.Relationship friend_relationship
+            Relationship friend_relationship
         );
 
 
@@ -116,7 +87,7 @@ interface IAccountRegister {
         returns (
             address[] memory friend_accounts, 
             bytes32[] memory friend_usernames,
-            AccountEnums.Relationship[] memory friend_relationships
+            Relationship[] memory friend_relationships
         );
 
 
@@ -134,7 +105,7 @@ interface IAccountRegister {
     /// @param other The other (right) account to test
     /// @param relationship The type of relationship to test
     /// @return bool True if `account` and `other` have 'relationship'
-    function hasRelationsip(address account, address other, AccountEnums.Relationship relationship) 
+    function hasRelationsip(address account, address other, Relationship relationship) 
         external view
         returns (bool);
 
@@ -151,14 +122,14 @@ interface IAccountRegister {
     /// @dev Request friendship with `friend_account` for `msg.sender`
     /// @param friend_account The account to add the friend request for
     /// @param friend_relationship The type of relationship that is requested
-    function addFriendRequest(address friend_account, AccountEnums.Relationship friend_relationship) 
+    function addFriendRequest(address friend_account, Relationship friend_relationship) 
         external;
 
 
     /// @dev Request friendship with `friend_accounts` for `msg.sender`
     /// @param friend_accounts The accounts to add the friend requests for
     /// @param friend_relationships The type of relationships that are requested
-    function addFriendRequests(address[] memory friend_accounts, AccountEnums.Relationship[] memory friend_relationships) 
+    function addFriendRequests(address[] memory friend_accounts, Relationship[] memory friend_relationships) 
         external;
 
 

@@ -3,7 +3,7 @@ pragma solidity ^0.8.12 < 0.9.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import "../../../source/assets/AssetEnums.sol";
+import "../../../source/game/assets/types/AssetEnums.sol";
 
 /// @title Cryptopia Maps
 /// @dev Contains world data and player positions
@@ -133,7 +133,7 @@ contract MockCryptopiaMap is Initializable {
     /// @param account Player to retrieve data for
     /// @param resource Type of resource to test for
     /// @return uint the amount of `resource` that can be minted
-    function getPlayerResourceData(address account, AssetEnums.Resource resource) 
+    function getPlayerResourceData(address account, ResourceType resource) 
         public view 
         returns (uint)
     {
@@ -143,7 +143,7 @@ contract MockCryptopiaMap is Initializable {
         }
 
         // Fish
-        if (resource == AssetEnums.Resource.Fish)
+        if (resource == ResourceType.Fish)
         {
             uint32 tileIndex = playerData[account].location_tileIndex;
             return _tileIsUnderwater(tileIndex) 
@@ -152,7 +152,7 @@ contract MockCryptopiaMap is Initializable {
         }
 
         // Meat
-        if (resource == AssetEnums.Resource.Meat)
+        if (resource == ResourceType.Meat)
         {
             uint32 tileIndex = playerData[account].location_tileIndex;
             if (_tileIsUnderwater(tileIndex))
@@ -164,19 +164,19 @@ contract MockCryptopiaMap is Initializable {
         }
 
         // Fruit || Wood
-        if (resource == AssetEnums.Resource.Fruit || resource == AssetEnums.Resource.Wood)
+        if (resource == ResourceType.Fruit || resource == ResourceType.Wood)
         {
             return tiles[playerData[account].location_tileIndex].vegitationLevel;
         }
         
         // Stone
-        if (resource == AssetEnums.Resource.Stone)
+        if (resource == ResourceType.Stone)
         {
             return tiles[playerData[account].location_tileIndex].rockLevel;
         }
 
         // Sand
-        if (resource == AssetEnums.Resource.Sand)
+        if (resource == ResourceType.Sand)
         {
             return 1;
         }

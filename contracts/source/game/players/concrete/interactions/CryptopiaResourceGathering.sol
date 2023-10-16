@@ -7,7 +7,7 @@ import "../../../../tokens/ERC20/retriever/TokenRetriever.sol";
 import "../../../../tokens/ERC721/tools/ITools.sol";
 import "../../../../tokens/ERC721/tools/errors/ToolErrors.sol";   
 import "../../../../tokens/ERC777/assets/IAssetToken.sol";
-import "../../../maps/CryptopiaMap/ICryptopiaMap.sol";
+import "../../../maps/IMaps.sol";
 import "../../../players/IPlayerRegister.sol";
 import "../../../inventories/IInventories.sol";
 import "../../../inventories/errors/InventoryErrors.sol";
@@ -95,8 +95,7 @@ contract CryptopiaResourceFaucet is ContextUpgradeable, TokenRetriever, IResourc
         public virtual override 
     {
         address player = _msgSender();
-        uint amount = ICryptopiaMap(mapContract)
-            .getPlayerResourceData(player, resource);
+        uint amount = _getResourceAmount(player, resource);
 
         // Check if resource is available at location
         if (amount == 0) 
@@ -162,6 +161,100 @@ contract CryptopiaResourceFaucet is ContextUpgradeable, TokenRetriever, IResourc
         // Award XP
         IPlayerRegister(playerRegisterContract)
             .award(player, xp, 0);
+    }
+
+
+    /// @dev Returns data about the players ability to interact with resources 
+    /// @param account Player to retrieve data for
+    /// @param resource Type of resource to test for
+    /// @return uint the amount of `resource` that can be minted
+    function _getResourceAmount(address account, ResourceType resource) 
+        internal view 
+        returns (uint)
+    {
+        (
+            uint16 tileIndex, 
+            bool canInteract
+        ) = IMaps(mapContract).getPlayerData(account);
+
+        (,,, 
+            uint8 elevation, 
+            uint8 waterLevel, 
+            uint8 vegitationLevel, 
+            uint8 rockLevel, 
+            uint8 wildlifeLevel,,, 
+            bool hasLake
+        ) = IMaps(mapContract).getTile(tileIndex);
+
+        if (!canInteract)
+        {
+            return 0; // Traveling
+        }
+
+        // Fish
+        if (resource == ResourceType.Fish)
+        {
+            // On the sea
+            if (waterLevel > elevation)
+            {
+                return (waterLevel - elevation) * RESOURCE_PRECISION;
+            }
+
+            // On land (has lake)
+            else if (hasLake)
+            {
+                return RESOURCE_PRECISION;
+            }
+
+            // On land (no lake)
+            return 0;
+        }
+
+        // Meat
+        if (resource == ResourceType.Meat)
+        {
+            if (waterLevel > elevation)
+            {
+                return 0;
+            }
+
+            return wildlifeLevel * RESOURCE_PRECISION;
+        }
+
+        // Fruit || Wood
+        if (resource == ResourceType.Fruit || resource == ResourceType.Wood)
+        {
+            if (waterLevel > elevation)
+            {
+                return 0;
+            }
+
+            return vegitationLevel * RESOURCE_PRECISION;
+        }
+        
+        // Stone
+        if (resource == ResourceType.Stone)
+        {
+            if (waterLevel > elevation)
+            {
+                return 0;
+            }
+
+            return rockLevel * RESOURCE_PRECISION;
+        }
+
+        // Sand
+        if (resource == ResourceType.Sand)
+        {
+            if (waterLevel > elevation)
+            {
+                return 0;
+            }
+
+            return RESOURCE_PRECISION;
+        }
+
+        return 0;
     }
 
 

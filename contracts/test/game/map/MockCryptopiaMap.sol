@@ -112,21 +112,7 @@ contract MockCryptopiaMap is Initializable {
     }
 
 
-    /// @dev Returns data about the players ability to interact with wildlife 
-    /// @param account Player to retrieve data for
-    /// @param creature Type of wildlife to test for
-    /// @return canInteract True if `account` can interact with 'creature'
-    /// @return difficulty Based of level of wildlife and activity
-    function getPlayerWildlifeData(address account, bytes32 creature) 
-        public view 
-        returns (
-            bool canInteract,
-            uint difficulty 
-        )
-    {
-        canInteract = playerData[account].location_arrival <= block.timestamp && tileData[playerData[account].location_tileIndex].wildlife.creature == creature;
-        difficulty = tileData[playerData[account].location_tileIndex].wildlife.level;
-    }
+
 
 
     /// @dev Returns data about the players ability to interact with resources 

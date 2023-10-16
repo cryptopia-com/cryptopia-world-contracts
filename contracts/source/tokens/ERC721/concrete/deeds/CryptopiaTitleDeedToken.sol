@@ -78,9 +78,9 @@ contract CryptopiaTitleDeedToken is CryptopiaERC721, ITitleDeeds {
     }
 
 
-    /// @dev Increase the total supply
-    /// @param increment Number to increment total supply with
-    function increaseMaxTokenId(uint increment) 
+    /// @dev Increase the max supply
+    /// @param increment Number to increment max supply with
+    function increaseLimit(uint increment) 
         public virtual override 
         onlyRole(SYSTEM_ROLE)
     {

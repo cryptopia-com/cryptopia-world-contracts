@@ -13,29 +13,87 @@ import "../CryptopiaERC721.sol";
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaShipToken is CryptopiaERC721, IShips {
     
+    /// @dev Ship template
     struct Ship
     {
+        /// @dev if true faction and subfaction are disregarded (any player can equipt)
         bool generic;
+
+        /// @dev {Faction} (can only be equipted by this faction)
         Faction faction;
+
+        /// @dev {SubFaction} (pirate/bountyhunter)
         SubFaction subFaction;
+
+        /// @dev Ship rarity {Rarity}
         Rarity rarity;
-        uint24 modules;
-        uint24 arbitrary;
-        uint24 base_speed;
-        uint24 base_attack;
-        uint24 base_health;
-        uint24 base_defence;
+
+        /// @dev the amount of module slots
+        uint8 modules;
+
+        /// @dev Base speed (before modules)
+        uint16 base_speed;
+
+        /// @dev Base attack (before modules)
+        uint16 base_attack;
+
+        /// @dev Base health (before modules)
+        uint16 base_health;
+
+        /// @dev Base defence (before modules)
+        uint16 base_defence;
+
+        /// @dev Base storage (before modules)
         uint base_inventory;
     }
 
+    /// @dev Ship instance (equiptable by player)
     struct ShipInstance
     {
+        /// @dev Ship name (maps to template)
         bytes32 name;
+
+        /// @dev If true the ship cannot be transferred
         bool locked;
-        uint24 speed;
-        uint24 attack;
-        uint24 health;
-        uint24 defence;
+
+        /// @dev Speed (after modules)
+        uint16 speed;
+
+        /// @dev Attack (after modules)
+        uint16 attack;
+
+        /// @dev Health (after modules)
+        uint16 health;
+
+        /// @dev Defence (after modules)
+        uint16 defence;
+
+        /// @dev Storage (after modules)
+        uint inventory;
+    }
+
+    /// @dev Input argument
+    struct ShipStatValues
+    {
+        /// @dev The number of module slots available on the ship.
+        uint8 modules;
+
+        /// @dev An arbitrary value for additional customization or features.
+        uint16 arbitrary;
+
+        /// @dev The base speed of the ship before any modules are applied.
+        uint16 speed;
+
+        /// @dev The base attack power of the ship before any modules are applied.
+        uint16 attack;
+
+        /// @dev The base health of the ship before any modules are applied.
+        uint16 health;
+
+        /// @dev The base defence capability of the ship before any modules are applied.
+        uint16 defence;
+
+        /// @dev The base storage capacity of the ship before any modules are applied.
         uint inventory;
     }
 
@@ -46,11 +104,11 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     uint private _currentTokenId; 
 
     /// @dev name => Ship
-    mapping(bytes32 => Ship) public ships;
+    mapping(bytes32 => Ship) private ships;
     bytes32[] private shipsIndex;
 
     /// @dev tokenId => ShipInstance
-    mapping (uint => ShipInstance) public shipInstances;
+    mapping (uint => ShipInstance) private shipInstances;
 
 
     /**
@@ -103,7 +161,16 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
 
         // Add starter ships
-        uint[7] memory stats = [uint(1), 0, 25, 15, 100, 100, 12_000_000_000_000_000_000_000];
+        ShipStatValues memory stats = ShipStatValues({
+            modules: 1,
+            arbitrary: 0,
+            speed: 25,
+            attack: 15,
+            health: 100,
+            defence: 100,
+            inventory: 12_000_000_000_000_000_000_000
+        });
+
         _setShip("Whitewake", false, Faction.Eco, SubFaction.None, Rarity.Common, stats);
         _setShip("Polaris", false, Faction.Tech, SubFaction.None, Rarity.Common, stats);
         _setShip("Kingfisher", false, Faction.Industrial, SubFaction.None, Rarity.Common, stats);
@@ -143,11 +210,11 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             Faction[] memory faction,
             SubFaction[] memory subFaction,
             Rarity[] memory rarity,
-            uint24[] memory modules, 
-            uint24[] memory base_speed,
-            uint24[] memory base_attack,
-            uint24[] memory base_health,
-            uint24[] memory base_defence,
+            uint8[] memory modules, 
+            uint16[] memory base_speed,
+            uint16[] memory base_attack,
+            uint16[] memory base_health,
+            uint16[] memory base_defence,
             uint[] memory base_inventory
         )
     {
@@ -156,11 +223,11 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         faction = new Faction[](take);
         subFaction = new SubFaction[](take);
         rarity = new Rarity[](take);
-        modules = new uint24[](take);
-        base_speed = new uint24[](take);
-        base_attack = new uint24[](take);
-        base_health = new uint24[](take);
-        base_defence = new uint24[](take);
+        modules = new uint8[](take);
+        base_speed = new uint16[](take);
+        base_attack = new uint16[](take);
+        base_health = new uint16[](take);
+        base_defence = new uint16[](take);
         base_inventory = new uint[](take);
 
         uint index = skip;
@@ -201,11 +268,11 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             Faction faction,
             SubFaction subFaction,
             Rarity rarity,
-            uint24 modules,
-            uint24 base_speed,
-            uint24 base_attack,
-            uint24 base_health,
-            uint24 base_defence,
+            uint8 modules,
+            uint16 base_speed,
+            uint16 base_attack,
+            uint16 base_health,
+            uint16 base_defence,
             uint base_inventory
         )
     {
@@ -235,8 +302,8 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         faction, SubFaction[] 
         memory subFaction, 
         Rarity[] memory rarity, 
-        uint[7][] memory stats) 
-        public virtual override 
+        ShipStatValues[] memory stats) 
+        public virtual  
         onlyRole(DEFAULT_ADMIN_ROLE) 
     {
         for (uint i = 0; i < name.length; i++)
@@ -275,11 +342,11 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             Faction faction,
             SubFaction subFaction,
             Rarity rarity,
-            uint24 modules,
-            uint24 speed,
-            uint24 attack,
-            uint24 health,
-            uint24 defence,
+            uint8 modules,
+            uint16 speed,
+            uint16 attack,
+            uint16 health,
+            uint16 defence,
             uint inventory
         )
     {
@@ -321,11 +388,11 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             Faction[] memory faction,
             SubFaction[] memory subFaction,
             Rarity[] memory rarity,
-            uint24[] memory modules,
-            uint24[] memory speed,
-            uint24[] memory attack,
-            uint24[] memory health,
-            uint24[] memory defence,
+            uint8[] memory modules,
+            uint16[] memory speed,
+            uint16[] memory attack,
+            uint16[] memory health,
+            uint16[] memory defence,
             uint[] memory inventory
         )
     {
@@ -335,11 +402,11 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         faction = new Faction[](tokenIds.length);
         subFaction = new SubFaction[](tokenIds.length);
         rarity = new Rarity[](tokenIds.length);
-        modules = new uint24[](tokenIds.length);
-        speed = new uint24[](tokenIds.length);
-        attack = new uint24[](tokenIds.length);
-        health = new uint24[](tokenIds.length);
-        defence = new uint24[](tokenIds.length);
+        modules = new uint8[](tokenIds.length);
+        speed = new uint16[](tokenIds.length);
+        attack = new uint16[](tokenIds.length);
+        health = new uint16[](tokenIds.length);
+        defence = new uint16[](tokenIds.length);
         inventory = new uint[](tokenIds.length);
 
         for (uint i = 0; i < tokenIds.length; i++)
@@ -383,6 +450,17 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         faction = ship.faction;
         subFaction = ship.subFaction;
         inventory = ship.base_inventory + shipInstances[tokenId].inventory;
+    }
+
+
+    /// @dev Retrieve the speed of a ship instance (after modules)
+    /// @param tokenId The id of the ship to retreive the speed for
+    /// @return speed Ship speed (after modules)
+    function getShipSpeed(uint tokenId) 
+        public virtual override view  
+        returns (uint16 speed)
+    {
+        speed = ships[shipInstances[tokenId].name].base_speed + shipInstances[tokenId].speed;
     }
 
 
@@ -467,7 +545,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @param subFaction {SubFaction} (pirate/bountyhunter)
     /// @param rarity Ship rarity {Rarity}
     /// @param stats modules, arbitrary, base_speed, base_attack, base_health, base_defence, base_inventory
-    function _setShip(bytes32 name, bool generic, Faction faction, SubFaction subFaction, Rarity rarity, uint[7] memory stats) 
+    function _setShip(bytes32 name, bool generic, Faction faction, SubFaction subFaction, Rarity rarity, ShipStatValues memory stats) 
         internal 
     {
         // Add ship
@@ -482,13 +560,12 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         ship.faction = faction;
         ship.subFaction = subFaction;
         ship.rarity = rarity;
-        ship.modules = uint24(stats[0]);
-        ship.arbitrary = uint24(stats[1]);
-        ship.base_speed = uint24(stats[2]);
-        ship.base_attack = uint24(stats[3]);
-        ship.base_health = uint24(stats[4]);
-        ship.base_defence = uint24(stats[5]);
-        ship.base_inventory = stats[6];
+        ship.modules = stats.modules;
+        ship.base_speed = stats.speed;
+        ship.base_attack = stats.attack;
+        ship.base_health = stats.health;
+        ship.base_defence = stats.defence;
+        ship.base_inventory = stats.inventory;
     }
 
 

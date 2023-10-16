@@ -38,11 +38,11 @@ interface IShips {
             Faction[] memory faction,
             SubFaction[] memory subFaction,
             Rarity[] memory rarity,
-            uint24[] memory modules, 
-            uint24[] memory base_speed,
-            uint24[] memory base_attack,
-            uint24[] memory base_health,
-            uint24[] memory base_defence,
+            uint8[] memory modules, 
+            uint16[] memory base_speed,
+            uint16[] memory base_attack,
+            uint16[] memory base_health,
+            uint16[] memory base_defence,
             uint[] memory base_inventory
         );
 
@@ -66,30 +66,13 @@ interface IShips {
             Faction faction,
             SubFaction subFaction,
             Rarity rarity,
-            uint24 modules, 
-            uint24 base_speed,
-            uint24 base_attack,
-            uint24 base_health,
-            uint24 base_defence,
+            uint8 modules, 
+            uint16 base_speed,
+            uint16 base_attack,
+            uint16 base_health,
+            uint16 base_defence,
             uint base_inventory
         );
-
-
-    /// @dev Add or update ships
-    /// @param name Ship name (unique)
-    /// @param generic if true faction and subfaction are disregarded (any player can equipt)
-    /// @param faction {Faction} (can only be equipted by this faction)
-    /// @param subFaction {SubFaction} (pirate/bountyhunter)
-    /// @param rarity Ship rarity {Rarity}
-    /// @param stats modules, arbitrary, base_speed, base_attack, base_health, base_defence, base_inventory
-    function setShips(
-        bytes32[] memory name, 
-        bool[] memory generic, 
-        Faction[] memory faction, 
-        SubFaction[] memory subFaction, 
-        Rarity[] memory rarity, 
-        uint[7][] memory stats) 
-        external;
 
 
     /// @dev Retreive a ships by token id
@@ -115,11 +98,11 @@ interface IShips {
             Faction faction,
             SubFaction subFaction,
             Rarity rarity,
-            uint24 modules,
-            uint24 speed,
-            uint24 attack,
-            uint24 health,
-            uint24 defence,
+            uint8 modules,
+            uint16 speed,
+            uint16 attack,
+            uint16 health,
+            uint16 defence,
             uint inventory
         );
 
@@ -147,11 +130,11 @@ interface IShips {
             Faction[] memory faction,
             SubFaction[] memory subFaction,
             Rarity[] memory rarity,
-            uint24[] memory modules,
-            uint24[] memory speed,
-            uint24[] memory attack,
-            uint24[] memory health,
-            uint24[] memory defence,
+            uint8[] memory modules,
+            uint16[] memory speed,
+            uint16[] memory attack,
+            uint16[] memory health,
+            uint16[] memory defence,
             uint[] memory inventory
         );
 
@@ -172,6 +155,14 @@ interface IShips {
             SubFaction subFaction,
             uint inventory
         );
+
+    
+    /// @dev Retrieve the speed of a ship instance (after modules)
+    /// @param tokenId The id of the ship to retreive the speed for
+    /// @return speed Ship speed (after modules)
+    function getShipSpeed(uint tokenId) 
+        external view 
+        returns (uint16 speed);
 
     
     /// @dev Mints a starter ship to a player

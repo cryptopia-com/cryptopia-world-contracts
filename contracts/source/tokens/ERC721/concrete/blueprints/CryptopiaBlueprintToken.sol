@@ -18,7 +18,7 @@ contract CryptopiaBlueprintToken is CryptopiaERC721, IBlueprints {
     /**
      * Roles
      */
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 constant private MINTER_ROLE = keccak256("MINTER_ROLE");
 
 
     /** 

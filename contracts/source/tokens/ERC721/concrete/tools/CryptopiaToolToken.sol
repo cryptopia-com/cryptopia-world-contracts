@@ -39,8 +39,8 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable {
     /**
      * Storage
      */
-    uint24 immutable MAX_DAMAGE = 100;
-    uint24 immutable MAX_DURABILITY = 100;
+    uint24 constant private MAX_DAMAGE = 100;
+    uint24 constant private MAX_DURABILITY = 100;
 
     // Auto token id 
     uint private _currentTokenId; 
@@ -63,7 +63,7 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable {
     /**
      * Roles
      */
-    bytes32 public constant SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
+    bytes32 constant private SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
 
 
     /**

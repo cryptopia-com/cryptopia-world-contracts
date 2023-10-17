@@ -64,7 +64,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /**
      * Roles
      */
-    bytes32 public constant SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
+    bytes32 constant private SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
 
 
     /**

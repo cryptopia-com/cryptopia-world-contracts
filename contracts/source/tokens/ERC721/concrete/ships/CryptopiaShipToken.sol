@@ -114,8 +114,8 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /**
      * Roles
      */
-    bytes32 public constant SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 constant private SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
+    bytes32 constant private MINTER_ROLE = keccak256("MINTER_ROLE");
 
 
     /**

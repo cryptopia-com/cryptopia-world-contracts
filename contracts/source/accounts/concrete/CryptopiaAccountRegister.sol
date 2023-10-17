@@ -31,7 +31,7 @@ contract CryptopiaAccountRegister is IAccountRegister {
     /**
      * Storage
      */
-    uint immutable USERNAME_MIN_LENGTH = 3;
+    uint constant private USERNAME_MIN_LENGTH = 3;
 
     mapping(bytes32 => address) public usernameToAccount;
     mapping (address => AccountData) public accountDatas;

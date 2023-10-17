@@ -23,10 +23,10 @@ contract CryptopiaResourceFaucet is ContextUpgradeable, TokenRetriever, IResourc
     /** 
      * Storage
      */
-    uint24 constant XP_BASE = 50;
-    uint constant COOLDOWN_BASE = 60 seconds;
-    uint24 constant MULTIPLIER_PRECISION = 100;
-    uint constant RESOURCE_PRECISION = 1_000_000_000_000_000_000;
+    uint24 constant private XP_BASE = 50;
+    uint constant private COOLDOWN_BASE = 60 seconds;
+    uint24 constant private MULTIPLIER_PRECISION = 100;
+    uint constant private RESOURCE_PRECISION = 1_000_000_000_000_000_000;
 
     // Refs
     address public mapContract;

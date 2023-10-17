@@ -17,18 +17,26 @@ import {
 /**
  * Crafting tests
  * 
- * Test cases:
- * 
- * Basic crafting:
+ * Crafting default items:
  * - Player should not be able to craft with an invalid recipe
  * - Player should not be able to claim from an empty slot
- * - Player should not be able to claim from a slot in another inventory
  * - Player should not be able to craft or claim if not registered
+ * - Player should not be able to craft an item using an invalid inventory
+ * - Player should not be able to craft an item with insufficient recources
+ * - Player should be able to craft an item
+ * - Player should be able to claim a crafted item
+ * 
+ * Crafting learnable items:
+ * - Player should not be able to craft an item without learning the recipe
+ * - Should not allow non-system to learn a recipe
+ * - Should allow system to learn a recipe
+ * - Player should be able to craft an item after learning the recipe
+ * - Player should be able to claim a crafted item after learning the recipe
  */
 describe("Crafting Contract", function () {
 
     // Settings
-    const REVERT_MODE = false;
+    const REVERT_MODE = true;
 
     // Roles
     const SYSTEM_ROLE = "SYSTEM_ROLE".toKeccak256();
@@ -194,6 +202,9 @@ describe("Crafting Contract", function () {
         [deployer, system, minter, account1, other, treasury] = (
             await ethers.getSigners()).map(s => s.address);
 
+        // Signers
+        const systemSigner = await ethers.provider.getSigner(system);
+
         // Factories
         const CryptopiaAccountRegisterFactory = await ethers.getContractFactory("CryptopiaAccountRegister"); 
         const CryptopiaPlayerRegisterFactory = await ethers.getContractFactory("CryptopiaPlayerRegister"); 
@@ -308,7 +319,9 @@ describe("Crafting Contract", function () {
         await inventoriesInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
         await inventoriesInstance.grantRole(SYSTEM_ROLE, craftingAddress);
         await inventoriesInstance.grantRole(SYSTEM_ROLE, toolTokenAddress);
+        await assetRegisterInstance.grantRole(SYSTEM_ROLE, system);
         await shipTokenInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
+        await craftingInstance.grantRole(SYSTEM_ROLE, system);
         await craftingInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
         await toolTokenInstance.grantRole(SYSTEM_ROLE, craftingAddress);
 
@@ -327,11 +340,18 @@ describe("Crafting Contract", function () {
                 ).waitForDeployment();
 
             asset.contractAddress = await assetTokenProxy.getAddress();
-            asset.contractInstance = await ethers.getContractAt("CryptopiaAssetToken", asset.contractAddress);
+            asset.contractInstance = await ethers
+                .getContractAt("CryptopiaAssetToken", asset.contractAddress);
 
-            await asset.contractInstance.grantRole(MINTER_ROLE, minter);
-            await assetRegisterInstance.registerAsset(asset.contractAddress, true, asset.resource);
-            await inventoriesInstance.setFungibleAsset(asset.contractAddress, asset.weight);
+            await asset.contractInstance
+                .grantRole(MINTER_ROLE, minter);
+            
+            await assetRegisterInstance
+                .connect(systemSigner)
+                .registerAsset(asset.contractAddress, true, asset.resource);
+
+            await inventoriesInstance
+                .setFungibleAsset(asset.contractAddress, asset.weight);
         }
 
         // Setup Tools
@@ -379,9 +399,9 @@ describe("Crafting Contract", function () {
     });
 
     /**
-     * Test Crafting 
+     * Test Crafting default items
      */
-    describe("Crafting", function () {
+    describe("Default Recipes", function () {
 
         it("Player should not be able to craft with an invalid recipe", async () => {
         
@@ -403,7 +423,7 @@ describe("Crafting Contract", function () {
             // Assert
             if (REVERT_MODE) {
                 await expect(operation).to.be
-                    .revertedWithCustomError(craftingInstance, "CraftingInvalidRecipe")
+                    .revertedWithCustomError(craftingInstance, "CraftingRecipeInvalid")
                     .withArgs(toolTokenAddress, invalidRecipe);
             } else {
                 await expect(operation).to.emit(
@@ -430,33 +450,7 @@ describe("Crafting Contract", function () {
             if (REVERT_MODE) {
                 await expect(operation).to.be
                     .revertedWithCustomError(craftingInstance, "CraftingSlotIsEmpty")
-                    .withArgs(account1, emptySlot);
-            } else {
-                await expect(operation).to.emit(
-                    registeredAccountInstance, "ExecutionFailure");
-            }
-        });
-
-        it("Player should not be able to claim from a slot in another inventory", async () => {
-
-            // Setup
-            const slot = 1;
-            const otherInventory = 2; // Other inventory
-    
-            const callData = craftingInstance.interface
-                .encodeFunctionData("claim", [slot, otherInventory]);
-    
-            // Act
-            const signer = await ethers.provider.getSigner(account1);
-            const operation = registeredAccountInstance
-                .connect(signer)
-                .submitTransaction(await craftingInstance.getAddress(), 0, callData);
-    
-            // Assert
-            if (REVERT_MODE) {
-                await expect(operation).to.be
-                    .revertedWithCustomError(craftingInstance, "CraftingInvalidInventory")
-                    .withArgs(otherInventory);
+                    .withArgs(await registeredAccountInstance.getAddress(), emptySlot);
             } else {
                 await expect(operation).to.emit(
                     registeredAccountInstance, "ExecutionFailure");
@@ -492,18 +486,48 @@ describe("Crafting Contract", function () {
             // Assert
             if (REVERT_MODE) {
                 await expect(operationCraft).to.be
-                    .revertedWithCustomError(accountRegisterInstance, "AccountNotRegistered")
-                    .withArgs(other);
+                    .revertedWithCustomError(craftingInstance, "PlayerNotRegistered")
+                    .withArgs(await unregisteredAccountInstance.getAddress());
     
                 await expect(operationClaim).to.be
-                    .revertedWithCustomError(accountRegisterInstance, "AccountNotRegistered")
-                    .withArgs(other);
+                    .revertedWithCustomError(craftingInstance, "CraftingSlotIsEmpty")
+                    .withArgs(await unregisteredAccountInstance.getAddress(), slot);
             } else {
                 await expect(operationCraft).to
                     .emit(unregisteredAccountInstance, "ExecutionFailure");
     
                 await expect(operationClaim).to
                     .emit(unregisteredAccountInstance, "ExecutionFailure");
+            }
+        });
+
+        it("Player should not be able to craft an item using an invalid inventory", async () => {
+
+            // Setup
+            const slot = 1;
+            const invalidInventory = 0; // Wallet
+            const craftable = tools[0];
+            const recipeName = craftable.name.toBytes32();
+            const craftableTokenAddress = await toolTokenInstance.getAddress();
+            const craftingAddress = await craftingInstance.getAddress();
+
+            const callDataCraft = craftingInstance.interface
+                .encodeFunctionData("craft", [craftableTokenAddress, recipeName, slot, invalidInventory]);
+    
+            // Act
+            const signer = await ethers.provider.getSigner(account1);
+            const operationCraft = registeredAccountInstance
+                .connect(signer)
+                .submitTransaction(craftingAddress, 0, callDataCraft);
+    
+            // Assert
+            if (REVERT_MODE) {
+                await expect(operationCraft).to.be
+                    .revertedWithCustomError(craftingInstance, "InventoryInvalid")
+                    .withArgs(invalidInventory);
+            } else {
+                await expect(operationCraft).to.emit(
+                    registeredAccountInstance, "ExecutionFailure");
             }
         });
 
@@ -516,6 +540,9 @@ describe("Crafting Contract", function () {
             const recipeName = craftable.name.toBytes32();
             const craftableTokenAddress = await toolTokenInstance.getAddress();
             const craftingAddress = await craftingInstance.getAddress();
+            const registeredAccountAddress = await registeredAccountInstance.getAddress();
+            const assetAddress = findAsset(craftable.recipe.ingredients[0].asset).contractAddress;
+            const assetAmount = ethers.parseUnits(craftable.recipe.ingredients[0].amount[0], craftable.recipe.ingredients[0].amount[1]);
 
             const callDataCraft = craftingInstance.interface
                 .encodeFunctionData("craft", [craftableTokenAddress, recipeName, slot, inventory]);
@@ -530,11 +557,14 @@ describe("Crafting Contract", function () {
             if (REVERT_MODE) {
                 await expect(operationCraft).to.be
                     .revertedWithCustomError(inventoriesInstance, "InventoryInsufficientBalance")
-                    .withArgs(account1, findAsset("WOOD").contractAddress, ethers.parseUnits('2.0', 'ether'));
+                    .withArgs(registeredAccountAddress, inventory, assetAddress, assetAmount);
+            } else {
+                await expect(operationCraft).to
+                    .emit(unregisteredAccountInstance, "ExecutionFailure");
             }
         });
 
-        it("Player should be able to craft and claim an item", async () => {
+        it("Player should be able to craft an item", async () => {
 
             // Setup
             const slot = 1;
@@ -569,28 +599,220 @@ describe("Crafting Contract", function () {
                         amount);
             }
 
-            const callDataCraft = craftingInstance.interface
+            const calldata = craftingInstance.interface
                 .encodeFunctionData("craft", [craftableTokenAddress, recipeName, slot, inventory]);
-    
-            const callDataClaim = craftingInstance.interface
-                .encodeFunctionData("claim", [slot, inventory]);
     
             // Act
             const signer = await ethers.provider.getSigner(account1);
-            await registeredAccountInstance
+            const transaction = registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(craftingAddress, 0, callDataCraft);
+                .submitTransaction(craftingAddress, 0, calldata);
 
+            // Assert 
+            const timeStamp = await time.latest();
+            const caftingFinishTime = timeStamp + craftable.recipe.craftingTime;
+
+            expect(transaction).to
+                .emit(craftingInstance, "CraftingStart")
+                .withArgs(playerAddress, craftableTokenAddress, recipeName, slot, caftingFinishTime);
+        });
+
+        it("Player should be able to claim a crafted item", async () => {
+
+            // Setup
+            const slot = 1;
+            const inventory = 1; // Backpack
+            const expectedTokenId = 1;
+            const craftable = tools[0];
+            const recipeName = craftable.name.toBytes32();
+            const craftableTokenAddress = await toolTokenInstance.getAddress();
+            const craftingAddress = await craftingInstance.getAddress();
+            const playerAddress = await registeredAccountInstance.getAddress();
+
+            const calldata = craftingInstance.interface
+                .encodeFunctionData("claim", [slot, inventory]);
+    
+            // Act
             await time.increase(craftable.recipe.craftingTime);
     
-            const claimTransaction = await registeredAccountInstance
+            const signer = await ethers.provider.getSigner(account1);
+            const transaction = await registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(craftingAddress, 0, callDataClaim);
-            const claimReceipt = await claimTransaction.wait();
+                .submitTransaction(craftingAddress, 0, calldata);
 
             // Assert
-            const craftedTool = getParamFromEvent(craftingInstance, claimReceipt, "tokenId", "CraftingClaim");
-            expect(craftedTool).to.be.equal(1);
+            expect(transaction).to
+                .emit(craftingInstance, "CraftingClaim")
+                .withArgs(playerAddress, craftableTokenAddress, recipeName, slot, expectedTokenId);
+        });
+    });
+
+
+    /**
+     * Test Crafting learnable items
+     */
+    describe("Learnable Recipes", function () {
+
+        it ("Player should not be able to craft an item without learning the recipe", async () => {
+
+            // Setup
+            const slot = 1;
+            const inventory = 1; // Backpack
+            const craftable = tools[1];
+            const recipeName = craftable.name.toBytes32();
+            const craftableTokenAddress = await toolTokenInstance.getAddress();
+            const craftingAddress = await craftingInstance.getAddress();
+            const registeredAccountAddress = await registeredAccountInstance.getAddress();
+
+            const callData = craftingInstance.interface
+                .encodeFunctionData("craft", [craftableTokenAddress, recipeName, slot, inventory]);
+    
+            // Act
+            const signer = await ethers.provider.getSigner(account1);
+            const operation = registeredAccountInstance
+                .connect(signer)
+                .submitTransaction(craftingAddress, 0, callData);
+
+            // Assert (fail)
+            if (REVERT_MODE) {
+                await expect(operation).to.be
+                    .revertedWithCustomError(craftingInstance, "CraftingRecipeNotLearned")
+                    .withArgs(registeredAccountAddress, craftableTokenAddress, recipeName);
+            }else {
+                await expect(operation).to
+                    .emit(unregisteredAccountInstance, "ExecutionFailure");
+            }
+        });
+
+        it ("Should not allow non-system to learn a recipe", async () => {
+
+            // Setup 
+            const craftable = tools[1];
+            const recipeName = craftable.name.toBytes32();
+            const craftableTokenAddress = await toolTokenInstance.getAddress();
+            const craftingAddress = await craftingInstance.getAddress();
+            const registeredAccountAddress = await registeredAccountInstance.getAddress();
+
+            const signer = await ethers.provider.getSigner(account1);
+            const callData = craftingInstance.interface
+                .encodeFunctionData("learn", [registeredAccountAddress, craftableTokenAddress, recipeName]);
+
+            // Act
+            const operation = registeredAccountInstance
+                .connect(signer)
+                .submitTransaction(craftingAddress, 0, callData);
+
+            // Assert
+            if (REVERT_MODE) {
+                await expect(operation).to.be
+                    .revertedWith(`AccessControl: account ${registeredAccountAddress.toLowerCase()} is missing role ${SYSTEM_ROLE}`);
+            } else 
+            {
+                await expect(operation).to
+                    .emit(registeredAccountInstance, "ExecutionFailure");
+            }
+        }); 
+
+        it ("Should allow system to learn a recipe", async () => {
+
+            // Setup 
+            const craftable = tools[1];
+            const recipeName = craftable.name.toBytes32();
+            const craftableTokenAddress = await toolTokenInstance.getAddress();
+            const registeredAccountAddress = await registeredAccountInstance.getAddress();
+
+            // Act
+            const signer = await ethers.provider.getSigner(system);
+            const operation = craftingInstance
+                .connect(signer)
+                .learn(registeredAccountAddress, craftableTokenAddress, recipeName)
+
+            // Assert
+            await expect(operation).to
+                .emit(craftingInstance, "CraftingRecipeLearn")
+                .withArgs(registeredAccountAddress, craftableTokenAddress, recipeName);
+        }); 
+
+        it ("Player should be able to craft an item after learning the recipe", async () => {
+            
+            // Setup
+            const slot = 1;
+            const inventory = 1; // Backpack
+            const craftable = tools[1];
+            const recipeName = craftable.name.toBytes32();
+            const craftableTokenAddress = await toolTokenInstance.getAddress();
+            const inventoriesAddress = await inventoriesInstance.getAddress();
+            const craftingAddress = await craftingInstance.getAddress();
+            const playerAddress = await registeredAccountInstance.getAddress();
+            const minterSigner = await ethers.provider.getSigner(minter);
+            const systemSigner = await ethers.provider.getSigner(system);
+
+            // Ensure enough resources in inventory
+            for (let ingredient of craftable.recipe.ingredients)
+            {
+                const asset = findAsset(ingredient.asset);
+                const amount = ethers.parseUnits(ingredient.amount[0], ingredient.amount[1]);
+
+                // Mint asset
+                await asset.contractInstance
+                    .connect(minterSigner)
+                    .mintTo(inventoriesAddress, amount);
+
+                // Assign to player
+                await inventoriesInstance
+                    .connect(systemSigner)
+                    .assignFungibleToken(
+                        playerAddress,
+                        inventory,
+                        asset.contractAddress,
+                        amount);
+            }
+
+            const callData = craftingInstance.interface
+                .encodeFunctionData("craft", [craftableTokenAddress, recipeName, slot, inventory]);
+    
+            // Act
+            const signer = await ethers.provider.getSigner(account1);
+            const transaction = await registeredAccountInstance
+                .connect(signer)
+                .submitTransaction(craftingAddress, 0, callData);
+
+            // Assert 
+            const timeStamp = await time.latest();
+            const caftingFinishTime = timeStamp + craftable.recipe.craftingTime;
+
+            expect(transaction).to
+                .emit(craftingInstance, "CraftingStart")
+                .withArgs(playerAddress, craftableTokenAddress, recipeName, slot, caftingFinishTime);
+        });
+
+        it("Player should be able to claim a crafted item after learning the recipe", async () => {
+
+            // Setup
+            const slot = 1;
+            const inventory = 1; // Backpack
+            const expectedTokenId = 2;
+            const craftable = tools[1];
+            const recipeName = craftable.name.toBytes32();
+            const craftableTokenAddress = await toolTokenInstance.getAddress();
+            const craftingAddress = await craftingInstance.getAddress();
+            const playerAddress = await registeredAccountInstance.getAddress();
+
+            const calldata = craftingInstance.interface
+                .encodeFunctionData("claim", [slot, inventory]);
+    
+            // Act
+            await time.increase(craftable.recipe.craftingTime);
+    
+            const signer = await ethers.provider.getSigner(account1);
+            const transaction = await registeredAccountInstance
+                .connect(signer)
+                .submitTransaction(craftingAddress, 0, calldata);
+
+            // Assert
+            expect(transaction).to
+                .emit(craftingInstance, "CraftingClaim")
+                .withArgs(playerAddress, craftableTokenAddress, recipeName, slot, expectedTokenId);
         });
     });
 });

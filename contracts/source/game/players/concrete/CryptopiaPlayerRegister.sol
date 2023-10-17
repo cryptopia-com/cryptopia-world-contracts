@@ -42,32 +42,32 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     /**
      * Roles
      */
-    bytes32 public constant SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
+    bytes32 constant private SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
 
 
     /**
      * Storage
      */
-    uint8 public constant LEVEL_BASE = 1;
-    uint8 public constant LEVEL_MAX = 100;
+    uint8 constant private LEVEL_BASE = 1;
+    uint8 constant private LEVEL_MAX = 100;
 
-    int8 public constant KARMA_MIN = -100;
-    int8 public constant KARMA_MAX = 100;
+    int8 constant private KARMA_MIN = -100;
+    int8 constant private KARMA_MAX = 100;
 
-    uint public constant XP_BASE = 1000;
-    uint public constant XP_FACTOR = 5;
-    uint public constant XP_EXPONENT = 2;
+    uint constant private XP_BASE = 1000;
+    uint constant private XP_FACTOR = 5;
+    uint constant private XP_EXPONENT = 2;
 
-    uint24 public constant STATS_LUCK_BASE = 1;
-    uint24 public constant STATS_CHARISMA_BASE = 1;
-    uint24 public constant STATS_INTELLIGENCE_BASE = 1;
-    uint24 public constant STATS_STRENGTH_BASE = 1;
-    uint24 public constant STATS_SPEED_BASE = 10; // Min movement for slopes and embarking/disembarking
+    uint24 constant private STATS_LUCK_BASE = 1;
+    uint24 constant private STATS_CHARISMA_BASE = 1;
+    uint24 constant private STATS_INTELLIGENCE_BASE = 1;
+    uint24 constant private STATS_STRENGTH_BASE = 1;
+    uint24 constant private STATS_SPEED_BASE = 10; // Min movement for slopes and embarking/disembarking
 
-    uint public constant INVENTORY_MAX_WEIGHT_BASE = 8_000_000_000_000_000_000_000; // 8 slots 80kg
-    uint public constant INVENTORY_STRENGTH_MULTIPLIER = 200_000_000_000_000_000_000; // 2kg per strength level
+    uint constant private INVENTORY_MAX_WEIGHT_BASE = 8_000_000_000_000_000_000_000; // 8 slots 80kg
+    uint constant private INVENTORY_STRENGTH_MULTIPLIER = 200_000_000_000_000_000_000; // 2kg per strength level
 
-    uint public constant CRAFTING_SLOTS_BASE = 2;
+    uint constant private CRAFTING_SLOTS_BASE = 2;
 
     // Refs
     address public accountRegisterContract;

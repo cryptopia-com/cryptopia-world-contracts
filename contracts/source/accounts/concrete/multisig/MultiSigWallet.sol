@@ -21,7 +21,7 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
     /** 
      * Storage
      */
-    uint constant public MAX_OWNER_COUNT = 5;
+    uint constant private MAX_OWNER_COUNT = 5;
 
     mapping (uint => Transaction) public transactions;
     mapping (uint => mapping (address => bool)) public confirmations;
@@ -588,12 +588,12 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
             )
 
             // Only for debug
-            /* switch result
+             switch result
                 case 0 {
                     let size := returndatasize()
                     returndatacopy(output, 0, size)
                     revert(output, size)
-                } */
+                } 
         }
     }
 

@@ -13,7 +13,10 @@ import "../ICraftable.sol";
 import "../ICrafting.sol";
 
 /// @title Cryptopia Crafting 
-/// @dev Allows the player to craft Non-fungible assets (ERC721) based on recepies
+/// @dev Crafting is the process of creating Non-fungible assets (ERC721) based on recipes. 
+/// @notice The CryptopiaCrafting contract allows players to craft these assets by providing 
+/// the necessary ingredients and crafting time. The contract also keeps track of the 
+/// recipes and their learnability.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting {
 
@@ -54,7 +57,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     /**
      * Roles
      */
-    bytes32 public constant SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
+    bytes32 constant private SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
 
 
     /**

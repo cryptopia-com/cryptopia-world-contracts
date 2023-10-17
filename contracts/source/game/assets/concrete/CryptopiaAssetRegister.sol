@@ -16,14 +16,14 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
     /**
      * Roles
      */
-    bytes32 public constant SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
+    bytes32 constant private SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
 
 
     /**
      * Storage
-     */
+     */ 
     /// @dev Limitation to prevent experimental
-    uint32 immutable MAX_ACCOUNTS_ASSET_INFOS_CALL = 3;
+    uint32 constant private MAX_ACCOUNTS_ASSET_INFOS_CALL = 3;
 
     /// @dev Assets
     mapping(bytes32 => address) public assets;

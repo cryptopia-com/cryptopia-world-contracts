@@ -156,7 +156,6 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
     address public assetRegisterContract;
     address public titleDeedContract;
     address public shipContract;
-    address public tokenContract;
 
     /// @dev Maps
     mapping(bytes32 => Map) public maps;
@@ -223,10 +222,12 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
     error PathInvalid();
 
     /// @dev Emits if the player has not entered the map
-    error PlayerNotEnteredMap();
+    /// @param account Player that has not entered the map
+    error PlayerNotEnteredMap(address account);
 
     /// @dev Emits if a player attempts to enter a map while already on a map
-    error PlayerAlreadyEnteredMap();
+    /// @param account Player that is already on a map
+    error PlayerAlreadyEnteredMap(address account);
 
 
     /** 
@@ -237,13 +238,11 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
     /// @param _assetRegisterContract Contract responsible for assets
     /// @param _titleDeedContract Contract responsible for land ownership
     /// @param _shipContract Contract for ships
-    /// @param _tokenContract CRT token
     function initialize(
         address _playerRegisterContract, 
         address _assetRegisterContract,
         address _titleDeedContract, 
-        address _shipContract,
-        address _tokenContract) 
+        address _shipContract) 
         public initializer 
     {
         __AccessControl_init();
@@ -256,7 +255,6 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
         assetRegisterContract = _assetRegisterContract;
         titleDeedContract = _titleDeedContract;
         shipContract = _shipContract;
-        tokenContract = _tokenContract;
     }
 
 
@@ -738,7 +736,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
         // Check if player has already entered
         if (_playerHasEntered(msg.sender))
         {
-            revert PlayerAlreadyEnteredMap();
+            revert PlayerAlreadyEnteredMap(msg.sender);
         }
         
         // Check if player is registered
@@ -771,7 +769,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
         // Enforce player in map
         if (!_playerHasEntered(msg.sender))
         {
-            revert PlayerNotEnteredMap();
+            revert PlayerNotEnteredMap(msg.sender);
         }
 
         // Enforce player not traveling

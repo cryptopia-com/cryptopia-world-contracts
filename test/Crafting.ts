@@ -1,8 +1,10 @@
+import "../scripts/helpers/converters.ts";
 import { expect } from "chai";
 import { ethers, upgrades} from "hardhat";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { getParamFromEvent} from '../scripts/helpers/events';
-import "../scripts/helpers/converters.ts";
+import { REVERT_MODE } from "./settings/config";
+import { SYSTEM_ROLE, MINTER_ROLE } from "./settings/roles";   
 
 import { 
     CryptopiaAccount,
@@ -35,13 +37,6 @@ import {
  */
 describe("Crafting Contract", function () {
 
-    // Settings
-    const REVERT_MODE = true;
-
-    // Roles
-    const SYSTEM_ROLE = "SYSTEM_ROLE".toKeccak256();
-    const MINTER_ROLE = "MINTER_ROLE".toKeccak256();
-
     // Accounts
     let deployer: string;
     let system: string;
@@ -50,16 +45,16 @@ describe("Crafting Contract", function () {
     let other: string;
     let treasury: string;
 
-    // Contracts
-    let registeredAccountInstance: CryptopiaAccount;
-    let unregisteredAccountInstance: CryptopiaAccount;
-    
+    // Instances
     let accountRegisterInstance: CryptopiaAccountRegister;
     let playerRegisterInstance: CryptopiaPlayerRegister;
     let inventoriesInstance: CryptopiaInventories;
     let shipTokenInstance: CryptopiaShipToken;
     let toolTokenInstance: CryptopiaToolToken;
     let craftingInstance: CryptopiaCrafting;
+
+    let registeredAccountInstance: CryptopiaAccount;
+    let unregisteredAccountInstance: CryptopiaAccount;
 
     // Mock Data
     const assets: any[] = [
@@ -206,20 +201,20 @@ describe("Crafting Contract", function () {
         const systemSigner = await ethers.provider.getSigner(system);
 
         // Factories
-        const CryptopiaAccountRegisterFactory = await ethers.getContractFactory("CryptopiaAccountRegister"); 
-        const CryptopiaPlayerRegisterFactory = await ethers.getContractFactory("CryptopiaPlayerRegister"); 
-        const CryptopiaInventoriesFactory = await ethers.getContractFactory("CryptopiaInventories");
-        const AssetTokenFactory = await ethers.getContractFactory("CryptopiaAssetToken");
-        const AssetRegisterFactory = await ethers.getContractFactory("CryptopiaAssetRegister");
-        const CryptopiaShipTokenFactory = await ethers.getContractFactory("CryptopiaShipToken");
-        const CryptopiaToolTokenFactory = await ethers.getContractFactory("CryptopiaToolToken");
-        const CryptopiaCraftingFactory = await ethers.getContractFactory("CryptopiaCrafting");
         const WhitelistFactory = await ethers.getContractFactory("Whitelist");
-
+        const AccountRegisterFactory = await ethers.getContractFactory("CryptopiaAccountRegister");
+        const PlayerRegisterFactory = await ethers.getContractFactory("CryptopiaPlayerRegister");
+        const AssetRegisterFactory = await ethers.getContractFactory("CryptopiaAssetRegister");
+        const AssetTokenFactory = await ethers.getContractFactory("CryptopiaAssetToken");
+        const ShipTokenFactory = await ethers.getContractFactory("CryptopiaShipToken");
+        const ToolTokenFactory = await ethers.getContractFactory("CryptopiaToolToken");
+        const InventoriesFactory = await ethers.getContractFactory("CryptopiaInventories");
+        const CraftingFactory = await ethers.getContractFactory("CryptopiaCrafting");
+        
         // Deploy Inventories
         const inventoriesProxy = await (
             await upgrades.deployProxy(
-                CryptopiaInventoriesFactory, 
+                InventoriesFactory, 
                 [
                     treasury
                 ])
@@ -243,7 +238,7 @@ describe("Crafting Contract", function () {
 
         // Deploy Account register
         const accountRegisterProxy = await (
-            await upgrades.deployProxy(CryptopiaAccountRegisterFactory)
+            await upgrades.deployProxy(AccountRegisterFactory)
         ).waitForDeployment();
 
         const accountRegisterAddress = await accountRegisterProxy.getAddress();
@@ -261,7 +256,7 @@ describe("Crafting Contract", function () {
         // Deploy Ships
         const shipTokenProxy = await (
             await upgrades.deployProxy(
-                CryptopiaShipTokenFactory, 
+                ShipTokenFactory, 
                 [
                     whitelistAddress,
                     "", 
@@ -275,7 +270,7 @@ describe("Crafting Contract", function () {
         // Deploy Crafting
         const craftingProxy = await (
             await upgrades.deployProxy(
-                CryptopiaCraftingFactory, 
+                CraftingFactory, 
                 [
                     inventoriesAddress
                 ])
@@ -286,7 +281,7 @@ describe("Crafting Contract", function () {
 
         // Deploy Player Register
         const playerRegisterProxy = await (await upgrades.deployProxy(
-            CryptopiaPlayerRegisterFactory, 
+            PlayerRegisterFactory, 
             [
                 accountRegisterAddress, 
                 inventoriesAddress, 
@@ -302,7 +297,7 @@ describe("Crafting Contract", function () {
 
         // Deploy Tools
         const toolTokenProxy = await (await upgrades.deployProxy(
-            CryptopiaToolTokenFactory, 
+            ToolTokenFactory, 
             [
                 whitelistAddress, 
                 "", 
@@ -315,15 +310,15 @@ describe("Crafting Contract", function () {
         toolTokenInstance = await ethers.getContractAt("CryptopiaToolToken", toolTokenAddress);
 
         // Grant roles
+        await assetRegisterInstance.grantRole(SYSTEM_ROLE, system);
+        await shipTokenInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
+        await toolTokenInstance.grantRole(SYSTEM_ROLE, craftingAddress);
+        await craftingInstance.grantRole(SYSTEM_ROLE, system);
+        await craftingInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
         await inventoriesInstance.grantRole(SYSTEM_ROLE, system);
         await inventoriesInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
         await inventoriesInstance.grantRole(SYSTEM_ROLE, craftingAddress);
         await inventoriesInstance.grantRole(SYSTEM_ROLE, toolTokenAddress);
-        await assetRegisterInstance.grantRole(SYSTEM_ROLE, system);
-        await shipTokenInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
-        await craftingInstance.grantRole(SYSTEM_ROLE, system);
-        await craftingInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
-        await toolTokenInstance.grantRole(SYSTEM_ROLE, craftingAddress);
 
         // Deploy assets
         for (let asset of assets)
@@ -421,11 +416,13 @@ describe("Crafting Contract", function () {
                 .submitTransaction(await craftingInstance.getAddress(), 0, callData);
 
             // Assert
-            if (REVERT_MODE) {
+            if (REVERT_MODE) 
+            {
                 await expect(operation).to.be
                     .revertedWithCustomError(craftingInstance, "CraftingRecipeInvalid")
                     .withArgs(toolTokenAddress, invalidRecipe);
-            } else {
+            } else 
+            {
                 await expect(operation).to.emit(
                     registeredAccountInstance, "ExecutionFailure");
             }
@@ -447,11 +444,13 @@ describe("Crafting Contract", function () {
                 .submitTransaction(await craftingInstance.getAddress(), 0, callData);
     
             // Assert
-            if (REVERT_MODE) {
+            if (REVERT_MODE) 
+            {
                 await expect(operation).to.be
                     .revertedWithCustomError(craftingInstance, "CraftingSlotIsEmpty")
                     .withArgs(await registeredAccountInstance.getAddress(), emptySlot);
-            } else {
+            } else 
+            {
                 await expect(operation).to.emit(
                     registeredAccountInstance, "ExecutionFailure");
             }
@@ -484,7 +483,8 @@ describe("Crafting Contract", function () {
                 .submitTransaction(craftingAddress, 0, callDataClaim);
     
             // Assert
-            if (REVERT_MODE) {
+            if (REVERT_MODE) 
+            {
                 await expect(operationCraft).to.be
                     .revertedWithCustomError(craftingInstance, "PlayerNotRegistered")
                     .withArgs(await unregisteredAccountInstance.getAddress());
@@ -492,7 +492,8 @@ describe("Crafting Contract", function () {
                 await expect(operationClaim).to.be
                     .revertedWithCustomError(craftingInstance, "CraftingSlotIsEmpty")
                     .withArgs(await unregisteredAccountInstance.getAddress(), slot);
-            } else {
+            } else 
+            {
                 await expect(operationCraft).to
                     .emit(unregisteredAccountInstance, "ExecutionFailure");
     
@@ -521,11 +522,13 @@ describe("Crafting Contract", function () {
                 .submitTransaction(craftingAddress, 0, callDataCraft);
     
             // Assert
-            if (REVERT_MODE) {
+            if (REVERT_MODE) 
+            {
                 await expect(operationCraft).to.be
                     .revertedWithCustomError(craftingInstance, "InventoryInvalid")
                     .withArgs(invalidInventory);
-            } else {
+            } else 
+            {
                 await expect(operationCraft).to.emit(
                     registeredAccountInstance, "ExecutionFailure");
             }
@@ -554,11 +557,13 @@ describe("Crafting Contract", function () {
                 .submitTransaction(craftingAddress, 0, callDataCraft);
 
             // Assert (fail)
-            if (REVERT_MODE) {
+            if (REVERT_MODE) 
+            {
                 await expect(operationCraft).to.be
                     .revertedWithCustomError(inventoriesInstance, "InventoryInsufficientBalance")
                     .withArgs(registeredAccountAddress, inventory, assetAddress, assetAmount);
-            } else {
+            } else 
+            {
                 await expect(operationCraft).to
                     .emit(unregisteredAccountInstance, "ExecutionFailure");
             }
@@ -674,11 +679,13 @@ describe("Crafting Contract", function () {
                 .submitTransaction(craftingAddress, 0, callData);
 
             // Assert (fail)
-            if (REVERT_MODE) {
+            if (REVERT_MODE) 
+            {
                 await expect(operation).to.be
                     .revertedWithCustomError(craftingInstance, "CraftingRecipeNotLearned")
                     .withArgs(registeredAccountAddress, craftableTokenAddress, recipeName);
-            }else {
+            } else 
+            {
                 await expect(operation).to
                     .emit(unregisteredAccountInstance, "ExecutionFailure");
             }
@@ -703,7 +710,8 @@ describe("Crafting Contract", function () {
                 .submitTransaction(craftingAddress, 0, callData);
 
             // Assert
-            if (REVERT_MODE) {
+            if (REVERT_MODE) 
+            {
                 await expect(operation).to.be
                     .revertedWith(`AccessControl: account ${registeredAccountAddress.toLowerCase()} is missing role ${SYSTEM_ROLE}`);
             } else 

@@ -116,14 +116,6 @@ describe("Maps Contract", function () {
         ]
     };
     
-
-    /**
-     * Find asset by symbol
-     */
-    const findAsset = (symbol: string) => {
-        return assets.find(asset => asset.symbol === symbol);
-    };
-
     /**
      * Deploy Crafting Contracts
      */
@@ -709,27 +701,36 @@ describe("Maps Contract", function () {
                 .emit(mapInstance, "PlayerMove")
                 .withArgs(path[0], path[path.length  - 1], route, await registeredAccountInstance.getAddress(), expectedArrivalTime);
         });  
-
-        function computeRoute(path: number[]): string {
-            if (path.length === 0 || path.length > 256) {
-              throw new Error("PathInvalid");
-            }
-          
-            let route = BigInt(0);
-            let tileCount = 0;
-            let bitOffset = 16;
-          
-            for (let i = 0; i < path.length - 1; i += 2) {
-                route |= BigInt(path[i]) << BigInt(bitOffset);
-                bitOffset += 16;
-                tileCount++;
-            }
-          
-            route |= BigInt(tileCount);
-
-            const hexStr = route.toString(16); // Convert to hexadecimal
-            const paddedHexStr = hexStr.padStart(64, '0'); // Pad to 32 bytes
-            return `0x${paddedHexStr}`;
-          }
     });
+
+    /**
+     * Helper functions
+     */
+    // Find asset by symbol
+    const findAsset = (symbol: string) => {
+        return assets.find(asset => asset.symbol === symbol);
+    };
+
+    // Compute the route from the path
+    const computeRoute = (path: number[]): string => {
+        if (path.length === 0 || path.length > 256) {
+          throw new Error("PathInvalid");
+        }
+      
+        let route = BigInt(0);
+        let tileCount = 0;
+        let bitOffset = 16;
+      
+        for (let i = 0; i < path.length - 1; i += 2) {
+            route |= BigInt(path[i]) << BigInt(bitOffset);
+            bitOffset += 16;
+            tileCount++;
+        }
+      
+        route |= BigInt(tileCount);
+
+        const hexStr = route.toString(16); // Convert to hexadecimal
+        const paddedHexStr = hexStr.padStart(64, '0'); // Pad to 32 bytes
+        return `0x${paddedHexStr}`;
+    }
 });

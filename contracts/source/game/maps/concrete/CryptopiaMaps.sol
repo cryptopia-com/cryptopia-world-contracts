@@ -144,12 +144,11 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
     uint16 constant private PATH_MAX_LENGTH = 31;
     uint16 constant private PLAYER_START_POSITION = 0;
     uint16 constant private PLAYER_START_MOVEMENT = 25;
-    uint64 constant private MOVEMENT_TURN_DURATION = 60; // 1 min
+    uint64 constant private MOVEMENT_TURN_DURATION = 60; // 1 min (TODO: scale with ship speed and player speed)
     uint16 constant private MOVEMENT_COST_LAND_FLAT = 11;
     uint16 constant private MOVEMENT_COST_LAND_SLOPE = 19;
-    uint16 constant private MOVEMENT_COST_WATER = 5;
+    uint16 constant private MOVEMENT_COST_WATER = 5; // Lower by ship speed
     uint16 constant private MOVEMENT_COST_WATER_EMBARK_DISEMBARK = 25; 
-    uint8 constant private WILDLIFE_MAX_LEVEL = 3;
 
     /// @dev Refs
     address public playerRegisterContract;

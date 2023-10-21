@@ -3,21 +3,19 @@ import { expect } from "chai";
 import { ethers, upgrades} from "hardhat";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { getParamFromEvent} from '../scripts/helpers/events';
-import { REVERT_MODE } from "./settings/config";
+import { REVERT_MODE, MOVEMENT_TURN_DURATION } from "./settings/config";
 import { DEFAULT_ADMIN_ROLE, SYSTEM_ROLE, MINTER_ROLE } from "./settings/roles";   
+import { ZERO_ADDRESS } from "./settings/constants";
 import { ResourceType, TerrainType, BiomeType } from '../scripts/types/enums';
 import { Asset, Map } from "../scripts/types/input";
 
 import { 
-    Whitelist,
     CryptopiaAccount,
     CryptopiaAccountRegister,
     CryptopiaMaps,
     CryptopiaShipToken,
     CryptopiaTitleDeedToken,
-    CryptopiaPlayerRegister,
-    CryptopiaAssetRegister,
-    CryptopiaAssetToken,
+    CryptopiaPlayerRegister
 } from "../typechain-types";
 
 /**
@@ -30,17 +28,19 @@ describe("Maps Contract", function () {
     let system: string;
     let minter: string;
     let account1: string;
+    let account2: string;
+    let account3: string;
+    let account4: string;
+    let account5: string;
     let other: string;
     let treasury: string;
 
     // Instances
-    let whitelistInstance: Whitelist;
     let accountRegisterInstance: CryptopiaAccountRegister;
     let mapInstance: CryptopiaMaps;
     let shipTokenInstance: CryptopiaShipToken;
     let titleDeedTokenInstance: CryptopiaTitleDeedToken;
     let playerRegisterInstance: CryptopiaPlayerRegister;
-    let assetRegisterInstance: CryptopiaAssetRegister;
 
     let registeredAccountInstance: CryptopiaAccount;
     let unregisteredAccountInstance: CryptopiaAccount;
@@ -65,7 +65,7 @@ describe("Maps Contract", function () {
         }
     ];
 
-    /**
+    /** 
      * (Hex) Grid:      Navigation:     Legend:
      *  W W W W W        W W W W W       W - Water (5)
      *   W I I R W        W 5 5 W W      I - Island
@@ -117,12 +117,12 @@ describe("Maps Contract", function () {
     };
     
     /**
-     * Deploy Crafting Contracts
+     * Deploy Map Contracts
      */
     before(async () => {
 
         // Accounts
-        [deployer, system, minter, account1, other, treasury] = (
+        [deployer, system, minter, account1, account2, account3, account4, account5, other, treasury] = (
             await ethers.getSigners()).map(s => s.address);
 
         // Signers
@@ -684,8 +684,13 @@ describe("Maps Contract", function () {
         it ("Should allow a player to move in a map", async function () {
 
             // Setup
-            const path = [0, 1, 2, 7, 13];
+            const expectedTurns = 22;
+            const path = [
+                0, 1, 2, 7, 13, 14, 13, 7, 2, 1,
+                0, 1, 2, 7, 13, 14, 13, 7, 2, 1,
+                0, 1, 2, 7, 13, 14, 13, 7, 2, 1]; 
             const route = computeRoute(path);
+
             const calldata = mapInstance.interface
                 .encodeFunctionData("playerMove", [path]);
 
@@ -696,7 +701,7 @@ describe("Maps Contract", function () {
                 .submitTransaction(await mapInstance.getAddress(), 0, calldata);
 
             // Assert
-            const expectedArrivalTime = await time.latest();
+            const expectedArrivalTime = await time.latest() + (expectedTurns * MOVEMENT_TURN_DURATION);
             await expect(receipt).to
                 .emit(mapInstance, "PlayerMove")
                 .withArgs(path[0], path[path.length  - 1], route, await registeredAccountInstance.getAddress(), expectedArrivalTime);
@@ -704,13 +709,221 @@ describe("Maps Contract", function () {
     });
 
     /**
+     * Test the player chain integrity
+     */
+    describe("Chain Integrity", function () {
+
+        // Accounts
+        let accountInstance1: CryptopiaAccount;
+        let accountInstance2: CryptopiaAccount;
+        let accountInstance3: CryptopiaAccount;
+        let accountInstance4: CryptopiaAccount;
+        let accountInstance5: CryptopiaAccount;
+
+        /**
+         * Create players
+         */
+        before(async () => {
+
+            // Create account 1
+            const createAccount1Transaction = await playerRegisterInstance.create([account1], 1, 0, "Username_1".toBytes32(), 0, 0);
+            const createAccount1Receipt = await createAccount1Transaction.wait();
+            const createAccount1Address = getParamFromEvent(playerRegisterInstance, createAccount1Receipt, "account", "RegisterPlayer");
+            accountInstance1 = await ethers.getContractAt("CryptopiaAccount", createAccount1Address);
+
+            // Create account 2
+            const createAccount2Transaction = await playerRegisterInstance.create([account2], 1, 0, "Username_2".toBytes32(), 0, 0);
+            const createAccount2Receipt = await createAccount2Transaction.wait();
+            const createAccount2Address = getParamFromEvent(playerRegisterInstance, createAccount2Receipt, "account", "RegisterPlayer");
+            accountInstance2 = await ethers.getContractAt("CryptopiaAccount", createAccount2Address);
+
+            // Create account 3
+            const createAccount3Transaction = await playerRegisterInstance.create([account3], 1, 0, "Username_3".toBytes32(), 0, 0);
+            const createAccount3Receipt = await createAccount3Transaction.wait();
+            const createAccount3Address = getParamFromEvent(playerRegisterInstance, createAccount3Receipt, "account", "RegisterPlayer");
+            accountInstance3 = await ethers.getContractAt("CryptopiaAccount", createAccount3Address);
+
+            // Create account 4
+            const createAccount4Transaction = await playerRegisterInstance.create([account4], 1, 0, "Username_4".toBytes32(), 0, 0);
+            const createAccount4Receipt = await createAccount4Transaction.wait();
+            const createAccount4Address = getParamFromEvent(playerRegisterInstance, createAccount4Receipt, "account", "RegisterPlayer");
+            accountInstance4 = await ethers.getContractAt("CryptopiaAccount", createAccount4Address);
+
+            // Create account 5
+            const createAccount5Transaction = await playerRegisterInstance.create([account5], 1, 0, "Username_5".toBytes32(), 0, 0);
+            const createAccount5Receipt = await createAccount5Transaction.wait();
+            const createAccount5Address = getParamFromEvent(playerRegisterInstance, createAccount5Receipt, "account", "RegisterPlayer");
+            accountInstance5 = await ethers.getContractAt("CryptopiaAccount", createAccount5Address);
+        });
+
+        it ("Should not contain any players initially", async function () {
+        
+            // Setup
+            const tileIndex = 0;
+
+            // Act
+            const data = await mapInstance.getTileDataDynamic(tileIndex, 1);
+
+            // Assert
+            expect(data.player1[0]).to.equal(ZERO_ADDRESS);
+            expect(data.player2[0]).to.equal(ZERO_ADDRESS);
+            expect(data.player3[0]).to.equal(ZERO_ADDRESS);
+            expect(data.player4[0]).to.equal(ZERO_ADDRESS);
+            expect(data.player5[0]).to.equal(ZERO_ADDRESS);
+        });
+
+        it ("Should add the first player to the head of the chain", async function () {
+
+            // Setup
+            const tileIndex = 0;
+            const calldata = mapInstance.interface
+                .encodeFunctionData("playerEnter");
+
+            // Act
+            const signer = await ethers.provider.getSigner(account1);
+            await accountInstance1
+                .connect(signer)
+                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+
+            // Assert
+            const data = await mapInstance.getTileDataDynamic(tileIndex, 1);
+            expect(data.player1[0]).to.equal(await accountInstance1.getAddress());
+            expect(data.player2[0]).to.equal(ZERO_ADDRESS);
+            expect(data.player3[0]).to.equal(ZERO_ADDRESS);
+            expect(data.player4[0]).to.equal(ZERO_ADDRESS);
+            expect(data.player5[0]).to.equal(ZERO_ADDRESS);
+        });
+
+        it ("Should replace the first player with the second player as the head of the chain", async function () {
+
+            // Setup
+            const tileIndex = 0;
+            const calldata = mapInstance.interface
+                .encodeFunctionData("playerEnter");
+
+            // Act
+            const signer = await ethers.provider.getSigner(account2);
+            await accountInstance2
+                .connect(signer)
+                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+
+            // Assert
+            const data = await mapInstance.getTileDataDynamic(tileIndex, 1);
+            expect(data.player1[0]).to.equal(await accountInstance2.getAddress());
+            expect(data.player2[0]).to.equal(await accountInstance1.getAddress());
+            expect(data.player3[0]).to.equal(ZERO_ADDRESS);
+            expect(data.player4[0]).to.equal(ZERO_ADDRESS);
+            expect(data.player5[0]).to.equal(ZERO_ADDRESS);
+        });
+
+        it ("Should return five players in the chain in LIFO order", async function () {
+
+            // Setup
+            const tileIndex = 0;
+            const calldata = mapInstance.interface
+                .encodeFunctionData("playerEnter");
+
+            // Act
+            const signer3 = await ethers.provider.getSigner(account3);
+            await accountInstance3
+                .connect(signer3)
+                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+
+            const signer4 = await ethers.provider.getSigner(account4);
+            await accountInstance4
+                .connect(signer4)
+                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+
+            const signer5 = await ethers.provider.getSigner(account5);
+            await accountInstance5
+                .connect(signer5)
+                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+
+            // Assert
+            const data = await mapInstance.getTileDataDynamic(tileIndex, 1);
+            expect(data.player1[0]).to.equal(await accountInstance5.getAddress());
+            expect(data.player2[0]).to.equal(await accountInstance4.getAddress());
+            expect(data.player3[0]).to.equal(await accountInstance3.getAddress());
+            expect(data.player4[0]).to.equal(await accountInstance2.getAddress());
+            expect(data.player5[0]).to.equal(await accountInstance1.getAddress());
+        });
+
+        it ("Should remove a player from the chain head of the chain", async function () {
+
+            // Setup
+            const tileIndex = 0;
+            const path = [0, 1]; 
+
+            const calldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [path]);
+
+            // Act
+            const signer = await ethers.provider.getSigner(account5);
+            await accountInstance5
+                .connect(signer)
+                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+
+            // Assert
+            const data = await mapInstance.getTileDataDynamic(tileIndex, 1);
+            expect(data.player1[0]).to.equal(await accountInstance4.getAddress());
+            expect(data.player2[0]).to.equal(await accountInstance3.getAddress());
+            expect(data.player3[0]).to.equal(await accountInstance2.getAddress());
+            expect(data.player4[0]).to.equal(await accountInstance1.getAddress());
+            expect(data.player5[0]).to.equal(ZERO_ADDRESS);
+        });
+
+        it ("Should remove a player from the middle of the chain", async function () {
+
+            // Setup
+            const tileIndex = 0;
+            const path = [0, 1]; 
+
+            const calldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [path]);
+
+            // Act
+            const signer = await ethers.provider.getSigner(account3);
+            await accountInstance3
+                .connect(signer)
+                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+
+            // Assert
+            const data = await mapInstance.getTileDataDynamic(tileIndex, 1);
+            expect(data.player1[0]).to.equal(await accountInstance4.getAddress());
+            expect(data.player2[0]).to.equal(await accountInstance2.getAddress());
+            expect(data.player3[0]).to.equal(await accountInstance1.getAddress());
+            expect(data.player4[0]).to.equal(ZERO_ADDRESS);
+            expect(data.player5[0]).to.equal(ZERO_ADDRESS);
+        });
+
+        it ("Should remove a player from the end of the chain", async function () {
+
+            // Setup
+            const tileIndex = 0;
+            const path = [0, 1]; 
+
+            const calldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [path]);
+
+            // Act
+            const signer = await ethers.provider.getSigner(account1);
+            await accountInstance1
+                .connect(signer)
+                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+
+            // Assert
+            const data = await mapInstance.getTileDataDynamic(tileIndex, 1);
+            expect(data.player1[0]).to.equal(await accountInstance4.getAddress());
+            expect(data.player2[0]).to.equal(await accountInstance2.getAddress());
+            expect(data.player3[0]).to.equal(ZERO_ADDRESS);
+            expect(data.player4[0]).to.equal(ZERO_ADDRESS);
+            expect(data.player5[0]).to.equal(ZERO_ADDRESS);
+        });
+    });
+
+    /**
      * Helper functions
      */
-    // Find asset by symbol
-    const findAsset = (symbol: string) => {
-        return assets.find(asset => asset.symbol === symbol);
-    };
-
     // Compute the route from the path
     const computeRoute = (path: number[]): string => {
         if (path.length === 0 || path.length > 256) {

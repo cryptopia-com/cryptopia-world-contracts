@@ -37,6 +37,24 @@ interface IMaps {
             bool hasRoad,
             bool hasLake);
 
+
+    /// @dev True if the tile with `tileIndex` is adjacent to `adjecentTileIndex`
+    /// @param tileIndex The tile to test against
+    /// @param adjecentTileIndex The tile to test with
+    /// @return True if the tile with `tileIndex` is adjacent to `adjecentTileIndex`
+    function tileIsAdjacentTo(uint16 tileIndex, uint16 adjecentTileIndex) 
+        external view 
+        returns (bool);
+
+
+    /// @dev True if the tile with `tileIndex` is along the route `route`
+    /// @param tileIndex The tile to test against
+    /// @param route The route to test with
+    /// @return True if the tile with `tileIndex` is along the route `route`    
+    function tileIsAlongRoute(uint16 tileIndex, bytes32 route) 
+        external view 
+        returns (bool);
+
     
     /// @dev Retrieve data that's attached to player
     /// @param account The account to retreive player data for
@@ -47,6 +65,23 @@ interface IMaps {
         returns (
             uint16 tileIndex,
             bool canInteract);
+
+        
+    /// @dev Retrieve travel data for `account`
+    /// @param account The account to retreive travel data for
+    /// @return isTraveling Wether the player is traveling
+    /// @return isEmbarked Wether the player is embarked
+    /// @return tileIndex The tile that the player is at or traveling to
+    /// @return route The route that the player is traveling
+    /// @return arrival The datetime on wich the player arrives at `tileIndex`
+    function getPlayerTravelData(address account)
+        external view 
+        returns (
+            bool isTraveling,
+            bool isEmbarked,
+            uint16 tileIndex,
+            bytes32 route,
+            uint64 arrival);
 
 
     /// @dev Find out if a player with `account` has entred 

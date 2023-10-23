@@ -2,6 +2,7 @@ import "../scripts/helpers/converters";
 import { expect } from "chai";
 import { ethers, upgrades} from "hardhat";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
+import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { getParamFromEvent} from '../scripts/helpers/events';
 import { REVERT_MODE, MOVEMENT_TURN_DURATION } from "./settings/config";
 import { DEFAULT_ADMIN_ROLE, SYSTEM_ROLE, MINTER_ROLE } from "./settings/roles";   
@@ -689,7 +690,6 @@ describe("Maps Contract", function () {
                 0, 1, 2, 7, 13, 14, 13, 7, 2, 1,
                 0, 1, 2, 7, 13, 14, 13, 7, 2, 1,
                 0, 1, 2, 7, 13, 14, 13, 7, 2, 1]; 
-            const route = computeRoute(path);
 
             const calldata = mapInstance.interface
                 .encodeFunctionData("playerMove", [path]);
@@ -702,10 +702,71 @@ describe("Maps Contract", function () {
 
             // Assert
             const expectedArrivalTime = await time.latest() + (expectedTurns * MOVEMENT_TURN_DURATION);
+            await time.increaseTo(expectedArrivalTime);
+
             await expect(receipt).to
                 .emit(mapInstance, "PlayerMove")
-                .withArgs(path[0], path[path.length  - 1], route, await registeredAccountInstance.getAddress(), expectedArrivalTime);
+                .withArgs(path[0], path[path.length - 1], anyValue, await registeredAccountInstance.getAddress(), expectedArrivalTime);
         });  
+
+        it ("Should compute a valid route when traveling", async function () {
+
+            // Setup
+            const path = [
+                1,  // Origin
+                2,  // -
+                7,  // -
+                13, // Turn 3
+                14, // -
+                13, // -
+                7,  // Turn 6
+                2,  // -
+                1   // Turn 8 (Destination)
+            ];
+
+            const expectedRoute: UnpackedRoute = {
+                originTile: 1,
+                timePerTurn: MOVEMENT_TURN_DURATION,
+                segments: [
+                    {
+                        tile: 13,
+                        turn: 3
+                    },
+                    {
+                        tile: 7,
+                        turn: 6
+                    },
+                    {
+                        tile: 1,
+                        turn: 8
+                    }
+                ]
+            };
+
+            const calldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [path]);
+
+            // Act
+            const signer = await ethers.provider.getSigner(account1);
+            const transaction = await registeredAccountInstance
+                .connect(signer)
+                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+            const receipt = await transaction.wait();
+
+            const route = getParamFromEvent(mapInstance, receipt, "route", "PlayerMove");
+            const unpackedRoute = unpackRoute(route);
+
+            // Assert
+            expect(unpackedRoute.timePerTurn).to.equal(MOVEMENT_TURN_DURATION); 
+            expect(unpackedRoute.originTile).to.equal(path[0]);
+
+            expect(unpackedRoute.segments.length).to.equal(expectedRoute.segments.length);
+            for (let i = 0; i < unpackedRoute.segments.length; i++)
+            {
+                expect(unpackedRoute.segments[i].tile).to.equal(expectedRoute.segments[i].tile);
+                expect(unpackedRoute.segments[i].turn).to.equal(expectedRoute.segments[i].turn);
+            }
+        }); 
     });
 
     /**
@@ -921,29 +982,48 @@ describe("Maps Contract", function () {
         });
     });
 
+
     /**
      * Helper functions
      */
-    // Compute the route from the path
-    const computeRoute = (path: number[]): string => {
-        if (path.length === 0 || path.length > 256) {
-          throw new Error("PathInvalid");
-        }
+    interface RouteSegment {
+        tile: number;
+        turn: number;
+    }
+    
+    interface UnpackedRoute {
+        timePerTurn: number;
+        originTile: number;
+        segments: RouteSegment[];
+    }
       
-        let route = BigInt(0);
-        let tileCount = 0;
-        let bitOffset = 16;
-      
-        for (let i = 0; i < path.length - 1; i += 2) {
-            route |= BigInt(path[i]) << BigInt(bitOffset);
-            bitOffset += 16;
-            tileCount++;
-        }
-      
-        route |= BigInt(tileCount);
+    /**
+     * Unpacks a route from a bytes32
+     * 
+     * @param route The route to unpack
+     * @returns The unpacked route
+     */
+    const unpackRoute = (route: any): UnpackedRoute => {
+        const timePerTurn = Number(BigInt(route) & 0xFFn);
+        const originTile = Number((BigInt(route) >> 8n) & 0xFFFFn);
 
-        const hexStr = route.toString(16); // Convert to hexadecimal
-        const paddedHexStr = hexStr.padStart(64, '0'); // Pad to 32 bytes
-        return `0x${paddedHexStr}`;
+        let bitOffset = 24n;
+        const segments: RouteSegment[] = [];
+
+        while (bitOffset < 256n) {
+            const tile = Number((BigInt(route) >> bitOffset) & 0xFFFFn);
+            bitOffset += 16n;
+
+            const turn = Number((BigInt(route) >> bitOffset) & 0x1Fn);
+            bitOffset += 5n;
+
+            if (turn === 0) {
+                break;
+            }
+
+            segments.push({ tile, turn });
+        }
+
+        return { timePerTurn, originTile, segments };
     }
 });

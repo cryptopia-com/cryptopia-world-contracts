@@ -12,13 +12,13 @@ interface IAssetRegister {
     /// @return count Number of assets.
     function getAssetCount()
         external view 
-        returns (uint256 count);
+        returns (uint count);
 
 
     /// @dev Retreives the asset at `index`.
     /// @param index Asset index.
     /// @return contractAddress Address of the asset.
-    function getAssetAt(uint256 index)
+    function getAssetAt(uint index)
         external view 
         returns (address contractAddress);
 
@@ -27,7 +27,7 @@ interface IAssetRegister {
     /// @param cursor Starting index.
     /// @param length Amount of assets to return.
     /// @return contractAddresses Addresses of the assets.
-    function getAssets(uint256 cursor, uint256 length)
+    function getAssets(uint cursor, uint length)
         external view 
         returns (address[] memory contractAddresses);
 
@@ -39,13 +39,13 @@ interface IAssetRegister {
     /// @return name Address of the asset.
     /// @return symbol Address of the asset.
     /// @return balances Ballances of `accounts` the asset.
-    function getAssetInfoAt(uint256 index, address[] memory accounts)
+    function getAssetInfoAt(uint index, address[] memory accounts)
         external view 
         returns (
             address contractAddress, 
             string memory name, string 
             memory symbol, 
-            uint256[] memory balances);
+            uint[] memory balances);
 
 
     /// @dev Retreives asset and balance infos for `accounts` from the assets from `cursor` to `cursor` plus `length`. Has limitations to avoid experimental.
@@ -58,15 +58,15 @@ interface IAssetRegister {
     /// @return balances1 Asset balances of accounts[0].
     /// @return balances2 Asset balances of accounts[1].
     /// @return balances3 Asset balances of accounts[2].
-    function getAssetInfos(uint256 cursor, uint256 length, address[] memory accounts)
+    function getAssetInfos(uint cursor, uint length, address[] memory accounts)
         external view 
         returns (
             address[] memory contractAddresses, 
             bytes32[] memory names, 
             bytes32[] memory symbols, 
-            uint256[] memory balances1, 
-            uint256[] memory balances2, 
-            uint256[] memory balances3);
+            uint[] memory balances1, 
+            uint[] memory balances2, 
+            uint[] memory balances3);
 
         
     /// @dev Getter for resources

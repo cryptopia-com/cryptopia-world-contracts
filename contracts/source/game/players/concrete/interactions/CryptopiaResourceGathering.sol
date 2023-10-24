@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.12 < 0.9.0;
+pragma solidity ^0.8.20 < 0.9.0;
 
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 
-import "../../../../tokens/ERC20/retriever/TokenRetriever.sol";
+import "../../../../tokens/ERC20/concrete/CryptopiaERC20Retriever.sol";
+import "../../../../tokens/ERC20/assets/IAssetToken.sol";
 import "../../../../tokens/ERC721/tools/ITools.sol";
 import "../../../../tokens/ERC721/tools/errors/ToolErrors.sol";   
-import "../../../../tokens/ERC777/assets/IAssetToken.sol";
 import "../../../maps/IMaps.sol";
 import "../../../players/IPlayerRegister.sol";
 import "../../../inventories/IInventories.sol";
@@ -18,7 +18,7 @@ import "../../interactions/IResourceGathering.sol";
 
 /// @title Allows players to mint non-finite resources
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-contract CryptopiaResourceFaucet is ContextUpgradeable, TokenRetriever, IResourceGathering {
+contract CryptopiaResourceFaucet is ContextUpgradeable, CryptopiaERC20Retriever, IResourceGathering {
 
     /** 
      * Storage

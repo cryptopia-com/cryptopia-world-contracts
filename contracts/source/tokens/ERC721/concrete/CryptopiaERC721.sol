@@ -1,19 +1,25 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.12 < 0.9.0;
+pragma solidity ^0.8.20 < 0.9.0;
 
-import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
 
 import "../../../authentication/IAuthenticator.sol";
-import "../../ERC20/retriever/TokenRetriever.sol";
-import "../IERC721.sol";
+import "../../ERC20/concrete/CryptopiaERC20Retriever.sol";
 
 /// @title Cryptopia ERC721 
 /// @notice Non-fungible token that extends Openzeppelin ERC721
 /// @dev Implements the ERC721 standard
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-abstract contract CryptopiaERC721 is ERC721EnumerableUpgradeable, AccessControlUpgradeable, TokenRetriever, IERC721 {
+abstract contract CryptopiaERC721 is ERC721EnumerableUpgradeable, AccessControlUpgradeable, CryptopiaERC20Retriever {
+
+    /**
+     * Roles
+     */
+    bytes32 constant internal SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
+
 
     /**
      *  Storage
@@ -74,7 +80,7 @@ abstract contract CryptopiaERC721 is ERC721EnumerableUpgradeable, AccessControlU
     /// @dev Get contract URI
     /// @return location to contract info
     function getContractURI() 
-        public virtual override view 
+        public virtual view 
         returns (string memory) 
     {
         return _contractURI;
@@ -84,7 +90,7 @@ abstract contract CryptopiaERC721 is ERC721EnumerableUpgradeable, AccessControlU
     /// @dev Set contract URI
     /// @param uri Location to contract info
     function setContractURI(string memory uri) 
-        public virtual override 
+        public virtual  
         onlyRole(DEFAULT_ADMIN_ROLE) 
     {
         _contractURI = uri;
@@ -94,7 +100,7 @@ abstract contract CryptopiaERC721 is ERC721EnumerableUpgradeable, AccessControlU
     /// @dev Get base token URI 
     /// @return Base of location where token data is stored. To be postfixed with tokenId
     function getBaseTokenURI() 
-        public virtual override view 
+        public virtual view 
         returns (string memory) 
     {
         return _baseTokenURI;
@@ -104,7 +110,7 @@ abstract contract CryptopiaERC721 is ERC721EnumerableUpgradeable, AccessControlU
     /// @dev Set base token URI 
     /// @param uri Base of location where token data is stored. To be postfixed with tokenId
     function setBaseTokenURI(string memory uri) 
-        public virtual override  
+        public virtual  
         onlyRole(DEFAULT_ADMIN_ROLE)  
     {
         _baseTokenURI = uri;
@@ -115,7 +121,7 @@ abstract contract CryptopiaERC721 is ERC721EnumerableUpgradeable, AccessControlU
     /// @param tokenId Token ID
     /// @return uri where token data can be retrieved
     function getTokenURI(uint tokenId) 
-        public virtual override view 
+        public virtual view 
         returns (string memory) 
     {
         return string(abi.encodePacked(getBaseTokenURI(), tokenId));
@@ -133,15 +139,16 @@ abstract contract CryptopiaERC721 is ERC721EnumerableUpgradeable, AccessControlU
     }
 
 
-    /// @dev Returns whether `spender` is allowed to manage `tokenId`
+    /// @dev Returns whether `spender` is authorized to manage `tokenId`
+    /// @param owner Owner of the token
     /// @param spender Account to check
     /// @param tokenId Token id to check
     /// @return true if `spender` is allowed ot manage `_tokenId`
-    function isApprovedOrOwner(address spender, uint256 tokenId) 
-        public override view 
+    function isAuthorized(address owner, address spender, uint256 tokenId) 
+        public view 
         returns (bool)
     {
-        return _isApprovedOrOwner(spender, tokenId);
+        return _isAuthorized(owner, spender, tokenId);
     }
 
 
@@ -150,7 +157,7 @@ abstract contract CryptopiaERC721 is ERC721EnumerableUpgradeable, AccessControlU
     /// @param operator Operator to check
     /// @return bool true if `_operator` is approved for all
     function isApprovedForAll(address owner, address operator) 
-        public override(ERC721Upgradeable, IERC721Upgradeable) view 
+        public override(ERC721Upgradeable, IERC721) view 
         returns (bool) 
     {
         if (authenticator.authenticate(operator)) 

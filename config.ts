@@ -440,7 +440,7 @@ const config : AppConfig = {
                     ]
                 }
             },
-            ERC777: {
+            ERC20: {
                 CryptopiaAssetToken: {
                     assets: [
                         {
@@ -835,7 +835,7 @@ const config : AppConfig = {
                     ]
                 }
             },
-            ERC777: {
+            ERC20: {
                 CryptopiaAssetToken: {
                     assets: [
                         {

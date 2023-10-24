@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.12 < 0.9.0;
+pragma solidity ^0.8.20 < 0.9.0;
 
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 
 import "../../players/errors/PlayerErrors.sol";
 import "../../inventories/types/InventoryEnums.sol";
@@ -211,7 +211,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     /// @param level Recipe can be crafted and/or learned by players from this level
     /// @param learnable True indicates that the recipe has to be learned before it can be used
     /// @param craftingTime The time it takes to craft an item
-    /// @param ingredients_asset Resource contracts (ERC777) needed for crafting
+    /// @param ingredients_asset Resource contracts (ERC20) needed for crafting
     /// @param ingredients_amount Resource amounts needed for crafting
     function setRecipes(
         address[] memory asset,
@@ -297,7 +297,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     /// @return level Recipe can be crafted and/or learned by players from this level
     /// @return learnable True indicates that the recipe has to be learned before it can be used
     /// @return craftingTime The time it takes to craft an item
-    /// @return ingredients_asset Resource contracts (ERC777) needed for crafting
+    /// @return ingredients_asset Resource contracts (ERC20) needed for crafting
     /// @return ingredients_amount Resource amounts needed for crafting
     function getRecipeAt(address asset, uint index)
         public virtual override view 
@@ -327,7 +327,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     /// @dev Returns a single `asset` recipe at `index`
     /// @param asset The contract address of the asset to which the recipe applies
     /// @param index The index of the asset recipe
-    /// @return assets Resource contracts (ERC777) needed for crafting
+    /// @return assets Resource contracts (ERC20) needed for crafting
     /// @return amounts Resource amounts needed for crafting
     function getRecipeIngredientsAt(address asset, uint index)
         public virtual override view 
@@ -354,7 +354,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     /// @return level Recipe can be crafted and/or learned by players from this level
     /// @return learnable True indicates that the recipe has to be learned before it can be used
     /// @return craftingTime The time it takes to craft an item
-    /// @return ingredients_asset Resource contracts (ERC777) needed for crafting
+    /// @return ingredients_asset Resource contracts (ERC20) needed for crafting
     /// @return ingredients_amount Resource amounts needed for crafting
     function getRecipe(address asset, bytes32 name)
         public virtual override view 
@@ -384,7 +384,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     /// @dev Returns a single `asset` recipe by `name`
     /// @param asset The contract address of the asset to which the recipe applies
     /// @param name The name of the asset recipe
-    /// @return assets Resource contracts (ERC777) needed for crafting
+    /// @return assets Resource contracts (ERC20) needed for crafting
     /// @return amounts Resource amounts needed for crafting
     function getRecipeIngredients(address asset, bytes32 name)
         public virtual override view 
@@ -446,10 +446,10 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     /// @param asset The contract address of the asset to which the recipes apply
     /// @param skip Starting index
     /// @param take Amount of recipes
-    /// @return asset1 Resource contracts (ERC777) needed for crafting
-    /// @return asset2 Resource contracts (ERC777) needed for crafting
-    /// @return asset3 Resource contracts (ERC777) needed for crafting
-    /// @return asset4 Resource contracts (ERC777) needed for crafting
+    /// @return asset1 Resource contracts (ERC20) needed for crafting
+    /// @return asset2 Resource contracts (ERC20) needed for crafting
+    /// @return asset3 Resource contracts (ERC20) needed for crafting
+    /// @return asset4 Resource contracts (ERC20) needed for crafting
     /// @return amount1 Resource amounts needed for crafting
     /// @return amount2 Resource amounts needed for crafting
     /// @return amount3 Resource amounts needed for crafting

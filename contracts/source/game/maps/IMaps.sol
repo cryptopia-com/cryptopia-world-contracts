@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.12 < 0.9.0;
+pragma solidity ^0.8.20 < 0.9.0;
 
 import "./types/MapEnums.sol";
 import "../assets/types/AssetEnums.sol";

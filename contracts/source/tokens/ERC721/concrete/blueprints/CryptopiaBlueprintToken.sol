@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.12 < 0.9.0;
+pragma solidity ^0.8.20 < 0.9.0;
 
 import "../../blueprints/IBlueprints.sol";
 import "../CryptopiaERC721.sol";
@@ -14,11 +14,6 @@ contract CryptopiaBlueprintToken is CryptopiaERC721, IBlueprints {
      * Storage
      */
     mapping(uint => bytes32) public structures;
-
-    /**
-     * Roles
-     */
-    bytes32 constant private MINTER_ROLE = keccak256("MINTER_ROLE");
 
 
     /** 
@@ -56,7 +51,7 @@ contract CryptopiaBlueprintToken is CryptopiaERC721, IBlueprints {
     /// @param tokenId The blueprint token ID 
     function burn(uint tokenId) 
         public virtual override
-        onlyRole(MINTER_ROLE)  
+        onlyRole(SYSTEM_ROLE)  
     {
         _burn(tokenId);
     }

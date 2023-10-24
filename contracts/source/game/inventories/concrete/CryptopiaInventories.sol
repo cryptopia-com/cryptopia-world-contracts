@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.12 < 0.9.0;
+pragma solidity ^0.8.20 < 0.9.0;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/interfaces/IERC1820RegistryUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC777/IERC777RecipientUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
 
 import "../IInventories.sol";
 import "../types/InventoryEnums.sol";
@@ -19,7 +17,7 @@ import "../../../errors/ArgumentErrors.sol";
 /// @title Cryptopia Inventories
 /// @dev Contains player and ship assets
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInventories, IERC777RecipientUpgradeable, IERC721ReceiverUpgradeable {
+contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInventories, IERC721Receiver {
 
     struct Asset 
     {
@@ -70,9 +68,6 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /**
      * Storage
      */
-    address constant private ERC1820_ADDRESS = 0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24;
-    bytes32 constant private ERC777_RECIPIENT_INTERFACE = keccak256("ERC777TokensRecipient");
-
     // One slot 10kg
     uint constant public INVENTORY_SLOT_SIZE = 1_000_000_000_000_000_000_000; 
 
@@ -116,7 +111,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @dev Assign `asset` internally to `inventory`
     /// @param player The receiver of the asset
     /// @param inventory Assigned to inventory {Inventories} 
-    /// @param asset The address of the ERC20, ERC777 or ERC721 contract
+    /// @param asset The address of the ERC20 or ERC721 contract
     /// @param amount The amount of fungible tokens to send (zero indicates non-fungible)
     /// @param tokenId The token ID to send (zero indicates fungible)
     event InventoryAssign(address indexed player, Inventory inventory, address indexed asset, uint amount, uint tokenId);
@@ -124,7 +119,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @dev Deduct `asset` internally from `inventory` to treasury
     /// @param player The owener of the asset
     /// @param inventory Deducted from inventory {Inventories} 
-    /// @param asset The address of the ERC20, ERC777 or ERC721 contract
+    /// @param asset The address of the ERC20 or ERC721 contract
     /// @param amount The amount of fungible tokens to send (zero indicates non-fungible)
     /// @param tokenId The token ID to send (zero indicates fungible)
     event InventoryDeduct(address indexed player, Inventory inventory, address indexed asset, uint amount, uint tokenId);
@@ -134,7 +129,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @param player_to The receiver of the asset (can be the same as player_from)
     /// @param inventory_from Origin {Inventories}
     /// @param inventory_to Destination {Inventories} 
-    /// @param asset The address of the ERC20, ERC777 or ERC721 contract
+    /// @param asset The address of the ERC20 or ERC721 contract
     /// @param amount The amount of fungible tokens to send (zero indicates non-fungible)
     /// @param tokenId The token ID to send (zero indicates fungible)
     event InventoryTransfer(address indexed player_from, address indexed player_to, Inventory inventory_from, Inventory inventory_to, address indexed asset, uint amount, uint tokenId);
@@ -176,7 +171,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
      * Admin functions
      */
     /// @dev Construct
-    /// @param _treasury token (ERC777) receiver
+    /// @param _treasury token (ERC20) receiver
     function initialize(
         address _treasury) 
         public initializer 
@@ -185,10 +180,6 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
 
         // Refs
         treasury = _treasury;
-
-        // Register as ERC777 recipient
-        IERC1820RegistryUpgradeable(ERC1820_ADDRESS).setInterfaceImplementer(
-            address(this), ERC777_RECIPIENT_INTERFACE, address(this));
 
         // Grant admin role
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -598,7 +589,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @param player_to The receiving player (can be _msgSender())
     /// @param inventory_from Origin {Inventories}
     /// @param inventory_to Destination {Inventories} 
-    /// @param asset The address of the ERC20, ERC777 or ERC721 contract
+    /// @param asset The address of the ERC20 or ERC721 contract
     /// @param amount The amount of fungible tokens to send (zero indicates non-fungible)
     /// @param tokenIds The token ID to send (zero indicates fungible)
     function transfer(address[] memory player_to, Inventory[] memory inventory_from, Inventory[] memory inventory_to, address[] memory asset, uint[] memory amount, uint[][] memory tokenIds)
@@ -631,29 +622,6 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     }
 
 
-     /**
-     * @dev Called by an {IERC777} token contract whenever tokens are being
-     * moved or created into a registered account (`to`). The type of operation
-     * is conveyed by `from` being the zero address or not.
-     *
-     * This call occurs _after_ the token contract's state is updated, so
-     * {IERC777-balanceOf}, etc., can be used to query the post-operation state.
-     *
-     * This function may revert to prevent the operation from being executed.
-     */
-    function tokensReceived(
-        address operator,
-        address from,
-        address to,
-        uint256 amount,
-        bytes calldata userData,
-        bytes calldata operatorData
-    ) public virtual override 
-    {
-        // Nothing for now
-    }
-
-
     /**
      * @dev See {IERC721Receiver-onERC721Received}.
      *
@@ -675,7 +643,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @param player_to The receiver of the asset (can be the same as player_from)
     /// @param inventory_from Origin {Inventories}
     /// @param inventory_to Destination {Inventories} 
-    /// @param asset The address of the ERC20 or ERC777 contract
+    /// @param asset The address of the ERC20 or ERC20 contract
     /// @param amount The amount of fungible tokens to send 
     function _transferFungible(address player_from, address player_to, Inventory inventory_from, Inventory inventory_to, address asset, uint amount) 
         internal 
@@ -692,7 +660,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         if (inventory_from == Inventory.Wallet)
         {
             // Deposit externally
-            if (!IERC20Upgradeable(asset).transferFrom(player_from, address(this), amount)) 
+            if (!IERC20(asset).transferFrom(player_from, address(this), amount)) 
             {
                 revert InventoryDepositFailed(
                     player_from, inventory_to, asset, amount, 0);
@@ -733,7 +701,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         if (inventory_to == Inventory.Wallet)
         {
             // Withdraw externally
-            if (!IERC20Upgradeable(asset).transfer(player_to, amount)) 
+            if (!IERC20(asset).transfer(player_to, amount)) 
             {
                 revert InventoryWithdrawFailed(
                     player_to, inventory_from, asset, amount, 0);
@@ -778,7 +746,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @param player_to The receiver of the asset (can be the same as player_from)
     /// @param inventory_from Origin {Inventories}
     /// @param inventory_to Destination {Inventories} 
-    /// @param asset The address of the ERC20 or ERC777 contract
+    /// @param asset The address of the ERC20 or ERC20 contract
     /// @param tokenId The token to transfer
     function _transferNonFungible(address player_from, address player_to, Inventory inventory_from, Inventory inventory_to, address asset, uint tokenId) 
         internal 
@@ -793,7 +761,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         if (inventory_from == Inventory.Wallet)
         {
             // Deposit from wallet
-            IERC721Upgradeable(asset).transferFrom(
+            IERC721(asset).transferFrom(
                 player_from, address(this), tokenId);
         }
         else if (inventory_from == Inventory.Backpack)
@@ -857,7 +825,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         if (inventory_to == Inventory.Wallet)
         {
             // Withdraw externally
-            IERC721Upgradeable(asset)
+            IERC721(asset)
                 .transferFrom(address(this), player_to, tokenId);
         }
         else if (inventory_to == Inventory.Backpack) 
@@ -1046,7 +1014,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         }
 
         // Send to treasury
-        if (!IERC20Upgradeable(asset).transfer(treasury, amount)) 
+        if (!IERC20(asset).transfer(treasury, amount)) 
         {
             revert InventoryWithdrawFailed(
                 treasury, inventory, asset, amount, 0);

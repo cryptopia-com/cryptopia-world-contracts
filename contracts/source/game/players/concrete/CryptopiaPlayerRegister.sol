@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.12 < 0.9.0;
+pragma solidity ^0.8.20 < 0.9.0;
 
-import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 
 import "../../../accounts/IAccountRegister.sol";
 import "../../../accounts/types/AccountEnums.sol";
@@ -401,7 +401,7 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
         }
 
         // Owned?
-        if (IERC721Upgradeable(shipTokenContract).ownerOf(ship) != player)
+        if (IERC721(shipTokenContract).ownerOf(ship) != player)
         {
             revert ShipNotOwned(ship, player);
         }

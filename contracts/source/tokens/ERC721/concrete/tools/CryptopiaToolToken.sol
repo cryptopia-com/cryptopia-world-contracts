@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.12 < 0.9.0;
+pragma solidity ^0.8.20 < 0.9.0;
 
 import "../../../../game/types/GameEnums.sol";
 import "../../../../game/players/errors/PlayerErrors.sol";
@@ -58,12 +58,6 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable {
     // Refs
     address public playerRegisterContract;
     address public inventoriesContract;
-
-
-    /**
-     * Roles
-     */
-    bytes32 constant private SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
 
 
     /**

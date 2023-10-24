@@ -328,9 +328,7 @@ describe("Crafting Contract", function () {
                     AssetTokenFactory, 
                     [
                         asset.name, 
-                        asset.symbol, 
-                        [],
-                        whitelistAddress
+                        asset.symbol
                     ])
                 ).waitForDeployment();
 
@@ -713,7 +711,8 @@ describe("Crafting Contract", function () {
             if (REVERT_MODE) 
             {
                 await expect(operation).to.be
-                    .revertedWith(`AccessControl: account ${registeredAccountAddress.toLowerCase()} is missing role ${SYSTEM_ROLE}`);
+                    .revertedWithCustomError(craftingInstance, "AccessControlUnauthorizedAccount")
+                    .withArgs(registeredAccountAddress, SYSTEM_ROLE);
             } else 
             {
                 await expect(operation).to

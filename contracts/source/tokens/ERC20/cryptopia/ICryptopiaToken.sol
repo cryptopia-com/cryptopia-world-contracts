@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.12 < 0.9.0;
+pragma solidity ^0.8.20 < 0.9.0;
 
-/// @title Asset Token
-/// @notice Assets such as natural resources
-/// @dev Implements the ERC777 standard
+/// @title CRT Token
+/// @notice Main token used in Cryptopia
+/// @dev Implements the ERC20 standard
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-interface IAssetToken {
+interface ICryptopiaToken {
 
     /// @dev Mints 'amount' token to an address
     /// @param to Account to mint the tokens for

@@ -274,9 +274,7 @@ describe("Maps Contract", function () {
                     AssetTokenFactory, 
                     [
                         asset.name, 
-                        asset.symbol, 
-                        [],
-                        whitelistAddress
+                        asset.symbol
                     ])
                 ).waitForDeployment();
 
@@ -332,7 +330,8 @@ describe("Maps Contract", function () {
 
             // Assert
             await expect(operation).to.be
-                    .revertedWith(`AccessControl: account ${other.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`);
+                .revertedWithCustomError(mapInstance, "AccessControlUnauthorizedAccount")
+                .withArgs(other, DEFAULT_ADMIN_ROLE);
         });
 
         it ("Should not be able to finalize a map if there is no map under construction", async function () {
@@ -405,7 +404,8 @@ describe("Maps Contract", function () {
 
             // Assert
             await expect(operation).to.be
-                .revertedWith(`AccessControl: account ${other.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`);
+                .revertedWithCustomError(mapInstance, "AccessControlUnauthorizedAccount")
+                .withArgs(other, DEFAULT_ADMIN_ROLE);
         });
 
         it ("Should be able to finalize a map that is under construction and complete when admin", async function () {

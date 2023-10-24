@@ -4,6 +4,7 @@ import "@nomicfoundation/hardhat-toolbox";
 import '@openzeppelin/hardhat-upgrades';
 import "@typechain/hardhat"; 
 import "hardhat-erc1820";
+import "hardhat-gas-reporter"
 
 const config: HardhatUserConfig = {
   networks: {
@@ -32,7 +33,7 @@ const config: HardhatUserConfig = {
     }
   },
   solidity: {
-    version: "0.8.19",
+    version: "0.8.20",
     settings: {
       optimizer: {
         enabled: true,
@@ -42,6 +43,10 @@ const config: HardhatUserConfig = {
   },
   typechain: {
     target: 'ethers-v6'
+  },
+  gasReporter: {
+    enabled: false,
+    coinmarketcap: "931e13ca-da1b-4faa-8542-081a7cc94217"
   }
 };
 

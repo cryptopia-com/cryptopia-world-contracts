@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.12 < 0.9.0;
+pragma solidity ^0.8.20 < 0.9.0;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
@@ -20,7 +20,7 @@ contract Whitelist is OwnableUpgradeable, IWhitelist {
     function initialize(address[] memory accounts) 
         public initializer 
     {
-        __Ownable_init();
+        __Ownable_init(msg.sender);
         for (uint i = 0; i < accounts.length; i++) 
         {
             list[accounts[i]] = true;

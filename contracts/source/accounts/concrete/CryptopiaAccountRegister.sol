@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.12 <0.9.0;
+pragma solidity ^0.8.20 < 0.9.0;
 
-import "@openzeppelin/contracts-upgradeable/utils/Create2Upgradeable.sol";
+import "@openzeppelin/contracts/utils/Create2.sol";
 
 import "../types/AccountEnums.sol";
 import "../errors/AccountErrors.sol";
@@ -150,7 +150,7 @@ contract CryptopiaAccountRegister is IAccountRegister {
         onlyValidUsername(username)
         returns (address payable account)
     {
-        account = payable(Create2Upgradeable.deploy(
+        account = payable(Create2.deploy(
             0, username, type(CryptopiaAccount).creationCode));
 
         CryptopiaAccount(account).initialize(

@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.12 < 0.9.0;
+pragma solidity ^0.8.20 < 0.9.0;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC777/IERC777Upgradeable.sol";
 
 import "../types/AssetEnums.sol";
 import "../IAssetRegister.sol";
@@ -203,7 +204,7 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
         public virtual override 
         onlyRole(SYSTEM_ROLE) 
     {
-        string memory symbol = IERC777Upgradeable(asset).symbol();
+        string memory symbol = ERC20Upgradeable(asset).symbol();
         bytes32 key = keccak256(bytes(symbol));
 
         // Check if asset is not already registered
@@ -256,13 +257,13 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
         returns (address contractAddress, string memory name, string memory symbol, uint256[] memory balances)
     {
         contractAddress = assets[assetsIndex[index]];
-        name = IERC777Upgradeable(contractAddress).name();
-        symbol = IERC777Upgradeable(contractAddress).symbol();
+        name = ERC20Upgradeable(contractAddress).name();
+        symbol = ERC20Upgradeable(contractAddress).symbol();
 
         balances = new uint256[](accounts.length);
         for (uint256 i = 0; i < accounts.length; i++)
         {
-            balances[i] = IERC777Upgradeable(contractAddress).balanceOf(accounts[i]);
+            balances[i] = IERC20(contractAddress).balanceOf(accounts[i]);
         }
     }
 }

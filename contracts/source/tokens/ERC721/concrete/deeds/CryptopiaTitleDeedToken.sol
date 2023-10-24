@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.12 < 0.9.0;
+pragma solidity ^0.8.20 < 0.9.0;
 
 import "../../deeds/ITitleDeeds.sol";
 import "../CryptopiaERC721.sol";
@@ -14,12 +14,6 @@ contract CryptopiaTitleDeedToken is CryptopiaERC721, ITitleDeeds {
      *  Storage
      */
     uint public maxTokenId;
-
-
-    /**
-     * Roles
-     */
-    bytes32 constant private SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
 
 
     /**
@@ -52,7 +46,7 @@ contract CryptopiaTitleDeedToken is CryptopiaERC721, ITitleDeeds {
     /// @param tokenId The token identifier
     modifier nonExistingTitleDeed(uint tokenId) 
     {
-        if (_exists(tokenId)) 
+        if (_ownerOf(tokenId) != address(0)) 
         {
             revert TitleDeedAlreadyExists(tokenId);
         }
@@ -110,9 +104,7 @@ contract CryptopiaTitleDeedToken is CryptopiaERC721, ITitleDeeds {
         uint tokenId = skip + 1;
         for (uint i = 0; i < take; i++)
         {
-            owners[i] = _exists(tokenId) 
-                ? ownerOf(tokenId) : address(0);
-
+            owners[i] = ownerOf(tokenId);
             tokenId++;
         }
     }

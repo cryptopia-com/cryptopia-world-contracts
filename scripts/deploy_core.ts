@@ -234,7 +234,7 @@ async function main() {
     await playerRegisterInstance.grantRole(SYSTEM_ROLE, resourceFaucetAddress); 
 
     // Deploy assets
-    for (let asset of config.ERC777.CryptopiaAssetToken.assets)
+    for (let asset of config.ERC20.CryptopiaAssetToken.assets)
     {
         const assetTokenProxy = await (
             await upgrades.deployProxy(

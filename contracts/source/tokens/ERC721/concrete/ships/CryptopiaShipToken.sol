@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.12 < 0.9.0;
+pragma solidity ^0.8.20 < 0.9.0;
 
 import "../../../../game/types/GameEnums.sol";
 import "../../../../game/types/FactionEnums.sol";
@@ -109,13 +109,6 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
 
     /// @dev tokenId => ShipInstance
     mapping (uint => ShipInstance) private shipInstances;
-
-
-    /**
-     * Roles
-     */
-    bytes32 constant private SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
-    bytes32 constant private MINTER_ROLE = keccak256("MINTER_ROLE");
 
 
     /**
@@ -492,7 +485,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @param name Unique ship name
     function mintTo(address to, bytes32 name)  
         public virtual override 
-        onlyRole(MINTER_ROLE) 
+        onlyRole(SYSTEM_ROLE) 
         onlyExisting(name) 
     {
         uint tokenId = _getNextTokenId();
@@ -569,21 +562,14 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     }
 
 
-    /// @dev Hook that is called before any token transfer. This includes minting and burning. If {ERC721Consecutive} is
-    /// used, the hook may be called as part of a consecutive (batch) mint, as indicated by `batchSize` greater than 1.
-    ///
-    /// Calling conditions:
-    ///
-    /// - When `from` and `to` are both non-zero, ``from``'s tokens will be transferred to `to`.
-    /// - When `from` is zero, the tokens will be minted for `to`.
-    /// - When `to` is zero, ``from``'s tokens will be burned.
-    /// - `from` and `to` are never both zero.
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId,
-        uint256 batchSize) 
-        internal virtual override  
+    /// @dev See {ERC721-_update}
+    /// @param to address of the new owner of the ship
+    /// @param tokenId the token id of the ship to transfer
+    /// @param auth The address that is authorized to transfer the ship
+    /// @return address of the new owner of the ship
+    function _update(address to,uint tokenId,address auth) 
+        internal virtual override 
+        returns (address)
     {
         // Check if ship is locked
         if (shipInstances[tokenId].locked) 
@@ -591,6 +577,6 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             revert ShipLocked(tokenId);
         }
 
-        super._beforeTokenTransfer(from, to, tokenId, batchSize);
+        return super._update(to, tokenId, auth);
     }
 }

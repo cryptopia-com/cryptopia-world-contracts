@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.12 < 0.9.0;
+pragma solidity ^0.8.20 < 0.9.0;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC777/IERC777Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 
 import "../IMaps.sol";
 import "../types/MapEnums.sol";
@@ -595,7 +595,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
         uint16 index = skip;
         for (uint16 i = 0; i < take; i++)
         {
-            try IERC721Upgradeable(titleDeedContract).ownerOf(index + 1) 
+            try IERC721(titleDeedContract).ownerOf(index + 1) 
                 returns (address ownerOfResult)
             {
                 owner[i] = ownerOfResult;

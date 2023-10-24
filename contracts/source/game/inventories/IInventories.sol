@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.0 < 0.9.0;
+pragma solidity ^0.8.20 < 0.9.0;
 
 import "./types/InventoryEnums.sol";
 
@@ -241,7 +241,7 @@ interface IInventories {
     /// @param player_to The receiving player (can be msg.sender)
     /// @param inventory_from Origin {Inventories}
     /// @param inventory_to Destination {Inventories} 
-    /// @param asset The address of the ERC20, ERC777 or ERC721 contract
+    /// @param asset The address of the ERC20 or ERC721 contract
     /// @param amount The amount of fungible tokens to transfer (zero indicates non-fungible)
     /// @param tokenIds The token ID to transfer (zero indicates fungible)
     function transfer(address[] memory player_to, Inventory[] memory inventory_from, Inventory[] memory inventory_to, address[] memory asset, uint[] memory amount, uint[][] memory tokenIds)

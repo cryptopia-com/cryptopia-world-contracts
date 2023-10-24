@@ -1,10 +1,10 @@
+import "hardhat-gas-reporter";
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-toolbox";
 import '@openzeppelin/hardhat-upgrades';
 import "@typechain/hardhat"; 
-import "hardhat-erc1820";
-import "hardhat-gas-reporter"
+
 
 const config: HardhatUserConfig = {
   networks: {
@@ -46,7 +46,9 @@ const config: HardhatUserConfig = {
   },
   gasReporter: {
     enabled: false,
-    coinmarketcap: "931e13ca-da1b-4faa-8542-081a7cc94217"
+    coinmarketcap: "931e13ca-da1b-4faa-8542-081a7cc94217",
+    gasPrice: 21,
+    currency: 'USD'
   }
 };
 

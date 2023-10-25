@@ -47,11 +47,14 @@ interface IMaps {
         returns (bool);
 
 
-    /// @dev True if the tile with `tileIndex` is along the route `route`
-    /// @param tileIndex The tile to test against
-    /// @param route The route to test with
-    /// @return True if the tile with `tileIndex` is along the route `route`    
-    function tileIsAlongRoute(uint16 tileIndex, bytes32 route) 
+    /// @dev Checks if a tile with `tileIndex` is along the route `route` based on the traveler's progress
+    /// @param tileIndex The index of the tile to check
+    /// @param route The route data to check against
+    /// @param routeIndex The index of the tile in the route data (0 signals origin)
+    /// @param arrival The datetime on wich the traveler arrives at it's destination
+    /// @param position The position of the tile relative to the traveler's progress along the route {ANY, UPCOMING, CURRENT, PASSED}
+    /// @return True if the tile with `tileIndex` meets the conditions specified by `position`
+    function tileIsAlongRoute(uint16 tileIndex, bytes32 route, uint routeIndex, uint16 destination, uint64 arrival, RoutePosition position) 
         external view 
         returns (bool);
 

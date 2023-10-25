@@ -11,6 +11,7 @@ import "../types/MapEnums.sol";
 import "../../assets/types/AssetEnums.sol";
 import "../../players/IPlayerRegister.sol";
 import "../../players/errors/PlayerErrors.sol";
+import "../../../errors/ArgumentErrors.sol";
 import "../../../tokens/ERC721/deeds/ITitleDeeds.sol";
 import "../../../tokens/ERC721/ships/IShips.sol";
 
@@ -141,7 +142,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
      * Storage
      */
     uint16 constant private MAP_MAX_SIZE = 4800;
-    uint16 constant private PATH_MAX_LENGTH = 30;
+    uint16 constant private PATH_MAX_LENGTH = 43;
     uint16 constant private PLAYER_START_POSITION = 0;
     uint16 constant private PLAYER_START_MOVEMENT = 25;
     uint64 constant private MOVEMENT_TURN_DURATION = 60; // 1 min (TODO: scale with ship speed and player speed)
@@ -149,6 +150,14 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
     uint16 constant private MOVEMENT_COST_LAND_SLOPE = 19;
     uint16 constant private MOVEMENT_COST_WATER = 5; // Lower by ship speed
     uint16 constant private MOVEMENT_COST_WATER_EMBARK_DISEMBARK = 25; 
+
+    // Route packing
+    uint8 constant ROUTE_PACKING_TIME_PER_TURN_OFFSET = 0; 
+    uint8 constant ROUTE_PACKING_TOTAL_TURNS_OFFSET = 8;  
+    uint8 constant ROUTE_PACKING_TOTAL_TILES_OFFSET = 16;  
+    uint8 constant ROUTE_PACKING_TOTAL_PACKED_TILES_OFFSET = 24;  
+    uint8 constant ROUTE_PACKING_META_DATA_OFFSET = 32;  
+    uint8 constant ROUTE_PACKING_TILE_BIT_LENGTH = 16;  
 
     /// @dev Refs
     address public playerRegisterContract;
@@ -181,19 +190,19 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
     event CreateMap(bytes32 indexed name, uint16 index);
 
     /// @dev Emitted when a player entered a map
+    /// @param player Player that entered the map
     /// @param map Map that the player entered
     /// @param tile Tile that the player entered
-    /// @param player Player that entered the map
     /// @param arrival The datetime on wich the player arrives at `tile`
-    event PlayerEnterMap(bytes32 indexed map, uint16 indexed tile, address indexed player, uint64 arrival);
+    event PlayerEnterMap(address indexed player, bytes32 indexed map, uint16 indexed tile, uint64 arrival);
 
     /// @dev Emitted when a player entered a tile
+    /// @param player Player that entered the tile
     /// @param origin Tile that the player originated from
     /// @param destination Tile that the player entered
     /// @param route The route that the player traveled
-    /// @param player Player that entered the tile
     /// @param arrival The datetime on wich the player arrives at `destinationTile`
-    event PlayerMove(uint16 indexed origin, uint16 indexed destination, bytes32 route, address indexed player, uint arrival);
+    event PlayerMove(address indexed player, uint16 indexed origin, uint16 indexed destination, bytes32 route, uint arrival);
 
 
     /**
@@ -636,25 +645,58 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
     /// @param adjecentTileIndex The tile to test with
     /// @return True if the tile with `tileIndex` is adjacent to `adjecentTileIndex`
     function tileIsAdjacentTo(uint16 tileIndex, uint16 adjecentTileIndex) 
-        external view 
+        public view 
         returns (bool)
     {
-        return _tileIsNeighbor(tileIndex, adjecentTileIndex);
+        return _tileIsAdjecentTo(tileIndex, adjecentTileIndex);
     }
 
 
-    /// @dev True if the tile with `tileIndex` is along the route `route`
-    /// @param tileIndex The tile to test against
-    /// @param route The route to test with
-    /// @return True if the tile with `tileIndex` is along the route `route`    
-    function tileIsAlongRoute(uint16 tileIndex, bytes32 route) 
-        external view 
+    /// @dev Checks if a tile with `tileIndex` is along the route `route` based on the traveler's progress
+    /// @param tileIndex The index of the tile to check
+    /// @param route The route data to check against
+    /// @param routeIndex The index of the tile in the route data (0 signals origin)
+    /// @param arrival The datetime on wich the traveler arrives at it's destination
+    /// @param position The position of the tile relative to the traveler's progress along the route {ANY, UPCOMING, CURRENT, PASSED}
+    /// @return True if the tile with `tileIndex` meets the conditions specified by `position`
+    function tileIsAlongRoute(uint16 tileIndex, bytes32 route, uint routeIndex, uint16 destination, uint64 arrival, RoutePosition position) 
+        public view 
         returns (bool)
     {
-        // Check if tileIndex is part of route or adjecent to a tile in the route
+        // // Extract tile from route using externally computed index (prevents stack too deep error)
+        // uint16 closestTileIndex;
+        // if (0 == index)
+        // {
+        //     closestTileIndex = uint16((route >> ROUTE_PACKING_ORIGIN_TILE_OFFSET) & 0xFFFF);
+        // }
+        // else if (index <= ROUTE_PACKING_MAX_TILE_COUNT)
+        // {
+        //     closestTileIndex = uint16(route >> ((index - 1) * ROUTE_PACKING_TILE_TURN_PAIR_BIT_LENGTH));
+        // }
+        // else 
+        // {
+        //     revert ArgumentInvalid();
+        // }
 
-        // Read length from route
+        // // Check if tile is along route
+        // if (closestTileIndex != tileIndex && !_tileIsAdjecentTo(closestTileIndex, tileIndex))
+        // {
+        //     return false;
+        // }
+
+        // // Return true if we don't care about where the traveler is in the route
+        // if (position == RoutePosition.Any)
+        // {
+        //     return true;
+        // }
+
+        // Extract metadata
+        //uint timePerTurn = uint((route >> ROUTE_PACKING_TIME_PER_TURN_OFFSET) & 0xFF);
+
+
+        return false;
     }
+
 
 
     /// @dev Batch operation to set tiles
@@ -745,7 +787,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
     /// @param account The account to retreive player data for
     /// @return tileIndex The tile that the player is at
     /// @return canInteract Wether the player can interact with the tile
-    function getPlayerData(address  account)
+    function getPlayerData(address account)
         public virtual override view 
         returns (
             uint16 tileIndex,
@@ -816,7 +858,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
 
         // Emit
         emit PlayerEnterMap(
-            mapsIndex[0], PLAYER_START_POSITION, msg.sender, uint64(block.timestamp));
+            msg.sender, mapsIndex[0], PLAYER_START_POSITION, uint64(block.timestamp));
     }
 
 
@@ -827,12 +869,6 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
         public virtual  
     {
         address account = msg.sender;
-
-        // Enforce valid path
-        if (path.length == 0 || path.length > PATH_MAX_LENGTH)
-        {
-            revert PathInvalid();
-        }
 
         // Enforce player not traveling
         if (_playerIsTraveling(account))
@@ -845,10 +881,10 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
 
         // Emit
         emit PlayerMove(
+            account, 
             path[0], 
             path[path.length - 1], 
             playerData[account].location_route, 
-            account, 
             playerData[account].location_arrival);
     }
 
@@ -894,7 +930,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
     /// @param a Left hand tile index
     /// @param b Right hand tile index
     /// @return bool Wether a and b are neighbors
-    function _tileIsNeighbor(uint16 a, uint16 b) 
+    function _tileIsAdjecentTo(uint16 a, uint16 b) 
         internal view 
         returns (bool) 
     {
@@ -1073,11 +1109,11 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
     /// @return route The route data that can be used to travel `path`
     /// 
     /// Route data format:
-    ///  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    /// | Time per turn (8 bits) | Origin Tile (16 bits) | Tile 1 (16 bits) | Turn 1 (5 bits) | Tile 2 (16 bits) | Turn 2 (5 bits) | ... | Tile 11 (16 bits) | Turn 11 (5 bits) |
-    /// |------------------------|-----------------------|------------------|-----------------|------------------|-----------------|-----|-------------------|------------------|
-    /// | 0                      | 8                     | 24               | 40              | 45               | 61              | ... | 215               | 231              |
-    ///  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    ///  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    /// | Duration per turn (8 bits) | Total turns (8 bits) | Total tiles in path (8 bits) | Total tiles packed (8 bits) | Origin (16 bits) | Tile 4 (16 bits) | ... | Tile 14 (16 bits) |
+    /// |----------------------------|----------------------|------------------------------|-----------------------------|------------------|------------------|-----|-------------------|
+    /// | 0                          | 8                    | 16                           | 24                          | 32               | 48               | ... | 208               |
+    ///  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     function _traversePath(uint16[] memory path, address account) 
         internal  
         returns (
@@ -1086,7 +1122,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
             bytes32 route)
     {
         // Validate path length
-        if (path.length < 2)
+        if (path.length < 2 || path.length > PATH_MAX_LENGTH)
         {
             return (false, 0, bytes32(0));
         }
@@ -1097,10 +1133,11 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
             return (false, 0, bytes32(0));
         }
         
-        uint bitOffset = 24; // Leave space for meta data
-        uint movementCostFromOrigin; 
+        // Leave space for meta data
+        uint bitOffset = ROUTE_PACKING_META_DATA_OFFSET; 
 
         // Validate segments
+        uint movementCostFromOrigin; 
         for (uint i = 1; i < path.length; i++)
         {
             // Validate segment in the same map as origin
@@ -1130,22 +1167,27 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
             }
 
             // Pack every third tile after the origin
-            if (i % 3 == 0 || i == path.length - 1) 
+            if (i % 3 == 0 && i != path.length - 1) 
             {
                 // Add tile to route
+                bitOffset += ROUTE_PACKING_TILE_BIT_LENGTH;
                 route |= bytes32(uint(path[i])) << bitOffset;
-                bitOffset += 16; // Shift by 16 bits for the next data
-
-                route |= bytes32(uint(turns + 1)) << bitOffset;
-                bitOffset += 5; // Shift by 5 bits for the next data
             }
         }
 
-        // Add metadata to route
-        route |= bytes32(uint(MOVEMENT_TURN_DURATION)); // Time per turn in seconds (8 bits)
-        route |= bytes32(uint(path[0])) << 8; // Origin tile (16 bits)
+        // Convert to non-zero based
+        turns += 1; 
 
-        turns += 1; // Convert to non-zero based
+        // Add metadata to route
+        route |= bytes32(uint(MOVEMENT_TURN_DURATION)); 
+        route |= bytes32(uint(turns)) << ROUTE_PACKING_TOTAL_TURNS_OFFSET; 
+        route |= bytes32(uint(path.length)) << ROUTE_PACKING_TOTAL_TILES_OFFSET; 
+        route |= bytes32(uint(1 + (path.length - 2) / 3)) << ROUTE_PACKING_TOTAL_PACKED_TILES_OFFSET; 
+
+        // Add origin to route
+        route |= bytes32(uint(path[0])) << ROUTE_PACKING_META_DATA_OFFSET; 
+
+        // If we got this far, the path is valid
         isValid = true;
     }
 
@@ -1167,7 +1209,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
         }
 
         // Validate segments are neigbors
-        if (!_tileIsNeighbor(fromTileIndex, toTileIndex))
+        if (!_tileIsAdjecentTo(fromTileIndex, toTileIndex))
         {
             return (false, 0);
         }

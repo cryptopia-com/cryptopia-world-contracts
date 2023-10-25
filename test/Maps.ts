@@ -472,7 +472,7 @@ describe("Maps Contract", function () {
             const expectedArrivalTime = await time.latest();
             await expect(receipt).to
                 .emit(mapInstance, "PlayerEnterMap")
-                .withArgs(map.name, expectedTileIndex, await registeredAccountInstance.getAddress(), expectedArrivalTime);
+                .withArgs(await registeredAccountInstance.getAddress(), map.name, expectedTileIndex, expectedArrivalTime);
         });
 
         it ("Should not allow a player to enter a map if they are already in a map", async function () {
@@ -685,11 +685,13 @@ describe("Maps Contract", function () {
         it ("Should allow a player to move in a map", async function () {
 
             // Setup
-            const expectedTurns = 22;
+            const expectedTurns = 29;
             const path = [
                 0, 1, 2, 7, 13, 14, 13, 7, 2, 1,
                 0, 1, 2, 7, 13, 14, 13, 7, 2, 1,
-                0, 1, 2, 7, 13, 14, 13, 7, 2, 1]; 
+                0, 1, 2, 7, 13, 14, 13, 7, 2, 1, 
+                0, 1, 2, 7, 13, 14, 13, 7, 2, 1, 
+                0, 1, 2]; 
 
             const calldata = mapInstance.interface
                 .encodeFunctionData("playerMove", [path]);
@@ -706,41 +708,29 @@ describe("Maps Contract", function () {
 
             await expect(receipt).to
                 .emit(mapInstance, "PlayerMove")
-                .withArgs(path[0], path[path.length - 1], anyValue, await registeredAccountInstance.getAddress(), expectedArrivalTime);
+                .withArgs(await registeredAccountInstance.getAddress(), path[0], path[path.length - 1], anyValue, expectedArrivalTime);
         });  
 
-        it ("Should compute a valid route when traveling", async function () {
+        it ("Should emit valid route data when traveling", async function () {
 
             // Setup
             const path = [
-                1,  // Origin
-                2,  // -
-                7,  // -
-                13, // Turn 3
-                14, // -
-                13, // -
-                7,  // Turn 6
-                2,  // -
-                1   // Turn 8 (Destination)
+                2,  // Turn 1 (packed)
+                7,  // Turn 1
+                13, // Turn 2 
+                14, // Turn 3 (packed)
+                13, // Turn 4
+                7,  // Turn 5 
+                2,  // Turn 6 (packed)
+                1   // Turn 7
             ];
 
             const expectedRoute: UnpackedRoute = {
-                originTile: 1,
-                timePerTurn: MOVEMENT_TURN_DURATION,
-                segments: [
-                    {
-                        tile: 13,
-                        turn: 3
-                    },
-                    {
-                        tile: 7,
-                        turn: 6
-                    },
-                    {
-                        tile: 1,
-                        turn: 8
-                    }
-                ]
+                durationPerTurn: MOVEMENT_TURN_DURATION,
+                totalTurns: 7,
+                totalTilesInPath: 8,
+                totalTilesPacked: 3,
+                tiles: [2, 14, 2],
             };
 
             const calldata = mapInstance.interface
@@ -753,18 +743,29 @@ describe("Maps Contract", function () {
                 .submitTransaction(await mapInstance.getAddress(), 0, calldata);
             const receipt = await transaction.wait();
 
+            const player = getParamFromEvent(mapInstance, receipt, "player", "PlayerMove");
+            const origin = getParamFromEvent(mapInstance, receipt, "origin", "PlayerMove");
+            const destination = getParamFromEvent(mapInstance, receipt, "destination", "PlayerMove");
             const route = getParamFromEvent(mapInstance, receipt, "route", "PlayerMove");
-            const unpackedRoute = unpackRoute(route);
-
+            const arrival = getParamFromEvent(mapInstance, receipt, "arrival", "PlayerMove");
+            
             // Assert
-            expect(unpackedRoute.timePerTurn).to.equal(MOVEMENT_TURN_DURATION); 
-            expect(unpackedRoute.originTile).to.equal(path[0]);
+            expect(player).to.equal(await registeredAccountInstance.getAddress());
+            expect(origin).to.equal(path[0]);
+            expect(destination).to.equal(path[path.length - 1]);
 
-            expect(unpackedRoute.segments.length).to.equal(expectedRoute.segments.length);
-            for (let i = 0; i < unpackedRoute.segments.length; i++)
+            const expectedArrivalTime = await time.latest() + (expectedRoute.totalTurns * MOVEMENT_TURN_DURATION);
+            expect(arrival).to.equal(expectedArrivalTime);
+
+            const unpackedRoute = unpackRoute(route);
+            expect(unpackedRoute.durationPerTurn).to.equal(expectedRoute.durationPerTurn);
+            expect(unpackedRoute.totalTurns).to.equal(expectedRoute.totalTurns);
+            expect(unpackedRoute.totalTilesInPath).to.equal(expectedRoute.totalTilesInPath);
+            expect(unpackedRoute.totalTilesPacked).to.equal(expectedRoute.totalTilesPacked);
+
+            for (let i = 0; i < unpackedRoute.tiles.length; i++)
             {
-                expect(unpackedRoute.segments[i].tile).to.equal(expectedRoute.segments[i].tile);
-                expect(unpackedRoute.segments[i].turn).to.equal(expectedRoute.segments[i].turn);
+                expect(unpackedRoute.tiles[i]).to.equal(expectedRoute.tiles[i]);
             }
         }); 
     });
@@ -986,15 +987,12 @@ describe("Maps Contract", function () {
     /**
      * Helper functions
      */
-    interface RouteSegment {
-        tile: number;
-        turn: number;
-    }
-    
     interface UnpackedRoute {
-        timePerTurn: number;
-        originTile: number;
-        segments: RouteSegment[];
+        durationPerTurn: number;
+        totalTurns: number;
+        totalTilesInPath: number;
+        totalTilesPacked: number;
+        tiles: number[];
     }
       
     /**
@@ -1004,26 +1002,26 @@ describe("Maps Contract", function () {
      * @returns The unpacked route
      */
     const unpackRoute = (route: any): UnpackedRoute => {
-        const timePerTurn = Number(BigInt(route) & 0xFFn);
-        const originTile = Number((BigInt(route) >> 8n) & 0xFFFFn);
-
-        let bitOffset = 24n;
-        const segments: RouteSegment[] = [];
-
-        while (bitOffset < 256n) {
+        const durationPerTurn = Number(BigInt(route) & 0xFFn);
+        const totalTurns = Number((BigInt(route) >> 8n) & 0xFFn);
+        const totalTilesInPath = Number((BigInt(route) >> 16n) & 0xFFn);
+        const totalTilesPacked = Number((BigInt(route) >> 24n) & 0xFFn);
+    
+        let bitOffset = 32n; // Starting bit offset after metadata
+        const tiles: number[] = [];
+    
+        for (let i = 0; i < totalTilesPacked; i++) {
             const tile = Number((BigInt(route) >> bitOffset) & 0xFFFFn);
+            tiles.push(tile);
             bitOffset += 16n;
-
-            const turn = Number((BigInt(route) >> bitOffset) & 0x1Fn);
-            bitOffset += 5n;
-
-            if (turn === 0) {
-                break;
-            }
-
-            segments.push({ tile, turn });
         }
-
-        return { timePerTurn, originTile, segments };
+    
+        return {
+            durationPerTurn,
+            totalTurns,
+            totalTilesInPath,
+            totalTilesPacked,
+            tiles,
+        };
     }
 });

@@ -4,6 +4,7 @@ pragma solidity ^0.8.20 < 0.9.0;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import "../../../maps/IMaps.sol";
+import "../../../maps/types/MapEnums.sol";
 import "../../../players/IPlayerRegister.sol";
 import "../../../players/errors/PlayerErrors.sol";
 import "../IPirateMechanics.sol";
@@ -194,7 +195,7 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
             if (targetIsTraveling) 
             {
                 // Check route
-                if (!IMaps(mapsContract).tileIsAlongRoute(attackerTileIndex, targetRoute)) 
+                if (!IMaps(mapsContract).tileIsAlongRoute(attackerTileIndex, targetRoute, indexInRoute, targetTileIndex, targetArrival, RoutePosition.Current)) 
                 {
                     // Revert
                 }

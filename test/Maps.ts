@@ -7,7 +7,7 @@ import { getParamFromEvent} from '../scripts/helpers/events';
 import { REVERT_MODE, MOVEMENT_TURN_DURATION } from "./settings/config";
 import { DEFAULT_ADMIN_ROLE, SYSTEM_ROLE, MINTER_ROLE } from "./settings/roles";   
 import { ZERO_ADDRESS } from "./settings/constants";
-import { ResourceType, TerrainType, BiomeType } from '../scripts/types/enums';
+import { HexDirection, ResourceType, TerrainType, BiomeType, RoutePosition } from '../scripts/types/enums';
 import { Asset, Map } from "../scripts/types/input";
 
 import { 
@@ -18,6 +18,7 @@ import {
     CryptopiaTitleDeedToken,
     CryptopiaPlayerRegister
 } from "../typechain-types";
+import { BytesLike } from "ethers";
 
 /**
  * Map tests
@@ -67,12 +68,12 @@ describe("Maps Contract", function () {
     ];
 
     /** 
-     * (Hex) Grid:      Navigation:     Legend:
-     *  W W W W W        W W W W W       W - Water (5)
-     *   W I I R W        W 5 5 W W      I - Island
-     *  R I M I W        W 5 8 5 W       M - Mountain
-     *   W I I I W        W 7 5 5 W      R - Reef
-     *  W W W W W        W W W W W
+     * (Hex) Grid:      Height:         Naviagation:          Legend:
+     *  W W W W W        W W W W W       20 21 22 23 24       - Water (5)
+     *   W I I R W        W 5 5 W W       15 16 17 18 19      - Island
+     *  R I M I W        W 5 8 5 W       10 11 12 13 14       - Mountain
+     *   W I I I W        W 7 5 5 W       05 06 07 08 09      - Reef
+     *  W W W W W        W W W W W       00 01 02 03 04
      */
      const map: Map = {
         name: "Map 1".toBytes32(),
@@ -427,7 +428,7 @@ describe("Maps Contract", function () {
     /**
      * Test players entering a map
      */
-    describe("Player Enter", function () {
+    describe("Add Players", function () {
 
         it ("Should not allow a non-player to enter a map", async function () {
 
@@ -504,7 +505,7 @@ describe("Maps Contract", function () {
     /**
      * Test players moving in a map
      */
-    describe("Player Move", function () {
+    describe("Traveling", function () {
 
         it ("Should not accept an empty path", async function () {
 
@@ -749,12 +750,13 @@ describe("Maps Contract", function () {
             const route = getParamFromEvent(mapInstance, receipt, "route", "PlayerMove");
             const arrival = getParamFromEvent(mapInstance, receipt, "arrival", "PlayerMove");
             
+            const expectedArrivalTime = await time.latest() + (expectedRoute.totalTurns * MOVEMENT_TURN_DURATION);
+            await time.increaseTo(arrival);
+
             // Assert
             expect(player).to.equal(await registeredAccountInstance.getAddress());
             expect(origin).to.equal(path[0]);
             expect(destination).to.equal(path[path.length - 1]);
-
-            const expectedArrivalTime = await time.latest() + (expectedRoute.totalTurns * MOVEMENT_TURN_DURATION);
             expect(arrival).to.equal(expectedArrivalTime);
 
             const unpackedRoute = unpackRoute(route);
@@ -767,7 +769,227 @@ describe("Maps Contract", function () {
             {
                 expect(unpackedRoute.tiles[i]).to.equal(expectedRoute.tiles[i]);
             }
-        }); 
+        });
+    });
+
+    /**
+     * Test the route integrity
+     */
+    describe("Route Integrity", function () {
+
+        const path = [
+            1,  // Turn 1 (packed)
+            2,  // Turn 1 
+            7,  // Turn 2
+            13, // Turn 3 (packed)
+            14, // Turn 4 
+            19, // Turn 4
+            18, // Turn 4 (packed)
+            17, // Turn 5
+            16, // Turn 6
+            15  // Turn 7 
+        ];
+
+        // Travel data
+        let player: string;
+        let origin: bigint;
+        let destination: bigint;
+        let route: BytesLike;
+        let arrival: number;
+
+        /**
+         * Travel
+         */
+        before(async () => {
+            
+            const calldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [path]);
+            const signer = await ethers.provider.getSigner(account1);
+            const transaction = await registeredAccountInstance
+                .connect(signer)
+                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+            const receipt = await transaction.wait();
+
+            player = getParamFromEvent(mapInstance, receipt, "player", "PlayerMove");
+            origin = getParamFromEvent(mapInstance, receipt, "origin", "PlayerMove");
+            destination = getParamFromEvent(mapInstance, receipt, "destination", "PlayerMove");
+            route = getParamFromEvent(mapInstance, receipt, "route", "PlayerMove");
+            arrival = getParamFromEvent(mapInstance, receipt, "arrival", "PlayerMove");
+        });
+
+        it ("Should be in traveling state", async function () {
+
+            // Act
+            const traveldata = await mapInstance.getPlayerTravelData(player);
+
+            // Assert
+            expect(traveldata.isTraveling).to.equal(true);
+            expect(traveldata.tileIndex).to.equal(destination);
+            expect(traveldata.arrival).to.equal(arrival);
+            expect(traveldata.route).to.equal(route);
+        });
+
+        it ("Should indicate that the origin tile is along the route", async function () {
+                
+            // Setup
+            const tileIndex = origin;
+            const routeIndex = 0; // Where the tile is packed in the route
+            
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex, 
+                route, 
+                routeIndex, 
+                destination, 
+                arrival,
+                RoutePosition.Any);
+
+            // Assert
+            expect(isAlongRoute).to.equal(true);
+        });
+
+        it ("Should indicate that the neighbors of the origin tile are along the route", async function () {
+
+            // Setup
+            const neighborsOfOrigin = getNeighbors(origin, map.sizeX, map.sizeZ);
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighborsOfOrigin)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex, 
+                    route, 
+                    routeIndex, 
+                    destination, 
+                    arrival,
+                    RoutePosition.Any);
+
+                // Assert
+                expect(isAlongRoute).to.equal(true);
+            }
+        });
+
+        it ("Should indicate that an intermediate tile is along the route", async function () {
+                
+            // Setup
+            const tileIndex = 19;
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex, 
+                route, 
+                routeIndex, 
+                destination, 
+                arrival,
+                RoutePosition.Any);
+
+            // Assert
+            expect(isAlongRoute).to.equal(true);
+        });
+
+        it ("Should indicate that the neighbors of an intermediate tile are along the route", async function () {
+                
+            // Setup
+            const tileIndex = 19;
+            const routeIndex = 2; // Where the tile is packed in the route
+            const neighborsOfTile = getNeighbors(tileIndex, map.sizeX, map.sizeZ);
+
+            // Act
+            for (let neighbor of neighborsOfTile)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex, 
+                    route, 
+                    routeIndex, 
+                    destination, 
+                    arrival,
+                    RoutePosition.Any);
+
+                // Assert
+                expect(isAlongRoute).to.equal(true);
+            }
+        });
+
+        it ("Should indicate that the destination tile is along the route", async function () {
+                
+            // Setup
+            const tileIndex = destination;
+            const routeIndex = 3; // Setting it to the total amount of packed tiles indicates the destination tile
+            
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex, 
+                route, 
+                routeIndex, 
+                destination, 
+                arrival,
+                RoutePosition.Any);
+
+            // Assert
+            expect(isAlongRoute).to.equal(true);
+        });
+
+        it ("Should indicate that the neighbors of the destination tile are along the route", async function () {
+
+            // Setup
+            const neighborsOfDestination = getNeighbors(destination, map.sizeX, map.sizeZ);
+            const routeIndex = 3; // Setting it to the total amount of packed tiles indicates the destination tile
+
+            // Act
+            for (let neighbor of neighborsOfDestination)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex, 
+                    route, 
+                    routeIndex, 
+                    destination, 
+                    arrival,
+                    RoutePosition.Any);
+
+                // Assert
+                expect(isAlongRoute).to.equal(true);
+            }
+        });
+
+        it ("Should not indicate that a tile is along the route if it is not", async function () {
+
+            // Setup
+            const tileIndex = 4;
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex, 
+                route, 
+                routeIndex, 
+                destination, 
+                arrival,
+                RoutePosition.Any);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("Should not indicate that a tile is along the route when it is but the route index is incorrect", async function () {
+            
+            // Setup
+            const tileIndex = 19;
+            const routeIndex = 1; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex, 
+                route, 
+                routeIndex, 
+                destination, 
+                arrival,
+                RoutePosition.Any);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
     });
 
     /**
@@ -1023,5 +1245,58 @@ describe("Maps Contract", function () {
             totalTilesPacked,
             tiles,
         };
+    }
+
+    interface Neighbor {
+        tileIndex: bigint;
+        direction: HexDirection;
+    }
+      
+    /**
+     * Gets the neighbors of a tile
+     * 
+     * @param tileIndex Index of the tile to get the neighbors of
+     * @param sizeX Map size in the X direction
+     * @param sizeZ Map size in the Z direction
+     * @returns The neighbors of the tile
+     */
+    const getNeighbors = (tileIndex: bigint | number, sizeX: number, sizeZ: number): Neighbor[] => {
+        const neighbors: Neighbor[] = [];
+        const bigTileIndex = BigInt(tileIndex);
+        const x = bigTileIndex % BigInt(sizeX);
+        const z = bigTileIndex / BigInt(sizeX);
+        const isEvenRow = z % BigInt(2) === BigInt(0);
+    
+        // NorthEast
+        if (z < BigInt(sizeZ) - BigInt(1) && (isEvenRow || x < BigInt(sizeX) - BigInt(1))) {
+            neighbors.push({ tileIndex: bigTileIndex + BigInt(sizeX) + (isEvenRow ? BigInt(0) : BigInt(1)), direction: HexDirection.NE });
+        }
+    
+        // East
+        if (x < BigInt(sizeX) - BigInt(1)) {
+            neighbors.push({ tileIndex: bigTileIndex + BigInt(1), direction: HexDirection.E });
+        }
+    
+        // SouthEast
+        if (z > BigInt(0) && (isEvenRow || x < BigInt(sizeX) - BigInt(1))) {
+            neighbors.push({ tileIndex: bigTileIndex - BigInt(sizeX) + (isEvenRow ? BigInt(0) : BigInt(1)), direction: HexDirection.SE });
+        }
+    
+        // SouthWest
+        if (z > BigInt(0) && (!isEvenRow || x > BigInt(0))) {
+            neighbors.push({ tileIndex: bigTileIndex - BigInt(sizeX) - (isEvenRow ? BigInt(1) : BigInt(0)), direction: HexDirection.SW });
+        }
+    
+        // West
+        if (x > BigInt(0)) {
+            neighbors.push({ tileIndex: bigTileIndex - BigInt(1), direction: HexDirection.W });
+        }
+    
+        // NorthWest
+        if (z < BigInt(sizeZ) - BigInt(1) && (!isEvenRow || x > BigInt(0))) {
+            neighbors.push({ tileIndex: bigTileIndex + BigInt(sizeX) - (isEvenRow ? BigInt(1) : BigInt(0)), direction: HexDirection.NW });
+        }
+
+        return neighbors;
     }
 });

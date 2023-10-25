@@ -655,48 +655,88 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
     /// @dev Checks if a tile with `tileIndex` is along the route `route` based on the traveler's progress
     /// @param tileIndex The index of the tile to check
     /// @param route The route data to check against
-    /// @param routeIndex The index of the tile in the route data (0 signals origin)
-    /// @param arrival The datetime on wich the traveler arrives at it's destination
+    /// @param routeIndex The index of the tile in the route data (0 signals origin, setting it equal to totalTilesPacked indicates destination)
+    /// @param arrival The datetime on which the traveler arrives at it's destination
     /// @param position The position of the tile relative to the traveler's progress along the route {ANY, UPCOMING, CURRENT, PASSED}
     /// @return True if the tile with `tileIndex` meets the conditions specified by `position`
     function tileIsAlongRoute(uint16 tileIndex, bytes32 route, uint routeIndex, uint16 destination, uint64 arrival, RoutePosition position) 
         public view 
         returns (bool)
     {
-        // // Extract tile from route using externally computed index (prevents stack too deep error)
-        // uint16 closestTileIndex;
-        // if (0 == index)
-        // {
-        //     closestTileIndex = uint16((route >> ROUTE_PACKING_ORIGIN_TILE_OFFSET) & 0xFFFF);
-        // }
-        // else if (index <= ROUTE_PACKING_MAX_TILE_COUNT)
-        // {
-        //     closestTileIndex = uint16(route >> ((index - 1) * ROUTE_PACKING_TILE_TURN_PAIR_BIT_LENGTH));
-        // }
-        // else 
-        // {
-        //     revert ArgumentInvalid();
-        // }
+        // Extract metadata 
+        uint totalTilesPacked = uint(route >> 24) & 0xFF;
 
-        // // Check if tile is along route
-        // if (closestTileIndex != tileIndex && !_tileIsAdjecentTo(closestTileIndex, tileIndex))
-        // {
-        //     return false;
-        // }
+        // Find closest tile
+        uint16 closestTileIndex;
+        if (routeIndex < totalTilesPacked)
+        {
+            closestTileIndex = uint16(uint(route) >> (ROUTE_PACKING_META_DATA_OFFSET + routeIndex * ROUTE_PACKING_TILE_BIT_LENGTH));
+        }
+        else if (routeIndex == totalTilesPacked)
+        {
+            closestTileIndex = destination;
+        }
+        else 
+        {
+            revert ArgumentInvalid();
+        }
+        
+        
+        // Check if closestTileIndex is reachable from tileIndex
+        if (closestTileIndex != tileIndex && !_tileIsAdjecentTo(closestTileIndex, tileIndex))
+        {
+            return false;
+        }
 
-        // // Return true if we don't care about where the traveler is in the route
-        // if (position == RoutePosition.Any)
-        // {
-        //     return true;
-        // }
+        // Return true if we don't care about where the traveler is in the route
+        if (position == RoutePosition.Any)
+        {
+            return true;
+        }
 
-        // Extract metadata
-        //uint timePerTurn = uint((route >> ROUTE_PACKING_TIME_PER_TURN_OFFSET) & 0xFF);
+        // Extract more metadata
+        uint timePerTurn = uint(route) & 0xFF;
+        uint totalTravelTime = (uint(route >> 8) & 0xFF) * timePerTurn; // totalTurns * timePerTurn
+        uint routeProgressPercentage = (totalTravelTime - (arrival - block.timestamp)) * 100 / totalTravelTime; // Remaining time * 100 / totalTravelTime
+        uint closestTileProgressPercentage = routeIndex * 100 / totalTilesPacked; // Packed tile index * 100 / totalTilesPacked
 
+        // Valid when the traveler is near to tileIndex
+        if (position == RoutePosition.Current)
+        {
+            uint margin = (timePerTurn / 2) * 100 / totalTravelTime; // Margin scales based on timePerTurn
+            if (routeProgressPercentage >= closestTileProgressPercentage - margin && 
+                routeProgressPercentage <= closestTileProgressPercentage + margin)
+            {
+                return true;
+            }
+        }
+
+        // Valid when traveler is before tileIndex
+        else if (position == RoutePosition.Upcoming)
+        {
+            if (routeProgressPercentage < closestTileProgressPercentage)
+            {
+                return true;
+            }
+        }
+
+        // Valid when traveler is after tileIndex
+        else if (position == RoutePosition.Passed)
+        {
+            if (routeProgressPercentage > closestTileProgressPercentage)
+            {
+                return true;
+            }
+        }
+
+        // Unknow position param
+        else 
+        {
+            revert ArgumentInvalid();
+        }
 
         return false;
     }
-
 
 
     /// @dev Batch operation to set tiles
@@ -718,7 +758,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
     }
 
 
-    /// @dev Retrieve players from the tile with tile
+    /// @dev Retrieve players from the tile with `tileIndex`
     /// @param tileIndex Retrieve players from this tile
     /// @param start Starting point in the chain
     /// @param max Max amount of players to return

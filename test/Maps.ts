@@ -777,25 +777,28 @@ describe("Maps Contract", function () {
      */
     describe("Route Integrity", function () {
 
+        // Path data
+        const turns = 9;
         const path = [
             1,  // Turn 1 (packed)
             2,  // Turn 1 
             7,  // Turn 2
             13, // Turn 3 (packed)
             14, // Turn 4 
-            19, // Turn 4
-            18, // Turn 4 (packed)
-            17, // Turn 5
-            16, // Turn 6
-            15  // Turn 7 
+            19, // Turn 5
+            18, // Turn 6 (packed)
+            17, // Turn 7
+            22, // Turn 8
+            21, // Turn 8 (packed)
+            16  // Turn 9
         ];
-
+        
         // Travel data
         let player: string;
         let origin: bigint;
         let destination: bigint;
         let route: BytesLike;
-        let arrival: number;
+        let arrival: bigint;
 
         /**
          * Travel
@@ -916,7 +919,7 @@ describe("Maps Contract", function () {
                 
             // Setup
             const tileIndex = destination;
-            const routeIndex = 3; // Setting it to the total amount of packed tiles indicates the destination tile
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
             
             // Act
             const isAlongRoute = await mapInstance.tileIsAlongRoute(
@@ -935,7 +938,7 @@ describe("Maps Contract", function () {
 
             // Setup
             const neighborsOfDestination = getNeighbors(destination, map.sizeX, map.sizeZ);
-            const routeIndex = 3; // Setting it to the total amount of packed tiles indicates the destination tile
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
 
             // Act
             for (let neighbor of neighborsOfDestination)
@@ -989,6 +992,1526 @@ describe("Maps Contract", function () {
 
             // Assert
             expect(isAlongRoute).to.equal(false);
+        });
+
+        // Check route progress
+
+        it ("[progress:origin][target:origin] Should not indicate that target is at an upcoming position along the route", async function () {
+            
+            // Setup 
+            const tileIndex = origin;
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex, 
+                route, 
+                routeIndex, 
+                destination, 
+                arrival,
+                RoutePosition.Upcoming);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:origin][target:origin] Should not indicate that target neighbors are at an upcoming position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(origin, map.sizeX, map.sizeZ);
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex, 
+                    route, 
+                    routeIndex, 
+                    destination, 
+                    arrival,
+                    RoutePosition.Upcoming);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        it ("[progress:origin][target:origin] Should indicate that target is at the current position along the route", async function () {
+
+            // Setup
+            const tileIndex = origin;
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex, 
+                route, 
+                routeIndex, 
+                destination, 
+                arrival,
+                RoutePosition.Current);
+
+            // Assert
+            expect(isAlongRoute).to.equal(true);
+        });
+
+        it ("[progress:origin][target:origin] Should indicate that target neighbors are at the current position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(origin, map.sizeX, map.sizeZ);
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex, 
+                    route, 
+                    routeIndex, 
+                    destination, 
+                    arrival,
+                    RoutePosition.Current);
+
+                // Assert
+                expect(isAlongRoute).to.equal(true);
+            }
+        });
+
+        it ("[progress:origin][target:origin] Should not indicate that target is at a passed position along the route", async function () {
+
+            // Setup
+            const tileIndex = origin;
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex, 
+                route, 
+                routeIndex, 
+                destination, 
+                arrival,
+                RoutePosition.Passed);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:origin][target:origin] Should not indicate that target neighbors are at a passed position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(origin, map.sizeX, map.sizeZ);
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex, 
+                    route, 
+                    routeIndex, 
+                    destination, 
+                    arrival,
+                    RoutePosition.Passed);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        it ("[progress:origin][target:halfway] Should indicate that target is at an upcoming position along the route", async function () {
+            
+            // Setup
+            const tileIndex = 19; // Halfway
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex, 
+                route, 
+                routeIndex, 
+                destination, 
+                arrival,
+                RoutePosition.Upcoming);
+
+            // Assert
+            expect(isAlongRoute).to.equal(true);
+        });
+
+        it ("[progress:origin][target:halfway] Should indicate that target neighbors are at an upcoming position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(19, map.sizeX, map.sizeZ);
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex, 
+                    route, 
+                    routeIndex, 
+                    destination, 
+                    arrival,
+                    RoutePosition.Upcoming);
+
+                // Assert
+                expect(isAlongRoute).to.equal(true);
+            }
+        });
+
+        it ("[progress:origin][target:halfway] Should not indicate that target is at the current position along the route", async function () {
+
+            // Setup
+            const tileIndex = 19; // Halfway
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex, 
+                route, 
+                routeIndex, 
+                destination, 
+                arrival,
+                RoutePosition.Current);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:origin][target:halfway] Should not indicate that target neighbors are at the current position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(19, map.sizeX, map.sizeZ);
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex, 
+                    route, 
+                    routeIndex, 
+                    destination, 
+                    arrival,
+                    RoutePosition.Current);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        it ("[progress:origin][target:halfway] Should not indicate that target is at a passed position along the route", async function () {
+
+            // Setup
+            const tileIndex = 19; // Halfway
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex, 
+                route, 
+                routeIndex, 
+                destination, 
+                arrival,
+                RoutePosition.Passed);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:origin][target:halfway] Should not indicate that target neighbors are at a passed position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(19, map.sizeX, map.sizeZ);
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex, 
+                    route, 
+                    routeIndex, 
+                    destination, 
+                    arrival,
+                    RoutePosition.Passed);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        it ("[progress:origin][target:destination] Should indicate that target is at an upcoming position along the route", async function () {
+
+            // Setup
+            const tileIndex = destination;
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+            
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex, 
+                route, 
+                routeIndex, 
+                destination, 
+                arrival,
+                RoutePosition.Upcoming);
+
+            // Assert
+            expect(isAlongRoute).to.equal(true);
+        });
+
+        it ("[progress:origin][target:destination] Should indicate that target neighbors are at an upcoming position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(destination, map.sizeX, map.sizeZ);
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+            
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex, 
+                    route, 
+                    routeIndex, 
+                    destination, 
+                    arrival,
+                    RoutePosition.Upcoming);
+
+                // Assert
+                expect(isAlongRoute).to.equal(true);
+            }
+        });
+
+        it ("[progress:origin][target:destination] Should not indicate that target is at the current position along the route", async function () {
+
+            // Setup
+            const tileIndex = destination;
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+            
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex, 
+                route, 
+                routeIndex, 
+                destination, 
+                arrival,
+                RoutePosition.Current);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:origin][target:destination] Should not indicate that target neighbors are at the current position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(destination, map.sizeX, map.sizeZ);
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+            
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex, 
+                    route, 
+                    routeIndex, 
+                    destination, 
+                    arrival,
+                    RoutePosition.Current);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        it ("[progress:origin][target:destination] Should not indicate that target is at a passed position along the route", async function () {
+
+            // Setup
+            const tileIndex = destination;
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+            
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex, 
+                route, 
+                routeIndex, 
+                destination, 
+                arrival,
+                RoutePosition.Passed);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:origin][target:destination] Should not indicate that target neighbors are at a passed position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(destination, map.sizeX, map.sizeZ);
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+            
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex, 
+                    route, 
+                    routeIndex, 
+                    destination, 
+                    arrival,
+                    RoutePosition.Passed);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        /**
+         * Advance time to halfway through the route
+         */
+        it ("Should advance time to halfway through the route", async function () {
+
+            // Setup
+            const timeToHalfway = arrival - BigInt(turns * MOVEMENT_TURN_DURATION / 2);
+
+            // Act
+            await time.increaseTo(timeToHalfway);
+
+            // Assert
+            expect(await time.latest()).to.equal(timeToHalfway);
+        });
+
+        it ("[progress:halfway][target:origin] Should not indicate that target is at an upcoming position along the route", async function () {
+            
+            // Setup 
+            const tileIndex = origin;
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex, 
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Upcoming);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:halfway][target:origin] Should not indicate that target neighbors are at an upcoming position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(origin, map.sizeX, map.sizeZ);
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route, 
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Upcoming);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        it ("[progress:halfway][target:origin] Should not indicate that target is at the current position along the route", async function () {
+
+            // Setup
+            const tileIndex = origin;
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Current);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:halfway][target:origin] Should not indicate that target neighbors are at the current position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(origin, map.sizeX, map.sizeZ);
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route, 
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Current);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        it ("[progress:halfway][target:origin] Should indicate that target is at a passed position along the route", async function () {
+
+            // Setup
+            const tileIndex = origin;
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Passed);
+
+            // Assert
+            expect(isAlongRoute).to.equal(true);
+        });
+
+        it ("[progress:halfway][target:origin] Should indicate that target neighbors are at a passed position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(origin, map.sizeX, map.sizeZ);
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route, 
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Passed);
+
+                // Assert
+                expect(isAlongRoute).to.equal(true);
+            }
+        });
+
+        it ("[progress:halfway][target:halfway] Should not indicate that target is at an upcoming position along the route", async function () {
+            
+            // Setup 
+            const tileIndex = 19; // Halfway
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Upcoming);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:halfway][target:halfway] Should not indicate that target neighbors are at an upcoming position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(19, map.sizeX, map.sizeZ);
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route, 
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Upcoming);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        it ("[progress:halfway][target:halfway] Should indicate that target is at the current position along the route", async function () {
+
+            // Setup
+            const tileIndex = 19; // Halfway
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Current);
+
+            // Assert
+            expect(isAlongRoute).to.equal(true);
+        });
+
+        it ("[progress:halfway][target:halfway] Should indicate that target neighbors are at the current position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(19, map.sizeX, map.sizeZ);
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route, 
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Current);
+
+                // Assert
+                expect(isAlongRoute).to.equal(true);
+            }
+        });
+
+        it ("[progress:halfway][target:halfway] Should not indicate that target is at a passed position along the route", async function () {
+
+            // Setup
+            const tileIndex = 19; // Halfway
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Passed);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:halfway][target:halfway] Should not indicate that target neighbors are at a passed position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(19, map.sizeX, map.sizeZ);
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route, 
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Passed);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        it ("[progress:halfway][target:destination] Should indicate that target is at an upcoming position along the route", async function () {
+
+            // Setup
+            const tileIndex = destination;
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+            
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Upcoming);
+
+            // Assert
+            expect(isAlongRoute).to.equal(true);
+        });
+
+        it ("[progress:halfway][target:destination] Should indicate that target neighbors are at an upcoming position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(destination, map.sizeX, map.sizeZ);
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+            
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route, 
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Upcoming);
+
+                // Assert
+                expect(isAlongRoute).to.equal(true);
+            }
+        });
+
+        it ("[progress:halfway][target:destination] Should not indicate that target is at the current position along the route", async function () {
+
+            // Setup
+            const tileIndex = destination;
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+            
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Current);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:halfway][target:destination] Should not indicate that target neighbors are at the current position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(destination, map.sizeX, map.sizeZ);
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+            
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route, 
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Current);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        it ("[progress:halfway][target:destination] Should not indicate that target is at a passed position along the route", async function () {
+
+            // Setup
+            const tileIndex = destination;
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+            
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Passed);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:halfway][target:destination] Should not indicate that target neighbors are at a passed position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(destination, map.sizeX, map.sizeZ);
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+            
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route, 
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Passed);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        /**
+         * Advance time to the end of the route
+         */
+        it ("Should advance time to the end of the route", async function () {
+
+            // Act
+            await time.increaseTo(arrival);
+
+            // Assert
+            expect(await time.latest()).to.equal(arrival);
+        });
+
+        it ("[progress:destination][target:origin] Should not indicate that target is at an upcoming position along the route", async function () {
+            
+            // Setup 
+            const tileIndex = origin;
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Upcoming);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:destination][target:origin] Should not indicate that target neighbors are at an upcoming position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(origin, map.sizeX, map.sizeZ);
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route, 
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Upcoming);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        it ("[progress:destination][target:origin] Should not indicate that target is at the current position along the route", async function () {
+
+            // Setup
+            const tileIndex = origin;
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Current);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:destination][target:origin] Should not indicate that target neighbors are at the current position along the route", async function () {
+            
+            // Setup
+            const neighbors = getNeighbors(origin, map.sizeX, map.sizeZ);
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route, 
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Current);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        it ("[progress:destination][target:origin] Should indicate that target is at a passed position along the route", async function () {
+
+            // Setup
+            const tileIndex = origin;
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Passed);
+
+            // Assert
+            expect(isAlongRoute).to.equal(true);
+        });
+
+        it ("[progress:destination][target:origin] Should indicate that target neighbors are at a passed position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(origin, map.sizeX, map.sizeZ);
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route, 
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Passed);
+
+                // Assert
+                expect(isAlongRoute).to.equal(true);
+            }
+        });
+
+        it ("[progress:destination][target:halfway] Should not indicate that target is at an upcoming position along the route", async function () {
+            
+            // Setup 
+            const tileIndex = 19; // Halfway
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Upcoming);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:destination][target:halfway] Should not indicate that target neighbors are at an upcoming position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(19, map.sizeX, map.sizeZ);
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route, 
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Upcoming);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        it ("[progress:destination][target:halfway] Should not indicate that target is at the current position along the route", async function () {
+
+            // Setup
+            const tileIndex = 19; // Halfway
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Current);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:destination][target:halfway] Should not indicate that target neighbors are at the current position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(19, map.sizeX, map.sizeZ);
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route, 
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Current);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        it ("[progress:destination][target:halfway] Should indicate that target is at a passed position along the route", async function () {
+
+            // Setup
+            const tileIndex = 19; // Halfway
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Passed);
+
+            // Assert
+            expect(isAlongRoute).to.equal(true);
+        });
+
+        it ("[progress:destination][target:halfway] Should indicate that target neighbors are at a passed position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(19, map.sizeX, map.sizeZ);
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route, 
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Passed);
+
+                // Assert
+                expect(isAlongRoute).to.equal(true);
+            }
+        });
+
+        it ("[progress:destination][target:destination] Should not indicate that target is at an upcoming position along the route", async function () {
+            
+            // Setup 
+            const tileIndex = destination;
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Upcoming);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:destination][target:destination] Should not indicate that target neighbors are at an upcoming position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(destination, map.sizeX, map.sizeZ);
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route,
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Upcoming);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        it ("[progress:destination][target:destination] Should indicate that target is at the current position along the route", async function () {
+
+            // Setup
+            const tileIndex = destination;
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route,
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Current);
+
+            // Assert
+            expect(isAlongRoute).to.equal(true);
+        });
+
+        it ("[progress:destination][target:destination] Should indicate that target neighbors are at the current position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(destination, map.sizeX, map.sizeZ);
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route,
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Current);
+
+                // Assert
+                expect(isAlongRoute).to.equal(true);
+            }
+        });
+
+        it ("[progress:destination][target:destination] Should not indicate that target is at a passed position along the route", async function () {
+
+            // Setup
+            const tileIndex = destination;
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route,
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Passed);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:destination][target:destination] Should not indicate that target neighbors are at a passed position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(destination, map.sizeX, map.sizeZ);
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route,
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Passed);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        /**
+         * Advance time to after the end of the route
+         */
+        it ("Should advance time to after the end of the route", async function () {
+
+            // Setup
+            const timeAfterArrival = arrival + BigInt(MOVEMENT_TURN_DURATION);
+
+            // Act
+            await time.increaseTo(timeAfterArrival);
+
+            // Assert
+            expect(await time.latest()).to.equal(timeAfterArrival);
+        });
+
+        it ("[progress:beyond][target:origin] Should not indicate that target is at an upcoming position along the route", async function () {
+            
+            // Setup 
+            const tileIndex = origin;
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Upcoming);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:beyond][target:origin] Should not indicate that target neighbors are at an upcoming position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(origin, map.sizeX, map.sizeZ);
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route, 
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Upcoming);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        it ("[progress:beyond][target:origin] Should not indicate that target is at the current position along the route", async function () {
+
+            // Setup
+            const tileIndex = origin;
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Current);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:beyond][target:origin] Should not indicate that target neighbors are at the current position along the route", async function () {
+            
+            // Setup
+            const neighbors = getNeighbors(origin, map.sizeX, map.sizeZ);
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route, 
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Current);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        it ("[progress:beyond][target:origin] Should indicate that target is at a passed position along the route", async function () {
+
+            // Setup
+            const tileIndex = origin;
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Passed);
+
+            // Assert
+            expect(isAlongRoute).to.equal(true);
+        });
+
+        it ("[progress:beyond][target:origin] Should indicate that target neighbors are at a passed position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(origin, map.sizeX, map.sizeZ);
+            const routeIndex = 0; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route, 
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Passed);
+
+                // Assert
+                expect(isAlongRoute).to.equal(true);
+            }
+        });
+
+        it ("[progress:beyond][target:halfway] Should not indicate that target is at an upcoming position along the route", async function () {
+            
+            // Setup 
+            const tileIndex = 19; // Halfway
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Upcoming);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:beyond][target:halfway] Should not indicate that target neighbors are at an upcoming position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(19, map.sizeX, map.sizeZ);
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route, 
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Upcoming);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        it ("[progress:beyond][target:halfway] Should not indicate that target is at the current position along the route", async function () {
+
+            // Setup
+            const tileIndex = 19; // Halfway
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Current);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:beyond][target:halfway] Should not indicate that target neighbors are at the current position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(19, map.sizeX, map.sizeZ);
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route, 
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Current);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        it ("[progress:beyond][target:halfway] Should indicate that target is at a passed position along the route", async function () {
+
+            // Setup
+            const tileIndex = 19; // Halfway
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Passed);
+
+            // Assert
+            expect(isAlongRoute).to.equal(true);
+        });
+
+        it ("[progress:beyond][target:halfway] Should indicate that target neighbors are at a passed position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(19, map.sizeX, map.sizeZ);
+            const routeIndex = 2; // Where the tile is packed in the route
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route, 
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Passed);
+
+                // Assert
+                expect(isAlongRoute).to.equal(true);
+            }
+        });
+
+        it ("[progress:beyond][target:destination] Should not indicate that target is at an upcoming position along the route", async function () {
+            
+            // Setup 
+            const tileIndex = destination;
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route, 
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Upcoming);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:beyond][target:destination] Should not indicate that target neighbors are at an upcoming position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(destination, map.sizeX, map.sizeZ);
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route,
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Upcoming);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
+        });
+
+        it ("[progress:beyond][target:destination] Should indicate that target is at the current position along the route", async function () {
+
+            // Setup
+            const tileIndex = destination;
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route,
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Current);
+
+            // Assert
+            expect(isAlongRoute).to.equal(true);
+        });
+
+        it ("[progress:beyond][target:destination] Should indicate that target neighbors are at the current position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(destination, map.sizeX, map.sizeZ);
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route,
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Current);
+
+                // Assert
+                expect(isAlongRoute).to.equal(true);
+            }
+        });
+
+        it ("[progress:beyond][target:destination] Should not indicate that target is at a passed position along the route", async function () {
+
+            // Setup
+            const tileIndex = destination;
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+
+            // Act
+            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                tileIndex,
+                route,
+                routeIndex,
+                destination, 
+                arrival,
+                RoutePosition.Passed);
+
+            // Assert
+            expect(isAlongRoute).to.equal(false);
+        });
+
+        it ("[progress:beyond][target:destination] Should not indicate that target neighbors are at a passed position along the route", async function () {
+
+            // Setup
+            const neighbors = getNeighbors(destination, map.sizeX, map.sizeZ);
+            const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
+
+            // Act
+            for (let neighbor of neighbors)
+            {
+                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                    neighbor.tileIndex,
+                    route,
+                    routeIndex,
+                    destination, 
+                    arrival,
+                    RoutePosition.Passed);
+
+                // Assert
+                expect(isAlongRoute).to.equal(false);
+            }
         });
     });
 

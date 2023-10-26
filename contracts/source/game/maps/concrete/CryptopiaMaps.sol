@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
+import "hardhat/console.sol";
+
 import "../IMaps.sol";
 import "../types/MapEnums.sol";
 import "../../assets/types/AssetEnums.sol";
@@ -141,6 +143,8 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
     /**
      * Storage
      */
+    uint constant private BASE_INVERSE = 10_000;
+
     uint16 constant private MAP_MAX_SIZE = 4800;
     uint16 constant private PATH_MAX_LENGTH = 43;
     uint16 constant private PLAYER_START_POSITION = 0;
@@ -697,14 +701,53 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
         // Extract more metadata
         uint timePerTurn = uint(route) & 0xFF;
         uint totalTravelTime = (uint(route >> 8) & 0xFF) * timePerTurn; // totalTurns * timePerTurn
-        uint routeProgressPercentage = (totalTravelTime - (arrival - block.timestamp)) * 100 / totalTravelTime; // Remaining time * 100 / totalTravelTime
-        uint closestTileProgressPercentage = routeIndex * 100 / totalTilesPacked; // Packed tile index * 100 / totalTilesPacked
+        uint closestTileProgressPercentage = routeIndex * BASE_INVERSE / totalTilesPacked; // Packed tile index * BASE_INVERSE / totalTilesPacked
+        uint routeProgressPercentage = block.timestamp < arrival 
+            ? (totalTravelTime - (arrival - block.timestamp)) * BASE_INVERSE / totalTravelTime // Remaining time * BASE_INVERSE / totalTravelTime
+            : BASE_INVERSE;
+           
+        /// Margin examples:
+        ///
+        /// - Margin in time: totalTravelTime / totalTilesPacked / 2
+        /// - Margin as %: 10000 / totalTilesPacked / 2
+        ///
+        /// 1 tile packed           Travel time (60 sec)    Margin in time (60/1/2 = 30)       Margin as % (100/1/2 = 50)
+        ///  0 * 100 / 1 = 0%        0 seconds               [0 - 30]                           [0% - 50%]
+        ///  1 * 100 / 1 = 100%      60 seconds              [30 - 60]                          [50% - 100%]
+        ///
+        /// 1 tile packed           Travel time (120 sec)   Margin in time (120/1/2 = 60)      Margin as % (100/1/2 = 50)
+        ///  1 * 100 / 1 = 100%      120 seconds             [60 - 120]                         [50% - 100%]
+        ///
+        /// 1 tile packed           Travel time (180 sec)   Margin in time (180/1/2 = 90)      Margin as % (100/1/2 = 50)
+        ///  0 * 100 / 1 = 0%        0 seconds               [0 - 90]                           [0% - 50%]
+        ///  1 * 100 / 1 = 100%      180 seconds             [90 - 180]                         [50% - 100%]
+        ///
+        /// 3 tiles packed          Travel time (360 sec)   Margin in time (360/3/2 = 60)      Margin as % (100/3/2 = 16.66)
+        ///  0 * 100 / 3 = 0%        0 seconds               [0 - 60]                           [0% - 16.66%]
+        ///  1 * 100 / 3 = 33.33%    120 seconds             [60 - 180]                         [16.67% - 49.99%]
+        ///  2 * 100 / 3 = 66.66%    240 seconds             [180 - 300]                        [50% - 83.32%]
+        ///  3 * 100 / 3 = 100%      360 seconds             [300 - 360]                        [83.34% - 100%]
+        ///
+        /// 3 tiles packed          Travel time (540 sec)   Margin in time (540/3/2 = 90)      Margin as % (100/3/2 = 16.66)
+        ///  0 * 100 / 3 = 0%        0 seconds               [0 - 90]                           [0% - 16.66%]
+        ///  1 * 100 / 3 = 33.33%    180 seconds             [90 - 270]                         [16.67% - 49.99%]
+        ///  2 * 100 / 3 = 66.66%    360 seconds             [270 - 450]                        [50% - 83.32%]
+        ///  3 * 100 / 3 = 100%      540 seconds             [450 - 540]                        [83.34% - 100%]
+        ///
+        /// 6 tiles packed          Travel time (660 sec)   Margin in time (660/6/2 = 55)      Margin as % (100/6/2 = 8.33)
+        ///  0 * 100 / 6 = 0%        0 seconds               [0 - 55]                           [0% - 8.33%]
+        ///  1 * 100 / 6 = 16.66%    110 seconds             [55 - 165]                         [8.34% - 24.99%]
+        ///  2 * 100 / 6 = 33.33%    220 seconds             [165 - 275]                        [25% - 41.66%]
+        ///  3 * 100 / 6 = 50%       330 seconds             [275 - 385]                        [41.67% - 58.32%]
+        ///  4 * 100 / 6 = 66.66%    440 seconds             [385 - 495]                        [58.33% - 74.99%]
+        ///  5 * 100 / 6 = 83.33%    550 seconds             [495 - 605]                        [75% - 91.66%]
+        ///  6 * 100 / 6 = 100%      660 seconds             [605 - 660]                        [91.67% - 100%]
+        uint margin = BASE_INVERSE / totalTilesPacked / 2;
 
         // Valid when the traveler is near to tileIndex
         if (position == RoutePosition.Current)
         {
-            uint margin = (timePerTurn / 2) * 100 / totalTravelTime; // Margin scales based on timePerTurn
-            if (routeProgressPercentage >= closestTileProgressPercentage - margin && 
+            if (routeProgressPercentage + margin >= closestTileProgressPercentage && 
                 routeProgressPercentage <= closestTileProgressPercentage + margin)
             {
                 return true;
@@ -714,7 +757,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
         // Valid when traveler is before tileIndex
         else if (position == RoutePosition.Upcoming)
         {
-            if (routeProgressPercentage < closestTileProgressPercentage)
+            if (routeProgressPercentage + margin < closestTileProgressPercentage)
             {
                 return true;
             }
@@ -723,7 +766,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
         // Valid when traveler is after tileIndex
         else if (position == RoutePosition.Passed)
         {
-            if (routeProgressPercentage > closestTileProgressPercentage)
+            if (routeProgressPercentage > closestTileProgressPercentage + margin)
             {
                 return true;
             }

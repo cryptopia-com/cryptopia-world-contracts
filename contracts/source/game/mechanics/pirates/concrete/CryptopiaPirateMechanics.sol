@@ -67,9 +67,9 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
      */
     /// @dev Emits when a pirate intercepts another player
     /// @param attacker The account of the attacker
-    /// @param defender The account of the defender
+    /// @param target The account of the defender
     /// @param location The location at which the interception took place
-    event PirateInterception(address indexed attacker, address indexed defender, uint16 indexed location);
+    event PirateInterception(address indexed attacker, address indexed target, uint16 indexed location);
 
 
     /**
@@ -82,6 +82,25 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
     /// @dev Revert if target is already intercepted
     /// @param target The account of the defender
     error AlreadyIntercepted(address target);
+
+    /// @dev Revert if the attacker has not entered the map
+    error AttackerNotInMap(address attacker);
+
+    /// @dev Revert if the attacker is currently traveling
+    error AttackerIsTraveling(address attacker);
+
+    /// @dev Revert if the attacker's location is not valid (not embarked)
+    error AttackerNotEmbarked(address attacker);
+
+    /// @dev Revert if the target has not entered the map
+    error TargetNotInMap(address target);
+
+    /// @dev Revert if the target's location is not valid (not embarked)
+    error TargetNotEmbarked(address target);
+
+    /// @dev Revert if the target is not reachable from the attacker's location
+    error TargetNotReachable(address attacker, address target);
+
 
 
     /**
@@ -134,24 +153,24 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
             bool attackerIsEmbarked,
             uint16 attackerTileIndex,,
             uint64 attackerArrival
-        ) = IMaps(mapsContract).getPlayerTravelData(target);
+        ) = IMaps(mapsContract).getPlayerTravelData(msg.sender);
 
         // Ensure attacker entered map
         if (0 == attackerArrival) 
         {
-            // Revert
+            revert AttackerNotInMap(msg.sender);
         }
 
         // Ensure that the attacker is not traveling
         if (attackerIsTraveling) 
         {
-            // Revert
+            revert AttackerIsTraveling(msg.sender);
         }
 
         // Ensure that the attacker's location is valid
         if (!attackerIsEmbarked) 
         {
-            // Revert
+            revert AttackerNotEmbarked(msg.sender);
         }
 
         // Ensure that the attacker is not already intercepting a target
@@ -180,13 +199,13 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
         // Ensure that the target entered map
         if (0 == targetArrival) 
         {
-            // Revert
+            revert TargetNotInMap(target);
         }
 
         // Ensure that the target's location is valid
         if (!targetIsEmbarked) 
         {
-            // Revert
+            revert TargetNotEmbarked(target);
         }
 
         // Ensure that the target is reachable from the attacker's location
@@ -197,7 +216,7 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
                 // Check route
                 if (!IMaps(mapsContract).tileIsAlongRoute(attackerTileIndex, targetRoute, indexInRoute, targetTileIndex, targetArrival, RoutePosition.Current)) 
                 {
-                    // Revert
+                    revert TargetNotReachable(msg.sender, target);
                 }
             }
             else 
@@ -205,7 +224,7 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
                 // Check location
                 if (!IMaps(mapsContract).tileIsAdjacentTo(attackerTileIndex, targetTileIndex)) 
                 {
-                    // Revert
+                    revert TargetNotReachable(msg.sender, target);
                 }
             }
         }
@@ -214,7 +233,7 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
         Interception storage interception = interceptions[target];
         if (interception.end > 0 && interception.end < block.timestamp) 
         {
-            revert AlreadyIntercepting(msg.sender);
+            revert AlreadyIntercepted(target);
         }
 
 

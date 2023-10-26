@@ -1,6 +1,7 @@
 import "../scripts/helpers/converters";
 import { expect } from "chai";
 import { ethers, upgrades} from "hardhat";
+import { BytesLike } from "ethers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { getParamFromEvent} from '../scripts/helpers/events';
@@ -16,7 +17,8 @@ import {
     CryptopiaMaps,
     CryptopiaShipToken,
     CryptopiaTitleDeedToken,
-    CryptopiaPlayerRegister
+    CryptopiaPlayerRegister,
+    CryptopiaPirateMechanics,
 } from "../typechain-types";
 
 /**
@@ -30,15 +32,14 @@ describe("PirateMechanics Contract", function () {
     let minter: string;
     let account1: string;
     let account2: string;
-    let other: string;
     let treasury: string;
 
     // Instances
-    let accountRegisterInstance: CryptopiaAccountRegister;
     let mapInstance: CryptopiaMaps;
     let shipTokenInstance: CryptopiaShipToken;
     let titleDeedTokenInstance: CryptopiaTitleDeedToken;
     let playerRegisterInstance: CryptopiaPlayerRegister;
+    let pirateMechanicsInstance: CryptopiaPirateMechanics;
 
     let pirateAccountInstance: CryptopiaAccount;
     let targetAccountInstance: CryptopiaAccount;
@@ -64,14 +65,14 @@ describe("PirateMechanics Contract", function () {
     ];
 
     /** 
-     * (Hex) Grid:      Navigation:     Legend:
-     *  W W W W W        W W W W W       W - Water (5)
-     *   W I I R W        W 5 5 W W      I - Island
-     *  R I M I W        W 5 8 5 W       M - Mountain
-     *   W I I I W        W 7 5 5 W      R - Reef
-     *  W W W W W        W W W W W
+     * (Hex) Grid:      Height:         Naviagation:          Legend:
+     *  W W W W W        W W W W W       20 21 22 23 24       - Water (5)
+     *   W I I R W        W 5 5 W W       15 16 17 18 19      - Island
+     *  R I M I W        W 5 8 5 W       10 11 12 13 14       - Mountain
+     *   W I I I W        W 7 5 5 W       05 06 07 08 09      - Reef
+     *  W W W W W        W W W W W       00 01 02 03 04
      */
-     const map: Map = {
+    const map: Map = {
         name: "Map 1".toBytes32(),
         sizeX: 5,
         sizeZ: 5,
@@ -137,6 +138,7 @@ describe("PirateMechanics Contract", function () {
         const MapsFactory = await ethers.getContractFactory("CryptopiaMaps");
         const InventoriesFactory = await ethers.getContractFactory("CryptopiaInventories");
         const CraftingFactory = await ethers.getContractFactory("CryptopiaCrafting");
+        const PirateMechanicsFactory = await ethers.getContractFactory("CryptopiaPirateMechanics");
         
         // Deploy Inventories
         const inventoriesProxy = await (
@@ -169,7 +171,6 @@ describe("PirateMechanics Contract", function () {
         ).waitForDeployment();
 
         const accountRegisterAddress = await accountRegisterProxy.getAddress();
-        accountRegisterInstance = await ethers.getContractAt("CryptopiaAccountRegister", accountRegisterAddress);
 
         // Deploy Asset Register
         const assetRegisterProxy = await (
@@ -251,6 +252,21 @@ describe("PirateMechanics Contract", function () {
         const mapsAddress = await mapsProxy.getAddress();
         mapInstance = await ethers.getContractAt("CryptopiaMaps", mapsAddress);
 
+        // Deploy Pirate Mechanics
+        const pirateMechanicsProxy = await (
+            await upgrades.deployProxy(
+                PirateMechanicsFactory, 
+                [
+                    playerRegisterAddress,
+                    assetRegisterAddress,
+                    mapsAddress,
+                    shipTokenAddress
+                ])
+        ).waitForDeployment();
+
+        const pirateMechanicsAddress = await pirateMechanicsProxy.getAddress();
+        pirateMechanicsInstance = await ethers.getContractAt("CryptopiaPirateMechanics", pirateMechanicsAddress);
+
 
         // Grant roles
         await assetRegisterInstance.grantRole(SYSTEM_ROLE, system);
@@ -291,6 +307,9 @@ describe("PirateMechanics Contract", function () {
         }
 
         // Create map 
+        await mapInstance.createMap(
+            map.name, map.sizeX, map.sizeZ);
+
         await mapInstance.setTiles(
             map.tiles.map((_, index) => index), 
             map.tiles.map(tile => ({
@@ -310,10 +329,22 @@ describe("PirateMechanics Contract", function () {
         pirateAccountInstance = await ethers.getContractAt("CryptopiaAccount", pirateAccount);
 
         // Create target account
-        const createTargetAccountTransaction = await accountRegisterInstance.create([account2], 1, 0, "Target".toBytes32(), 0);
+        const createTargetAccountTransaction = await playerRegisterInstance.create([account2], 1, 0, "Target".toBytes32(), 0, 0);
         const createTargetAccountReceipt = await createTargetAccountTransaction.wait();
-        const targetAccount = getParamFromEvent(accountRegisterInstance, createTargetAccountReceipt, "account", "CreateAccount");
+        const targetAccount = getParamFromEvent(playerRegisterInstance, createTargetAccountReceipt, "account", "RegisterPlayer");
         targetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAccount);
+
+        // Add players to the map
+        const playerEnterCalldata = mapInstance.interface
+            .encodeFunctionData("playerEnter");
+
+        await pirateAccountInstance
+            .connect(await ethers.provider.getSigner(account1))
+            .submitTransaction(await mapInstance.getAddress(), 0, playerEnterCalldata);
+
+        await targetAccountInstance
+            .connect(await ethers.provider.getSigner(account2))
+            .submitTransaction(await mapInstance.getAddress(), 0, playerEnterCalldata);
     });
 
     /**
@@ -321,5 +352,48 @@ describe("PirateMechanics Contract", function () {
      */
     describe("Intercept", function () {
         
+        // Path data
+        const path = [
+            0, // Turn 1 (packed)
+            1  // Turn 1 
+        ];
+        
+        // Travel data
+        let route: BytesLike;
+        let arrival: bigint;
+
+        /**
+         * Travel
+         */
+        before(async () => {
+            
+            const calldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [path]);
+
+            const transaction = await targetAccountInstance
+                .connect(await ethers.provider.getSigner(account2))
+                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+            const receipt = await transaction.wait();
+
+            route = getParamFromEvent(mapInstance, receipt, "route", "PlayerMove");
+            arrival = getParamFromEvent(mapInstance, receipt, "arrival", "PlayerMove");
+        });
+
+        it ("Should allow a pirate to intercept a target", async function () {
+
+            // Act
+            const calldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("intercept", [await targetAccountInstance.getAddress(), 0]);
+
+            const signer = await ethers.provider.getSigner(account1);
+            const operation =  pirateAccountInstance
+                .connect(signer)
+                .submitTransaction(await pirateMechanicsInstance.getAddress(), 0, calldata);
+
+            // Assert
+            await expect(operation).to
+                .emit(pirateMechanicsInstance, "PirateInterception")
+                .withArgs(await pirateAccountInstance.getAddress(), await targetAccountInstance.getAddress(), 0);
+        }); 
     });
 });

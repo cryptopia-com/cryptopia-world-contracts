@@ -1,6 +1,7 @@
 import "../scripts/helpers/converters";
 import { expect } from "chai";
 import { ethers, upgrades} from "hardhat";
+import { BytesLike } from "ethers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { getParamFromEvent} from '../scripts/helpers/events';
@@ -18,7 +19,6 @@ import {
     CryptopiaTitleDeedToken,
     CryptopiaPlayerRegister
 } from "../typechain-types";
-import { BytesLike } from "ethers";
 
 /**
  * Map tests

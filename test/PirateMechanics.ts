@@ -5,18 +5,20 @@ import { BytesLike } from "ethers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { getParamFromEvent} from '../scripts/helpers/events';
-import { REVERT_MODE, MOVEMENT_TURN_DURATION } from "./settings/config";
+import { REVERT_MODE, MOVEMENT_TURN_DURATION, BASE_FUEL_COST } from "./settings/config";
 import { DEFAULT_ADMIN_ROLE, SYSTEM_ROLE, MINTER_ROLE } from "./settings/roles";   
 import { ZERO_ADDRESS } from "./settings/constants";
-import { ResourceType, TerrainType, BiomeType } from '../scripts/types/enums';
+import { Resource, Terrain, Biome, Inventory } from '../scripts/types/enums';
 import { Asset, Map } from "../scripts/types/input";
 
 import { 
     CryptopiaAccount,
     CryptopiaMaps,
+    CryptopiaAssetToken,
     CryptopiaShipToken,
     CryptopiaTitleDeedToken,
     CryptopiaPlayerRegister,
+    CryptopiaInventories,
     CryptopiaPirateMechanics,
 } from "../typechain-types";
 
@@ -40,9 +42,11 @@ describe("PirateMechanics Contract", function () {
 
     // Instances
     let mapInstance: CryptopiaMaps;
+    let fuelAssetInstance: CryptopiaAssetToken;
     let shipTokenInstance: CryptopiaShipToken;
     let titleDeedTokenInstance: CryptopiaTitleDeedToken;
     let playerRegisterInstance: CryptopiaPlayerRegister;
+    let inventoriesInstance: CryptopiaInventories;
     let pirateMechanicsInstance: CryptopiaPirateMechanics;
 
     // Mock Data
@@ -59,6 +63,14 @@ describe("PirateMechanics Contract", function () {
             symbol: "AU29",
             name: "Gold",
             resource: 11,
+            weight: 200, // 2kg
+            contractAddress: "",
+            contractInstance: null
+        },
+        {
+            symbol: "FUEL",
+            name: "Fuel",
+            resource: 16,
             weight: 200, // 2kg
             contractAddress: "",
             contractInstance: null
@@ -80,39 +92,39 @@ describe("PirateMechanics Contract", function () {
         tiles: [
             
             // Bottom row
-            { group: 0, biome: BiomeType.None, terrain: TerrainType.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 0, biome: BiomeType.None, terrain: TerrainType.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 0, biome: BiomeType.Reef, terrain: TerrainType.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 0, biome: BiomeType.None, terrain: TerrainType.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 0, biome: BiomeType.None, terrain: TerrainType.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 0, biome: Biome.Reef, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
             
             // Second row
-            { group: 0, biome: BiomeType.None, terrain: TerrainType.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 1, biome: BiomeType.RainForest, terrain: TerrainType.Flat, elevation: 7, waterLevel: 5, vegitationLevel: 1, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 1, biome: BiomeType.RainForest, terrain: TerrainType.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 1, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 1, biome: BiomeType.RainForest, terrain: TerrainType.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: true, resources: [ResourceType.Iron, ResourceType.Gold], resources_amounts: ["10000".toWei(), "500".toWei()] },
-            { group: 0, biome: BiomeType.None, terrain: TerrainType.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 1, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 7, waterLevel: 5, vegitationLevel: 1, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 1, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 1, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 1, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: true, resources: [Resource.Iron, Resource.Gold], resources_amounts: ["10000".toWei(), "500".toWei()] },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
             
             // Third row
-            { group: 0, biome: BiomeType.Reef, terrain: TerrainType.Water, elevation: 4, waterLevel: 5, vegitationLevel: 2, rockLevel: 0, wildlifeLevel: 2, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 1, biome: BiomeType.RainForest, terrain: TerrainType.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 1, biome: BiomeType.RainForest, terrain: TerrainType.Mountains, elevation: 8, waterLevel: 5, vegitationLevel: 3, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 1, biome: BiomeType.RainForest, terrain: TerrainType.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [ResourceType.Gold], resources_amounts: ["1000".toWei()] },
-            { group: 0, biome: BiomeType.None, terrain: TerrainType.Water, elevation: 2, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 0, biome: Biome.Reef, terrain: Terrain.Water, elevation: 4, waterLevel: 5, vegitationLevel: 2, rockLevel: 0, wildlifeLevel: 2, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 1, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 1, biome: Biome.RainForest, terrain: Terrain.Mountains, elevation: 8, waterLevel: 5, vegitationLevel: 3, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 1, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [Resource.Gold], resources_amounts: ["1000".toWei()] },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 2, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
 
             // Fourth row
-            { group: 0, biome: BiomeType.None, terrain: TerrainType.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 1, biome: BiomeType.RainForest, terrain: TerrainType.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 1, wildlifeLevel: 1, riverFlags: 0, hasRoad: true, hasLake: false, resources: [ResourceType.Iron], resources_amounts: ["20000".toWei()] },
-            { group: 1, biome: BiomeType.RainForest, terrain: TerrainType.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 0, biome: BiomeType.Reef, terrain: TerrainType.Water, elevation: 4, waterLevel: 5, vegitationLevel: 3, rockLevel: 0, wildlifeLevel: 3, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 0, biome: BiomeType.None, terrain: TerrainType.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 1, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 1, wildlifeLevel: 1, riverFlags: 0, hasRoad: true, hasLake: false, resources: [Resource.Iron], resources_amounts: ["20000".toWei()] },
+            { group: 1, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 0, biome: Biome.Reef, terrain: Terrain.Water, elevation: 4, waterLevel: 5, vegitationLevel: 3, rockLevel: 0, wildlifeLevel: 3, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
 
             // Top row
-            { group: 0, biome: BiomeType.None, terrain: TerrainType.Water, elevation: 2, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 0, biome: BiomeType.None, terrain: TerrainType.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 0, biome: BiomeType.None, terrain: TerrainType.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 0, biome: BiomeType.None, terrain: TerrainType.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 0, biome: BiomeType.None, terrain: TerrainType.Water, elevation: 2, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 2, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 2, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
         ]
     };
     
@@ -151,7 +163,7 @@ describe("PirateMechanics Contract", function () {
         ).waitForDeployment();
 
         const inventoriesAddress = await inventoriesProxy.getAddress();
-        const inventoriesInstance = await ethers.getContractAt("CryptopiaInventories", inventoriesAddress);
+        inventoriesInstance = await ethers.getContractAt("CryptopiaInventories", inventoriesAddress);
 
         // Deploy Whitelist
         const whitelistProxy = await (
@@ -253,22 +265,6 @@ describe("PirateMechanics Contract", function () {
         const mapsAddress = await mapsProxy.getAddress();
         mapInstance = await ethers.getContractAt("CryptopiaMaps", mapsAddress);
 
-        // Deploy Pirate Mechanics
-        const pirateMechanicsProxy = await (
-            await upgrades.deployProxy(
-                PirateMechanicsFactory, 
-                [
-                    playerRegisterAddress,
-                    assetRegisterAddress,
-                    mapsAddress,
-                    shipTokenAddress
-                ])
-        ).waitForDeployment();
-
-        const pirateMechanicsAddress = await pirateMechanicsProxy.getAddress();
-        pirateMechanicsInstance = await ethers.getContractAt("CryptopiaPirateMechanics", pirateMechanicsAddress);
-
-
         // Grant roles
         await assetRegisterInstance.grantRole(SYSTEM_ROLE, system);
         await shipTokenInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
@@ -278,7 +274,6 @@ describe("PirateMechanics Contract", function () {
         await inventoriesInstance.grantRole(SYSTEM_ROLE, craftingAddress);
         await craftingInstance.grantRole(SYSTEM_ROLE, system);
         await craftingInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
-        
 
         // Deploy assets
         for (let asset of assets)
@@ -305,7 +300,34 @@ describe("PirateMechanics Contract", function () {
 
             await inventoriesInstance
                 .setFungibleAsset(asset.contractAddress, asset.weight);
+
+            if (asset.resource == Resource.Fuel)
+            {
+                fuelAssetInstance = asset.contractInstance;
+            }
         }
+
+        // Deploy Pirate Mechanics
+        const pirateMechanicsProxy = await (
+            await upgrades.deployProxy(
+                PirateMechanicsFactory, 
+                [
+                    treasury,
+                    playerRegisterAddress,
+                    assetRegisterAddress,
+                    mapsAddress,
+                    shipTokenAddress,
+                    await fuelAssetInstance.getAddress(),
+                    inventoriesAddress
+                ])
+        ).waitForDeployment();
+
+        const pirateMechanicsAddress = await pirateMechanicsProxy.getAddress();
+        pirateMechanicsInstance = await ethers.getContractAt("CryptopiaPirateMechanics", pirateMechanicsAddress);
+
+        // Grant roles
+        await inventoriesInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
+
 
         // Create map 
         await mapInstance.createMap(
@@ -751,7 +773,7 @@ describe("PirateMechanics Contract", function () {
             await time.increase(revertArrival);   
         });
 
-        it ("Should allow a pirate to intercept a target thats traveling", async function () {
+        it ("Should not allow a pirate to intercept a target that's traveling with insufficient fuel", async function () {
 
             // Setup
             const path = [
@@ -770,12 +792,104 @@ describe("PirateMechanics Contract", function () {
             const interceptionWindowInSeconds = totalTravelTime / totalTilesPacked / 2;
 
             const mapContractAddress = await mapInstance.getAddress();
+            const fuelAssetAddress = await fuelAssetInstance.getAddress();
             const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
             const pirateAccountSigner = await ethers.provider.getSigner(account1);
             const pirateAccountAddress = await pirateAccountInstance.getAddress();
             const targetAccountSigner = await ethers.provider.getSigner(account2);
             const targetAccountAddress = await targetAccountInstance.getAddress();
             const strartingTime = await time.latest();
+
+            const playerMoveCalldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [path]);
+
+            const playerMoveTransaction = await targetAccountInstance
+                .connect(targetAccountSigner)
+                .submitTransaction(mapContractAddress, 0, playerMoveCalldata);
+            const playerMoveReceipt = await playerMoveTransaction.wait();
+            
+            const arrival = getParamFromEvent(
+                mapInstance, playerMoveReceipt, "arrival", "PlayerMove");
+
+            // Increase time but not engough to move the target out of reach of the pirate
+            await time.increaseTo(strartingTime + interceptionWindowInSeconds - 1);
+
+            // Act
+            const calldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("intercept", [targetAccountAddress, 0]);
+
+            const operation = pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, calldata);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(inventoriesInstance, "InventoryInsufficientBalance")
+                    .withArgs(pirateAccountAddress, Inventory.Ship, fuelAssetAddress, BASE_FUEL_COST);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(pirateAccountInstance, "ExecutionFailure");
+            }
+
+            // Cleanup (revert to start location)
+            await time.increaseTo(arrival);
+
+            const revertMoveCalldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [[22, 21, 20, 15, 10, 5, 0]]);
+
+            const revertMoveTransaction = await targetAccountInstance
+                .connect(targetAccountSigner)
+                .submitTransaction(mapContractAddress, 0, revertMoveCalldata);
+                
+            const revertMoveReceipt = await revertMoveTransaction.wait();
+            const revertArrival = getParamFromEvent(
+                mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
+
+            await time.increase(revertArrival);
+        });
+
+        it ("Should allow a pirate to intercept a target thats traveling with sufficient fuel", async function () {
+
+            // Setup
+            const path = [
+                0,  // Turn 1 (packed)
+                5,  // Turn 1
+                10, // Turn 1
+                15, // Turn 1 (packed)
+                20, // Turn 1
+                21, // Turn 1
+                22, // Turn 2
+            ];
+
+            const turns = 2;
+            const totalTilesPacked = 2;
+            const totalTravelTime = turns * MOVEMENT_TURN_DURATION;
+            const interceptionWindowInSeconds = totalTravelTime / totalTilesPacked / 2;
+
+            const mapContractAddress = await mapInstance.getAddress();
+            const inventoriesAddress = await inventoriesInstance.getAddress();
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const fuelAssetAddress = await fuelAssetInstance.getAddress();
+            const systemSigner = await ethers.provider.getSigner(system);
+            const minterSigner = await ethers.provider.getSigner(minter);
+            const pirateAccountSigner = await ethers.provider.getSigner(account1);
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+            const targetAccountSigner = await ethers.provider.getSigner(account2);
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+            const strartingTime = await time.latest();
+
+            // Ensure the pirate has enough fuel
+            await fuelAssetInstance
+                .connect(minterSigner)
+                .mintTo(inventoriesAddress, BASE_FUEL_COST);
+
+            await inventoriesInstance
+                .connect(systemSigner)
+                .assignFungibleToken(pirateAccountAddress, Inventory.Ship, fuelAssetAddress, BASE_FUEL_COST);
 
             const playerMoveCalldata = mapInstance.interface
                 .encodeFunctionData("playerMove", [path]);

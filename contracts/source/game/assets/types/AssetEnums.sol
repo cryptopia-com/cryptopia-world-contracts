@@ -18,5 +18,6 @@ enum ResourceType
     Carbon,
     Oil,
     Glass,
-    Steel
+    Steel,
+    Fuel
 }

@@ -17,7 +17,7 @@ export enum EdgeType
     Cliff
 } 
 
-export enum TerrainType
+export enum Terrain
 {
     Flat,
     Hills, // Penalty for movement
@@ -26,7 +26,7 @@ export enum TerrainType
     Seastead
 }
 
-export enum BiomeType
+export enum Biome
 {
     None, // Seastead only
     Plains,
@@ -39,7 +39,7 @@ export enum BiomeType
     Reef // Water only
 }
 
-export enum ResourceType {
+export enum Resource {
     Fish,
     Meat,
     Fruit,
@@ -55,7 +55,8 @@ export enum ResourceType {
     Carbon,
     Oil,
     Glass,
-    Steel
+    Steel,
+    Fuel
 }
 
 /// Specifies the position of a tile in relation to the traveler's progress along the route
@@ -66,3 +67,9 @@ export enum RoutePosition {
     Passed      // The traveler has already passed the tile
 }
 
+export enum Inventory
+{
+    Wallet,
+    Backpack,
+    Ship
+}

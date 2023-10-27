@@ -115,329 +115,6 @@ const config : AppConfig = {
                             }
                         }
                     ]
-                },
-                CryptopiaCreatureToken: {
-                    contractURI: 'https://mumbai-api.cryptopia.com/ERC721/CreatureToken/',
-                    baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/CreatureToken/',
-                    beneficiary: '0x6D0855974622aeB3eE1Ce0655B766c0aC99c0C19',
-                    creatures: [
-                        {
-                            name : "cat1_common",
-                            hash : "hash1_common",
-                            rarity : 0, // Common
-                            class : 0, // Carnivore
-                            species : 2, // Cat
-                            modules : 1,
-                            arbitrary : 0,
-                            base_xp : 1000,
-                            base_luck : 20,
-                            base_charisma : 0,
-                            base_speed : 25,
-                            base_attack : 15,
-                            base_health : 20,
-                            base_defence : 0
-                        },
-                        {
-                            name : "cat1_rare",
-                            hash : "hash1_rare",
-                            rarity : 1, // Rare
-                            class : 0, // Carnivore
-                            species : 2, // Cat
-                            modules : 2,
-                            arbitrary : 0,
-                            base_xp : 1000,
-                            base_luck : 20,
-                            base_charisma : 0,
-                            base_speed : 30,
-                            base_attack : 18,
-                            base_health : 25,
-                            base_defence : 0
-                        },
-                        {
-                            name : "cat1_legendary",
-                            hash : "hash1_legendary",
-                            rarity : 2, // Common
-                            class : 0, // Carnivore
-                            species : 2, // Cat
-                            modules : 3,
-                            arbitrary : 0,
-                            base_xp : 1000,
-                            base_luck : 50,
-                            base_charisma : 0,
-                            base_speed : 35,
-                            base_attack : 22,
-                            base_health : 30,
-                            base_defence : 0
-                        },
-                        {
-                            name : "cat2_common",
-                            hash : "hash2_common",
-                            rarity : 0, // Common
-                            class : 0, // Carnivore
-                            species : 2, // Cat
-                            modules : 1,
-                            arbitrary : 0,
-                            base_xp : 1000,
-                            base_luck : 20,
-                            base_charisma : 0,
-                            base_speed : 20,
-                            base_attack : 15,
-                            base_health : 25,
-                            base_defence : 0
-                        },
-                        {
-                            name : "cat2_rare",
-                            hash : "hash2_rare",
-                            rarity : 1, // Rare
-                            class : 0, // Carnivore
-                            species : 2, // Cat
-                            modules : 2,
-                            arbitrary : 0,
-                            base_xp : 1000,
-                            base_luck : 20,
-                            base_charisma : 0,
-                            base_speed : 25,
-                            base_attack : 18,
-                            base_health : 30,
-                            base_defence : 0
-                        },
-                        {
-                            name : "cat2_legendary",
-                            hash : "hash2_legendary",
-                            rarity : 2, // Common
-                            class : 0, // Carnivore
-                            species : 2, // Cat
-                            modules : 3,
-                            arbitrary : 0,
-                            base_xp : 1000,
-                            base_luck : 50,
-                            base_charisma : 0,
-                            base_speed : 30,
-                            base_attack : 22,
-                            base_health : 35,
-                            base_defence : 0
-                        },
-                        {
-                            name : "tiger_common",
-                            hash : "tiger_common",
-                            rarity : 0, // Common
-                            class : 0, // Carnivore
-                            species : 2, // Same as cat
-                            modules : 1,
-                            arbitrary : 0,
-                            base_xp : 2000,
-                            base_luck : 0,
-                            base_charisma : 0,
-                            base_speed : 50,
-                            base_attack : 45,
-                            base_health : 100,
-                            base_defence : 45
-                        },
-                        {
-                            name : "tiger_rare",
-                            hash : "tiger_rare",
-                            rarity : 1, // Rare
-                            class : 0, // Carnivore
-                            species : 2, // Same as cat
-                            modules : 2,
-                            arbitrary : 0,
-                            base_xp : 2000,
-                            base_luck : 0,
-                            base_charisma : 30,
-                            base_speed : 55,
-                            base_attack : 50,
-                            base_health : 110,
-                            base_defence : 50
-                        },
-                        {
-                            name : "tiger_legenary",
-                            hash : "tiger_legendary",
-                            rarity : 3, // Legendary
-                            class : 0, // Carnivore
-                            species : 2, // Same as cat
-                            modules : 3,
-                            arbitrary : 0,
-                            base_xp : 2000,
-                            base_luck : 30,
-                            base_charisma : 30,
-                            base_speed : 70,
-                            base_attack : 65,
-                            base_health : 200,
-                            base_defence : 60
-                        }
-                    ],
-                    mintData : [
-                        {
-                            creature : "cat1_common",
-                            special : false,
-                            rare : "cat1_rare",
-                            legendary : "cat1_legendary",
-                            mintFee : ['100', 'ether'] // Matic
-                        },
-                        {
-                            creature : "cat2_common",
-                            special : false,
-                            rare : "cat2_rare",
-                            legendary : "cat2_legendary",
-                            mintFee : ['100', 'ether'] // Matic
-                        },
-                        {
-                            creature : "tiger_common",
-                            special : true,
-                            rare : "tiger_rare",
-                            legendary : "tiger_legendary",
-                            mintFee : ['0', 'ether'] // Matic
-                        }
-                    ]
-                },
-                CryptopiaCaptureToken: {
-                    contractURI: 'https://rinkeby-api.cryptopia.com/ERC721/CaptureToken/',
-                    baseTokenURI: 'https://rinkeby-api.cryptopia.com/ERC721/CaptureToken/',
-                    beneficiary: '0x6D0855974622aeB3eE1Ce0655B766c0aC99c0C19',
-                    items: [
-                        {
-                            name : "common",
-                            rarity : 0, // Common
-                            class : 255, // All
-                            strength : 200
-                        },
-                        {
-                            name : "common carnivore",
-                            rarity : 0, // Common
-                            class : 0, // Carnivore
-                            strength : 400
-                        },
-                        {
-                            name : "common herbivore",
-                            rarity : 0, // Common
-                            class : 1, // Herbivore
-                            strength : 400
-                        },
-                        {
-                            name : "common amphibian",
-                            rarity : 0, // Common
-                            class : 2, // Amphibian
-                            strength : 400
-                        },
-                        {
-                            name : "common aerial",
-                            rarity : 0, // Common
-                            class : 3, // Aerial
-                            strength : 400
-                        },
-                        {
-                            name : "rare",
-                            rarity : 1, // Rare
-                            class : 255, // All
-                            strength : 100000
-                        },
-                        {
-                            name : "rare carnivore",
-                            rarity : 1, // Rare
-                            class : 0, // Carnivore
-                            strength : 200000
-                        },
-                        {
-                            name : "rare herbivore",
-                            rarity : 1, // Rare
-                            class : 1, // Herbivore
-                            strength : 200000
-                        },
-                        {
-                            name : "rare amphibian",
-                            rarity : 1, // Rare
-                            class : 2, // Amphibian
-                            strength : 200000
-                        },
-                        {
-                            name : "rare aerial",
-                            rarity : 1, // Rare
-                            class : 3, // Aerial
-                            strength : 200000
-                        },
-                        {
-                            name : "legendary",
-                            rarity : 2, // Legendary
-                            class : 255, // All
-                            strength : 5000000
-                        },
-                        {
-                            name : "legendary carnivore",
-                            rarity : 2, // Legendary
-                            class : 0, // Carnivore
-                            strength : 10000000
-                        },
-                        {
-                            name : "legendary herbivore",
-                            rarity : 2, // Legendary
-                            class : 1, // Herbivore
-                            strength : 10000000
-                        },
-                        {
-                            name : "legendary amphibian",
-                            rarity : 2, // Legendary
-                            class : 2, // Amphibian
-                            strength : 10000000
-                        },
-                        {
-                            name : "legendary aerial",
-                            rarity : 2, // Legendary
-                            class : 3, // Aerial
-                            strength : 10000000
-                        },
-                        {
-                            name : "master",
-                            rarity : 3, // Master
-                            class : 255, // All
-                            strength : 100000000
-                        },
-                        {
-                            name : "master carnivore",
-                            rarity : 3, // Master
-                            class : 0, // Carnivore
-                            strength : 200000000
-                        },
-                        {
-                            name : "master herbivore",
-                            rarity : 3, // Master
-                            class : 1, // Herbivore
-                            strength : 200000000
-                        },
-                        {
-                            name : "master amphibian",
-                            rarity : 3, // Master
-                            class : 2, // Amphibian
-                            strength : 200000000
-                        },
-                        {
-                            name : "master aerial",
-                            rarity : 3, // Master
-                            class : 3, // Aerial
-                            strength : 200000000
-                        }
-                    ],
-                    mintData : [
-                        {
-                            item : "common",
-                            mintFee : ['10', 'ether'] // Matic
-                        },
-                        {
-                            item : "common carnivore",
-                            mintFee : ['15', 'ether'] // Matic
-                        },
-                        {
-                            item : "common herbivore",
-                            mintFee : ['15', 'ether'] // Matic
-                        },
-                        {
-                            item : "common amphibian",
-                            mintFee : ['15', 'ether'] // Matic
-                        },
-                        {
-                            item : "common aerial",
-                            mintFee : ['15', 'ether'] // Matic
-                        }
-                    ]
                 }
             },
             ERC20: {
@@ -448,8 +125,8 @@ const config : AppConfig = {
                             name: "Fish",
                             resource: 0,
                             weight: 50, // 0.5kg
-                            faucets: [
-                                "CryptopiaResourceFaucet"
+                            minters: [
+                                "CryptopiaResourceGathering"
                             ]
                         },
                         {
@@ -457,8 +134,8 @@ const config : AppConfig = {
                             name: "Meat",
                             weight: 50, // 0.5kg
                             resource: 1,
-                            faucets: [
-                                "CryptopiaResourceFaucet"
+                            minters: [
+                                "CryptopiaResourceGathering"
                             ]
                         },
                         {
@@ -466,8 +143,8 @@ const config : AppConfig = {
                             name: "Fruit",
                             weight: 50, // 0.5kg
                             resource: 2,
-                            faucets: [
-                                "CryptopiaResourceFaucet"
+                            minters: [
+                                "CryptopiaResourceGathering"
                             ]
                         },
                         {
@@ -475,8 +152,8 @@ const config : AppConfig = {
                             name: "Wood",
                             weight: 50, // 0.5kg
                             resource: 3,
-                            faucets: [
-                                "CryptopiaResourceFaucet"
+                            minters: [
+                                "CryptopiaResourceGathering"
                             ]
                         },
                         {
@@ -484,8 +161,8 @@ const config : AppConfig = {
                             name: "Stone",
                             weight: 100, // 1kg
                             resource: 4,
-                            faucets: [
-                                "CryptopiaResourceFaucet"
+                            minters: [
+                                "CryptopiaResourceGathering"
                             ]
                         },
                         {
@@ -493,8 +170,8 @@ const config : AppConfig = {
                             name: "Sand",
                             weight: 50, // 0.5kg
                             resource: 5,
-                            faucets: [
-                                "CryptopiaResourceFaucet"
+                            minters: [
+                                "CryptopiaResourceGathering"
                             ]
                         },
                         {
@@ -555,6 +232,12 @@ const config : AppConfig = {
                             symbol: "STEEL",
                             name: "Steel",
                             resource: 15,
+                            weight: 200, // 2kg
+                        },
+                        {
+                            symbol: "FUEL",
+                            name: "Fuel",
+                            resource: 16,
                             weight: 200, // 2kg
                         }
                     ]
@@ -677,162 +360,6 @@ const config : AppConfig = {
                             }
                         }
                     ]
-                },
-                CryptopiaCreatureToken: {
-                    contractURI: 'https://mumbai-api.cryptopia.com/ERC721/CreatureToken/',
-                    baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/CreatureToken/',
-                    beneficiary: '0x6D0855974622aeB3eE1Ce0655B766c0aC99c0C19',
-                    creatures: [],
-                    mintData : []
-                },
-                CryptopiaCaptureToken: {
-                    contractURI: 'https://mumbai-api.cryptopia.com/ERC721/CaptureToken/',
-                    baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/CaptureToken/',
-                    beneficiary: '0x6D0855974622aeB3eE1Ce0655B766c0aC99c0C19',
-                    items: [
-                        {
-                            name : "common",
-                            rarity : 0, // Common
-                            class : 255, // All
-                            strength : 200
-                        },
-                        {
-                            name : "common carnivore",
-                            rarity : 0, // Common
-                            class : 0, // Carnivore
-                            strength : 400
-                        },
-                        {
-                            name : "common herbivore",
-                            rarity : 0, // Common
-                            class : 1, // Herbivore
-                            strength : 400
-                        },
-                        {
-                            name : "common amphibian",
-                            rarity : 0, // Common
-                            class : 2, // Amphibian
-                            strength : 400
-                        },
-                        {
-                            name : "common aerial",
-                            rarity : 0, // Common
-                            class : 3, // Aerial
-                            strength : 400
-                        },
-                        {
-                            name : "rare",
-                            rarity : 1, // Rare
-                            class : 255, // All
-                            strength : 100000
-                        },
-                        {
-                            name : "rare carnivore",
-                            rarity : 1, // Rare
-                            class : 0, // Carnivore
-                            strength : 200000
-                        },
-                        {
-                            name : "rare herbivore",
-                            rarity : 1, // Rare
-                            class : 1, // Herbivore
-                            strength : 200000
-                        },
-                        {
-                            name : "rare amphibian",
-                            rarity : 1, // Rare
-                            class : 2, // Amphibian
-                            strength : 200000
-                        },
-                        {
-                            name : "rare aerial",
-                            rarity : 1, // Rare
-                            class : 3, // Aerial
-                            strength : 200000
-                        },
-                        {
-                            name : "legendary",
-                            rarity : 2, // Legendary
-                            class : 255, // All
-                            strength : 5000000
-                        },
-                        {
-                            name : "legendary carnivore",
-                            rarity : 2, // Legendary
-                            class : 0, // Carnivore
-                            strength : 10000000
-                        },
-                        {
-                            name : "legendary herbivore",
-                            rarity : 2, // Legendary
-                            class : 1, // Herbivore
-                            strength : 10000000
-                        },
-                        {
-                            name : "legendary amphibian",
-                            rarity : 2, // Legendary
-                            class : 2, // Amphibian
-                            strength : 10000000
-                        },
-                        {
-                            name : "legendary aerial",
-                            rarity : 2, // Legendary
-                            class : 3, // Aerial
-                            strength : 10000000
-                        },
-                        {
-                            name : "master",
-                            rarity : 3, // Master
-                            class : 255, // All
-                            strength : 100000000
-                        },
-                        {
-                            name : "master carnivore",
-                            rarity : 3, // Master
-                            class : 0, // Carnivore
-                            strength : 200000000
-                        },
-                        {
-                            name : "master herbivore",
-                            rarity : 3, // Master
-                            class : 1, // Herbivore
-                            strength : 200000000
-                        },
-                        {
-                            name : "master amphibian",
-                            rarity : 3, // Master
-                            class : 2, // Amphibian
-                            strength : 200000000
-                        },
-                        {
-                            name : "master aerial",
-                            rarity : 3, // Master
-                            class : 3, // Aerial
-                            strength : 200000000
-                        }
-                    ],
-                    mintData : [
-                        {
-                            item : "common",
-                            mintFee : ['10', 'ether'] // Matic
-                        },
-                        {
-                            item : "common carnivore",
-                            mintFee : ['15', 'ether'] // Matic
-                        },
-                        {
-                            item : "common herbivore",
-                            mintFee : ['15', 'ether'] // Matic
-                        },
-                        {
-                            item : "common amphibian",
-                            mintFee : ['15', 'ether'] // Matic
-                        },
-                        {
-                            item : "common aerial",
-                            mintFee : ['15', 'ether'] // Matic
-                        }
-                    ]
                 }
             },
             ERC20: {
@@ -843,8 +370,8 @@ const config : AppConfig = {
                             name: "Fish",
                             resource: 0,
                             weight: 50, // 0.5kg
-                            faucets: [
-                                "CryptopiaResourceFaucet"
+                            minters: [
+                                "CryptopiaResourceGathering"
                             ]
                         },
                         {
@@ -852,8 +379,8 @@ const config : AppConfig = {
                             name: "Meat",
                             weight: 50, // 0.5kg
                             resource: 1,
-                            faucets: [
-                                "CryptopiaResourceFaucet"
+                            minters: [
+                                "CryptopiaResourceGathering"
                             ]
                         },
                         {
@@ -861,8 +388,8 @@ const config : AppConfig = {
                             name: "Fruit",
                             weight: 50, // 0.5kg
                             resource: 2,
-                            faucets: [
-                                "CryptopiaResourceFaucet"
+                            minters: [
+                                "CryptopiaResourceGathering"
                             ]
                         },
                         {
@@ -870,8 +397,8 @@ const config : AppConfig = {
                             name: "Wood",
                             weight: 50, // 0.5kg
                             resource: 3,
-                            faucets: [
-                                "CryptopiaResourceFaucet"
+                            minters: [
+                                "CryptopiaResourceGathering"
                             ]
                         },
                         {
@@ -879,8 +406,8 @@ const config : AppConfig = {
                             name: "Stone",
                             weight: 100, // 1kg
                             resource: 4,
-                            faucets: [
-                                "CryptopiaResourceFaucet"
+                            minters: [
+                                "CryptopiaResourceGathering"
                             ]
                         },
                         {
@@ -888,8 +415,8 @@ const config : AppConfig = {
                             name: "Sand",
                             weight: 50, // 0.5kg
                             resource: 5,
-                            faucets: [
-                                "CryptopiaResourceFaucet"
+                            minters: [
+                                "CryptopiaResourceGathering"
                             ]
                         },
                         {
@@ -950,6 +477,12 @@ const config : AppConfig = {
                             symbol: "STEEL",
                             name: "Steel",
                             resource: 15,
+                            weight: 200, // 2kg
+                        },
+                        {
+                            symbol: "FUEL",
+                            name: "Fuel",
+                            resource: 16,
                             weight: 200, // 2kg
                         }
                     ]

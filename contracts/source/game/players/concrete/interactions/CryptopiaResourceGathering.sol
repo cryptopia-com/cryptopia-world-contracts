@@ -18,7 +18,7 @@ import "../../interactions/IResourceGathering.sol";
 
 /// @title Allows players to mint non-finite resources
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-contract CryptopiaResourceFaucet is ContextUpgradeable, CryptopiaERC20Retriever, IResourceGathering {
+contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriever, IResourceGathering {
 
     /** 
      * Storage

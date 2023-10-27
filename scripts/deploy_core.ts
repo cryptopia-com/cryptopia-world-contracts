@@ -29,7 +29,7 @@ async function main() {
     const TokenFactory = await ethers.getContractFactory("CryptopiaToken");
     const AssetTokenFactory = await ethers.getContractFactory("CryptopiaAssetToken");
     const AssetRegisterFactory = await ethers.getContractFactory("CryptopiaAssetRegister");
-    const ResourceFaucetFactory = await ethers.getContractFactory("CryptopiaResourceFaucet");
+    const ResourceGatheringFactory = await ethers.getContractFactory("CryptopiaResourceGathering");
     const ShipTokenFactory = await ethers.getContractFactory("CryptopiaShipToken");
     const ToolTokenFactory = await ethers.getContractFactory("CryptopiaToolToken");
     const CraftingFactory = await ethers.getContractFactory("CryptopiaCrafting");
@@ -211,10 +211,10 @@ async function main() {
     // Grant Map roles
     await titleDeedTokenInstance.grantRole(SYSTEM_ROLE, mapAddress);
 
-    // Deploy Resource Faucet
-    const resourceFaucetProxy = await (
+    // Deploy Resource Gathering
+    const resourceGatheringProxy = await (
         await upgrades.deployProxy(
-            ResourceFaucetFactory,
+            ResourceGatheringFactory,
             [
                 mapAddress,
                 assetRegisterAddress,
@@ -224,14 +224,14 @@ async function main() {
             ])
         ).waitForDeployment();
 
-    const resourceFaucetAddress = await resourceFaucetProxy.getAddress();
-    const resourceFaucetInstance = await ethers.getContractAt("CryptopiaResourceFaucet", resourceFaucetAddress);
-    console.log("ResourceFaucet deployed to: " + resourceFaucetAddress);
+    const resourceGatheringAddress = await resourceGatheringProxy.getAddress();
+    const resourceGatheringInstance = await ethers.getContractAt("CryptopiaResourceGathering", resourceGatheringAddress);
+    console.log("ResourceGathering deployed to: " + resourceGatheringAddress);
 
     // Grant resource roles
-    await toolTokenInstance.grantRole(SYSTEM_ROLE, resourceFaucetAddress);
-    await inventoriesInstance.grantRole(SYSTEM_ROLE, resourceFaucetAddress);
-    await playerRegisterInstance.grantRole(SYSTEM_ROLE, resourceFaucetAddress); 
+    await toolTokenInstance.grantRole(SYSTEM_ROLE, resourceGatheringAddress);
+    await inventoriesInstance.grantRole(SYSTEM_ROLE, resourceGatheringAddress);
+    await playerRegisterInstance.grantRole(SYSTEM_ROLE, resourceGatheringAddress); 
 
     // Deploy assets
     for (let asset of config.ERC20.CryptopiaAssetToken.assets)
@@ -254,9 +254,9 @@ async function main() {
         await assetRegisterInstance.registerAsset(assetTokenAddress, true, asset.resource);
         await inventoriesInstance.setFungibleAsset(assetTokenAddress, asset.weight);
 
-        if (asset.faucets != undefined && asset.faucets.includes("CryptopiaResourceFaucet"))
+        if (asset.Gatherings != undefined && asset.Gatherings.includes("CryptopiaResourceGathering"))
         {
-            await assetTokenInstance.grantRole(MINTER_ROLE, resourceFaucetAddress);
+            await assetTokenInstance.grantRole(MINTER_ROLE, resourceGatheringAddress);
         }
     }
 

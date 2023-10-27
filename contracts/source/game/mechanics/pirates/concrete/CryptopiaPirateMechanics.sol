@@ -2,24 +2,24 @@
 pragma solidity ^0.8.20 < 0.9.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "hardhat/console.sol";
 
 import "../../../maps/IMaps.sol";
 import "../../../maps/types/MapEnums.sol";
 import "../../../players/IPlayerRegister.sol";
 import "../../../players/errors/PlayerErrors.sol";
+import "../../../inventories/IInventories.sol";
 import "../IPirateMechanics.sol";
 
 /// @title Cryptopia pirate game mechanics
-/// @dev 
+/// @dev Provides the mechanics for the pirate gameplay
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
 
     // TODO
-    // - Add intercept function that allows the attacker to intercept the defender
-    //     - Determine if the attacker is able to intercept the defender
+    // * Add intercept function that allows the attacker to intercept the defender
+    //     * Determine if the attacker is able to intercept the defender
     //     - Deduct the required amount of fuel from the attacker
-    //     - Generate an event that indicates that the defender has been intercepted
+    //     * Generate an event that indicates that the defender has been intercepted
     //
     // - Add negotiate function that allows the attacker to negotiate with the defender
     // - Add a flee function that allows the defender to flee from the attacker
@@ -51,16 +51,20 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
      * Storage
      */ 
     uint64 constant private MAX_RESPONSE_TIME = 600; // 10 minutes
+    uint constant private BASE_FUEL_COST = 10 ether;
 
     /// @dev Interceptions (target => Interception)
     mapping(address => Interception) public interceptions;
     mapping(address => address) public targets;
 
     /// @dev Refs
+    address public treasury;
     address public playerRegisterContract;
     address public assetRegisterContract;
     address public mapsContract;
     address public shipContract;
+    address public fuelContact;
+    address public intentoriesContract;
 
 
     /**
@@ -107,22 +111,31 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
      * Public functions
      */
     /// @dev Constructor
+    /// @param _treasury The address of the treasury
     /// @param _playerRegisterContract The address of the player register
     /// @param _assetRegisterContract The address of the asset register
     /// @param _mapsContract The address of the maps contract
     /// @param _shipContract The address of the ship contract
+    /// @param _fuelContact The address of the fuel contract
+    /// @param _intentoriesContract The address of the inventories contract
     function initialize(
+        address _treasury,
         address _playerRegisterContract,
         address _assetRegisterContract,
         address _mapsContract,
-        address _shipContract
+        address _shipContract,
+        address _fuelContact,
+        address _intentoriesContract
     ) 
         initializer public 
     {
+        treasury = _treasury;
         playerRegisterContract = _playerRegisterContract;
         assetRegisterContract = _assetRegisterContract;
         mapsContract = _mapsContract;
         shipContract = _shipContract;
+        fuelContact = _fuelContact;
+        intentoriesContract = _intentoriesContract;
     }
 
     
@@ -235,6 +248,15 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
             revert TargetAlreadyIntercepted(target);
         }
 
+
+        // Handle fuel consumption
+        if (targetIsTraveling)
+        {
+            uint fuelCost = BASE_FUEL_COST; // TODO: Increase with value based on CO2 level of ship?
+            IInventories(intentoriesContract)
+                .deductFungibleToken(msg.sender, Inventory.Ship, fuelContact, fuelCost);
+        }
+        
 
         /**
          * Create interception

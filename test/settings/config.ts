@@ -18,3 +18,8 @@ export const MOVEMENT_COST_LAND_FLAT = 11;
 export const MOVEMENT_COST_LAND_SLOPE = 19;
 export const MOVEMENT_COST_WATER = 5;
 export const MOVEMENT_COST_WATER_EMBARK_DISEMBARK = 25; 
+
+/**
+ * Pirate mechanics settings
+ */
+export const BASE_FUEL_COST = BigInt("10000000000000000000");

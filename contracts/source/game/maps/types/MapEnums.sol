@@ -27,6 +27,7 @@ enum Biome
     Grassland,
     Forest, // Allows minting of wood
     RainForest, // Allows minting of wood
+    Mangrove, // Allows minting of wood
     Desert,
     Tundra,
     Swamp,

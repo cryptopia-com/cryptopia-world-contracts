@@ -13,7 +13,6 @@ import { Asset, Map } from "../scripts/types/input";
 
 import { 
     CryptopiaAccount,
-    CryptopiaAccountRegister,
     CryptopiaMaps,
     CryptopiaShipToken,
     CryptopiaTitleDeedToken,
@@ -23,6 +22,9 @@ import {
 
 /**
  * Pirate Mechanics tests
+ * 
+ * Test cases:
+ * - Intercept
  */
 describe("PirateMechanics Contract", function () {
 
@@ -32,6 +34,8 @@ describe("PirateMechanics Contract", function () {
     let minter: string;
     let account1: string;
     let account2: string;
+    let account3: string;
+    let account4: string;
     let treasury: string;
 
     // Instances
@@ -40,9 +44,6 @@ describe("PirateMechanics Contract", function () {
     let titleDeedTokenInstance: CryptopiaTitleDeedToken;
     let playerRegisterInstance: CryptopiaPlayerRegister;
     let pirateMechanicsInstance: CryptopiaPirateMechanics;
-
-    let pirateAccountInstance: CryptopiaAccount;
-    let targetAccountInstance: CryptopiaAccount;
 
     // Mock Data
     const assets: Asset[] = [
@@ -121,7 +122,7 @@ describe("PirateMechanics Contract", function () {
     before(async () => {
 
         // Accounts
-        [deployer, system, minter, account1, account2, treasury] = (
+        [deployer, system, minter, account1, account2, account3, account4, treasury] = (
             await ethers.getSigners()).map(s => s.address);
 
         // Signers
@@ -321,79 +322,582 @@ describe("PirateMechanics Contract", function () {
             map.tiles.map(tile => tile.resources_amounts));
         
         await mapInstance.finalizeMap();
-
-        // Create pirate account
-        const createPirateAccountTransaction = await playerRegisterInstance.create([account1], 1, 0, "Pirate".toBytes32(), 0, 0);
-        const createPirateAccountReceipt = await createPirateAccountTransaction.wait();
-        const pirateAccount = getParamFromEvent(playerRegisterInstance, createPirateAccountReceipt, "account", "RegisterPlayer");
-        pirateAccountInstance = await ethers.getContractAt("CryptopiaAccount", pirateAccount);
-
-        // Create target account
-        const createTargetAccountTransaction = await playerRegisterInstance.create([account2], 1, 0, "Target".toBytes32(), 0, 0);
-        const createTargetAccountReceipt = await createTargetAccountTransaction.wait();
-        const targetAccount = getParamFromEvent(playerRegisterInstance, createTargetAccountReceipt, "account", "RegisterPlayer");
-        targetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAccount);
-
-        // Add players to the map
-        const playerEnterCalldata = mapInstance.interface
-            .encodeFunctionData("playerEnter");
-
-        await pirateAccountInstance
-            .connect(await ethers.provider.getSigner(account1))
-            .submitTransaction(await mapInstance.getAddress(), 0, playerEnterCalldata);
-
-        await targetAccountInstance
-            .connect(await ethers.provider.getSigner(account2))
-            .submitTransaction(await mapInstance.getAddress(), 0, playerEnterCalldata);
     });
 
     /**
      * Test Pirate Mechanics
      */
     describe("Intercept", function () {
-        
-        // Path data
-        const path = [
-            0, // Turn 1 (packed)
-            1  // Turn 1 
-        ];
-        
-        // Travel data
-        let route: BytesLike;
-        let arrival: bigint;
+
+        // Players
+        let pirateAccountInstance: CryptopiaAccount;
+        let targetAccountInstance: CryptopiaAccount;
+        let anotherPirateAccountInstance: CryptopiaAccount;
+        let anotherTargetAccountInstance: CryptopiaAccount;
 
         /**
-         * Travel
+         * Deploy players
          */
         before(async () => {
-            
-            const calldata = mapInstance.interface
-                .encodeFunctionData("playerMove", [path]);
 
-            const transaction = await targetAccountInstance
-                .connect(await ethers.provider.getSigner(account2))
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
-            const receipt = await transaction.wait();
+            // Create pirate account
+            const createPirateAccountTransaction = await playerRegisterInstance.create([account1], 1, 0, "Pirate".toBytes32(), 0, 0);
+            const createPirateAccountReceipt = await createPirateAccountTransaction.wait();
+            const pirateAccount = getParamFromEvent(playerRegisterInstance, createPirateAccountReceipt, "account", "RegisterPlayer");
+            pirateAccountInstance = await ethers.getContractAt("CryptopiaAccount", pirateAccount);
 
-            route = getParamFromEvent(mapInstance, receipt, "route", "PlayerMove");
-            arrival = getParamFromEvent(mapInstance, receipt, "arrival", "PlayerMove");
+            // Create target account
+            const createTargetAccountTransaction = await playerRegisterInstance.create([account2], 1, 0, "Target".toBytes32(), 0, 0);
+            const createTargetAccountReceipt = await createTargetAccountTransaction.wait();
+            const targetAccount = getParamFromEvent(playerRegisterInstance, createTargetAccountReceipt, "account", "RegisterPlayer");
+            targetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAccount);
+
+            // Create another rpirate account
+            const createAnotherPirateAccountTransaction = await playerRegisterInstance.create([account3], 1, 0, "Another_Pirate".toBytes32(), 0, 0);
+            const createAnotherPirateAccountReceipt = await createAnotherPirateAccountTransaction.wait();
+            const anotherPirateAccount = getParamFromEvent(playerRegisterInstance, createAnotherPirateAccountReceipt, "account", "RegisterPlayer");
+            anotherPirateAccountInstance = await ethers.getContractAt("CryptopiaAccount", anotherPirateAccount);
+
+            // Create another target account
+            const createAnotherTargetAccountTransaction = await playerRegisterInstance.create([account4], 1, 0, "Another_Target".toBytes32(), 0, 0);
+            const createAnotherTargetAccountReceipt = await createAnotherTargetAccountTransaction.wait();
+            const targetAnotherAccount = getParamFromEvent(playerRegisterInstance, createAnotherTargetAccountReceipt, "account", "RegisterPlayer");
+            anotherTargetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAnotherAccount);
+
+            // Add another pirate and target to the map
+            const playerEnterCalldata = mapInstance.interface
+                .encodeFunctionData("playerEnter");
+
+            await anotherPirateAccountInstance
+                .connect(await ethers.provider.getSigner(account3))
+                .submitTransaction(await mapInstance.getAddress(), 0, playerEnterCalldata);
+
+            await anotherTargetAccountInstance
+                .connect(await ethers.provider.getSigner(account4))
+                .submitTransaction(await mapInstance.getAddress(), 0, playerEnterCalldata);
         });
+        
+        it ("Should not allow a pirate to intercept while entered the map", async function () {
 
-        it ("Should allow a pirate to intercept a target", async function () {
+            // Setup
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const pirateAccountSigner = await ethers.provider.getSigner(account1);
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+            const targetAccountAddress = await targetAccountInstance.getAddress();
 
             // Act
             const calldata = pirateMechanicsInstance.interface
-                .encodeFunctionData("intercept", [await targetAccountInstance.getAddress(), 0]);
+                .encodeFunctionData("intercept", [targetAccountAddress, 0]);
 
-            const signer = await ethers.provider.getSigner(account1);
             const operation =  pirateAccountInstance
-                .connect(signer)
-                .submitTransaction(await pirateMechanicsInstance.getAddress(), 0, calldata);
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, calldata);
+
+            // Assert
+            await expect(operation).to.be
+                .revertedWithCustomError(pirateMechanicsInstance, "AttackerNotInMap")
+                .withArgs(pirateAccountAddress);
+        }); 
+
+        it ("Should not allow a pirate to intercept while traveling", async function () {
+
+            // Setup 
+            const turns = 1;
+            const path = [
+                0, // Turn 1 (packed)
+                1  // Turn 1 
+            ];
+
+            const mapContractAddress = await mapInstance.getAddress();
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const pirateAccountSigner = await ethers.provider.getSigner(account1);
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+
+            const playerEnterCalldata = mapInstance.interface
+                .encodeFunctionData("playerEnter");
+
+            await pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(mapContractAddress, 0, playerEnterCalldata);
+
+            const playerMoveCalldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [path]);
+
+            await pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(mapContractAddress, 0, playerMoveCalldata);
+
+            // Act
+            const interceptCalldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("intercept", [targetAccountAddress, 0]);
+
+            const operation =  pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, interceptCalldata);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(pirateMechanicsInstance, "AttackerIsTraveling")
+                    .withArgs(pirateAccountAddress);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(pirateAccountInstance, "ExecutionFailure");
+            }
+
+            // Cleanup
+            await time.increase(turns * MOVEMENT_TURN_DURATION);
+        });
+
+        it ("Should not allow a pirate to intercept from a location that's not on the water", async function () {
+
+            // Setup
+            const path = [
+                1, // Turn 1 (packed)
+                2, // Turn 1 
+                7  // Turn 2 (Land adjacent to water)
+            ];
+
+            const mapContractAddress = await mapInstance.getAddress();
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const pirateAccountSigner = await ethers.provider.getSigner(account1);
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+
+            const playerMoveCalldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [path]);
+            
+            const playerMoveTransaction = await pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(mapContractAddress, 0, playerMoveCalldata);
+
+            const playerMoveReceipt = await playerMoveTransaction.wait();
+            const arrival = getParamFromEvent(
+                mapInstance, playerMoveReceipt, "arrival", "PlayerMove");
+
+            await time.increase(arrival);
+
+            // Act
+            const calldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("intercept", [targetAccountAddress, 0]);
+
+            const operation = pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, calldata);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(pirateMechanicsInstance, "AttackerNotEmbarked")
+                    .withArgs(pirateAccountAddress);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(pirateAccountInstance, "ExecutionFailure");
+            }
+
+            // Cleanup (revert to start location)
+            const revertMoveCalldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [[7, 2, 1, 0]]);
+            
+            const revertMoveTransaction = await pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(mapContractAddress, 0, revertMoveCalldata);
+
+            const revertMoveReceipt = await revertMoveTransaction.wait();
+            const revertArrival = getParamFromEvent(
+                mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
+                
+            await time.increase(revertArrival);   
+        });
+
+        it ("Should not allow a pirate to intercept a target that did not enter the map", async function () {
+
+            // Setup
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const pirateAccountSigner = await ethers.provider.getSigner(account1);
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+
+            // Act
+            const calldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("intercept", [targetAccountAddress, 0]);
+
+            const operation =  pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, calldata);
+
+            // Assert
+            await expect(operation).to.be
+                .revertedWithCustomError(pirateMechanicsInstance, "TargetNotInMap")
+                .withArgs(targetAccountAddress);
+        });
+
+        it ("Should not allow a pirate to intercept a target that's not on the water", async function () {
+
+            // Setup
+            const path = [
+                0, // Turn 1 (packed)
+                1, // Turn 1
+                2, // Turn 1 
+                7  // Turn 2 (Land adjacent to water)
+            ];
+
+            const mapContractAddress = await mapInstance.getAddress();
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const pirateAccountSigner = await ethers.provider.getSigner(account1);
+            const targetAccountSigner = await ethers.provider.getSigner(account2);
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+
+            const playerEnterCalldata = mapInstance.interface
+                .encodeFunctionData("playerEnter");
+
+            await targetAccountInstance
+                .connect(targetAccountSigner)
+                .submitTransaction(mapContractAddress, 0, playerEnterCalldata);
+
+            const playerMoveCalldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [path]);
+            
+            const playerMoveTransaction = await targetAccountInstance
+                .connect(targetAccountSigner)
+                .submitTransaction(mapContractAddress, 0, playerMoveCalldata);
+
+            const playerMoveReceipt = await playerMoveTransaction.wait();
+            const arrival = getParamFromEvent(
+                mapInstance, playerMoveReceipt, "arrival", "PlayerMove");
+
+            await time.increase(arrival);
+
+            // Act
+            const calldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("intercept", [targetAccountAddress, 0]);
+
+            const operation = pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, calldata);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(pirateMechanicsInstance, "TargetNotEmbarked")
+                    .withArgs(targetAccountAddress);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(pirateAccountInstance, "ExecutionFailure");
+            }
+
+            // Cleanup (revert to start location)
+            const revertMoveCalldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [[7, 2, 1, 0]]);
+            
+            const revertMoveTransaction = await targetAccountInstance
+                .connect(targetAccountSigner)
+                .submitTransaction(mapContractAddress, 0, revertMoveCalldata);
+
+            const revertMoveReceipt = await revertMoveTransaction.wait();
+            const revertArrival = getParamFromEvent(
+                mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
+                
+            await time.increase(revertArrival);   
+        });
+
+        it ("Should not allow a pirate to intercept a target at a stationary location that's not reachable", async function () {
+
+            // Setup
+            const path = [
+                0, // Turn 1 (packed)
+                1, // Turn 1
+                2  // Turn 1 (Water tile not ajacent to pirate)
+            ];
+
+            const mapContractAddress = await mapInstance.getAddress();
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const pirateAccountSigner = await ethers.provider.getSigner(account1);
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+            const targetAccountSigner = await ethers.provider.getSigner(account2);
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+
+            const playerMoveCalldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [path]);
+            
+            const playerMoveTransaction = await targetAccountInstance
+                .connect(targetAccountSigner)
+                .submitTransaction(mapContractAddress, 0, playerMoveCalldata);
+
+            const playerMoveReceipt = await playerMoveTransaction.wait();
+            const arrival = getParamFromEvent(
+                mapInstance, playerMoveReceipt, "arrival", "PlayerMove");
+
+            await time.increase(arrival);
+
+            // Act
+            const calldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("intercept", [targetAccountAddress, 0]);
+
+            const operation = pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, calldata);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(pirateMechanicsInstance, "TargetNotReachable")
+                    .withArgs(pirateAccountAddress, targetAccountAddress);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(pirateAccountInstance, "ExecutionFailure");
+            }
+
+            // Cleanup (revert to start location)
+            const revertMoveCalldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [[2, 1, 0]]);
+            
+            const revertMoveTransaction = await targetAccountInstance
+                .connect(targetAccountSigner)
+                .submitTransaction(mapContractAddress, 0, revertMoveCalldata);
+
+            const revertMoveReceipt = await revertMoveTransaction.wait();
+            const revertArrival = getParamFromEvent(
+                mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
+                
+            await time.increase(revertArrival);   
+        });
+
+        it ("Should not allow a pirate to intercept a target that's traveling from a location that the target has already passed", async function () {
+
+            // Setup
+            const path = [
+                0,  // Turn 1 (packed)
+                5,  // Turn 1
+                10, // Turn 1
+                15, // Turn 1 (packed)
+                20, // Turn 1
+                21, // Turn 2
+            ];
+
+            const turns = 2;
+            const totalTilesPacked = 2;
+            const totalTravelTime = turns * MOVEMENT_TURN_DURATION;
+            const interceptionWindowInSeconds = totalTravelTime / totalTilesPacked / 2;
+
+            const mapContractAddress = await mapInstance.getAddress();
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const pirateAccountSigner = await ethers.provider.getSigner(account1);
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+            const targetAccountSigner = await ethers.provider.getSigner(account2);
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+
+            const playerMoveCalldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [path]);
+            
+            const playerMoveTransaction = await targetAccountInstance
+                .connect(targetAccountSigner)
+                .submitTransaction(mapContractAddress, 0, playerMoveCalldata);
+
+            const playerMoveReceipt = await playerMoveTransaction.wait();
+            const arrival = getParamFromEvent(
+                mapInstance, playerMoveReceipt, "arrival", "PlayerMove");
+
+            // Increase time to move the target out of reach of the pirate
+            await time.increase(interceptionWindowInSeconds + 1);
+
+            // Act
+            const calldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("intercept", [targetAccountAddress, 0]);
+
+            const operation = pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, calldata);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(pirateMechanicsInstance, "TargetNotReachable")
+                    .withArgs(pirateAccountAddress, targetAccountAddress);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(pirateAccountInstance, "ExecutionFailure");
+            }
+
+            // Cleanup (revert to start location)
+            await time.increaseTo(arrival)
+
+            const revertMoveCalldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [[21, 20, 15, 10, 5, 0]]);
+            
+            const revertMoveTransaction = await targetAccountInstance
+                .connect(targetAccountSigner)
+                .submitTransaction(mapContractAddress, 0, revertMoveCalldata);
+
+            const revertMoveReceipt = await revertMoveTransaction.wait();
+            const revertArrival = getParamFromEvent(
+                mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
+                
+            await time.increase(revertArrival);   
+        });
+
+        it ("Should allow a pirate to intercept a target thats traveling", async function () {
+
+            // Setup
+            const path = [
+                0,  // Turn 1 (packed)
+                5,  // Turn 1
+                10, // Turn 1
+                15, // Turn 1 (packed)
+                20, // Turn 1
+                21, // Turn 1
+                22, // Turn 2
+            ];
+
+            const turns = 2;
+            const totalTilesPacked = 2;
+            const totalTravelTime = turns * MOVEMENT_TURN_DURATION;
+            const interceptionWindowInSeconds = totalTravelTime / totalTilesPacked / 2;
+
+            const mapContractAddress = await mapInstance.getAddress();
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const pirateAccountSigner = await ethers.provider.getSigner(account1);
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+            const targetAccountSigner = await ethers.provider.getSigner(account2);
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+            const strartingTime = await time.latest();
+
+            const playerMoveCalldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [path]);
+
+            await targetAccountInstance
+                .connect(targetAccountSigner)
+                .submitTransaction(mapContractAddress, 0, playerMoveCalldata);
+
+            // Increase time but not engough to move the target out of reach of the pirate
+            await time.increaseTo(strartingTime + interceptionWindowInSeconds - 1);
+
+            // Act
+            const calldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("intercept", [targetAccountAddress, 0]);
+
+            const operation = pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, calldata);
 
             // Assert
             await expect(operation).to
                 .emit(pirateMechanicsInstance, "PirateInterception")
-                .withArgs(await pirateAccountInstance.getAddress(), await targetAccountInstance.getAddress(), 0);
+                .withArgs(pirateAccountAddress, targetAccountAddress, 0);
         }); 
+
+        it ("Should not allow a pirate to intercept a target that's already been intercepted", async function () {
+
+            // Setup
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const anotherPirateAccountSigner = await ethers.provider.getSigner(account3);
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+            
+            // Act 
+            const calldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("intercept", [targetAccountAddress, 0]);
+
+            const operation = anotherPirateAccountInstance
+                .connect(anotherPirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, calldata);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(pirateMechanicsInstance, "TargetAlreadyIntercepted")
+                    .withArgs(targetAccountAddress);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(pirateAccountInstance, "ExecutionFailure");
+            }
+        });
+
+        it ("Should not allow a pirate to intercept another target while already intercepting a target", async function () {
+
+            // Setup
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const pirateAccountSigner = await ethers.provider.getSigner(account1);
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+            const anotherTargetAccountAddress = await anotherTargetAccountInstance.getAddress();
+            
+            // Act 
+            const calldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("intercept", [anotherTargetAccountAddress, 0]);
+
+            const operation = pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, calldata);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(pirateMechanicsInstance, "AttackerAlreadyIntercepting")
+                    .withArgs(pirateAccountAddress);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(pirateAccountInstance, "ExecutionFailure");
+            }
+        });
+
+        it ("Should allow a pirate to intercept a target statinary from an adjacent tile", async function () {
+
+            // Setup
+            const path = [
+                0,  // Turn 1 (packed)
+                5   // Turn 1 (Ajeacent to target)
+            ];
+
+            const mapContractAddress = await mapInstance.getAddress();
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const anotherPirateAccountSigner = await ethers.provider.getSigner(account3);
+            const anotherPirateAccountAddress = await anotherPirateAccountInstance.getAddress();
+            const anotherTargetAccountAddress = await anotherTargetAccountInstance.getAddress();
+    
+            const playerMoveCalldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [path]);
+
+            const playerMovetransaction = await anotherPirateAccountInstance
+                .connect(anotherPirateAccountSigner)
+                .submitTransaction(mapContractAddress, 0, playerMoveCalldata);
+            const playerMoveReceipt = await playerMovetransaction.wait();
+
+            const arrival = getParamFromEvent(
+                mapInstance, playerMoveReceipt, "arrival", "PlayerMove");
+            await time.increaseTo(arrival);
+
+            // Act
+            const calldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("intercept", [anotherTargetAccountAddress, 0]);
+
+            const operation = anotherPirateAccountInstance
+                .connect(anotherPirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, calldata);
+
+            // Assert
+            await expect(operation).to
+                .emit(pirateMechanicsInstance, "PirateInterception")
+                .withArgs(anotherPirateAccountAddress, anotherTargetAccountAddress, path[path.length - 1]);
+        });
     });
 });

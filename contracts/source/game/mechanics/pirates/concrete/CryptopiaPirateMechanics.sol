@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20 < 0.9.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "hardhat/console.sol";
 
 import "../../../maps/IMaps.sol";
 import "../../../maps/types/MapEnums.sol";
@@ -77,11 +78,7 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
      */
     /// @dev Revert if the attacker is already intercepting a target
     /// @param attacker The account of the attacker
-    error AlreadyIntercepting(address attacker);
-
-    /// @dev Revert if target is already intercepted
-    /// @param target The account of the defender
-    error AlreadyIntercepted(address target);
+    error AttackerAlreadyIntercepting(address attacker);
 
     /// @dev Revert if the attacker has not entered the map
     error AttackerNotInMap(address attacker);
@@ -101,6 +98,9 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
     /// @dev Revert if the target is not reachable from the attacker's location
     error TargetNotReachable(address attacker, address target);
 
+    /// @dev Revert if target is already intercepted
+    /// @param target The account of the defender
+    error TargetAlreadyIntercepted(address target);
 
 
     /**
@@ -174,10 +174,9 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
         }
 
         // Ensure that the attacker is not already intercepting a target
-        if (interceptions[targets[msg.sender]].end > 0 && 
-            interceptions[targets[msg.sender]].end < block.timestamp) 
+        if (interceptions[targets[msg.sender]].end > block.timestamp) 
         {
-            revert AlreadyIntercepting(msg.sender);
+            revert AttackerAlreadyIntercepting(msg.sender);
         }
 
 
@@ -231,9 +230,9 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
 
         // Ensure that the target is not already intercepted
         Interception storage interception = interceptions[target];
-        if (interception.end > 0 && interception.end < block.timestamp) 
+        if (interception.end > block.timestamp) 
         {
-            revert AlreadyIntercepted(target);
+            revert TargetAlreadyIntercepted(target);
         }
 
 
@@ -245,7 +244,7 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
         interception.location = attackerTileIndex;
         interception.start = uint64(block.timestamp);
         interception.deadline = interception.start + MAX_RESPONSE_TIME;
-        interception.end = 0; // TODO; Set
+        interception.end = interception.deadline + MAX_RESPONSE_TIME;
 
         // Link target to attacker
         targets[msg.sender] = target;

@@ -6,8 +6,6 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-import "hardhat/console.sol";
-
 import "../IMaps.sol";
 import "../types/MapEnums.sol";
 import "../../assets/types/AssetEnums.sol";
@@ -721,6 +719,11 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
         /// 1 tile packed           Travel time (180 sec)   Margin in time (180/1/2 = 90)      Margin as % (100/1/2 = 50)
         ///  0 * 100 / 1 = 0%        0 seconds               [0 - 90]                           [0% - 50%]
         ///  1 * 100 / 1 = 100%      180 seconds             [90 - 180]                         [50% - 100%]
+        ///
+        /// 2 tiles packed          Travel time (120 sec)   Margin in time (120/2/2 = 30)      Margin as % (100/2/2 = 25)
+        ///  0 * 100 / 2 = 0%        0 seconds               [0 - 30]                           [0% - 25%]
+        ///  1 * 100 / 2 = 50%       60 seconds              [30 - 90]                          [25% - 75%]
+        ///  2 * 100 / 2 = 100%      120 seconds             [90 - 120]                         [75% - 100%]
         ///
         /// 3 tiles packed          Travel time (360 sec)   Margin in time (360/3/2 = 60)      Margin as % (100/3/2 = 16.66)
         ///  0 * 100 / 3 = 0%        0 seconds               [0 - 60]                           [0% - 16.66%]

@@ -22,6 +22,13 @@ import {
 
 /**
  * Map tests
+ * 
+ * Test cases:
+ * - Create Map
+ * - Add Players
+ * - Traveling
+ * - Route Integrity
+ * - Chain Integrity
  */
 describe("Maps Contract", function () {
 
@@ -2739,6 +2746,11 @@ describe("Maps Contract", function () {
         totalTilesPacked: number;
         tiles: number[];
     }
+
+    interface Neighbor {
+        tileIndex: bigint;
+        direction: HexDirection;
+    }
       
     /**
      * Unpacks a route from a bytes32
@@ -2770,11 +2782,6 @@ describe("Maps Contract", function () {
         };
     }
 
-    interface Neighbor {
-        tileIndex: bigint;
-        direction: HexDirection;
-    }
-      
     /**
      * Gets the neighbors of a tile
      * 

@@ -19,21 +19,9 @@ import {
 /**
  * Crafting tests
  * 
- * Crafting default items:
- * - Player should not be able to craft with an invalid recipe
- * - Player should not be able to claim from an empty slot
- * - Player should not be able to craft or claim if not registered
- * - Player should not be able to craft an item using an invalid inventory
- * - Player should not be able to craft an item with insufficient recources
- * - Player should be able to craft an item
- * - Player should be able to claim a crafted item
- * 
- * Crafting learnable items:
- * - Player should not be able to craft an item without learning the recipe
- * - Should not allow non-system to learn a recipe
- * - Should allow system to learn a recipe
- * - Player should be able to craft an item after learning the recipe
- * - Player should be able to claim a crafted item after learning the recipe
+ * Test cases:
+ * - Default recipes
+ * - Learnable recipes
  */
 describe("Crafting Contract", function () {
 
@@ -180,13 +168,6 @@ describe("Crafting Contract", function () {
             }
         }
     ];
-
-    /**
-     * Find asset by symbol
-     */
-    const findAsset = (symbol: string) => {
-        return assets.find(asset => asset.symbol === symbol);
-    };
 
     /**
      * Deploy Crafting Contracts
@@ -650,7 +631,6 @@ describe("Crafting Contract", function () {
         });
     });
 
-
     /**
      * Test Crafting learnable items
      */
@@ -822,4 +802,11 @@ describe("Crafting Contract", function () {
                 .withArgs(playerAddress, craftableTokenAddress, recipeName, slot, expectedTokenId);
         });
     });
+
+    /**
+     * Helper functions
+     */
+    const findAsset = (symbol: string) => {
+        return assets.find(asset => asset.symbol === symbol);
+    };
 });

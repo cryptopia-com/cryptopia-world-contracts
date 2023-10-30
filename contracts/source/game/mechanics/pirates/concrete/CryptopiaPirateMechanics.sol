@@ -10,6 +10,7 @@ import "../../../players/IPlayerRegister.sol";
 import "../../../players/errors/PlayerErrors.sol";
 import "../../../inventories/IInventories.sol";
 import "../../../../tokens/ERC721/ships/IShips.sol";
+import "../../../../errors/ArgumentErrors.sol";
 import "../IPirateMechanics.sol";
 
 /// @title Cryptopia pirate game mechanics
@@ -100,6 +101,9 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
     /// @dev Revert if the target's location is not valid (not embarked)
     error TargetNotEmbarked(address target);
 
+    /// @dev Revert if the target is idle (when not traveling)
+    error TargetIsIdle(address target);
+
     /// @dev Revert if the target is not reachable from the attacker's location
     error TargetNotReachable(address attacker, address target);
 
@@ -149,12 +153,20 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
     /// - The attacker must not be traveling
     /// - The attacker must be embarked
     /// - The attacker must not be already intercepting a target
+    /// - The attacker must have enough fuel to intercept the target
     /// - The target must have entered the map
     /// - The target must be reachable from the attacker's location (either by route or location)
+    /// - The target must not be idle (when not traveling)
     /// - The target must not be already intercepted
     function intercept(address target, uint indexInRoute) 
         public 
     {
+        // Prevent self-interception
+        if (msg.sender == target) 
+        {
+            revert ArgumentInvalid();
+        }
+
         /**
          * Validate attacker conditions
          * 
@@ -162,7 +174,7 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
          * - Ensure that the attacker is not traveling
          * - Ensure that the attacker's location is valid
          */
-        (
+        (,
             bool attackerIsTraveling, 
             bool attackerIsEmbarked,
             uint16 attackerTileIndex,,
@@ -199,9 +211,11 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
          * 
          * - Ensure that the target entered map
          * - Ensure that the target is reachable from the attacker's location
+         * - Ensure that the target is not idle (when not traveling)
          * - Ensure that the target is not already intercepted
          */
         (
+            bool targetIsIdle,
             bool targetIsTraveling, 
             bool targetIsEmbarked,
             uint16 targetTileIndex, 
@@ -219,6 +233,12 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
         if (!targetIsEmbarked) 
         {
             revert TargetNotEmbarked(target);
+        }
+
+        // Ensure that the target is not idle 
+        if (targetIsIdle) 
+        {
+            revert TargetIsIdle(target);
         }
 
         // Ensure that the target is reachable from the attacker's location
@@ -251,7 +271,7 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
                     revert TargetNotReachable(msg.sender, target);
                 }
             }
-        }
+        } 
 
         // Ensure that the target is not already intercepted
         Interception storage interception = interceptions[target];
@@ -277,4 +297,6 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
         // Emit event
         emit PirateInterception(msg.sender, target, attackerTileIndex);
     }
+
+
 }

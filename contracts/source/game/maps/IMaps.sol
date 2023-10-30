@@ -72,6 +72,7 @@ interface IMaps {
         
     /// @dev Retrieve travel data for `account`
     /// @param account The account to retreive travel data for
+    /// @return isIdle Wether the player is idle
     /// @return isTraveling Wether the player is traveling
     /// @return isEmbarked Wether the player is embarked
     /// @return tileIndex The tile that the player is at or traveling to
@@ -80,6 +81,7 @@ interface IMaps {
     function getPlayerTravelData(address account)
         external view 
         returns (
+            bool isIdle,
             bool isTraveling,
             bool isEmbarked,
             uint16 tileIndex,

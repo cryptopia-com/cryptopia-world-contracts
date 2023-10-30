@@ -147,6 +147,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
     uint16 constant private PATH_MAX_LENGTH = 43;
     uint16 constant private PLAYER_START_POSITION = 0;
     uint16 constant private PLAYER_START_MOVEMENT = 25;
+    uint64 constant private PLAYER_IDLE_TIME = 600; // 10 minutes
     uint64 constant private MOVEMENT_TURN_DURATION = 60; // 1 min (TODO: scale with ship speed and player speed)
     uint16 constant private MOVEMENT_COST_LAND_FLAT = 11;
     uint16 constant private MOVEMENT_COST_LAND_SLOPE = 19;
@@ -886,6 +887,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
 
     /// @dev Retrieve travel data for `account`
     /// @param account The account to retreive travel data for
+    /// @return isIdle Wether the player is idle
     /// @return isTraveling Wether the player is traveling
     /// @return isEmbarked Wether the player is on a ship (on water)
     /// @return tileIndex The tile that the player is at or traveling to
@@ -894,6 +896,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
     function getPlayerTravelData(address account)
         public virtual override view 
         returns (
+            bool isIdle,
             bool isTraveling,
             bool isEmbarked,
             uint16 tileIndex,
@@ -905,6 +908,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
         isEmbarked =  _tileIsUnderwater(tileIndex);
         route = playerData[account].location_route;
         arrival = playerData[account].location_arrival;
+        isIdle = uint64(block.timestamp) > arrival + PLAYER_IDLE_TIME;
     }
 
 

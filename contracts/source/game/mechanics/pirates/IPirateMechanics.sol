@@ -15,6 +15,7 @@ interface IPirateMechanics {
     /// - The attacker must not be traveling
     /// - The attacker must be embarked
     /// - The attacker must not be already intercepting a target
+    /// - The attacker must have enough fuel to intercept the target
     /// - The target must have entered the map
     /// - The target must be reachable from the attacker's location (either by route or location)
     /// - The target must not be already intercepted

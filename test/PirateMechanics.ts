@@ -5,7 +5,7 @@ import { BytesLike } from "ethers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { getParamFromEvent} from '../scripts/helpers/events';
-import { REVERT_MODE, MOVEMENT_TURN_DURATION, BASE_FUEL_COST } from "./settings/config";
+import { REVERT_MODE, PLAYER_IDLE_TIME, MOVEMENT_TURN_DURATION, BASE_FUEL_COST } from "./settings/config";
 import { DEFAULT_ADMIN_ROLE, SYSTEM_ROLE, MINTER_ROLE } from "./settings/roles";   
 import { ZERO_ADDRESS } from "./settings/constants";
 import { Resource, Terrain, Biome, Inventory } from '../scripts/types/enums';
@@ -501,7 +501,7 @@ describe("PirateMechanics Contract", function () {
             const arrival = getParamFromEvent(
                 mapInstance, playerMoveReceipt, "arrival", "PlayerMove");
 
-            await time.increase(arrival);
+            await time.increaseTo(arrival);
 
             // Act
             const calldata = pirateMechanicsInstance.interface
@@ -536,7 +536,7 @@ describe("PirateMechanics Contract", function () {
             const revertArrival = getParamFromEvent(
                 mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
                 
-            await time.increase(revertArrival);   
+            await time.increaseTo(revertArrival);   
         });
 
         it ("Should not allow a pirate to intercept a target that did not enter the map", async function () {
@@ -594,7 +594,7 @@ describe("PirateMechanics Contract", function () {
             const arrival = getParamFromEvent(
                 mapInstance, playerMoveReceipt, "arrival", "PlayerMove");
 
-            await time.increase(arrival);
+            await time.increaseTo(arrival);
 
             // Act
             const calldata = pirateMechanicsInstance.interface
@@ -629,7 +629,7 @@ describe("PirateMechanics Contract", function () {
             const revertArrival = getParamFromEvent(
                 mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
                 
-            await time.increase(revertArrival);   
+            await time.increaseTo(revertArrival);   
         });
 
         it ("Should not allow a pirate to intercept a target at a stationary location that's not reachable", async function () {
@@ -659,7 +659,7 @@ describe("PirateMechanics Contract", function () {
             const arrival = getParamFromEvent(
                 mapInstance, playerMoveReceipt, "arrival", "PlayerMove");
 
-            await time.increase(arrival);
+            await time.increaseTo(arrival);
 
             // Act
             const calldata = pirateMechanicsInstance.interface
@@ -694,7 +694,7 @@ describe("PirateMechanics Contract", function () {
             const revertArrival = getParamFromEvent(
                 mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
                 
-            await time.increase(revertArrival);   
+            await time.increaseTo(revertArrival);   
         });
 
         it ("Should not allow a pirate to intercept a target that's traveling from a location that the target has already passed", async function () {
@@ -770,7 +770,7 @@ describe("PirateMechanics Contract", function () {
             const revertArrival = getParamFromEvent(
                 mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
                 
-            await time.increase(revertArrival);   
+            await time.increaseTo(revertArrival);   
         });
 
         it ("Should not allow a pirate to intercept a target that's traveling with insufficient fuel", async function () {
@@ -849,7 +849,7 @@ describe("PirateMechanics Contract", function () {
             const revertArrival = getParamFromEvent(
                 mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
 
-            await time.increase(revertArrival);
+            await time.increaseTo(revertArrival);
         });
 
         it ("Should allow a pirate to intercept a target thats traveling with sufficient fuel", async function () {
@@ -988,7 +988,7 @@ describe("PirateMechanics Contract", function () {
             }
         });
 
-        it ("Should allow a pirate to intercept a target statinary from an adjacent tile", async function () {
+        it ("Should not allow a pirate to intercept an idle target from an adjacent tile", async function () {
 
             // Setup
             const path = [
@@ -999,7 +999,6 @@ describe("PirateMechanics Contract", function () {
             const mapContractAddress = await mapInstance.getAddress();
             const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
             const anotherPirateAccountSigner = await ethers.provider.getSigner(account3);
-            const anotherPirateAccountAddress = await anotherPirateAccountInstance.getAddress();
             const anotherTargetAccountAddress = await anotherTargetAccountInstance.getAddress();
     
             const playerMoveCalldata = mapInstance.interface
@@ -1007,6 +1006,72 @@ describe("PirateMechanics Contract", function () {
 
             const playerMovetransaction = await anotherPirateAccountInstance
                 .connect(anotherPirateAccountSigner)
+                .submitTransaction(mapContractAddress, 0, playerMoveCalldata);
+            const playerMoveReceipt = await playerMovetransaction.wait();
+
+            const arrival = getParamFromEvent(
+                mapInstance, playerMoveReceipt, "arrival", "PlayerMove");
+            await time.increaseTo(arrival);
+
+            // Ensure the target is idle
+            await time.increase(PLAYER_IDLE_TIME);
+
+            // Act
+            const calldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("intercept", [anotherTargetAccountAddress, 0]);
+
+            const operation = anotherPirateAccountInstance
+                .connect(anotherPirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, calldata);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(pirateMechanicsInstance, "TargetIsIdle")
+                    .withArgs(anotherTargetAccountAddress);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(pirateAccountInstance, "ExecutionFailure");
+            }
+
+            // Cleanup (revert to start location)
+            const revertMoveCalldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [[5, 0]]);
+
+            const revertMoveTransaction = await anotherPirateAccountInstance
+                .connect(anotherPirateAccountSigner)
+                .submitTransaction(mapContractAddress, 0, revertMoveCalldata);
+                
+            const revertMoveReceipt = await revertMoveTransaction.wait();
+            const revertArrival = getParamFromEvent(
+                mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
+
+            await time.increaseTo(revertArrival);
+        });
+
+        it ("Should allow a pirate to intercept a target statinary from an adjacent tile", async function () {
+
+            // Setup
+            const path = [
+                0,  // Turn 1 (packed)
+                5   // Turn 1 (Ajeacent to pirate)
+            ];
+
+            const mapContractAddress = await mapInstance.getAddress();
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const anotherPirateAccountSigner = await ethers.provider.getSigner(account3);
+            const anotherPirateAccountAddress = await anotherPirateAccountInstance.getAddress();
+            const anotherTargetAccountSigner = await ethers.provider.getSigner(account4);
+            const anotherTargetAccountAddress = await anotherTargetAccountInstance.getAddress();
+    
+            const playerMoveCalldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [path]);
+
+            const playerMovetransaction = await anotherTargetAccountInstance
+                .connect(anotherTargetAccountSigner)
                 .submitTransaction(mapContractAddress, 0, playerMoveCalldata);
             const playerMoveReceipt = await playerMovetransaction.wait();
 
@@ -1025,7 +1090,7 @@ describe("PirateMechanics Contract", function () {
             // Assert
             await expect(operation).to
                 .emit(pirateMechanicsInstance, "PirateInterception")
-                .withArgs(anotherPirateAccountAddress, anotherTargetAccountAddress, path[path.length - 1]);
+                .withArgs(anotherPirateAccountAddress, anotherTargetAccountAddress, path[0]);
         });
     });
 });

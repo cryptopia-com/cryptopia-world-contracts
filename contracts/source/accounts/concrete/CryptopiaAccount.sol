@@ -29,7 +29,7 @@ contract CryptopiaAccount is Initializable, MultiSigWallet, IAccount, IERC721Rec
     function initialize(address[] memory _owners, uint _required, uint _dailyLimit, bytes32 _username) 
         public initializer 
     {
-        __Multisig_init(_owners, _required, _dailyLimit);
+        __Multisig_init("Cryptopia Account", "1", _owners, _required, _dailyLimit);
         username = _username;
     }
 

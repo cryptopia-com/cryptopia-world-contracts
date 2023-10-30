@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: ISC
 pragma solidity ^0.8.20 < 0.9.0;
 
+import "../../inventories/types/InventoryEnums.sol";
+
 /// @title Cryptopia pirate game mechanics
 /// @dev Provides the mechanics for the pirate gameplay
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
@@ -21,4 +23,8 @@ interface IPirateMechanics {
     /// - The target must not be already intercepted
     function intercept(address target, uint indexInRoute) 
         external;
+
+    
+    // function accept(bytes memory signature, address[] memory assets, uint[] memory assetIds, uint[] memory assetAmounts, Inventory[] memory inventories)
+    //     external;
 }

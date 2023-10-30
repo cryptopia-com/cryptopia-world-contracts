@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: ISC
 pragma solidity ^0.8.20 < 0.9.0;
 
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import "../../../errors/ArgumentErrors.sol";
@@ -8,14 +11,21 @@ import "../../multisig/IMultiSigWallet.sol";
 
 /// @title Multisignature wallet - Allows multiple parties to agree on transactions before execution.
 /// @author Stefan George - <stefan.george@consensys.net> (modified by Frank Bonnet <frankbonnet@outlook.com>)
-contract MultiSigWallet is IMultiSigWallet, Initializable {
+contract MultiSigWallet is IMultiSigWallet, Initializable, EIP712Upgradeable, ReentrancyGuard {
 
     struct Transaction 
     {
-        address destination;
-        uint value;
-        bytes data;
+        /// @dev true if the transaction has been executed (and succeeded)
         bool executed;
+
+        /// @dev address of the destination for the transaction
+        address destination;
+
+        /// @dev amount of native tokens in wei sent with the transaction
+        uint value;
+
+        /// @dev data of the transaction
+        bytes data;
     }
 
     /** 
@@ -23,15 +33,23 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
      */
     uint constant private MAX_OWNER_COUNT = 5;
 
-    mapping (uint => Transaction) public transactions;
-    mapping (uint => mapping (address => bool)) public confirmations;
-    mapping (address => bool) public isOwner;
-    address[] public owners;
+    // Config
     uint public required;
     uint public transactionCount;
     uint public dailyLimit;
     uint public lastDay;
     uint public spentToday;
+    uint public nonce = 1;
+
+    // Transaction ID => Transaction
+    mapping (uint => Transaction) public transactions;
+
+    // Transaction ID => Owner => Confirmed
+    mapping (uint => mapping (address => bool)) public confirmations;
+
+    // Owners
+    mapping (address => bool) public isOwner;
+    address[] public owners;
 
 
     /** 
@@ -115,7 +133,7 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
     /**
      * Modifiers
      */
-    /// @dev Ensures the function is only called by the multisig wallet itself.
+    /// @dev Ensures the function is only called by the multisig wallet itself
     modifier onlyWallet() 
     {
         if (msg.sender != address(this)) 
@@ -125,7 +143,21 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
         _;
     }
 
-    /// @dev Ensures the specified address is not already an owner.
+
+    /// @dev Ensures the specified address is not the multisig wallet itself
+    /// @param account The address to validate
+    modifier notWallet(address account) 
+    {
+        if (account == address(this)) 
+        {
+            revert ArgumentInvalid();
+        }
+        _;
+    }
+
+
+    /// @dev Ensures the specified address is not already an owner
+    /// @param owner The address to validate
     modifier ownerDoesNotExist(address owner) 
     {
         if (isOwner[owner]) 
@@ -135,7 +167,9 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
         _;
     }
 
-    /// @dev Ensures the specified address is an existing owner.
+
+    /// @dev Ensures the specified address is an existing owner
+    /// @param owner The address to validate
     modifier ownerExists(address owner) 
     {
         if (!isOwner[owner]) 
@@ -145,7 +179,9 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
         _;
     }
 
-    /// @dev Ensures the transaction ID references an existing transaction.
+
+    /// @dev Ensures the transaction ID references an existing transaction
+    /// @param transactionId The transaction ID to validate
     modifier transactionExists(uint transactionId) 
     {
         if (transactions[transactionId].destination == address(0)) 
@@ -155,7 +191,10 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
         _;
     }
 
-    /// @dev Ensures the transaction has been confirmed by the specified owner.
+
+    /// @dev Ensures the transaction has been confirmed by the specified owner
+    /// @param transactionId The transaction ID to validate
+    /// @param owner The owner to validate
     modifier transactionConfirmed(uint transactionId, address owner) 
     {
         if (!confirmations[transactionId][owner]) 
@@ -165,7 +204,10 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
         _;
     }
 
-    /// @dev Ensures the transaction has not been confirmed by the specified owner.
+
+    /// @dev Ensures the transaction has not been confirmed by the specified owner
+    /// @param transactionId The transaction ID to validate
+    /// @param owner The owner to validate
     modifier transactionNotConfirmed(uint transactionId, address owner) 
     {
         if (confirmations[transactionId][owner]) 
@@ -175,8 +217,10 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
         _;
     }
 
-    /// @dev Ensures the specified transaction hasn't been executed yet.
-    modifier notExecuted(uint transactionId) 
+
+    /// @dev Ensures the specified transaction hasn't been executed yet
+    /// @param transactionId The transaction ID to validate
+    modifier transactionNotExecuted(uint transactionId) 
     {
         if (transactions[transactionId].executed) 
         {
@@ -185,7 +229,9 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
         _;
     }
 
-    /// @dev Ensures the provided address is non-zero.
+
+    /// @dev Ensures the provided address is non-zero
+    /// @param account The address to validate
     modifier notNull(address account) 
     {
         if (account == address(0)) 
@@ -195,7 +241,10 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
         _;
     }
 
-    /// @dev Validates the requirements for owner count and confirmations needed.
+
+    /// @dev Validates the requirements for owner count and confirmations needed
+    /// @param ownerCount The amount of owners
+    /// @param _required The amount of confirmations needed
     modifier validRequirement(uint ownerCount, uint _required) 
     {
         if (ownerCount > MAX_OWNER_COUNT
@@ -206,6 +255,46 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
             revert InvalidOwnerCountOrRequirement(ownerCount, _required);
         }
         _;
+    }
+
+
+    /*
+     * Public functions
+     */
+    /// @dev Contract initializer sets initial owners and required number of confirmations.
+    /// @param _EIP712Name The name of the contract
+    /// @param _EIP712Version The version of the contract
+    /// @param _owners List of initial owners.
+    /// @param _required Number of required confirmations.
+    /// @param _dailyLimit Amount in wei, which can be withdrawn without confirmations on a daily basis.
+    function __Multisig_init(string memory _EIP712Name, string memory _EIP712Version, address[] memory _owners, uint _required, uint _dailyLimit) 
+        internal onlyInitializing
+    {   
+        __EIP712_init(_EIP712Name, _EIP712Version);
+        __Multisig_init_unchained(_owners, _required, _dailyLimit);
+    }
+
+
+    /// @dev Contract initializer sets initial owners and required number of confirmations.
+    /// @param _owners List of initial owners.
+    /// @param _required Number of required confirmations.
+    /// @param _dailyLimit Amount in wei, which can be withdrawn without confirmations on a daily basis.
+    function __Multisig_init_unchained(address[] memory _owners, uint _required, uint _dailyLimit) 
+        internal onlyInitializing
+    {   
+        for (uint i = 0; i < _owners.length; i++) 
+        {
+            if (isOwner[_owners[i]] || _owners[i] == address(0)) 
+            {
+                revert InvalidOwner(_owners[i]);
+            }
+
+            isOwner[_owners[i]] = true;
+        }
+
+        owners = _owners;
+        required = _required;
+        dailyLimit = _dailyLimit;
     }
 
 
@@ -229,39 +318,14 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
     }
 
 
-    /*
-     * Public functions
-     */
-    /// @dev Contract initializer sets initial owners and required number of confirmations.
-    /// @param _owners List of initial owners.
-    /// @param _required Number of required confirmations.
-    /// @param _dailyLimit Amount in wei, which can be withdrawn without confirmations on a daily basis.
-    function __Multisig_init(address[] memory _owners, uint _required, uint _dailyLimit) 
-        internal onlyInitializing
-    {
-        for (uint i = 0; i < _owners.length; i++) 
-        {
-            if (isOwner[_owners[i]] || _owners[i] == address(0)) 
-            {
-                revert InvalidOwner(_owners[i]);
-            }
-
-            isOwner[_owners[i]] = true;
-        }
-
-        owners = _owners;
-        required = _required;
-        dailyLimit = _dailyLimit;
-    }
-
-
-    /// @dev Allows to add a new owner. Transaction has to be sent by wallet.
-    /// @param owner Address of new owner.
+    /// @dev Allows to add a new owner. Transaction has to be sent by wallet
+    /// @param owner Address of new owner
     function addOwner(address owner)
-        public virtual override 
+        public virtual  
         onlyWallet
-        ownerDoesNotExist(owner)
         notNull(owner)
+        notWallet(owner)
+        ownerDoesNotExist(owner)
         validRequirement(owners.length + 1, required)
     {
         isOwner[owner] = true;
@@ -271,10 +335,10 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
     }
 
 
-    /// @dev Allows to remove an owner. Transaction has to be sent by wallet.
-    /// @param owner Address of owner.
+    /// @dev Allows to remove an owner. Transaction has to be sent by wallet
+    /// @param owner Address of owner
     function removeOwner(address owner)
-        public virtual override
+        public virtual 
         onlyWallet
         ownerExists(owner)
     {
@@ -299,12 +363,14 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
     }
 
 
-    /// @dev Allows to replace an owner with a new owner. Transaction has to be sent by wallet.
-    /// @param owner Address of owner to be replaced.
-    /// @param newOwner Address of new owner.
+    /// @dev Allows to replace an owner with a new owner. Transaction has to be sent by wallet
+    /// @param owner Address of owner to be replaced
+    /// @param newOwner Address of new owner
     function replaceOwner(address owner, address newOwner)
-        public virtual override
+        public virtual 
         onlyWallet
+        notNull(newOwner)
+        notWallet(newOwner)
         ownerExists(owner)
         ownerDoesNotExist(newOwner)
     {
@@ -325,10 +391,10 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
     }
 
 
-    /// @dev Allows to change the number of required confirmations. Transaction has to be sent by wallet.
-    /// @param _required Number of required confirmations.
+    /// @dev Allows to change the number of required confirmations. Transaction has to be sent by wallet
+    /// @param _required Number of required confirmations
     function changeRequirement(uint _required)
-        public virtual override
+        public virtual 
         onlyWallet
         validRequirement(owners.length, _required)
     {
@@ -337,10 +403,10 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
     }
 
 
-    /// @dev Allows to change the daily limit. Transaction has to be sent by wallet.
-    /// @param _dailyLimit Amount in wei.
+    /// @dev Allows to change the daily limit. Transaction has to be sent by wallet
+    /// @param _dailyLimit Amount in wei
     function changeDailyLimit(uint _dailyLimit)
-        public virtual override
+        public virtual 
         onlyWallet
     {
         dailyLimit = _dailyLimit;
@@ -348,90 +414,155 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
     }
 
 
-    /// @dev Allows an owner to submit and confirm a transaction.
-    /// @param destination Transaction target address.
-    /// @param value Transaction ether value.
-    /// @param data Transaction data payload.
-    /// @return transactionId Returns transaction ID.
+    /// @dev Creates a new transaction to call the `destination` address with `value` wei and `data` payload
+    ///      The transaction is executed if the required amount of confirmations has been reached
+    /// @param destination Transaction target address
+    /// @param value Transaction value in wei
+    /// @param data Transaction data payload
+    /// @return transactionId Returns transaction ID
     function submitTransaction(address destination, uint value, bytes memory data)
-        public virtual override
+        public virtual 
+        ownerExists(msg.sender)
         returns (uint transactionId)
     {
-        transactionId = addTransaction(destination, value, data);
-        confirmTransaction(transactionId);
+        // Create transaction
+        transactionId = _addTransaction(destination, value, data);
+
+        // Confirm transaction
+        _confirmTransaction(transactionId, msg.sender);
+
+        // Execute if confirmed transaction
+        if (isConfirmed(transactionId)) 
+        {
+            _executeConfirmedTransaction(transactionId);
+        }
+
+        // Execute transaction that doesn't require confirmation
+        else if (data.length == 0 && _isUnderLimit(value)) 
+        {
+            _executeUnonfirmedTransaction(transactionId);
+        }   
     }
 
 
-    /// @dev Allows an owner to confirm a transaction.
-    /// @param transactionId Transaction ID.
+    /// @dev Allows an owner to confirm a transaction and execute it if the required number 
+    ///      of confirmations has been reached
+    /// @param transactionId Transaction ID
     function confirmTransaction(uint transactionId)
-        public virtual override
+        public virtual
         ownerExists(msg.sender)
         transactionExists(transactionId)
+        transactionNotExecuted(transactionId)
         transactionNotConfirmed(transactionId, msg.sender)
     {
-        confirmations[transactionId][msg.sender] = true;
-        emit Confirmation(msg.sender, transactionId);
-        executeTransaction(transactionId);
+        // Confirm transaction
+        _confirmTransaction(transactionId, msg.sender);
+
+        // Execute if confirmed
+        if (isConfirmed(transactionId)) 
+        {
+            _executeConfirmedTransaction(transactionId);
+        }
     }
 
 
-    /// @dev Allows an owner to revoke a confirmation for a transaction.
-    /// @param transactionId Transaction ID.
+    /// @dev Allows an owner to revoke a confirmation for a transaction
+    /// @param transactionId Transaction ID
     function revokeConfirmation(uint transactionId)
-        public virtual override
+        public virtual
         ownerExists(msg.sender)
+        transactionNotExecuted(transactionId)
         transactionConfirmed(transactionId, msg.sender)
-        notExecuted(transactionId)
     {
         confirmations[transactionId][msg.sender] = false;
         emit Revocation(msg.sender, transactionId);
     }
 
-
-    /// @dev Allows anyone to execute a confirmed transaction or ether withdraws until daily limit is reached.
-    /// @param transactionId Transaction ID.
-    function executeTransaction(uint transactionId)
-        public virtual override
-        ownerExists(msg.sender)
-        transactionConfirmed(transactionId, msg.sender)
-        notExecuted(transactionId)
+    
+    /// @dev Allows anyone to execute a transaction with off-chain signatures
+    /// @param signatures Array of signatures
+    /// @param signers Array of signers
+    /// @param deadline Deadline in unix timestamp
+    /// @param destination Transaction target address
+    /// @param value Transaction value in wei
+    /// @param data Transaction data payload
+    /// @return transactionId Returns transaction ID
+    /// @return success Returns if the transaction was executed
+    function executeTransaction(bytes[] memory signatures, address[] memory signers, uint deadline, address destination, uint value, bytes memory data)
+        public virtual override 
+        nonReentrant()
+        returns (uint transactionId, bool success)
     {
-        Transaction storage txn = transactions[transactionId];
-        bool _confirmed = isConfirmed(transactionId);
-        if (_confirmed || txn.data.length == 0 && isUnderLimit(txn.value)) 
+        // Ensure the required amount of signatures
+        if (signatures.length != required)
         {
-            txn.executed = true;
-            if (!_confirmed)
+            // revert InvalidSignatureCount(signatures.length, required);
+        }
+
+        for (uint i = 0; i < signatures.length; i++)
+        {
+            bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
+                keccak256("MultiSigWallet(address owner, address destination, uint value, bytes data, uint nonce, uint deadline)"),
+                signers[i],
+                destination,
+                value,
+                keccak256(data),
+                nonce++,
+                deadline
+            )));
+
+            // Ensure signature is valid
+            address signer = ECDSA.recover(digest, signatures[i]);
+            if (signer == address(0) || signer != signers[i])
             {
-                spentToday += txn.value;
+                // revert SignatureInvalid(signer, owners[i]);
             }
 
-            if (external_call(txn.destination, txn.value, txn.data.length, txn.data)) 
+            // Ensure signer is owner
+            if (!isOwner[signer])
             {
-                emit Execution(transactionId);
+                revert InvalidOwner(signer);
+            }
+
+            // Ensure deadline has not passed
+            if (block.timestamp > deadline)
+            {
+                // revert SignatureExpired(block.timestamp, deadline);
+            }
+
+            if (0 == i)
+            {
+                // Create transaction
+                transactionId = _addTransaction(destination, value, data);
             }
             else 
             {
-                emit ExecutionFailure(transactionId);
-                txn.executed = false;
-                if (!_confirmed)
+                // Ensure that the transaction is not already confirmed by this owner (duplicate ownership check)
+                if (confirmations[transactionId][signer])
                 {
-                    spentToday -= txn.value;
+                    revert TransactionAlreadyConfirmed(transactionId, signer);
                 }
             }
-        }
-    }
 
+            // Confirm transaction
+            _confirmTransaction(transactionId, signer);
+        }
+
+        // Execute transaction
+        _executeConfirmedTransaction(transactionId);
+
+        // Return success
+        success = transactions[transactionId].executed;
+    }
 
     /**
      * Web3 call functions
      */
-    /// @dev Returns number of confirmations of a transaction.
-    /// @param transactionId Transaction ID.
-    /// @return count Number of confirmations.
+    /// @dev Returns number of confirmations of a transaction
+    /// @param transactionId Transaction ID
+    /// @return count Number of confirmations
     function getConfirmationCount(uint transactionId)
-       public virtual override view
+        public virtual view
         returns (uint count)
     {
         for (uint i = 0; i < owners.length; i++) 
@@ -444,39 +575,70 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
     }
 
 
-    /// @dev Returns total number of transactions after filers are applied.
-    /// @param pending Include pending transactions.
-    /// @param executed Include executed transactions.
-    /// @return count Total number of transactions after filters are applied.
+    /// @dev Returns total number of transactions after filers are applied
+    /// @param pending Include pending transactions
+    /// @param executed Include executed transactions
+    /// @return count Total number of transactions after filters are applied
     function getTransactionCount(bool pending, bool executed)
-       public virtual override view
+        public virtual view
         returns (uint count)
     {
         for (uint i = 0; i < transactionCount; i++)
         {
             if (pending && !transactions[i].executed || executed && transactions[i].executed)
             {
-                count += 1;
+                count++;
             }
         }
     }
 
 
-    /// @dev Returns list of owners.
-    /// @return List of owner addresses.
+    /// @dev Returns list of transaction IDs in defined range
+    /// @param from Index start position of transaction array
+    /// @param to Index end position of transaction array
+    /// @param pending Include pending transactions
+    /// @param executed Include executed transactions
+    /// @return transactionIds Returns array of transaction IDs
+    function getTransactionIds(uint from, uint to, bool pending, bool executed)
+        public virtual view
+        returns (uint[] memory transactionIds)
+    {
+        uint[] memory transactionIdsTemp = new uint[](transactionCount);
+
+        uint i;
+        uint count;
+        for (i = 0; i < transactionCount; i++) {
+            if (pending && !transactions[i].executed || 
+                executed && transactions[i].executed)
+            {
+                transactionIdsTemp[count] = i;
+                count += 1;
+            }
+        }
+
+        transactionIds = new uint[](to - from);
+        for (i = from; i < to; i++)
+        {
+            transactionIds[i - from] = transactionIdsTemp[i];
+        }
+    }
+
+
+    /// @dev Returns list of owners
+    /// @return List of owner addresses
     function getOwners()
-        public virtual override view
+        public virtual view
         returns (address[] memory)
     {
         return owners;
     }
 
 
-    /// @dev Returns array with owner addresses, which confirmed transaction.
-    /// @param transactionId Transaction ID.
-    /// @return _confirmations Returns array of owner addresses.
+    /// @dev Returns array with owner addresses, which confirmed transaction
+    /// @param transactionId Transaction ID
+    /// @return _confirmations Returns array of owner addresses
     function getConfirmations(uint transactionId)
-        public virtual override view
+        public virtual view
         returns (address[] memory _confirmations)
     {
         address[] memory confirmationsTemp = new address[](owners.length);
@@ -500,45 +662,22 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
     }
 
 
-    /// @dev Returns list of transaction IDs in defined range.
-    /// @param from Index start position of transaction array.
-    /// @param to Index end position of transaction array.
-    /// @param pending Include pending transactions.
-    /// @param executed Include executed transactions.
-    /// @return _transactionIds Returns array of transaction IDs.
-    function getTransactionIds(uint from, uint to, bool pending, bool executed)
-        public virtual override view
-        returns (uint[] memory _transactionIds)
-    {
-        uint[] memory transactionIdsTemp = new uint[](transactionCount);
-        uint count = 0;
-        uint i;
-        for (i=0; i<transactionCount; i++)
-            if (   pending && !transactions[i].executed
-                || executed && transactions[i].executed)
-            {
-                transactionIdsTemp[count] = i;
-                count += 1;
-            }
-        _transactionIds = new uint[](to - from);
-        for (i=from; i<to; i++)
-            _transactionIds[i - from] = transactionIdsTemp[i];
-    }
-
-
-    /// @dev Returns maximum withdraw amount.
-    /// @return Returns amount.
-    function calcMaxWithdraw()
-        public 
-        virtual 
-        override 
-        view
+    /// @dev Returns maximum withdraw amount
+    /// @return Returns amount
+    function getMaxWithdraw()
+        public virtual view
         returns (uint)
     {
         if (block.timestamp > lastDay + 24 hours)
+        {
             return dailyLimit;
+        }
+            
         if (dailyLimit < spentToday)
+        {
             return 0;
+        }
+            
         return dailyLimit - spentToday;
     }
 
@@ -547,19 +686,22 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
     /// @param transactionId Transaction ID.
     /// @return confirmed Confirmation status.
     function isConfirmed(uint transactionId)
-        public 
-        virtual 
-        override 
-        view
+        public virtual view
         returns (bool confirmed)
     {
-        confirmed = false;
         uint count = 0;
-        for (uint i=0; i<owners.length; i++) {
+        for (uint i = 0; i < owners.length; i++) 
+        {
             if (confirmations[transactionId][owners[i]])
-                count += 1;
+            {
+                count++;
+            }
+
             if (count == required)
+            {
                 confirmed = true;
+                break;
+            }  
         }
     }
 
@@ -569,7 +711,7 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
      */
     // call has been separated into its own function in order to take advantage
     // of the Solidity's code generator to produce a loop that copies tx.data into memory.
-    function external_call(address destination, uint value, uint dataLength, bytes memory data) 
+    function _external_call(address destination, uint value, uint dataLength, bytes memory data) 
         internal 
         returns (bool result) 
     {
@@ -601,7 +743,7 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
     /// @dev Returns if amount is within daily limit and resets spentToday after one day.
     /// @param amount Amount to withdraw.
     /// @return Returns if amount is under daily limit.
-    function isUnderLimit(uint amount)
+    function _isUnderLimit(uint amount)
         internal
         returns (bool)
     {
@@ -611,7 +753,7 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
             spentToday = 0;
         }
 
-        if (spentToday + amount > dailyLimit || spentToday + amount < spentToday)
+        if (spentToday + amount > dailyLimit)
         {
             return false;
         }
@@ -625,12 +767,12 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
     /// @param value Transaction ether value.
     /// @param data Transaction data payload.
     /// @return transactionId Returns transaction ID.
-    function addTransaction(address destination, uint value, bytes memory data)
+    function _addTransaction(address destination, uint value, bytes memory data)
         internal
         notNull(destination)
         returns (uint transactionId)
     {
-        transactionId = transactionCount;
+        transactionId = ++transactionCount;
         transactions[transactionId] = Transaction({
             destination: destination,
             value: value,
@@ -638,7 +780,80 @@ contract MultiSigWallet is IMultiSigWallet, Initializable {
             executed: false
         });
 
-        transactionCount += 1;
         emit Submission(transactionId);
+    }
+
+    /// @dev Add a confirmation for `transactionId` from `owner`
+    /// @param transactionId Transaction ID to add confirmation for
+    /// @param owner The address that confirms the transaction
+    function _confirmTransaction(uint transactionId, address owner)
+        internal 
+    {
+        confirmations[transactionId][owner] = true;
+        emit Confirmation(owner, transactionId);
+    }
+
+
+    /// @dev Execute transaction that has been confirmed
+    /// @param transactionId Transaction ID of the transaction to execute
+    function _executeConfirmedTransaction(uint transactionId)
+        internal 
+    {
+        Transaction storage transaction = transactions[transactionId];
+
+        // Mark as executed 
+        transaction.executed = true;
+
+        if (_external_call(
+            transaction.destination, 
+            transaction.value, 
+            transaction.data.length, 
+            transaction.data)) 
+        {
+            // Emit success event
+            emit Execution(transactionId);
+        }
+        else 
+        {
+            // Revert state
+            transaction.executed = false;
+
+            // Emit failure event
+            emit ExecutionFailure(transactionId);
+        }
+    }
+
+
+    /// @dev Execute transaction that doesn't require confirmation
+    /// @param transactionId Transaction ID of the transaction to execute
+    function _executeUnonfirmedTransaction(uint transactionId)
+        internal 
+    {
+        Transaction storage transaction = transactions[transactionId];
+
+        // Mark as executed 
+        transaction.executed = true;
+
+        // Increase spent today
+        spentToday += transaction.value;
+
+        if (_external_call(
+                transaction.destination, 
+                transaction.value, 
+                transaction.data.length, 
+                transaction.data)) 
+        {
+            // Emit success event
+            emit Execution(transactionId);
+        }
+        else 
+        {
+            // Revert state
+            transaction.executed = false;
+            spentToday -= transaction.value;
+
+            // Emit failure event
+            emit ExecutionFailure(transactionId);
+        }
     }
 }

@@ -918,10 +918,24 @@ describe("PirateMechanics Contract", function () {
         it ("Should not allow a pirate to intercept a target that's already been intercepted", async function () {
 
             // Setup
+            const inventoriesAddress = await inventoriesInstance.getAddress();
             const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const fuelAssetAddress = await fuelAssetInstance.getAddress();
+            const systemSigner = await ethers.provider.getSigner(system);
+            const minterSigner = await ethers.provider.getSigner(minter);
             const anotherPirateAccountSigner = await ethers.provider.getSigner(account3);
+            const anotherPirateAccountAddress = await anotherPirateAccountInstance.getAddress();
             const targetAccountAddress = await targetAccountInstance.getAddress();
             
+            // Ensure the pirate has enough fuel
+            await fuelAssetInstance
+                .connect(minterSigner)
+                .mintTo(inventoriesAddress, BASE_FUEL_COST);
+
+            await inventoriesInstance
+                .connect(systemSigner)
+                .assignFungibleToken(anotherPirateAccountAddress, Inventory.Ship, fuelAssetAddress, BASE_FUEL_COST);
+
             // Act 
             const calldata = pirateMechanicsInstance.interface
                 .encodeFunctionData("intercept", [targetAccountAddress, 0]);

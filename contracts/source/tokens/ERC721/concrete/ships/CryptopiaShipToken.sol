@@ -31,6 +31,9 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         /// @dev the amount of module slots
         uint8 modules;
 
+        /// @dev The amount of CO2 that is outputted
+        uint16 co2;
+
         /// @dev Base speed (before modules)
         uint16 base_speed;
 
@@ -45,6 +48,9 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
 
         /// @dev Base storage (before modules)
         uint base_inventory;
+
+        /// @dev Base fuel consumption (before modules)
+        uint base_fuelConsumption;
     }
 
     /// @dev Ship instance (equiptable by player)
@@ -70,31 +76,37 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
 
         /// @dev Storage (after modules)
         uint inventory;
+
+        /// @dev Fuel consumption (after modules)
+        uint fuelConsumption;
     }
 
     /// @dev Input argument
     struct ShipStatValues
     {
-        /// @dev The number of module slots available on the ship.
+        /// @dev The number of module slots available on the ship
         uint8 modules;
 
-        /// @dev An arbitrary value for additional customization or features.
-        uint16 arbitrary;
+        /// @dev The amount of CO2 that is outputted
+        uint16 co2;
 
-        /// @dev The base speed of the ship before any modules are applied.
+        /// @dev The base speed of the ship before any modules are applied
         uint16 speed;
 
-        /// @dev The base attack power of the ship before any modules are applied.
+        /// @dev The base attack power of the ship before any modules are applied
         uint16 attack;
 
-        /// @dev The base health of the ship before any modules are applied.
+        /// @dev The base health of the ship before any modules are applied
         uint16 health;
 
-        /// @dev The base defence capability of the ship before any modules are applied.
+        /// @dev The base defence capability of the ship before any modules are applied
         uint16 defence;
 
-        /// @dev The base storage capacity of the ship before any modules are applied.
+        /// @dev The base storage capacity of the ship before any modules are applied
         uint inventory;
+
+        /// @dev The base fuel consumption of the ship before any modules are applied
+        uint fuelConsumption;
     }
 
 
@@ -154,20 +166,49 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
 
         // Add starter ships
-        ShipStatValues memory stats = ShipStatValues({
+        _setShip("Whitewake", false, Faction.Eco, SubFaction.None, Rarity.Common, ShipStatValues({
             modules: 1,
-            arbitrary: 0,
+            co2: 0,
             speed: 25,
             attack: 15,
             health: 100,
             defence: 100,
-            inventory: 12_000_000_000_000_000_000_000
-        });
+            inventory: 12_000_000_000_000_000_000_000,
+            fuelConsumption: 1_000_000_000_000_000_000
+        }));
 
-        _setShip("Whitewake", false, Faction.Eco, SubFaction.None, Rarity.Common, stats);
-        _setShip("Polaris", false, Faction.Tech, SubFaction.None, Rarity.Common, stats);
-        _setShip("Kingfisher", false, Faction.Industrial, SubFaction.None, Rarity.Common, stats);
-        _setShip("Socrates", false, Faction.Traditional, SubFaction.None, Rarity.Common, stats);
+        _setShip("Polaris", false, Faction.Tech, SubFaction.None, Rarity.Common, ShipStatValues({
+            modules: 1,
+            co2: 25,
+            speed: 25,
+            attack: 15,
+            health: 100,
+            defence: 100,
+            inventory: 12_000_000_000_000_000_000_000,
+            fuelConsumption: 1_000_000_000_000_000_000
+        }));
+
+        _setShip("Kingfisher", false, Faction.Industrial, SubFaction.None, Rarity.Common, ShipStatValues({
+            modules: 1,
+            co2: 50,
+            speed: 25,
+            attack: 15,
+            health: 100,
+            defence: 100,
+            inventory: 12_000_000_000_000_000_000_000,
+            fuelConsumption: 1_000_000_000_000_000_000
+        }));
+
+        _setShip("Socrates", false, Faction.Traditional, SubFaction.None, Rarity.Common, ShipStatValues({
+            modules: 1,
+            co2: 25,
+            speed: 25,
+            attack: 15,
+            health: 100,
+            defence: 100,
+            inventory: 12_000_000_000_000_000_000_000,
+            fuelConsumption: 1_000_000_000_000_000_000
+        }));
     }
 
 
@@ -195,6 +236,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @return base_health Ship starting health (before modules)
     /// @return base_defence Ship starting defence (before modules)
     /// @return base_inventory Ship starting storage (before modules)
+    /// @return base_fuelConsumption Ship starting fuel consumption (before modules)
     function getShips(uint skip, uint take) 
         public override view 
         returns (
@@ -208,7 +250,8 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             uint16[] memory base_attack,
             uint16[] memory base_health,
             uint16[] memory base_defence,
-            uint[] memory base_inventory
+            uint[] memory base_inventory,
+            uint[] memory base_fuelConsumption
         )
     {
         name = new bytes32[](take);
@@ -222,6 +265,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         base_health = new uint16[](take);
         base_defence = new uint16[](take);
         base_inventory = new uint[](take);
+        base_fuelConsumption = new uint[](take);
 
         uint index = skip;
         for (uint i = 0; i < take; i++)
@@ -237,6 +281,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             base_health[i] = ships[name[i]].base_health;
             base_defence[i] = ships[name[i]].base_defence;
             base_inventory[i] = ships[name[i]].base_inventory;
+            base_fuelConsumption[i] = ships[name[i]].base_fuelConsumption;
             index++;
         }
     }
@@ -254,6 +299,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @return base_health Ship starting health (before modules)
     /// @return base_defence Ship starting defence (before modules)
     /// @return base_inventory Ship starting storage (before modules)
+    /// @return base_fuelConsumption Ship starting fuel consumption (before modules)
     function getShip(bytes32 name) 
         public virtual override view 
         returns (
@@ -266,7 +312,8 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             uint16 base_attack,
             uint16 base_health,
             uint16 base_defence,
-            uint base_inventory
+            uint base_inventory,
+            uint base_fuelConsumption
         )
     {
         generic = ships[name].generic;
@@ -279,6 +326,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         base_health = ships[name].base_health;
         base_defence = ships[name].base_defence;
         base_inventory = ships[name].base_inventory;
+        base_fuelConsumption = ships[name].base_fuelConsumption;
     }
 
 
@@ -326,6 +374,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @return health Ship health (after modules)
     /// @return defence Ship defence (after modules)
     /// @return inventory Ship storage (after modules)
+    /// @return fuelConsumption Ship fuel consumption (after modules)
     function getShipInstance(uint tokenId) 
         public virtual override view 
         returns (
@@ -340,7 +389,8 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             uint16 attack,
             uint16 health,
             uint16 defence,
-            uint inventory
+            uint inventory,
+            uint fuelConsumption
         )
     {
         name = shipInstances[tokenId].name;
@@ -355,6 +405,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         health = ships[name].base_health + shipInstances[tokenId].health;
         defence = ships[name].base_defence + shipInstances[tokenId].defence;
         inventory = ships[name].base_inventory + shipInstances[tokenId].inventory;
+        fuelConsumption = ships[name].base_fuelConsumption + shipInstances[tokenId].fuelConsumption;
     }
 
 
@@ -456,6 +507,17 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         speed = ships[shipInstances[tokenId].name].base_speed + shipInstances[tokenId].speed;
     }
 
+    
+    /// @dev Retrieve the fuel consumption of a ship instance (after modules)
+    /// @param tokenId The id of the ship to retreive the fuel consumption for
+    /// @return fuelConsumption Ship fuel consumption (after modules)
+    function getShipFuelConsumption(uint tokenId) 
+        public virtual override view  
+        returns (uint fuelConsumption)
+    {
+        fuelConsumption = ships[shipInstances[tokenId].name].base_fuelConsumption + shipInstances[tokenId].fuelConsumption;
+    }
+
 
     /// @dev Mints a starter ship to a player
     /// @param player address of the player
@@ -537,7 +599,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @param faction {Faction} (can only be equipted by this faction)
     /// @param subFaction {SubFaction} (pirate/bountyhunter)
     /// @param rarity Ship rarity {Rarity}
-    /// @param stats modules, arbitrary, base_speed, base_attack, base_health, base_defence, base_inventory
+    /// @param stats modules, c02, base_speed, base_attack, base_health, base_defence, base_inventory
     function _setShip(bytes32 name, bool generic, Faction faction, SubFaction subFaction, Rarity rarity, ShipStatValues memory stats) 
         internal 
     {
@@ -553,12 +615,14 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         ship.faction = faction;
         ship.subFaction = subFaction;
         ship.rarity = rarity;
+        ship.co2 = stats.co2;
         ship.modules = stats.modules;
         ship.base_speed = stats.speed;
         ship.base_attack = stats.attack;
         ship.base_health = stats.health;
         ship.base_defence = stats.defence;
         ship.base_inventory = stats.inventory;
+        ship.base_fuelConsumption = stats.fuelConsumption;
     }
 
 

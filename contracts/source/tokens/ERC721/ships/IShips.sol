@@ -30,6 +30,7 @@ interface IShips {
     /// @return base_health Ship starting health (before modules)
     /// @return base_defence Ship starting defence (before modules)
     /// @return base_inventory Ship starting storage (before modules)
+    /// @return base_fuelConsumption Ship starting fuel consumption (before modules)
     function getShips(uint skip, uint take) 
         external view 
         returns (
@@ -43,7 +44,8 @@ interface IShips {
             uint16[] memory base_attack,
             uint16[] memory base_health,
             uint16[] memory base_defence,
-            uint[] memory base_inventory
+            uint[] memory base_inventory,
+            uint[] memory base_fuelConsumption
         );
 
 
@@ -59,6 +61,7 @@ interface IShips {
     /// @return base_health Ship starting health (before modules)
     /// @return base_defence Ship starting defence (before modules)
     /// @return base_inventory Ship starting storage (before modules)
+    /// @return base_fuelConsumption Ship starting fuel consumption (before modules)
     function getShip(bytes32 name) 
         external view 
         returns (
@@ -71,7 +74,8 @@ interface IShips {
             uint16 base_attack,
             uint16 base_health,
             uint16 base_defence,
-            uint base_inventory
+            uint base_inventory,
+            uint base_fuelConsumption
         );
 
 
@@ -89,6 +93,7 @@ interface IShips {
     /// @return health Ship health (after modules)
     /// @return defence Ship defence (after modules)
     /// @return inventory Ship storage (after modules)
+    /// @return fuelConsumption Ship fuel consumption (after modules)
     function getShipInstance(uint tokenId) 
         external view 
         returns (
@@ -103,7 +108,8 @@ interface IShips {
             uint16 attack,
             uint16 health,
             uint16 defence,
-            uint inventory
+            uint inventory,
+            uint fuelConsumption
         );
 
     
@@ -163,6 +169,14 @@ interface IShips {
     function getShipSpeed(uint tokenId) 
         external view 
         returns (uint16 speed);
+
+
+    /// @dev Retrieve the fuel consumption of a ship instance (after modules)
+    /// @param tokenId The id of the ship to retreive the fuel consumption for
+    /// @return fuelConsumption Ship fuel consumption (after modules)
+    function getShipFuelConsumption(uint tokenId) 
+        external view 
+        returns (uint fuelConsumption);
 
     
     /// @dev Mints a starter ship to a player

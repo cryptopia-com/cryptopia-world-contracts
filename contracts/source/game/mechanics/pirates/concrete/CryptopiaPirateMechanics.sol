@@ -2,12 +2,14 @@
 pragma solidity ^0.8.20 < 0.9.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "hardhat/console.sol";
 
 import "../../../maps/IMaps.sol";
 import "../../../maps/types/MapEnums.sol";
 import "../../../players/IPlayerRegister.sol";
 import "../../../players/errors/PlayerErrors.sol";
 import "../../../inventories/IInventories.sol";
+import "../../../../tokens/ERC721/ships/IShips.sol";
 import "../IPirateMechanics.sol";
 
 /// @title Cryptopia pirate game mechanics
@@ -51,7 +53,6 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
      * Storage
      */ 
     uint64 constant private MAX_RESPONSE_TIME = 600; // 10 minutes
-    uint constant private BASE_FUEL_COST = 10 ether;
 
     /// @dev Interceptions (target => Interception)
     mapping(address => Interception) public interceptions;
@@ -230,6 +231,17 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
                 {
                     revert TargetNotReachable(msg.sender, target);
                 }
+
+                uint shipTokenId = IPlayerRegister(playerRegisterContract).getEquiptedShip(msg.sender);
+                uint fuelConsumption = IShips(shipContract).getShipFuelConsumption(shipTokenId);
+
+                // Handle fuel consumption
+                IInventories(intentoriesContract)
+                    .deductFungibleToken(
+                        msg.sender, 
+                        Inventory.Ship, 
+                        fuelContact, 
+                        fuelConsumption);
             }
             else 
             {
@@ -248,15 +260,6 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
             revert TargetAlreadyIntercepted(target);
         }
 
-
-        // Handle fuel consumption
-        if (targetIsTraveling)
-        {
-            uint fuelCost = BASE_FUEL_COST; // TODO: Increase with value based on CO2 level of ship?
-            IInventories(intentoriesContract)
-                .deductFungibleToken(msg.sender, Inventory.Ship, fuelContact, fuelCost);
-        }
-        
 
         /**
          * Create interception

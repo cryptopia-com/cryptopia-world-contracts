@@ -25,6 +25,6 @@ interface IPirateMechanics {
         external;
 
     
-    // function accept(bytes memory signature, address[] memory assets, uint[] memory assetIds, uint[] memory assetAmounts, Inventory[] memory inventories)
-    //     external;
+    function acceptOffer(bytes[] memory signatures, address[] memory assets, uint[] memory assetIds, uint[] memory assetAmounts, Inventory[] memory inventories)
+        external;
 }

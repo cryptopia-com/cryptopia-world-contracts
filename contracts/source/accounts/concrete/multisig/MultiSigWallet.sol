@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: ISC
 pragma solidity ^0.8.20 < 0.9.0;
 
+import "@openzeppelin/contracts/interfaces/IERC1271.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
@@ -11,7 +12,7 @@ import "../../multisig/IMultiSigWallet.sol";
 
 /// @title Multisignature wallet - Allows multiple parties to agree on transactions before execution.
 /// @author Stefan George - <stefan.george@consensys.net> (modified by Frank Bonnet <frankbonnet@outlook.com>)
-contract MultiSigWallet is IMultiSigWallet, Initializable, EIP712Upgradeable, ReentrancyGuard {
+contract MultiSigWallet is Initializable, EIP712Upgradeable, ReentrancyGuard, IMultiSigWallet, IERC1271 {
 
     struct Transaction 
     {
@@ -31,7 +32,14 @@ contract MultiSigWallet is IMultiSigWallet, Initializable, EIP712Upgradeable, Re
     /** 
      * Storage
      */
-    uint constant private MAX_OWNER_COUNT = 5;
+    uint constant internal MAX_OWNER_COUNT = 5;
+
+    /// @dev bytes4(keccak256("isValidSignature(bytes32,bytes)")
+    bytes4 constant internal ERC1271_MAGICVALUE = 0x1626ba7e;
+
+    /// @dev Execute transaction with signatures
+    bytes32 constant internal EIP712_TRANSACTION_SCHEMA_HASH = keccak256(
+        "ExecuteTransaction(address account, address destination, uint value, bytes data, uint nonce, uint deadline)");
 
     // Config
     uint public required;
@@ -39,7 +47,7 @@ contract MultiSigWallet is IMultiSigWallet, Initializable, EIP712Upgradeable, Re
     uint public dailyLimit;
     uint public lastDay;
     uint public spentToday;
-    uint public nonce = 1;
+    uint public nonce;
 
     // Transaction ID => Transaction
     mapping (uint => Transaction) public transactions;
@@ -106,28 +114,34 @@ contract MultiSigWallet is IMultiSigWallet, Initializable, EIP712Upgradeable, Re
     error OnlyWalletAllowed();
 
     /// @dev Raised when trying to add an owner that already exists
+    /// @param owner The address of the owner that already exists
     error OwnerAlreadyExists(address owner);
 
     /// @dev Raised when an operation requires an existing owner, but the address isn't an owner
+    /// @param owner The address of the owner that doesn't exist
     error OwnerDoesNotExist(address owner);
 
+    /// @dev Raised when owner count or required confirmations are not set correctly
+    /// @param ownerCount The amount of owners
+    error RequirementInvalid(uint ownerCount, uint required);
+
     /// @dev Raised when referencing a transaction that doesn't exist
+    /// @param transactionId The transaction ID that doesn't exist
     error TransactionDoesNotExist(uint transactionId);
 
     /// @dev Raised when a transaction has already been confirmed by an owner
+    /// @param transactionId The transaction ID that has already been confirmed
+    /// @param owner The owner that has already confirmed the transaction
     error TransactionAlreadyConfirmed(uint transactionId, address owner);
 
     /// @dev Raised when an owner tries to confirm a transaction that they haven't confirmed yet
+    /// @param transactionId The transaction ID that hasn't been confirmed yet
+    /// @param owner The owner that hasn't confirmed the transaction yet
     error TransactionNotYetConfirmed(uint transactionId, address owner);
 
     /// @dev Raised when trying to execute a transaction that has already been executed
+    /// @param transactionId The transaction ID that has already been executed
     error TransactionAlreadyExecuted(uint transactionId);
-
-    /// @dev Raised when an owner is invalid (either a duplicate or zero address)
-    error InvalidOwner(address account); 
-
-    /// @dev Raised when owner count or required confirmations are not set correctly
-    error InvalidOwnerCountOrRequirement(uint ownerCount, uint required);
 
 
     /**
@@ -252,7 +266,7 @@ contract MultiSigWallet is IMultiSigWallet, Initializable, EIP712Upgradeable, Re
             || _required == 0
             || ownerCount == 0) 
         {
-            revert InvalidOwnerCountOrRequirement(ownerCount, _required);
+            revert RequirementInvalid(ownerCount, _required);
         }
         _;
     }
@@ -261,13 +275,18 @@ contract MultiSigWallet is IMultiSigWallet, Initializable, EIP712Upgradeable, Re
     /*
      * Public functions
      */
-    /// @dev Contract initializer sets initial owners and required number of confirmations.
+    /// @dev Contract initializer sets initial owners and required number of confirmations
     /// @param _EIP712Name The name of the contract
     /// @param _EIP712Version The version of the contract
-    /// @param _owners List of initial owners.
-    /// @param _required Number of required confirmations.
-    /// @param _dailyLimit Amount in wei, which can be withdrawn without confirmations on a daily basis.
-    function __Multisig_init(string memory _EIP712Name, string memory _EIP712Version, address[] memory _owners, uint _required, uint _dailyLimit) 
+    /// @param _owners List of initial owners
+    /// @param _required Number of required confirmations
+    /// @param _dailyLimit Amount in wei, which can be withdrawn without confirmations on a daily basis
+    function __Multisig_init(
+        string memory _EIP712Name, 
+        string memory _EIP712Version, 
+        address[] memory _owners, 
+        uint _required, 
+        uint _dailyLimit) 
         internal onlyInitializing
     {   
         __EIP712_init(_EIP712Name, _EIP712Version);
@@ -275,18 +294,21 @@ contract MultiSigWallet is IMultiSigWallet, Initializable, EIP712Upgradeable, Re
     }
 
 
-    /// @dev Contract initializer sets initial owners and required number of confirmations.
-    /// @param _owners List of initial owners.
-    /// @param _required Number of required confirmations.
-    /// @param _dailyLimit Amount in wei, which can be withdrawn without confirmations on a daily basis.
-    function __Multisig_init_unchained(address[] memory _owners, uint _required, uint _dailyLimit) 
+    /// @dev Contract initializer sets initial owners and required number of confirmations
+    /// @param _owners List of initial owners
+    /// @param _required Number of required confirmations
+    /// @param _dailyLimit Amount in wei, which can be withdrawn without confirmations on a daily basis
+    function __Multisig_init_unchained(
+        address[] memory _owners, 
+        uint _required, 
+        uint _dailyLimit) 
         internal onlyInitializing
     {   
         for (uint i = 0; i < _owners.length; i++) 
         {
             if (isOwner[_owners[i]] || _owners[i] == address(0)) 
             {
-                revert InvalidOwner(_owners[i]);
+                revert ArgumentInvalid();
             }
 
             isOwner[_owners[i]] = true;
@@ -298,7 +320,7 @@ contract MultiSigWallet is IMultiSigWallet, Initializable, EIP712Upgradeable, Re
     }
 
 
-    /// @dev Fallback function allows to deposit ether.
+    /// @dev Fallback function allows to deposit ether
     receive() external payable
     {
         if (msg.value > 0)
@@ -308,7 +330,7 @@ contract MultiSigWallet is IMultiSigWallet, Initializable, EIP712Upgradeable, Re
     }
 
 
-    /// @dev Fallback function allows to deposit ether.
+    /// @dev Fallback function allows to deposit ether
     fallback() external payable
     {
         if (msg.value > 0)
@@ -478,56 +500,68 @@ contract MultiSigWallet is IMultiSigWallet, Initializable, EIP712Upgradeable, Re
         emit Revocation(msg.sender, transactionId);
     }
 
+
+    /// @dev Reverted when trying to execute a transaction without sufficient signatures
+    /// @param count Amount of signatures provided
+    /// @param required Amount of signatures required
+    error SignatureCountInvalid(uint count, uint required);
+
+    /// @dev Reverted when trying to execute a transaction with a signature that has been expired
+    /// @param timestamp Current timestamp
+    /// @param deadline Deadline in unix timestamp
+    error SignatureExpired(uint timestamp, uint deadline);
+
+
     
     /// @dev Allows anyone to execute a transaction with off-chain signatures
     /// @param signatures Array of signatures
-    /// @param signers Array of signers
     /// @param deadline Deadline in unix timestamp
     /// @param destination Transaction target address
     /// @param value Transaction value in wei
     /// @param data Transaction data payload
     /// @return transactionId Returns transaction ID
     /// @return success Returns if the transaction was executed
-    function executeTransaction(bytes[] memory signatures, address[] memory signers, uint deadline, address destination, uint value, bytes memory data)
+    function executeTransaction(
+        bytes[] memory signatures, 
+        uint deadline, 
+        address destination, 
+        uint value, 
+        bytes memory data)
         public virtual override 
-        nonReentrant()
+        nonReentrant
         returns (uint transactionId, bool success)
     {
         // Ensure the required amount of signatures
         if (signatures.length != required)
         {
-            // revert InvalidSignatureCount(signatures.length, required);
+            revert SignatureCountInvalid(signatures.length, required);
         }
 
+        // Create digest
+        bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
+            EIP712_TRANSACTION_SCHEMA_HASH,
+            address(this),
+            destination,
+            value,
+            keccak256(data),
+            nonce++,
+            deadline
+        )));
+
+        // Validate signatures
         for (uint i = 0; i < signatures.length; i++)
         {
-            bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
-                keccak256("MultiSigWallet(address owner, address destination, uint value, bytes data, uint nonce, uint deadline)"),
-                signers[i],
-                destination,
-                value,
-                keccak256(data),
-                nonce++,
-                deadline
-            )));
-
             // Ensure signature is valid
             address signer = ECDSA.recover(digest, signatures[i]);
-            if (signer == address(0) || signer != signers[i])
-            {
-                // revert SignatureInvalid(signer, owners[i]);
-            }
-
-            // Ensure signer is owner
             if (!isOwner[signer])
             {
-                revert InvalidOwner(signer);
+                revert OwnerDoesNotExist(signer);
             }
 
             // Ensure deadline has not passed
             if (block.timestamp > deadline)
             {
-                // revert SignatureExpired(block.timestamp, deadline);
+                revert SignatureExpired(block.timestamp, deadline);
             }
 
             if (0 == i)
@@ -554,6 +588,51 @@ contract MultiSigWallet is IMultiSigWallet, Initializable, EIP712Upgradeable, Re
         // Return success
         success = transactions[transactionId].executed;
     }
+
+
+    /// @dev Verifies that the signer is an owner of the signing contract
+    /// @param _hash Hash of the data to be signed
+    /// @param _signature Signature byte array associated with _hash
+    function isValidSignature(bytes32 _hash, bytes memory _signature)
+        public virtual override view 
+        returns (bytes4 magicValue)
+    {
+        if (isOwner[ECDSA.recover(_hash, _signature)])
+        {
+            magicValue = ERC1271_MAGICVALUE;
+        }
+    }
+
+
+    /// @dev Returns true if the signatures are valid and satisfy the requirements of the multisig wallet
+    /// @param _hash Hash of the signed data
+    /// @param signatures Array of signatures
+    /// @return Returns true if enough valid signatures are provided
+    function isValidSignatureSet(bytes32 _hash, bytes[] memory signatures)
+        public virtual override view 
+        returns (bool)
+    {
+        uint count = 0;
+        address[] memory seen = new address[](signatures.length);
+
+        for (uint i = 0; i < signatures.length; i++) 
+        {
+            address signer = ECDSA.recover(_hash, signatures[i]);
+            if (isOwner[signer] && !_isSeen(signer, seen)) 
+            {
+                count += 1;
+                seen[i] = signer;
+            }
+
+            if (count == required) 
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 
     /**
      * Web3 call functions
@@ -855,5 +934,25 @@ contract MultiSigWallet is IMultiSigWallet, Initializable, EIP712Upgradeable, Re
             // Emit failure event
             emit ExecutionFailure(transactionId);
         }
+    }
+
+
+    /// @dev Helper function to check if an address has been seen
+    /// @param signer Address to check
+    /// @param seen Array of seen addresses
+    /// @return Returns true if the address has been seen
+    function _isSeen(address signer, address[] memory seen) 
+        internal pure 
+        returns (bool) 
+    {
+        for (uint i = 0; i < seen.length; i++) 
+        {
+            if (seen[i] == signer) 
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -13,7 +13,7 @@ import "../../../inventories/IInventories.sol";
 import "../../../inventories/errors/InventoryErrors.sol";
 import "../../../assets/IAssetRegister.sol";
 import "../../../assets/types/AssetEnums.sol";
-import "../../../errors/GameErrors.sol";
+import "../../../errors/TimingErrors.sol";
 import "../../interactions/IResourceGathering.sol";
 
 /// @title Allows players to mint non-finite resources

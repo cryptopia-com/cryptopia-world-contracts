@@ -911,7 +911,7 @@ describe("PirateMechanics Contract", function () {
 
             // Assert
             await expect(operation).to
-                .emit(pirateMechanicsInstance, "PirateInterception")
+                .emit(pirateMechanicsInstance, "PirateConfrontation")
                 .withArgs(pirateAccountAddress, targetAccountAddress, 0);
         }); 
 
@@ -1089,7 +1089,7 @@ describe("PirateMechanics Contract", function () {
 
             // Assert
             await expect(operation).to
-                .emit(pirateMechanicsInstance, "PirateInterception")
+                .emit(pirateMechanicsInstance, "PirateConfrontation")
                 .withArgs(anotherPirateAccountAddress, anotherTargetAccountAddress, path[0]);
         });
     });

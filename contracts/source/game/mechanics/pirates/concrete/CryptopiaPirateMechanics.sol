@@ -2,8 +2,12 @@
 pragma solidity ^0.8.20 < 0.9.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/NoncesUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
+
 import "hardhat/console.sol";
 
+import "../IPirateMechanics.sol";
 import "../../../maps/IMaps.sol";
 import "../../../maps/types/MapEnums.sol";
 import "../../../players/IPlayerRegister.sol";
@@ -11,12 +15,14 @@ import "../../../players/errors/PlayerErrors.sol";
 import "../../../inventories/IInventories.sol";
 import "../../../../tokens/ERC721/ships/IShips.sol";
 import "../../../../errors/ArgumentErrors.sol";
-import "../IPirateMechanics.sol";
+import "../../../../game/errors/TimingErrors.sol";
+import "../../../../accounts/multisig/IMultiSigWallet.sol";
+import "../../../../accounts/multisig/errors/MultisigErrors.sol";
 
 /// @title Cryptopia pirate game mechanics
 /// @dev Provides the mechanics for the pirate gameplay
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
+contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, EIP712Upgradeable, IPirateMechanics {
 
     // TODO
     // * Add intercept function that allows the attacker to intercept the defender
@@ -29,7 +35,7 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
     // - Add quick auto resolution of battles
     // - Add manual resolution of battles
 
-    struct Interception 
+    struct Confrontation 
     {
         // Pirate
         address attacker;
@@ -43,20 +49,23 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
         // Deadline for the defender to respond
         uint64 deadline;
 
-         // Timestamp of the interception
+         // Timestamp of the confrontation
         uint64 start;
 
-        // Timestamp at which the interception ends (either by player action or timeout)
+        // Timestamp at which the confrontation ends (either by player action or timeout)
         uint64 end;
     }
+
 
     /**
      * Storage
      */ 
     uint64 constant private MAX_RESPONSE_TIME = 600; // 10 minutes
 
-    /// @dev Interceptions (target => Interception)
-    mapping(address => Interception) public interceptions;
+    /// @dev target => Confrontation
+    mapping(address => Confrontation) public confrontations;
+
+    /// @dev attacker => target
     mapping(address => address) public targets;
 
     /// @dev Refs
@@ -70,13 +79,20 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
 
 
     /**
+     * Meta transactions
+     */
+    bytes32 constant internal EIP712_ACCEPT_OFFER_SCHEMA_HASH = keccak256(
+        "AcceptOffer(address owner,address[] memory assets,uint256[] memory assetIds,uint256[] memory assetAmounts,Inventory[] memory inventories,uint256 nonce,uint256 deadline)");
+
+
+    /**
      * Events
      */
     /// @dev Emits when a pirate intercepts another player
     /// @param attacker The account of the attacker
     /// @param target The account of the defender
-    /// @param location The location at which the interception took place
-    event PirateInterception(address indexed attacker, address indexed target, uint16 indexed location);
+    /// @param location The location at which the confrontation took place
+    event PirateConfrontation(address indexed attacker, address indexed target, uint16 indexed location);
 
 
     /**
@@ -111,6 +127,13 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
     /// @param target The account of the defender
     error TargetAlreadyIntercepted(address target);
 
+    // Revert: Attack expired or already resolved
+
+    /// @dev Revert if the confrontation is has ended
+    /// @param attacker The account of the attacker
+    /// @param target The account of the defender
+    error ConfrontationEnded(address attacker, address target);
+
 
     /**
      * Public functions
@@ -134,6 +157,7 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
     ) 
         initializer public 
     {
+        __Nonces_init();
         treasury = _treasury;
         playerRegisterContract = _playerRegisterContract;
         assetRegisterContract = _assetRegisterContract;
@@ -200,7 +224,7 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
         }
 
         // Ensure that the attacker is not already intercepting a target
-        if (interceptions[targets[msg.sender]].end > block.timestamp) 
+        if (confrontations[targets[msg.sender]].end > block.timestamp) 
         {
             revert AttackerAlreadyIntercepting(msg.sender);
         }
@@ -274,29 +298,75 @@ contract CryptopiaPirateMechanics is Initializable, IPirateMechanics {
         } 
 
         // Ensure that the target is not already intercepted
-        Interception storage interception = interceptions[target];
-        if (interception.end > block.timestamp) 
+        Confrontation storage confrontation = confrontations[target];
+        if (confrontation.end > block.timestamp) 
         {
             revert TargetAlreadyIntercepted(target);
         }
 
 
         /**
-         * Create interception
+         * Create confrontation
          */
-        interception.attacker = msg.sender;
-        interception.defender = target;
-        interception.location = attackerTileIndex;
-        interception.start = uint64(block.timestamp);
-        interception.deadline = interception.start + MAX_RESPONSE_TIME;
-        interception.end = interception.deadline + MAX_RESPONSE_TIME;
+        confrontation.attacker = msg.sender;
+        confrontation.defender = target;
+        confrontation.location = attackerTileIndex;
+        confrontation.start = uint64(block.timestamp);
+        confrontation.deadline = confrontation.start + MAX_RESPONSE_TIME;
+        confrontation.end = confrontation.deadline + MAX_RESPONSE_TIME;
 
         // Link target to attacker
         targets[msg.sender] = target;
 
         // Emit event
-        emit PirateInterception(msg.sender, target, attackerTileIndex);
+        emit PirateConfrontation(msg.sender, target, attackerTileIndex);
     }
 
 
+    /// @dev Attacker accepts the offer from the target to resolve the confrontation
+    /// @param signatures Array of signatures authorizing the attacker to accept the offer
+    /// @param assets The assets that the target is willing to offer
+    /// @param assetIds The ids of the assets that the target is willing to offer
+    /// @param assetAmounts The amounts of the assets that the target is willing to offer
+    /// @param inventories The inventories that the assets are located in
+    function acceptOffer(bytes[] memory signatures, address[] memory assets, uint[] memory assetIds, uint[] memory assetAmounts, Inventory[] memory inventories)
+        public virtual override
+    {
+        address target = targets[msg.sender];
+        Confrontation storage confrontation = confrontations[target];
+
+        // Ensure that the confrontation has not ended
+        if (confrontation.end < block.timestamp) 
+        {
+            revert ConfrontationEnded(msg.sender, target);
+        }
+
+        // Ensure that the response time has not expired
+        if (block.timestamp > confrontation.deadline) 
+        {
+            revert ResponseTimeExpired(target, confrontation.deadline);
+        }
+
+        // Validate signatures
+        bytes32 _hash = _hashTypedDataV4(keccak256(abi.encode(
+            EIP712_ACCEPT_OFFER_SCHEMA_HASH,
+            target,
+            assets,
+            assetIds,
+            assetAmounts,
+            inventories,
+            _useNonce(target),
+            confrontation.deadline
+        )));
+
+        if (!IMultiSigWallet(target).isValidSignatureSet(_hash, signatures)) 
+        {
+            revert InvalidSignatureSet(target);
+        }
+
+        // Mark confrontation as ended
+        confrontation.end = 0;
+
+        console.log("Confrontation ended");
+    }
 }

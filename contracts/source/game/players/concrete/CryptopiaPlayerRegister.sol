@@ -14,7 +14,7 @@ import "../../../tokens/ERC721/ships/errors/ShipErrors.sol";
 import "../../inventories/IInventories.sol";
 import "../../crafting/ICrafting.sol";
 import "../../types/GameEnums.sol";
-import "../../errors/GameErrors.sol";
+import "../../errors/FactionErrors.sol";
 import "../errors/PlayerErrors.sol";
 import "../IPlayerRegister.sol";
 

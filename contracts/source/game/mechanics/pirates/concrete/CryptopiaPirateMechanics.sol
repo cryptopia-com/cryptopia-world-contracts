@@ -3,9 +3,6 @@ pragma solidity ^0.8.20 < 0.9.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/NoncesUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
-
-import "hardhat/console.sol";
 
 import "../IPirateMechanics.sol";
 import "../../../maps/IMaps.sol";
@@ -13,6 +10,7 @@ import "../../../maps/types/MapEnums.sol";
 import "../../../players/IPlayerRegister.sol";
 import "../../../players/errors/PlayerErrors.sol";
 import "../../../inventories/IInventories.sol";
+import "../../../meta/MetaTransactions.sol";
 import "../../../../tokens/ERC721/ships/IShips.sol";
 import "../../../../errors/ArgumentErrors.sol";
 import "../../../../game/errors/TimingErrors.sol";
@@ -22,7 +20,7 @@ import "../../../../accounts/multisig/errors/MultisigErrors.sol";
 /// @title Cryptopia pirate game mechanics
 /// @dev Provides the mechanics for the pirate gameplay
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, EIP712Upgradeable, IPirateMechanics {
+contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMechanics {
 
     // TODO
     // * Add intercept function that allows the attacker to intercept the defender
@@ -79,20 +77,20 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, EIP712Upg
 
 
     /**
-     * Meta transactions
-     */
-    bytes32 constant internal EIP712_ACCEPT_OFFER_SCHEMA_HASH = keccak256(
-        "AcceptOffer(address owner,address[] memory assets,uint256[] memory assetIds,uint256[] memory assetAmounts,Inventory[] memory inventories,uint256 nonce,uint256 deadline)");
-
-
-    /**
      * Events
      */
     /// @dev Emits when a pirate intercepts another player
     /// @param attacker The account of the attacker
     /// @param target The account of the defender
     /// @param location The location at which the confrontation took place
-    event PirateConfrontation(address indexed attacker, address indexed target, uint16 indexed location);
+    /// @param deadline The deadline for the defender to respond
+    event PirateConfrontationStart(address indexed attacker, address indexed target, uint16 indexed location, uint64 deadline);
+
+    /// @dev Emits when a confrontation ends
+    /// @param attacker The account of the attacker
+    /// @param target The account of the defender
+    /// @param location The location at which the confrontation took place
+    event PirateConfrontationEnd(address indexed attacker, address indexed target, uint16 indexed location);
 
 
     /**
@@ -127,12 +125,10 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, EIP712Upg
     /// @param target The account of the defender
     error TargetAlreadyIntercepted(address target);
 
-    // Revert: Attack expired or already resolved
-
     /// @dev Revert if the confrontation is has ended
     /// @param attacker The account of the attacker
     /// @param target The account of the defender
-    error ConfrontationEnded(address attacker, address target);
+    error ConfrontationNotFound(address attacker, address target);
 
 
     /**
@@ -319,17 +315,17 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, EIP712Upg
         targets[msg.sender] = target;
 
         // Emit event
-        emit PirateConfrontation(msg.sender, target, attackerTileIndex);
+        emit PirateConfrontationStart(msg.sender, target, attackerTileIndex, confrontation.deadline);
     }
 
 
     /// @dev Attacker accepts the offer from the target to resolve the confrontation
     /// @param signatures Array of signatures authorizing the attacker to accept the offer
     /// @param assets The assets that the target is willing to offer
-    /// @param assetIds The ids of the assets that the target is willing to offer
-    /// @param assetAmounts The amounts of the assets that the target is willing to offer
+    /// @param tokenIds The ids of the assets that the target is willing to offer
+    /// @param amounts The amounts of the assets that the target is willing to offer
     /// @param inventories The inventories that the assets are located in
-    function acceptOffer(bytes[] memory signatures, address[] memory assets, uint[] memory assetIds, uint[] memory assetAmounts, Inventory[] memory inventories)
+    function acceptOffer(bytes[] memory signatures, address[] memory assets, uint[] memory tokenIds, uint[] memory amounts, Inventory[] memory inventories)
         public virtual override
     {
         address target = targets[msg.sender];
@@ -338,7 +334,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, EIP712Upg
         // Ensure that the confrontation has not ended
         if (confrontation.end < block.timestamp) 
         {
-            revert ConfrontationEnded(msg.sender, target);
+            revert ConfrontationNotFound(msg.sender, target);
         }
 
         // Ensure that the response time has not expired
@@ -348,16 +344,18 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, EIP712Upg
         }
 
         // Validate signatures
-        bytes32 _hash = _hashTypedDataV4(keccak256(abi.encode(
-            EIP712_ACCEPT_OFFER_SCHEMA_HASH,
+        bytes32 _hash = keccak256(abi.encode(
+            MetaTransactions.EIP712_TRANSFER_PROPOSAL_SCHEMA_HASH,
             target,
-            assets,
-            assetIds,
-            assetAmounts,
-            inventories,
+            msg.sender,
+            keccak256(abi.encodePacked(assets)),
+            keccak256(abi.encodePacked(tokenIds)),
+            keccak256(abi.encodePacked(amounts)),
+            keccak256(abi.encodePacked(inventories)),
+            confrontation.deadline,
             _useNonce(target),
-            confrontation.deadline
-        )));
+            address(this)
+        ));
 
         if (!IMultiSigWallet(target).isValidSignatureSet(_hash, signatures)) 
         {
@@ -367,6 +365,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, EIP712Upg
         // Mark confrontation as ended
         confrontation.end = 0;
 
-        console.log("Confrontation ended");
+        // Emit
+        emit PirateConfrontationEnd(msg.sender, target, confrontation.location);
     }
 }

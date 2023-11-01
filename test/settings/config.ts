@@ -23,4 +23,7 @@ export const MOVEMENT_COST_WATER_EMBARK_DISEMBARK = 25;
 /**
  * Pirate mechanics settings
  */
-export const BASE_FUEL_COST = BigInt("1000000000000000000");
+export const PirateMechanicsConfig = {
+    MAX_RESPONSE_TIME : 600, // 10 minutes
+    BASE_FUEL_COST : BigInt("1000000000000000000")
+}

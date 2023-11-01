@@ -2,39 +2,46 @@ import { BaseContract, Log, TransactionReceipt } from 'ethers';
 import { ethers } from 'hardhat';
 import { assert } from 'chai';
 
-export function getParamFromEvent(
-  contract: BaseContract,
-  receipt: TransactionReceipt | null,
-  paramName: string,
-  eventName: string
-) {
-  if (!receipt) {
-    throw new Error('Transaction receipt is null');
-  }
+/**
+ * Function to get a parameter from an event
+ * 
+ * @param contract The contract instance 
+ * @param receipt The transaction receipt
+ * @param paramName The name of the parameter
+ * @param eventName The name of the event
+ * @returns The value of the parameter
+ */
+export function getParamFromEvent(contract: BaseContract, receipt: TransactionReceipt | null, paramName: string, eventName: string) {
   
-  assert.isObject(receipt);
+    if (!receipt) {
+        throw new Error('Transaction receipt is null');
+    }
 
-  const eventFragment = contract.interface.getEvent(eventName);
-  if (!eventFragment) {
-    throw new Error(`Event ${eventName} not found in contract interface`);
-  }
+    assert.isObject(receipt);
 
-  const eventTopic = ethers.keccak256(
-    ethers.toUtf8Bytes(eventFragment.format()));
+    const eventFragment = contract.interface.getEvent(eventName);
+    if (!eventFragment) {
+        throw new Error(`Event ${eventName} not found in contract interface`);
+    }
 
-  const filteredLogs = receipt.logs.filter(
-    (log: Log) => log.topics && log.topics[0] === eventTopic);
+    const eventTopic = ethers.keccak256(
+        ethers.toUtf8Bytes(eventFragment.format()));
 
-  assert.notEqual(filteredLogs.length, 0, 'No logs found!');
-  assert.equal(filteredLogs.length, 1, 'Too many logs found!');
+    const filteredLogs = receipt.logs.filter(
+        (log: Log) => log.topics && log.topics[0] === eventTopic);
 
-  // Make a copy of the topics array to make it mutable
-  const mutableTopics = [...filteredLogs[0].topics];
+    assert.notEqual(filteredLogs.length, 0, 'No logs found!');
+    assert.equal(filteredLogs.length, 1, 'Too many logs found!');
 
-  const decodedLog = contract.interface.parseLog({ ...filteredLogs[0], topics: mutableTopics });
-  if (!decodedLog) {
-    throw new Error(`Could not decode log for event ${eventName}`);
-  }
+    // Make a copy of the topics array to make it mutable
+    const mutableTopics = [...filteredLogs[0].topics];
 
-  return decodedLog.args[paramName];
+    const decodedLog = contract.interface
+      .parseLog({ ...filteredLogs[0], topics: mutableTopics});
+
+    if (!decodedLog) {
+        throw new Error(`Could not decode log for event ${eventName}`);
+    }
+
+    return decodedLog.args[paramName];
 }

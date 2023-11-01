@@ -1,13 +1,12 @@
 import "../scripts/helpers/converters";
 import { expect } from "chai";
-import { ethers, upgrades} from "hardhat";
-import { BytesLike } from "ethers";
+import { ethers, upgrades } from "hardhat";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
-import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { getParamFromEvent} from '../scripts/helpers/events';
-import { REVERT_MODE, PLAYER_IDLE_TIME, MOVEMENT_TURN_DURATION, BASE_FUEL_COST } from "./settings/config";
-import { DEFAULT_ADMIN_ROLE, SYSTEM_ROLE, MINTER_ROLE } from "./settings/roles";   
-import { ZERO_ADDRESS } from "./settings/constants";
+import { getTransferProposalSignature } from "../scripts/helpers/meta";
+import { TransferProposal } from "../scripts/types/meta";
+import { REVERT_MODE, PLAYER_IDLE_TIME, MOVEMENT_TURN_DURATION, PirateMechanicsConfig } from "./settings/config";
+import { SYSTEM_ROLE, MINTER_ROLE } from "./settings/roles";   
 import { Resource, Terrain, Biome, Inventory } from '../scripts/types/enums';
 import { Asset, Map } from "../scripts/types/input";
 
@@ -347,9 +346,9 @@ describe("PirateMechanics Contract", function () {
     });
 
     /**
-     * Test Pirate Mechanics
+     * Test intercepting a target
      */
-    describe("Intercept", function () {
+    describe("Intercepting", function () {
 
         // Players
         let pirateAccountInstance: CryptopiaAccount;
@@ -363,25 +362,25 @@ describe("PirateMechanics Contract", function () {
         before(async () => {
 
             // Create pirate account
-            const createPirateAccountTransaction = await playerRegisterInstance.create([account1], 1, 0, "Pirate".toBytes32(), 0, 0);
+            const createPirateAccountTransaction = await playerRegisterInstance.create([account1], 1, 0, "Intercepting_Pirate".toBytes32(), 0, 0);
             const createPirateAccountReceipt = await createPirateAccountTransaction.wait();
             const pirateAccount = getParamFromEvent(playerRegisterInstance, createPirateAccountReceipt, "account", "RegisterPlayer");
             pirateAccountInstance = await ethers.getContractAt("CryptopiaAccount", pirateAccount);
 
             // Create target account
-            const createTargetAccountTransaction = await playerRegisterInstance.create([account2], 1, 0, "Target".toBytes32(), 0, 0);
+            const createTargetAccountTransaction = await playerRegisterInstance.create([account2], 1, 0, "Intercepted_Target".toBytes32(), 0, 0);
             const createTargetAccountReceipt = await createTargetAccountTransaction.wait();
             const targetAccount = getParamFromEvent(playerRegisterInstance, createTargetAccountReceipt, "account", "RegisterPlayer");
             targetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAccount);
 
             // Create another rpirate account
-            const createAnotherPirateAccountTransaction = await playerRegisterInstance.create([account3], 1, 0, "Another_Pirate".toBytes32(), 0, 0);
+            const createAnotherPirateAccountTransaction = await playerRegisterInstance.create([account3], 1, 0, "Another_Intercepting_Pirate".toBytes32(), 0, 0);
             const createAnotherPirateAccountReceipt = await createAnotherPirateAccountTransaction.wait();
             const anotherPirateAccount = getParamFromEvent(playerRegisterInstance, createAnotherPirateAccountReceipt, "account", "RegisterPlayer");
             anotherPirateAccountInstance = await ethers.getContractAt("CryptopiaAccount", anotherPirateAccount);
 
             // Create another target account
-            const createAnotherTargetAccountTransaction = await playerRegisterInstance.create([account4], 1, 0, "Another_Target".toBytes32(), 0, 0);
+            const createAnotherTargetAccountTransaction = await playerRegisterInstance.create([account4], 1, 0, "Another_Intercepted_Target".toBytes32(), 0, 0);
             const createAnotherTargetAccountReceipt = await createAnotherTargetAccountTransaction.wait();
             const targetAnotherAccount = getParamFromEvent(playerRegisterInstance, createAnotherTargetAccountReceipt, "account", "RegisterPlayer");
             anotherTargetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAnotherAccount);
@@ -827,7 +826,7 @@ describe("PirateMechanics Contract", function () {
             {
                 await expect(operation).to.be
                     .revertedWithCustomError(inventoriesInstance, "InventoryInsufficientBalance")
-                    .withArgs(pirateAccountAddress, Inventory.Ship, fuelAssetAddress, BASE_FUEL_COST);
+                    .withArgs(pirateAccountAddress, Inventory.Ship, fuelAssetAddress, PirateMechanicsConfig.BASE_FUEL_COST);
             }
             else
             {
@@ -885,11 +884,11 @@ describe("PirateMechanics Contract", function () {
             // Ensure the pirate has enough fuel
             await fuelAssetInstance
                 .connect(minterSigner)
-                .mintTo(inventoriesAddress, BASE_FUEL_COST);
+                .mintTo(inventoriesAddress, PirateMechanicsConfig.BASE_FUEL_COST);
 
             await inventoriesInstance
                 .connect(systemSigner)
-                .assignFungibleToken(pirateAccountAddress, Inventory.Ship, fuelAssetAddress, BASE_FUEL_COST);
+                .assignFungibleToken(pirateAccountAddress, Inventory.Ship, fuelAssetAddress, PirateMechanicsConfig.BASE_FUEL_COST);
 
             const playerMoveCalldata = mapInstance.interface
                 .encodeFunctionData("playerMove", [path]);
@@ -905,14 +904,16 @@ describe("PirateMechanics Contract", function () {
             const calldata = pirateMechanicsInstance.interface
                 .encodeFunctionData("intercept", [targetAccountAddress, 0]);
 
-            const operation = pirateAccountInstance
+            const transaction = await pirateAccountInstance
                 .connect(pirateAccountSigner)
                 .submitTransaction(pirateMechanicsAddress, 0, calldata);
 
+            const expectedDeadline = await time.latest() + PirateMechanicsConfig.MAX_RESPONSE_TIME;
+
             // Assert
-            await expect(operation).to
-                .emit(pirateMechanicsInstance, "PirateConfrontation")
-                .withArgs(pirateAccountAddress, targetAccountAddress, 0);
+            expect(transaction).to
+                .emit(pirateMechanicsInstance, "PirateConfrontationStart")
+                .withArgs(pirateAccountAddress, targetAccountAddress, 0, expectedDeadline);
         }); 
 
         it ("Should not allow a pirate to intercept a target that's already been intercepted", async function () {
@@ -930,11 +931,11 @@ describe("PirateMechanics Contract", function () {
             // Ensure the pirate has enough fuel
             await fuelAssetInstance
                 .connect(minterSigner)
-                .mintTo(inventoriesAddress, BASE_FUEL_COST);
+                .mintTo(inventoriesAddress, PirateMechanicsConfig.BASE_FUEL_COST);
 
             await inventoriesInstance
                 .connect(systemSigner)
-                .assignFungibleToken(anotherPirateAccountAddress, Inventory.Ship, fuelAssetAddress, BASE_FUEL_COST);
+                .assignFungibleToken(anotherPirateAccountAddress, Inventory.Ship, fuelAssetAddress, PirateMechanicsConfig.BASE_FUEL_COST);
 
             // Act 
             const calldata = pirateMechanicsInstance.interface
@@ -1083,14 +1084,108 @@ describe("PirateMechanics Contract", function () {
             const calldata = pirateMechanicsInstance.interface
                 .encodeFunctionData("intercept", [anotherTargetAccountAddress, 0]);
 
-            const operation = anotherPirateAccountInstance
+            const transaction = await anotherPirateAccountInstance
                 .connect(anotherPirateAccountSigner)
                 .submitTransaction(pirateMechanicsAddress, 0, calldata);
 
+            const expectedDeadline = await time.latest() + PirateMechanicsConfig.MAX_RESPONSE_TIME;
+
+            // Assert
+            expect(transaction).to
+                .emit(pirateMechanicsInstance, "PirateConfrontationStart")
+                .withArgs(anotherPirateAccountAddress, anotherTargetAccountAddress, path[0], expectedDeadline);
+        });
+    });
+
+    /**
+     * Test resolving a confrontation through negotiation
+     */
+    describe("Negociating", function () {
+
+        // Players
+        let pirateAccountInstance: CryptopiaAccount;
+        let targetAccountInstance: CryptopiaAccount;
+
+        /**
+         * Deploy players
+         */
+        before(async () => {
+
+            // Create pirate account
+            const createPirateAccountTransaction = await playerRegisterInstance.create([account1], 1, 0, "Negociating_Pirate".toBytes32(), 0, 0);
+            const createPirateAccountReceipt = await createPirateAccountTransaction.wait();
+            const pirateAccount = getParamFromEvent(playerRegisterInstance, createPirateAccountReceipt, "account", "RegisterPlayer");
+            pirateAccountInstance = await ethers.getContractAt("CryptopiaAccount", pirateAccount);
+
+            // Create target account
+            const createTargetAccountTransaction = await playerRegisterInstance.create([account2], 1, 0, "Negociating_Target".toBytes32(), 0, 0);
+            const createTargetAccountReceipt = await createTargetAccountTransaction.wait();
+            const targetAccount = getParamFromEvent(playerRegisterInstance, createTargetAccountReceipt, "account", "RegisterPlayer");
+            targetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAccount);
+
+            // Add another pirate and target to the map
+            const playerEnterCalldata = mapInstance.interface
+                .encodeFunctionData("playerEnter");
+
+            await pirateAccountInstance
+                .connect(await ethers.provider.getSigner(account1))
+                .submitTransaction(await mapInstance.getAddress(), 0, playerEnterCalldata);
+
+            await targetAccountInstance
+                .connect(await ethers.provider.getSigner(account2))
+                .submitTransaction(await mapInstance.getAddress(), 0, playerEnterCalldata);
+        });
+
+        it ("Should allow a pirate to accept an offer from the targed", async function () {
+
+            // Setup
+            const mapContractAddress = await mapInstance.getAddress();
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const fuelAssetAddress = await fuelAssetInstance.getAddress();
+            const pirateAccountSigner = await ethers.provider.getSigner(account1);
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+            const targetAccountSigner = await ethers.provider.getSigner(account2);
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+
+            const interceptCalldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("intercept", [targetAccountAddress, 0]);
+
+            const interceptTransaction = await pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, interceptCalldata);
+            const interceptReceipt = await interceptTransaction.wait();
+
+            const deadline = getParamFromEvent(
+                pirateMechanicsInstance, interceptReceipt, "deadline", "PirateConfrontationStart");
+
+            // Create proposal
+            const proposal: TransferProposal = {
+                from: targetAccountAddress,
+                to: pirateAccountAddress,
+                assets: [fuelAssetAddress],
+                tokenIds: [0],
+                amounts: ["1".toWei()],
+                inventories: [Inventory.Ship],
+                deadline: deadline
+            }
+
+            const signature = await getTransferProposalSignature(
+                targetAccountSigner, 
+                pirateMechanicsAddress,
+                proposal);
+
+            // Act
+            const acceptOfferCalldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("acceptOffer", [[signature], proposal.assets, proposal.tokenIds, proposal.amounts, proposal.inventories]);
+
+            const operation = pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, acceptOfferCalldata);
+
             // Assert
             await expect(operation).to
-                .emit(pirateMechanicsInstance, "PirateConfrontation")
-                .withArgs(anotherPirateAccountAddress, anotherTargetAccountAddress, path[0]);
+                .emit(pirateMechanicsInstance, "PirateConfrontationEnd")
+                .withArgs(pirateAccountAddress, targetAccountAddress, 0);
         });
     });
 });

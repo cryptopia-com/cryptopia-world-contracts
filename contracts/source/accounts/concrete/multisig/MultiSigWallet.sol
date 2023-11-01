@@ -597,7 +597,7 @@ contract MultiSigWallet is Initializable, EIP712Upgradeable, ReentrancyGuard, IM
         public virtual override view 
         returns (bytes4 magicValue)
     {
-        if (isOwner[ECDSA.recover(_hash, _signature)])
+        if (isOwner[ECDSA.recover(_hashTypedDataV4(_hash), _signature)])
         {
             magicValue = ERC1271_MAGICVALUE;
         }
@@ -612,12 +612,13 @@ contract MultiSigWallet is Initializable, EIP712Upgradeable, ReentrancyGuard, IM
         public virtual override view 
         returns (bool)
     {
-        uint count = 0;
+        bytes32 digest = _hashTypedDataV4(_hash);
         address[] memory seen = new address[](signatures.length);
 
+        uint count = 0;
         for (uint i = 0; i < signatures.length; i++) 
         {
-            address signer = ECDSA.recover(_hash, signatures[i]);
+            address signer = ECDSA.recover(digest, signatures[i]);
             if (isOwner[signer] && !_isSeen(signer, seen)) 
             {
                 count += 1;

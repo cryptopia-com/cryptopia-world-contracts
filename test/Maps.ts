@@ -6,7 +6,7 @@ import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { getParamFromEvent} from '../scripts/helpers/events';
 import { REVERT_MODE, MOVEMENT_TURN_DURATION } from "./settings/config";
-import { DEFAULT_ADMIN_ROLE, SYSTEM_ROLE, MINTER_ROLE } from "./settings/roles";   
+import { DEFAULT_ADMIN_ROLE, SYSTEM_ROLE } from "./settings/roles";   
 import { ZERO_ADDRESS } from "./settings/constants";
 import { HexDirection, Resource, Terrain, Biome, RoutePosition } from '../scripts/types/enums';
 import { Asset, Map } from "../scripts/types/input";
@@ -291,11 +291,11 @@ describe("Maps Contract", function () {
                 .getContractAt("CryptopiaAssetToken", asset.contractAddress);
 
             await asset.contractInstance
-                .grantRole(MINTER_ROLE, minter);
+                .grantRole(SYSTEM_ROLE, minter);
             
             await assetRegisterInstance
                 .connect(systemSigner)
-                .registerAsset(asset.contractAddress, true, asset.resource);
+                .__registerAsset(asset.contractAddress, true, asset.resource);
 
             await inventoriesInstance
                 .setFungibleAsset(asset.contractAddress, asset.weight);

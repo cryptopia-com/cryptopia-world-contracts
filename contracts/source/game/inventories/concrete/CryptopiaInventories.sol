@@ -167,9 +167,6 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     error ShipInventoryTooHeavy(uint ship);
 
 
-    /**
-     * Admin functions
-     */
     /// @dev Construct
     /// @param _treasury token (ERC20) receiver
     function initialize(
@@ -186,11 +183,14 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     }
 
 
+    /**
+     * Admin functions
+     */
     /// @dev Set the `weight` for the fungible `asset` (zero invalidates the asset)
     /// @param asset The asset contract address
     /// @param weight The asset unit weight (kg/100)
     function setFungibleAsset(address asset, uint weight)
-        public virtual override  
+        public virtual   
         onlyRole(DEFAULT_ADMIN_ROLE) 
     {
         fungible[asset].weight = weight;
@@ -206,7 +206,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @param asset The asset contract address
     /// @param accepted If true the inventory will accept the NFT asset
     function setNonFungibleAsset(address asset, bool accepted)
-        public virtual override  
+        public virtual   
         onlyRole(DEFAULT_ADMIN_ROLE) 
     {
         nonFungible[asset].weight = accepted ? INVENTORY_SLOT_SIZE : 0;
@@ -214,199 +214,6 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         {
             nonFungibleIndex.push(asset);
             nonFungible[asset].index = nonFungibleIndex.length - 1;
-        }
-    }
-
-
-    /// @dev Update equipted ship for `player`
-    /// @param player The player that equipted the `ship`
-    /// @param ship The tokenId of the equipted ship
-    function setPlayerShip(address player, uint ship) 
-        public virtual override  
-        onlyRole(SYSTEM_ROLE) 
-    {
-        playerToShip[player] = ship;
-    }
-
-
-    /// @dev Update a ships inventory max weight
-    /// - Fails if the ships weight exeeds the new max weight
-    /// @param ship The tokenId of the ship to update
-    /// @param maxWeight The new max weight of the ship
-    function setShipInventory(uint ship, uint maxWeight)
-        public virtual override 
-        onlyRole(SYSTEM_ROLE) 
-    {
-        if (shipInventories[ship].maxWeight == maxWeight)
-        {
-            return;
-        }
-        
-        // Check if ship not is too heavy
-        if (shipInventories[ship].weight > maxWeight)
-        {
-            revert ShipInventoryTooHeavy(ship);
-        }
-
-        // Update
-        shipInventories[ship].maxWeight = maxWeight;
-
-        // Emit 
-        emit ShipInventoryChange(ship, maxWeight);
-    }
-
-
-    /// @dev Update a player's personal inventories 
-    /// @param player The player of whom we're updateing the inventories
-    /// @param maxWeight The new max weight of the player's backpack
-    function setPlayerInventory(address player, uint maxWeight)
-        public virtual override  
-        onlyRole(SYSTEM_ROLE) 
-    {
-        if (playerInventories[player].maxWeight == maxWeight)
-        {
-            return;
-        }
-
-        // Check if backpack not is too heavy
-        if (playerInventories[player].weight > maxWeight)
-        {
-            revert PlayerInventoryTooHeavy(player);
-        }
-
-        // Update
-        playerInventories[player].maxWeight = maxWeight;
-
-        // Emit
-        emit PlayerInventoryChange(player, maxWeight);
-    }
-
-
-    /// @dev Assigns `amount` of `asset` to the `inventory` of `player`
-    /// SYSTEM caller is trusted so checks can be omitted
-    /// - Assumes inventory exists
-    /// - Assumes asset exists
-    /// - Weight will be zero if player does not exist
-    /// - Assumes amount of asset is deposited to the contract
-    /// @param player The inventory owner to assign the asset to
-    /// @param inventory The inventory type to assign the asset to {BackPack | Ship}
-    /// @param asset The asset contract address 
-    /// @param amount The amount of asset to assign
-    function assignFungibleToken(address player, Inventory inventory, address asset, uint amount)
-        public virtual override 
-        onlyRole(SYSTEM_ROLE)
-    {
-        _assignFungibleToken(player, inventory, asset, amount);
-    }
-
-    
-    /// @dev Assigns `tokenId` from `asset` to the `inventory` of `player`
-    /// SYSTEM caller is trusted so checks can be omitted
-    /// - Assumes inventory exists
-    /// - Assumes asset exists
-    /// - Weight will be zero if player does not exist
-    /// - Assumes tokenId is deposited to the contract
-    /// @param player The inventory owner to assign the asset to
-    /// @param inventory The inventory type to assign the asset to {BackPack | Ship}
-    /// @param asset The asset contract address 
-    /// @param tokenId The token id from asset to assign
-    function assignNonFungibleToken(address player, Inventory inventory, address asset, uint tokenId)
-        public virtual override 
-        onlyRole(SYSTEM_ROLE)
-    {
-        _assignNonFungibleToken(player, inventory, asset, tokenId);
-    }
-
-
-    /// @dev Assigns `tokenIds` from `assets` to the `inventory` of `player`
-    /// SYSTEM caller is trusted so checks can be omitted
-    /// - Assumes inventory exists
-    /// - Assumes asset exists
-    /// - Weight will be zero if player does not exist
-    /// - Assumes tokenId is deposited to the contract
-    /// @param player The inventory owner to assign the asset to
-    /// @param inventory The inventory type to assign the asset to {BackPack | Ship}
-    /// @param asset The asset contract address 
-    /// @param tokenIds The token ids from asset to assign
-    function assignNonFungibleTokens(address player, Inventory inventory, address asset, uint[] memory tokenIds)
-        public virtual override 
-        onlyRole(SYSTEM_ROLE)
-    {
-        for (uint i = 0; i < tokenIds.length; i++)
-        {
-            _assignNonFungibleToken(
-                player, inventory, asset, tokenIds[i]);
-        } 
-    }
-
-
-    /// @dev Assigns fungible and non-fungible tokens in a single transaction
-    /// SYSTEM caller is trusted so checks can be omitted
-    /// - Assumes inventory exists
-    /// - Assumes asset exists
-    /// - Weight will be zero if player does not exist
-    /// - Assumes amount is deposited to the contract
-    /// - Assumes tokenId is deposited to the contract
-    /// @param player The inventory owner to assign the asset to
-    /// @param inventory The inventory type to assign the asset to {BackPack | Ship}
-    /// @param asset The asset contract address 
-    /// @param tokenIds The token ids from asset to assign
-    function assign(address[] memory player, Inventory[] memory inventory, address[] memory asset, uint[] memory amount, uint[][] memory tokenIds)
-        public virtual override 
-        onlyRole(SYSTEM_ROLE)
-    { 
-        for (uint i = 0; i < player.length; i++)
-        {
-            if (0 != amount[i])
-            {
-                // Fungible
-                _assignFungibleToken(
-                    player[i], inventory[i], asset[i], amount[i]);
-            }
-            else 
-            {
-                // Non-Fungible
-                for (uint j = 0; j < tokenIds[i].length; j++)
-                {
-                    _assignNonFungibleToken(
-                        player[i], inventory[i], asset[i], tokenIds[i][j]);
-                } 
-            }   
-        }
-    }
-
-
-    /// @dev Deducts `amount` of `asset` from the `inventory` of `player` 
-    /// SYSTEM caller is trusted so checks can be omitted
-    /// - Assumes inventory exists
-    /// - Assumes asset exists
-    /// @param player The inventory owner to deduct the asset from
-    /// @param inventory The inventory type to deduct the asset from {Backpack | Ship}
-    /// @param asset The asset contract address 
-    /// @param amount The amount of asset to deduct
-    function deductFungibleToken(address player, Inventory inventory, address asset, uint amount)
-        public virtual override 
-        onlyRole(SYSTEM_ROLE)
-    {
-        _deductFungibleToken(player, inventory, asset, amount);
-    }
-
-
-    /// @dev Deducts fungible and non-fungible tokens in a single transaction
-    /// SYSTEM caller is trusted so checks can be omitted
-    /// - Assumes inventory exists
-    /// - Assumes asset exists
-    /// @param player The inventory owner to deduct the assets from
-    /// @param inventory The inventory type to deduct the assets from {BackPack | Ship}
-    /// @param asset The asset contract addresses 
-    /// @param amount The amounts of assets to deduct
-    function deduct(address player, Inventory inventory, address[] memory asset, uint[] memory amount)
-        public virtual override 
-        onlyRole(SYSTEM_ROLE)
-    {
-        for (uint i = 0; i < asset.length; i++)
-        {
-            _deductFungibleToken(player, inventory, asset[i], amount[i]);
         }
     }
 
@@ -632,6 +439,242 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         returns (bytes4) 
     {
         return this.onERC721Received.selector;
+    }
+
+
+    /**
+     * System functions
+     */
+    /// @dev Update equipted ship for `player`
+    /// @param player The player that equipted the `ship`
+    /// @param ship The tokenId of the equipted ship
+    function __setPlayerShip(address player, uint ship) 
+        public virtual override  
+        onlyRole(SYSTEM_ROLE) 
+    {
+        playerToShip[player] = ship;
+    }
+
+
+    /// @dev Update a ships inventory max weight
+    /// - Fails if the ships weight exeeds the new max weight
+    /// @param ship The tokenId of the ship to update
+    /// @param maxWeight The new max weight of the ship
+    function __setShipInventory(uint ship, uint maxWeight)
+        public virtual override 
+        onlyRole(SYSTEM_ROLE) 
+    {
+        if (shipInventories[ship].maxWeight == maxWeight)
+        {
+            return;
+        }
+        
+        // Check if ship not is too heavy
+        if (shipInventories[ship].weight > maxWeight)
+        {
+            revert ShipInventoryTooHeavy(ship);
+        }
+
+        // Update
+        shipInventories[ship].maxWeight = maxWeight;
+
+        // Emit 
+        emit ShipInventoryChange(ship, maxWeight);
+    }
+
+
+    /// @dev Update a player's personal inventories 
+    /// @param player The player of whom we're updateing the inventories
+    /// @param maxWeight The new max weight of the player's backpack
+    function __setPlayerInventory(address player, uint maxWeight)
+        public virtual override  
+        onlyRole(SYSTEM_ROLE) 
+    {
+        if (playerInventories[player].maxWeight == maxWeight)
+        {
+            return;
+        }
+
+        // Check if backpack not is too heavy
+        if (playerInventories[player].weight > maxWeight)
+        {
+            revert PlayerInventoryTooHeavy(player);
+        }
+
+        // Update
+        playerInventories[player].maxWeight = maxWeight;
+
+        // Emit
+        emit PlayerInventoryChange(player, maxWeight);
+    }
+
+
+    /// @dev Assigns `amount` of `asset` to the `inventory` of `player`
+    /// SYSTEM caller is trusted so checks can be omitted
+    /// - Assumes inventory exists
+    /// - Assumes asset exists
+    /// - Weight will be zero if player does not exist
+    /// - Assumes amount of asset is deposited to the contract
+    /// @param player The inventory owner to assign the asset to
+    /// @param inventory The inventory type to assign the asset to {BackPack | Ship}
+    /// @param asset The asset contract address 
+    /// @param amount The amount of asset to assign
+    function __assignFungibleToken(address player, Inventory inventory, address asset, uint amount)
+        public virtual override 
+        onlyRole(SYSTEM_ROLE)
+    {
+        _assignFungibleToken(player, inventory, asset, amount);
+    }
+
+    
+    /// @dev Assigns `tokenId` from `asset` to the `inventory` of `player`
+    /// SYSTEM caller is trusted so checks can be omitted
+    /// - Assumes inventory exists
+    /// - Assumes asset exists
+    /// - Weight will be zero if player does not exist
+    /// - Assumes tokenId is deposited to the contract
+    /// @param player The inventory owner to assign the asset to
+    /// @param inventory The inventory type to assign the asset to {BackPack | Ship}
+    /// @param asset The asset contract address 
+    /// @param tokenId The token id from asset to assign
+    function __assignNonFungibleToken(address player, Inventory inventory, address asset, uint tokenId)
+        public virtual override 
+        onlyRole(SYSTEM_ROLE)
+    {
+        _assignNonFungibleToken(player, inventory, asset, tokenId);
+    }
+
+
+    /// @dev Assigns `tokenIds` from `assets` to the `inventory` of `player`
+    /// SYSTEM caller is trusted so checks can be omitted
+    /// - Assumes inventory exists
+    /// - Assumes asset exists
+    /// - Weight will be zero if player does not exist
+    /// - Assumes tokenId is deposited to the contract
+    /// @param player The inventory owner to assign the asset to
+    /// @param inventory The inventory type to assign the asset to {BackPack | Ship}
+    /// @param asset The asset contract address 
+    /// @param tokenIds The token ids from asset to assign
+    function __assignNonFungibleTokens(address player, Inventory inventory, address asset, uint[] memory tokenIds)
+        public virtual override 
+        onlyRole(SYSTEM_ROLE)
+    {
+        for (uint i = 0; i < tokenIds.length; i++)
+        {
+            _assignNonFungibleToken(
+                player, inventory, asset, tokenIds[i]);
+        } 
+    }
+
+
+    /// @dev Assigns fungible and non-fungible tokens in a single transaction
+    /// SYSTEM caller is trusted so checks can be omitted
+    /// - Assumes inventory exists
+    /// - Assumes asset exists
+    /// - Weight will be zero if player does not exist
+    /// - Assumes amount is deposited to the contract
+    /// - Assumes tokenId is deposited to the contract
+    /// @param player The inventory owner to assign the asset to
+    /// @param inventory The inventory type to assign the asset to {BackPack | Ship}
+    /// @param asset The asset contract address 
+    /// @param tokenId The token ids from asset to assign
+    function __assign(address[] memory player, Inventory[] memory inventory, address[] memory asset, uint[] memory amount, uint[] memory tokenId)
+        public virtual override 
+        onlyRole(SYSTEM_ROLE)
+    { 
+        for (uint i = 0; i < player.length; i++)
+        {
+            if (0 != tokenId[i])
+            {
+                // Non-Fungible
+                _assignNonFungibleToken(
+                    player[i], inventory[i], asset[i], tokenId[i]);
+            }
+            else if (0 != amount[i])
+            {
+                // Fungible
+                _assignFungibleToken(
+                    player[i], inventory[i], asset[i], amount[i]);
+            }
+            else 
+            {
+                // Amount and token id zero
+                revert ArgumentInvalid();
+            }
+        }
+    }
+
+
+    /// @dev Deducts `amount` of `asset` from the `inventory` of `player` 
+    /// SYSTEM caller is trusted so checks can be omitted
+    /// - Assumes inventory exists
+    /// - Assumes asset exists
+    /// @param player The inventory owner to deduct the asset from
+    /// @param inventory The inventory type to deduct the asset from {Backpack | Ship}
+    /// @param asset The asset contract address 
+    /// @param amount The amount of asset to deduct
+    function __deductFungibleToken(address player, Inventory inventory, address asset, uint amount)
+        public virtual override 
+        onlyRole(SYSTEM_ROLE)
+    {
+        _deductFungibleToken(player, inventory, asset, amount);
+    }
+
+
+    /// @dev Deducts fungible and non-fungible tokens in a single transaction
+    /// SYSTEM caller is trusted so checks can be omitted
+    /// - Assumes inventory exists
+    /// - Assumes asset exists
+    /// @param player The inventory owner to deduct the assets from
+    /// @param inventory The inventory type to deduct the assets from {BackPack | Ship}
+    /// @param asset The asset contract addresses 
+    /// @param amount The amounts of assets to deduct
+    function __deduct(address player, Inventory inventory, address[] memory asset, uint[] memory amount)
+        public virtual override 
+        onlyRole(SYSTEM_ROLE)
+    {
+        for (uint i = 0; i < asset.length; i++)
+        {
+            _deductFungibleToken(player, inventory, asset[i], amount[i]);
+        }
+    }
+
+
+    /// @dev Moves `asset` from `player_from` to `player_to`
+    /// SYSTEM caller is trusted so checks can be omitted
+    /// - Assumes inventory exists
+    /// - Assumes asset exists
+    /// @param player_from The sending player
+    /// @param player_to The receiving player
+    /// @param inventory_from Origin {Inventories}
+    /// @param inventory_to Destination {Inventories} 
+    /// @param asset The address of the ERC20 or ERC721 contract
+    /// @param amount The amount of fungible tokens to transfer (zero indicates non-fungible)
+    /// @param tokenId The token ID to transfer (zero indicates fungible)
+    function __transfer(address player_from, address player_to, Inventory[] memory inventory_from, Inventory[] memory inventory_to, address[] memory asset, uint[] memory amount, uint[] memory tokenId)
+        public virtual override 
+        onlyRole(SYSTEM_ROLE)
+    {
+        for (uint i = 0; i < asset.length; i++)
+        {
+            if (0 != tokenId[i])
+            {
+                // Non-Fungible
+                _transferNonFungible(
+                    player_from, player_to, inventory_from[i], inventory_to[i], asset[i], tokenId[i]);
+            }
+            else if (0 != amount[i])
+            {
+                // Fungible
+                _transferFungible(
+                    player_from, player_to, inventory_from[i], inventory_to[i], asset[i], amount[i]);
+            }
+            else 
+            {
+                // Amount and token id zero
+                revert ArgumentInvalid();
+            }
+        }
     }
 
 

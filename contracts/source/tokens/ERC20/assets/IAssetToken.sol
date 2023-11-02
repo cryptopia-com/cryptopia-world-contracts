@@ -7,8 +7,11 @@ pragma solidity ^0.8.20 < 0.9.0;
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface IAssetToken {
 
+    /**
+     * System functions
+     */
     /// @dev Mints 'amount' token to an address
     /// @param to Account to mint the tokens for
     /// @param amount Amount of tokens to mint
-    function mintTo(address to, uint amount) external;
+    function __mintTo(address to, uint amount) external;
 }

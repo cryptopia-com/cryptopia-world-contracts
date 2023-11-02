@@ -143,6 +143,16 @@ contract MultiSigWallet is Initializable, EIP712Upgradeable, ReentrancyGuard, IM
     /// @param transactionId The transaction ID that has already been executed
     error TransactionAlreadyExecuted(uint transactionId);
 
+    /// @dev Reverted when trying to execute a transaction without sufficient signatures
+    /// @param count Amount of signatures provided
+    /// @param required Amount of signatures required
+    error SignatureCountInvalid(uint count, uint required);
+
+    /// @dev Reverted when trying to execute a transaction with a signature that has been expired
+    /// @param timestamp Current timestamp
+    /// @param deadline Deadline in unix timestamp
+    error SignatureExpired(uint timestamp, uint deadline);
+
 
     /**
      * Modifiers
@@ -501,18 +511,6 @@ contract MultiSigWallet is Initializable, EIP712Upgradeable, ReentrancyGuard, IM
     }
 
 
-    /// @dev Reverted when trying to execute a transaction without sufficient signatures
-    /// @param count Amount of signatures provided
-    /// @param required Amount of signatures required
-    error SignatureCountInvalid(uint count, uint required);
-
-    /// @dev Reverted when trying to execute a transaction with a signature that has been expired
-    /// @param timestamp Current timestamp
-    /// @param deadline Deadline in unix timestamp
-    error SignatureExpired(uint timestamp, uint deadline);
-
-
-    
     /// @dev Allows anyone to execute a transaction with off-chain signatures
     /// @param signatures Array of signatures
     /// @param deadline Deadline in unix timestamp
@@ -918,10 +916,10 @@ contract MultiSigWallet is Initializable, EIP712Upgradeable, ReentrancyGuard, IM
         spentToday += transaction.value;
 
         if (_external_call(
-                transaction.destination, 
-                transaction.value, 
-                transaction.data.length, 
-                transaction.data)) 
+            transaction.destination, 
+            transaction.value, 
+            transaction.data.length, 
+            transaction.data)) 
         {
             // Emit success event
             emit Execution(transactionId);

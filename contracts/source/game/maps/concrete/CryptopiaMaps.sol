@@ -257,9 +257,6 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
     }
 
 
-    /** 
-     * Public functions
-     */
     /// @dev Initialize
     /// @param _playerRegisterContract Contract responsible for players
     /// @param _assetRegisterContract Contract responsible for assets
@@ -285,45 +282,9 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
     }
 
 
-    /// @dev Retreives the amount of maps created.
-    /// @return count Number of maps created.
-    function getMapCount() 
-        public virtual view 
-        returns (uint count)
-    {
-        count = mapsIndex.length;
-    }
-
-
-    /// @dev Retreives the map at `index`
-    /// @param index Map index (not mapping key)
-    /// @return initialized True if the map is created
-    /// @return finalized True if all tiles are added and the map is immutable
-    /// @return sizeX Number of tiles in the x direction
-    /// @return sizeZ Number of tiles in the z direction
-    /// @return tileStartIndex The index of the first tile in the map (mapping key)
-    /// @return name Unique name of the map
-    function getMapAt(uint index) 
-        public virtual view 
-        returns (
-            bool initialized, 
-            bool finalized, 
-            uint16 sizeX, 
-            uint16 sizeZ, 
-            uint16 tileStartIndex,
-            bytes32 name
-        )
-    {
-        name = mapsIndex[index];
-        Map storage map = maps[name];
-        initialized = map.initialized;
-        finalized = map.finalized; 
-        sizeX = map.sizeX;
-        sizeZ = map.sizeZ;
-        tileStartIndex = map.tileStartIndex;
-    }
-
-
+    /** 
+     * Admin functions
+     */
     /// @dev Create a new map. The map will be 'under construction' until all (`sizeX` * `sizeZ`) tiles have been set 
     /// and `finalizeMap()` is called. While a map is under construction no other map can be created.
     /// @param name Map name
@@ -404,11 +365,72 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
 
         // Increase title deeds limit
         ITitleDeeds(titleDeedContract)
-            .increaseLimit(initializedTileCount);
+            .__increaseLimit(initializedTileCount);
         initializedTileCount = 0;
 
         // Emit created event
         emit CreateMap(mapsIndex[index], index);
+    }
+
+
+    /// @dev Batch operation to set tiles
+    /// @param indices Indices of the tiles
+    /// @param values Tile values that are used to create the mesh
+    /// @param resources Natural resources {ResourceType} that the tile contains
+    /// @param resources_amounts Natural resources {ResourceType} amounts that the tile contains
+    function setTiles(uint16[] memory indices, Tile[] memory values, ResourceType[][] memory resources, uint[][] memory resources_amounts) 
+        public onlyRole(DEFAULT_ADMIN_ROLE) 
+    {
+        for (uint i = 0; i < indices.length; i++)
+        {
+            _setTile(
+                indices[i], 
+                values[i], 
+                resources[i], 
+                resources_amounts[i]);
+        }
+    }
+
+
+    /** 
+     * Public functions
+     */
+    /// @dev Retreives the amount of maps created.
+    /// @return count Number of maps created.
+    function getMapCount() 
+        public virtual view 
+        returns (uint count)
+    {
+        count = mapsIndex.length;
+    }
+
+
+    /// @dev Retreives the map at `index`
+    /// @param index Map index (not mapping key)
+    /// @return initialized True if the map is created
+    /// @return finalized True if all tiles are added and the map is immutable
+    /// @return sizeX Number of tiles in the x direction
+    /// @return sizeZ Number of tiles in the z direction
+    /// @return tileStartIndex The index of the first tile in the map (mapping key)
+    /// @return name Unique name of the map
+    function getMapAt(uint index) 
+        public virtual view 
+        returns (
+            bool initialized, 
+            bool finalized, 
+            uint16 sizeX, 
+            uint16 sizeZ, 
+            uint16 tileStartIndex,
+            bytes32 name
+        )
+    {
+        name = mapsIndex[index];
+        Map storage map = maps[name];
+        initialized = map.initialized;
+        finalized = map.finalized; 
+        sizeX = map.sizeX;
+        sizeZ = map.sizeZ;
+        tileStartIndex = map.tileStartIndex;
     }
 
       
@@ -783,25 +805,6 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
         }
 
         return false;
-    }
-
-
-    /// @dev Batch operation to set tiles
-    /// @param indices Indices of the tiles
-    /// @param values Tile values that are used to create the mesh
-    /// @param resources Natural resources {ResourceType} that the tile contains
-    /// @param resources_amounts Natural resources {ResourceType} amounts that the tile contains
-    function setTiles(uint16[] memory indices, Tile[] memory values, ResourceType[][] memory resources, uint[][] memory resources_amounts) 
-        public onlyRole(DEFAULT_ADMIN_ROLE) 
-    {
-        for (uint i = 0; i < indices.length; i++)
-        {
-            _setTile(
-                indices[i], 
-                values[i], 
-                resources[i], 
-                resources_amounts[i]);
-        }
     }
 
 

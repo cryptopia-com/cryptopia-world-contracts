@@ -9,6 +9,9 @@ import "../../../game/types/FactionEnums.sol";
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface IShips {
 
+    /**
+     * Public functions
+     */
     /// @dev Returns the amount of different ships
     /// @return count The amount of different ships
     function getShipCount() 
@@ -179,13 +182,16 @@ interface IShips {
         returns (uint fuelConsumption);
 
     
+    /**
+     * System functions
+     */
     /// @dev Mints a starter ship to a player
     /// @param player address of the player
     /// @param faction player's faction
     /// @param locked If true the ship is equipted and can't be transferred
     /// @param tokenId the token id of the minted ship
     /// @param inventory the ship inventory space
-    function mintStarterShip(address player, Faction faction, bool locked)  
+    function __mintStarterShip(address player, Faction faction, bool locked)  
         external 
         returns (
             uint tokenId, 
@@ -196,13 +202,13 @@ interface IShips {
     /// @dev Mints a ship to an address
     /// @param to address of the owner of the ship
     /// @param name Unique ship name
-    function mintTo(address to, bytes32 name) 
+    function __mintTo(address to, bytes32 name) 
         external;
 
     
     /// @dev Lock `next` and release 'prev'
     /// @param prev The tokenId of the previously locked (equipted) ship
     /// @param next The tokenId of the ship that replaces `prev` and thus is being locked
-    function lock(uint prev, uint next)
+    function __lock(uint prev, uint next)
         external; 
 }

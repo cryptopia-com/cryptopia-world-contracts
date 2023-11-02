@@ -45,11 +45,14 @@ contract CryptopiaBlueprintToken is CryptopiaERC721, IBlueprints {
     }
 
 
+    /** 
+     * System functions
+     */
     /// @dev Destroys `tokenId`.
     /// @notice The approval is cleared when the token is burned.
     /// @notice This is an internal function that does not check if the sender is authorized to operate on the token.
     /// @param tokenId The blueprint token ID 
-    function burn(uint tokenId) 
+    function __burn(uint tokenId) 
         public virtual override
         onlyRole(SYSTEM_ROLE)  
     {

@@ -72,16 +72,6 @@ contract CryptopiaTitleDeedToken is CryptopiaERC721, ITitleDeeds {
     }
 
 
-    /// @dev Increase the max supply
-    /// @param increment Number to increment max supply with
-    function increaseLimit(uint increment) 
-        public virtual override 
-        onlyRole(SYSTEM_ROLE)
-    {
-        maxTokenId += increment;
-    }
-
-
     /// @dev Retrieves the zero based tile index of the title deed with `tokenId`
     /// @param tokenId The title deed token ID
     /// @return tile index (zero based)
@@ -132,5 +122,18 @@ contract CryptopiaTitleDeedToken is CryptopiaERC721, ITitleDeeds {
         nonExistingTitleDeed(tokenId) 
     {
         _safeMint(account, tokenId);
+    }
+
+
+    /**
+     * System functions
+     */
+    /// @dev Increase the max supply
+    /// @param increment Number to increment max supply with
+    function __increaseLimit(uint increment) 
+        public virtual override 
+        onlyRole(SYSTEM_ROLE)
+    {
+        maxTokenId += increment;
     }
 }

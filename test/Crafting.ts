@@ -4,7 +4,7 @@ import { ethers, upgrades} from "hardhat";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { getParamFromEvent} from '../scripts/helpers/events';
 import { REVERT_MODE } from "./settings/config";
-import { SYSTEM_ROLE, MINTER_ROLE } from "./settings/roles";   
+import { SYSTEM_ROLE } from "./settings/roles";   
 
 import { 
     CryptopiaAccount,
@@ -318,11 +318,11 @@ describe("Crafting Contract", function () {
                 .getContractAt("CryptopiaAssetToken", asset.contractAddress);
 
             await asset.contractInstance
-                .grantRole(MINTER_ROLE, minter);
+                .grantRole(SYSTEM_ROLE, minter);
             
             await assetRegisterInstance
                 .connect(systemSigner)
-                .registerAsset(asset.contractAddress, true, asset.resource);
+                .__registerAsset(asset.contractAddress, true, asset.resource);
 
             await inventoriesInstance
                 .setFungibleAsset(asset.contractAddress, asset.weight);
@@ -346,7 +346,7 @@ describe("Crafting Contract", function () {
                 tool.stats.value2, 
                 tool.stats.value3
             ]),
-            tools.map((tool: any) => tool.minting.map((item: any) => findAsset(item.asset).resource)),
+            tools.map((tool: any) => tool.minting.map((item: any) => getAssetBySymbol(item.asset).resource)),
             tools.map((tool: any) => tool.minting.map((item: any) => ethers.parseUnits(item.amount[0], item.amount[1]))));
     
         // Add tool recipes
@@ -356,7 +356,7 @@ describe("Crafting Contract", function () {
             tools.map((tool: any) => tool.recipe.level),
             tools.map((tool: any) => tool.recipe.learnable),
             tools.map((tool: any) => tool.recipe.craftingTime),
-            tools.map((tool: any) => tool.recipe.ingredients.map((ingredient: any) => findAsset(ingredient.asset).contractAddress)),
+            tools.map((tool: any) => tool.recipe.ingredients.map((ingredient: any) => getAssetBySymbol(ingredient.asset).contractAddress)),
             tools.map((tool: any) => tool.recipe.ingredients.map((ingredient: any) => ethers.parseUnits(ingredient.amount[0], ingredient.amount[1]))));
 
         // Create registered account
@@ -523,7 +523,7 @@ describe("Crafting Contract", function () {
             const craftableTokenAddress = await toolTokenInstance.getAddress();
             const craftingAddress = await craftingInstance.getAddress();
             const registeredAccountAddress = await registeredAccountInstance.getAddress();
-            const assetAddress = findAsset(craftable.recipe.ingredients[0].asset).contractAddress;
+            const assetAddress = getAssetBySymbol(craftable.recipe.ingredients[0].asset).contractAddress;
             const assetAmount = ethers.parseUnits(craftable.recipe.ingredients[0].amount[0], craftable.recipe.ingredients[0].amount[1]);
 
             const callDataCraft = craftingInstance.interface
@@ -565,18 +565,18 @@ describe("Crafting Contract", function () {
             // Ensure enough resources in inventory
             for (let ingredient of craftable.recipe.ingredients)
             {
-                const asset = findAsset(ingredient.asset);
+                const asset = getAssetBySymbol(ingredient.asset);
                 const amount = ethers.parseUnits(ingredient.amount[0], ingredient.amount[1]);
 
                 // Mint asset
                 await asset.contractInstance
                     .connect(minterSigner)
-                    .mintTo(inventoriesAddress, amount);
+                    .__mintTo(inventoriesAddress, amount);
 
                 // Assign to player
                 await inventoriesInstance
                     .connect(systemSigner)
-                    .assignFungibleToken(
+                    .__assignFungibleToken(
                         playerAddress,
                         inventory,
                         asset.contractAddress,
@@ -737,18 +737,18 @@ describe("Crafting Contract", function () {
             // Ensure enough resources in inventory
             for (let ingredient of craftable.recipe.ingredients)
             {
-                const asset = findAsset(ingredient.asset);
+                const asset = getAssetBySymbol(ingredient.asset);
                 const amount = ethers.parseUnits(ingredient.amount[0], ingredient.amount[1]);
 
                 // Mint asset
                 await asset.contractInstance
                     .connect(minterSigner)
-                    .mintTo(inventoriesAddress, amount);
+                    .__mintTo(inventoriesAddress, amount);
 
                 // Assign to player
                 await inventoriesInstance
                     .connect(systemSigner)
-                    .assignFungibleToken(
+                    .__assignFungibleToken(
                         playerAddress,
                         inventory,
                         asset.contractAddress,
@@ -806,7 +806,7 @@ describe("Crafting Contract", function () {
     /**
      * Helper functions
      */
-    const findAsset = (symbol: string) => {
+    const getAssetBySymbol = (symbol: string) => {
         return assets.find(asset => asset.symbol === symbol);
     };
 });

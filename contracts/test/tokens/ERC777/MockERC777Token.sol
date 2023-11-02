@@ -13,10 +13,10 @@ contract MockERC20Token is CryptopiaERC20 {
     function initialize() initializer public {
         __CryptopiaERC20_init("MockERC20Token", "MOCK20");
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(MINTER_ROLE, msg.sender);
+        _grantRole(SYSTEM_ROLE, msg.sender);
     }
 
-    function mint(address to, uint amount) public onlyRole(MINTER_ROLE) {
+    function __mint(address to, uint amount) public onlyRole(SYSTEM_ROLE) {
         _mint(to, amount);
     }
 }

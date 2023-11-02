@@ -126,7 +126,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
 
             // Apply tool effects
             (uint24 multiplier_cooldown, uint24 multiplier_xp, uint24 multiplier_effectiveness) = ITools(toolTokenContract)
-                .useForMinting(player, tool, resource, limit < amount ? limit : amount);
+                .__useForMinting(player, tool, resource, limit < amount ? limit : amount);
 
             xp = uint24(XP_BASE * (limit < amount ? limit : amount) / RESOURCE_PRECISION * multiplier_xp / MULTIPLIER_PRECISION);
             amount = amount * multiplier_effectiveness / MULTIPLIER_PRECISION;
@@ -152,15 +152,15 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
 
         // Mint tokens to inventory
         IAssetToken(asset)
-            .mintTo(inventoriesContract, (limit < amount ? limit : amount));
+            .__mintTo(inventoriesContract, (limit < amount ? limit : amount));
 
         // Assign tokens to player
         IInventories(inventoriesContract)
-            .assignFungibleToken(player, Inventory.Backpack, asset, (limit < amount ? limit : amount));
+            .__assignFungibleToken(player, Inventory.Backpack, asset, (limit < amount ? limit : amount));
 
         // Award XP
         IPlayerRegister(playerRegisterContract)
-            .award(player, xp, 0);
+            .__award(player, xp, 0);
     }
 
 

@@ -9,6 +9,13 @@ import "../../../game/assets/types/AssetEnums.sol";
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface ITools {
 
+    /**
+     * Admin functions
+     */
+
+    /**
+     * Public functions
+     */
     /// @dev Returns the amount of different tools
     /// @return count The amount of different tools
     function getToolCount() 
@@ -112,12 +119,15 @@ interface ITools {
         );
 
 
+    /**
+     * System functions
+     */
     /// @dev Applies tool effects to the `cooldown` period and the `amount` of `resource` that's being minted by `player`
     /// @param player The account that's using the tool for minting
     /// @param toolId The token ID of the tool being used to mint 
     /// @param resource The resource {ResourceType} that's being minted
     /// @param amount The amount of tokens to be minted; checked against value1
-    function useForMinting(address player, uint toolId, ResourceType resource, uint amount) 
+    function __useForMinting(address player, uint toolId, ResourceType resource, uint amount) 
         external  
         returns (
             uint24 multiplier_cooldown,

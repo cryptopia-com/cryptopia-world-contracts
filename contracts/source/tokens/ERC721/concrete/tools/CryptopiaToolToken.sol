@@ -104,9 +104,6 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable {
     }
 
 
-    /**
-     * Public functions
-     */
     /// @dev Contract initializer sets shared base uri
     /// @param authenticator Whitelist
     /// @param initialContractURI Location to contract info
@@ -146,6 +143,46 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable {
     }
 
 
+    /**
+     * Admin functions
+     */
+    /// @dev Add or update tools
+    /// @param name Tool name (unique)
+    /// @param rarity Tool rarity {Rarity}
+    /// @param level Tool level (determins where the tool can be used and by who)
+    /// @param stats durability, multiplier_cooldown, multiplier_xp, multiplier_effectiveness
+    /// @param minting_resources The resources {ResourceType} that can be minted with the tool
+    /// @param minting_amounts The max amounts of resources that can be minted with the tool
+    function setTools(
+        bytes32[] memory name, 
+        Rarity[] memory rarity, 
+        uint8[] memory level,
+        uint24[7][] memory stats,
+        ResourceType[][] memory minting_resources,
+        uint[][] memory minting_amounts) 
+        public virtual override 
+        onlyRole(DEFAULT_ADMIN_ROLE) 
+    {
+        for (uint i = 0; i < name.length; i++)
+        {
+            _setTool(
+                name[i], 
+                rarity[i],
+                level[i],
+                stats[i]);
+
+            // Set minting
+            for (uint j = 0; j < minting_resources[i].length; j++)
+            {
+                minting[name[i]][minting_resources[i][j]] = minting_amounts[i][j];
+            }
+        }
+    }
+
+
+    /**
+     * Public functions
+     */
     /// @dev Returns the amount of different tools
     /// @return count The amount of different tools
     function getToolCount() 
@@ -243,40 +280,6 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable {
     }
 
 
-    /// @dev Add or update tools
-    /// @param name Tool name (unique)
-    /// @param rarity Tool rarity {Rarity}
-    /// @param level Tool level (determins where the tool can be used and by who)
-    /// @param stats durability, multiplier_cooldown, multiplier_xp, multiplier_effectiveness
-    /// @param minting_resources The resources {ResourceType} that can be minted with the tool
-    /// @param minting_amounts The max amounts of resources that can be minted with the tool
-    function setTools(
-        bytes32[] memory name, 
-        Rarity[] memory rarity, 
-        uint8[] memory level,
-        uint24[7][] memory stats,
-        ResourceType[][] memory minting_resources,
-        uint[][] memory minting_amounts) 
-        public virtual override 
-        onlyRole(DEFAULT_ADMIN_ROLE) 
-    {
-        for (uint i = 0; i < name.length; i++)
-        {
-            _setTool(
-                name[i], 
-                rarity[i],
-                level[i],
-                stats[i]);
-
-            // Set minting
-            for (uint j = 0; j < minting_resources[i].length; j++)
-            {
-                minting[name[i]][minting_resources[i][j]] = minting_amounts[i][j];
-            }
-        }
-    }
-
-
     /// @dev Retreive a tools by token id
     /// @param tokenId The id of the tool to retreive
     /// @return name Tool name (unique)
@@ -317,12 +320,15 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable {
     }
 
 
+    /**
+     * System functions
+     */
     /// @dev Applies tool effects to the `cooldown` period and the `amount` of `resource` that's being minted by `player`
     /// @param player The account that's using the tool for minting
     /// @param toolId The token ID of the tool being used to mint 
     /// @param resource The resource {ResourceType} that's being minted
     /// @param amount The amount of tokens to be minted
-    function useForMinting(address player, uint toolId, ResourceType resource, uint amount) 
+    function __useForMinting(address player, uint toolId, ResourceType resource, uint amount) 
         public virtual override 
         onlyRole(SYSTEM_ROLE) 
         returns (
@@ -388,7 +394,7 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable {
     /// @param player The player to craft the tool for
     /// @param inventory The inventory to mint the item into
     /// @return uint The token ID of the crafted item
-    function craft(bytes32 tool, address player, Inventory inventory) 
+    function __craft(bytes32 tool, address player, Inventory inventory) 
         public virtual override 
         onlyRole(SYSTEM_ROLE) 
         onlyExisting(tool) 
@@ -402,7 +408,7 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable {
 
         // Assign
         IInventories(inventoriesContract)
-            .assignNonFungibleToken(player, inventory, address(this), tokenId);
+            .__assignNonFungibleToken(player, inventory, address(this), tokenId);
 
         return tokenId;
     }

@@ -277,7 +277,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
 
                 // Handle fuel consumption
                 IInventories(intentoriesContract)
-                    .deductFungibleToken(
+                    .__deductFungibleToken(
                         msg.sender, 
                         Inventory.Ship, 
                         fuelContact, 
@@ -322,10 +322,11 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
     /// @dev Attacker accepts the offer from the target to resolve the confrontation
     /// @param signatures Array of signatures authorizing the attacker to accept the offer
     /// @param assets The assets that the target is willing to offer
-    /// @param tokenIds The ids of the assets that the target is willing to offer
     /// @param amounts The amounts of the assets that the target is willing to offer
-    /// @param inventories The inventories that the assets are located in
-    function acceptOffer(bytes[] memory signatures, address[] memory assets, uint[] memory tokenIds, uint[] memory amounts, Inventory[] memory inventories)
+    /// @param tokenIds The ids of the assets that the target is willing to offer
+    /// @param inventories_from The inventories in which the assets are located
+    /// @param inventories_to The inventories to which the assets will be moved
+    function acceptOffer(bytes[] memory signatures, address[] memory assets, uint[] memory amounts, uint[] memory tokenIds, Inventory[] memory inventories_from, Inventory[] memory inventories_to)
         public virtual override
     {
         address target = targets[msg.sender];
@@ -349,9 +350,9 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
             target,
             msg.sender,
             keccak256(abi.encodePacked(assets)),
-            keccak256(abi.encodePacked(tokenIds)),
             keccak256(abi.encodePacked(amounts)),
-            keccak256(abi.encodePacked(inventories)),
+            keccak256(abi.encodePacked(tokenIds)),
+            keccak256(abi.encodePacked(inventories_from)),
             confrontation.deadline,
             _useNonce(target),
             address(this)
@@ -361,6 +362,16 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
         {
             revert InvalidSignatureSet(target);
         }
+
+        // Move assets
+        IInventories(intentoriesContract).__transfer(
+            target, 
+            msg.sender, 
+            inventories_from, 
+            inventories_to,
+            assets, 
+            amounts,
+            tokenIds);
 
         // Mark confrontation as ended
         confrontation.end = 0;

@@ -57,9 +57,6 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
     error ResourceAlreadyRegistered(ResourceType resource);
 
 
-    /**
-     * Public functions
-     */
     /// @dev Constructor
     function initialize() 
         initializer public 
@@ -71,6 +68,9 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
     }
 
 
+    /**
+     * Public functions
+     */
     /// @dev Retreives the amount of assets
     /// @return count Number of assets
     function getAssetCount()
@@ -196,11 +196,14 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
     }
 
 
+    /**
+     * System functions
+     */
     /// @dev Register an asset
     /// @param asset Contact address
     /// @param isResource true if `asset` is a resource
     /// @param resource {ResourceType}
-    function registerAsset(address asset, bool isResource, ResourceType resource) 
+    function __registerAsset(address asset, bool isResource, ResourceType resource) 
         public virtual override 
         onlyRole(SYSTEM_ROLE) 
     {

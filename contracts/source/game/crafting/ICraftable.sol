@@ -13,7 +13,7 @@ interface ICraftable {
     /// @param player The player to craft the item for
     /// @param inventory The inventory to mint the item into
     /// @return uint The token ID of the crafted item
-    function craft(bytes32 item, address player, Inventory inventory) 
+    function __craft(bytes32 item, address player, Inventory inventory) 
         external 
         returns (uint);
 }

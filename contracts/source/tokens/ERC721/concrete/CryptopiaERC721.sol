@@ -75,6 +75,41 @@ abstract contract CryptopiaERC721 is ERC721EnumerableUpgradeable, AccessControlU
 
 
     /** 
+     * Admin functions
+     */
+    /// @dev Set contract URI
+    /// @param uri Location to contract info
+    function setContractURI(string memory uri) 
+        public virtual  
+        onlyRole(DEFAULT_ADMIN_ROLE) 
+    {
+        _contractURI = uri;
+    }
+
+
+    /// @dev Set base token URI 
+    /// @param uri Base of location where token data is stored. To be postfixed with tokenId
+    function setBaseTokenURI(string memory uri) 
+        public virtual  
+        onlyRole(DEFAULT_ADMIN_ROLE)  
+    {
+        _baseTokenURI = uri;
+    }
+
+
+    /// @dev Failsafe mechanism
+    /// Allows the owner to retrieve tokens from the contract that 
+    /// might have been send there by accident
+    /// @param tokenContract The address of ERC20 compatible token
+    function retrieveTokens(address tokenContract) 
+        public virtual override  
+        onlyRole(DEFAULT_ADMIN_ROLE) 
+    {
+        super.retrieveTokens(tokenContract);
+    }
+
+
+    /** 
      * Public functions
      */
     /// @dev Get contract URI
@@ -87,16 +122,6 @@ abstract contract CryptopiaERC721 is ERC721EnumerableUpgradeable, AccessControlU
     }
 
 
-    /// @dev Set contract URI
-    /// @param uri Location to contract info
-    function setContractURI(string memory uri) 
-        public virtual  
-        onlyRole(DEFAULT_ADMIN_ROLE) 
-    {
-        _contractURI = uri;
-    }
-
-
     /// @dev Get base token URI 
     /// @return Base of location where token data is stored. To be postfixed with tokenId
     function getBaseTokenURI() 
@@ -104,16 +129,6 @@ abstract contract CryptopiaERC721 is ERC721EnumerableUpgradeable, AccessControlU
         returns (string memory) 
     {
         return _baseTokenURI;
-    }
-
-
-    /// @dev Set base token URI 
-    /// @param uri Base of location where token data is stored. To be postfixed with tokenId
-    function setBaseTokenURI(string memory uri) 
-        public virtual  
-        onlyRole(DEFAULT_ADMIN_ROLE)  
-    {
-        _baseTokenURI = uri;
     }
 
 
@@ -169,18 +184,6 @@ abstract contract CryptopiaERC721 is ERC721EnumerableUpgradeable, AccessControlU
     }
 
     
-    /// @dev Failsafe mechanism
-    /// Allows the owner to retrieve tokens from the contract that 
-    /// might have been send there by accident
-    /// @param tokenContract The address of ERC20 compatible token
-    function retrieveTokens(address tokenContract) 
-        public virtual override  
-        onlyRole(DEFAULT_ADMIN_ROLE) 
-    {
-        super.retrieveTokens(tokenContract);
-    }
-
-
     /// @dev Calls supportsInterface for all parent contracts 
     /// @param interfaceId The signature of the interface
     /// @return bool True if `interfaceId` is supported

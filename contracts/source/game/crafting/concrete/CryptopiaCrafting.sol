@@ -172,9 +172,6 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     }
 
 
-    /** 
-     * Admin functions
-     */
     /// @dev Construct
     /// @param _inventoriesContract Contract responsible for inventories
     function initialize(
@@ -191,20 +188,9 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     }
 
 
-    /// @dev Set the crafting `slotCount` for `player`
-    /// @param player The player to set the slot count for
-    /// @param slotCount The new slot count
-    function setCraftingSlots(address player, uint slotCount)
-        onlyRole(SYSTEM_ROLE) 
-        public virtual 
-    {
-        playerData[player].slotCount = slotCount;
-
-        // Emit
-        emit CraftingSlotCountChange(player, slotCount);
-    }
-    
-
+    /**
+     * Admin functions
+     */
     /// @dev Batch operation to set recepes
     /// @param asset The contract address of the asset to which the recipe applies
     /// @param name The name of the asset recipe
@@ -259,23 +245,6 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
             // Emit
             emit CraftingRecipeMutation(asset[i], name[i]);
         }
-    }
-
-
-    /// @dev The `player` is able to craft the item after learning the `asset` `recipe` 
-    /// @param player The player that learns the recipe
-    /// @param asset The contract address of the asset to which the recipe applies
-    /// @param recipe The name of the asset recipe
-    function learn(address player, address asset, bytes32 recipe) 
-        onlyRole(SYSTEM_ROLE)
-        public virtual
-    {
-        // System only
-        playerData[player].learned[asset][recipe] = true;
-        playerData[player].learnedIndex[asset].push(recipe);
-
-        // Emit
-        emit CraftingRecipeLearn(player, asset, recipe);
     }
 
 
@@ -657,7 +626,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         for (uint i = 0; i < recipes[asset][recipe].ingredientsIndex.length; i++)
         {
             IInventories(inventoriesContract)
-                .deductFungibleToken(
+                .__deductFungibleToken(
                     msg.sender, 
                     inventory, 
                     recipes[asset][recipe].ingredientsIndex[i], 
@@ -700,8 +669,8 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         _resetSlot(msg.sender, slot);
 
         // Mint item
-        uint tokenId = ICraftable(asset).craft(
-            item, msg.sender, inventory);
+        uint tokenId = ICraftable(asset)
+            .__craft(item, msg.sender, inventory);
             
         // Assert
         assert(tokenId > 0); 
@@ -717,6 +686,40 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         public virtual override 
     {
         _resetSlot(msg.sender, slot);
+    }
+
+
+    /**
+     * System functions
+     */
+    /// @dev Set the crafting `slotCount` for `player`
+    /// @param player The player to set the slot count for
+    /// @param slotCount The new slot count
+    function __setCraftingSlots(address player, uint slotCount)
+        onlyRole(SYSTEM_ROLE) 
+        public virtual 
+    {
+        playerData[player].slotCount = slotCount;
+
+        // Emit
+        emit CraftingSlotCountChange(player, slotCount);
+    }
+
+
+    /// @dev The `player` is able to craft the item after learning the `asset` `recipe` 
+    /// @param player The player that learns the recipe
+    /// @param asset The contract address of the asset to which the recipe applies
+    /// @param recipe The name of the asset recipe
+    function __learn(address player, address asset, bytes32 recipe) 
+        onlyRole(SYSTEM_ROLE)
+        public virtual
+    {
+        // System only
+        playerData[player].learned[asset][recipe] = true;
+        playerData[player].learnedIndex[asset].push(recipe);
+
+        // Emit
+        emit CraftingRecipeLearn(player, asset, recipe);
     }
 
 

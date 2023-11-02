@@ -8,6 +8,9 @@ import "./types/AssetEnums.sol";
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface IAssetRegister {
 
+    /**
+     * Public functions
+     */
     /// @dev Retreives the amount of assets.
     /// @return count Number of assets.
     function getAssetCount()
@@ -77,10 +80,13 @@ interface IAssetRegister {
         returns (address);
 
 
+    /**
+     * System functions
+     */
     /// @dev Register an asset
     /// @param asset Contact address
     /// @param isResource true if `asset` is a resource
     /// @param resource {ResourceType}
-    function registerAsset(address asset, bool isResource, ResourceType resource) 
+    function __registerAsset(address asset, bool isResource, ResourceType resource) 
         external;
 }

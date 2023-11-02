@@ -18,7 +18,6 @@ async function main() {
 
     // Roles
     const SYSTEM_ROLE = "SYSTEM_ROLE".toKeccak256();
-    const MINTER_ROLE = "MINTER_ROLE".toKeccak256();
 
     // Factories
     const WhitelistFactory = await ethers.getContractFactory("Whitelist");
@@ -251,12 +250,12 @@ async function main() {
         const assetTokenInstance = await ethers.getContractAt("CryptopiaAssetToken", assetTokenAddress);
         console.log(`AssetToken:${asset.name} deployed to: ${assetTokenAddress}`);
 
-        await assetRegisterInstance.registerAsset(assetTokenAddress, true, asset.resource);
+        await assetRegisterInstance.__registerAsset(assetTokenAddress, true, asset.resource);
         await inventoriesInstance.setFungibleAsset(assetTokenAddress, asset.weight);
 
         if (asset.Gatherings != undefined && asset.Gatherings.includes("CryptopiaResourceGathering"))
         {
-            await assetTokenInstance.grantRole(MINTER_ROLE, resourceGatheringAddress);
+            await assetTokenInstance.grantRole(SYSTEM_ROLE, resourceGatheringAddress);
         }
     }
 

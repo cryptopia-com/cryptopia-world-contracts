@@ -16,7 +16,7 @@ abstract contract CryptopiaERC20 is Initializable, ERC20Upgradeable, AccessContr
     /**
      * Roles
      */
-    bytes32 constant internal MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 constant internal SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
     
 
     /// @dev Contract initializer
@@ -40,6 +40,9 @@ abstract contract CryptopiaERC20 is Initializable, ERC20Upgradeable, AccessContr
     }
 
 
+    /** 
+     * Admin functions
+     */
     /// @dev Failsafe mechanism
     /// Allows the owner to retrieve tokens from the contract that 
     /// might have been send there by accident

@@ -7,6 +7,9 @@ pragma solidity ^0.8.20 < 0.9.0;
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface IBlueprints {
 
+    /**
+     * Public functions
+     */
     /// @dev Retrieves the structure of the blueprint with `tokenId`
     /// @param tokenId The blueprint token ID
     /// @return structure unique name
@@ -15,10 +18,13 @@ interface IBlueprints {
         returns(bytes32);
 
 
+    /**
+     * System functions
+     */
     /// @dev Destroys `tokenId`.
     /// @notice The approval is cleared when the token is burned.
     /// @notice This is an internal function that does not check if the sender is authorized to operate on the token.
     /// @param tokenId The blueprint token ID 
-    function burn(uint tokenId) 
+    function __burn(uint tokenId) 
         external;
 }

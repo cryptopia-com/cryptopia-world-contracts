@@ -6,12 +6,9 @@ pragma solidity ^0.8.20 < 0.9.0;
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface ITitleDeeds {
 
-    /// @dev Increase the max supply
-    /// @param increment Number to increment max supply with
-    function increaseLimit(uint increment) 
-        external;
-
-
+    /**
+     * Public functions
+     */
     /// @dev Retrieves the zero based tile index of the title deed with `tokenId`
     /// @param tokenId The title deed token ID
     /// @return tile index (zero based)
@@ -39,5 +36,14 @@ interface ITitleDeeds {
     /// @param tokenId Unique token id and tile identifier.
     /// @param account Account to mint the token to
     function claimFor(uint tokenId, address account) 
+        external;
+
+    
+    /**
+     * System functions
+     */
+    /// @dev Increase the max supply
+    /// @param increment Number to increment max supply with
+    function __increaseLimit(uint increment) 
         external;
 }

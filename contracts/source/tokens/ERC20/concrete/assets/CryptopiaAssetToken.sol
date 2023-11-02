@@ -19,12 +19,16 @@ contract CryptopiaAssetToken is CryptopiaERC20, IAssetToken {
         __CryptopiaERC20_init(name, symbol);
     }
 
+
+    /**
+     * System functions
+     */
     /// @dev Mints 'amount' token to an address
     /// @param to Account to mint the tokens for
     /// @param amount Amount of tokens to mint
-    function mintTo(address to, uint amount) 
+    function __mintTo(address to, uint amount) 
         public override 
-        onlyRole(MINTER_ROLE) 
+        onlyRole(SYSTEM_ROLE) 
     {
         _mint(to, amount);
     }

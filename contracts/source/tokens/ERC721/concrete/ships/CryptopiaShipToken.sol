@@ -146,9 +146,6 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     }
 
 
-    /**
-     * Public functions
-     */
     /// @dev Contract initializer sets shared base uri
     /// @param authenticator Whitelist
     /// @param initialContractURI Location to contract info
@@ -212,6 +209,9 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     }
 
 
+    /**
+     * Public functions
+     */
     /// @dev Returns the amount of different ships
     /// @return count The amount of different ships
     function getShipCount() 
@@ -519,13 +519,16 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     }
 
 
+    /**
+     * System functions
+     */
     /// @dev Mints a starter ship to a player
     /// @param player address of the player
     /// @param faction player's faction
     /// @param locked If true the ship is equipted and can't be transferred
     /// @param tokenId the token id of the minted ship
     /// @param inventory the ship inventory space
-    function mintStarterShip(address player, Faction faction, bool locked)  
+    function __mintStarterShip(address player, Faction faction, bool locked)  
         public virtual override 
         onlyRole(SYSTEM_ROLE) 
         returns (
@@ -545,7 +548,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @dev Mints a ship to an address
     /// @param to address of the owner of the ship
     /// @param name Unique ship name
-    function mintTo(address to, bytes32 name)  
+    function __mintTo(address to, bytes32 name)  
         public virtual override 
         onlyRole(SYSTEM_ROLE) 
         onlyExisting(name) 
@@ -560,7 +563,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @dev Lock `next` and release 'prev'
     /// @param prev The tokenId of the previously locked (equipted) ship
     /// @param next The tokenId of the ship that replaces `prev` and thus is being locked
-    function lock(uint prev, uint next)
+    function __lock(uint prev, uint next)
         public virtual override 
         onlyRole(SYSTEM_ROLE)
     {

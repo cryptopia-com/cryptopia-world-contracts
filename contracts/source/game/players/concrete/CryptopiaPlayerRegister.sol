@@ -149,9 +149,6 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     }
 
 
-    /**
-     * Public functions
-     */
     /// @param _accountRegisterContract Contract responsible for accounts
     /// @param _inventoriesContract Contract responsible for inventories
     /// @param _craftingContract Contract responsible for crafting
@@ -184,6 +181,9 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     }
 
 
+    /**
+     * Public functions
+     */
     /// @dev Creates an account (see CryptopiaAccountRegister.sol) and registers the account as a player
     /// @param owners List of initial owners
     /// @param required Number of required confirmations
@@ -408,17 +408,17 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
 
         // Release prev and lock next ship
         IShips(shipTokenContract)
-            .lock(playerDatas[player].ship, ship);
+            .__lock(playerDatas[player].ship, ship);
 
         // Update ship
         playerDatas[player].ship = ship;
 
         // Update inventory
         IInventories(inventoriesContract)
-            .setPlayerShip(player, ship);
+            .__setPlayerShip(player, ship);
         
         IInventories(inventoriesContract)
-            .setShipInventory(ship, inventory);
+            .__setShipInventory(ship, inventory);
 
         // Pirate?
         if (subFaction == SubFaction.Pirate && playerDatas[player].subFaction != SubFaction.Pirate)
@@ -429,51 +429,6 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
 
         // Emit
         emit PlayerEquiptShip(player, ship);
-    }
-
-
-    /// @dev Award xp and/or karma to player 
-    /// @param player The player to award
-    /// @param xp The amount of xp that's awarded
-    /// @param karma The amount of karma
-    function award(address player, uint24 xp, int16 karma)
-       public virtual override 
-       onlyRole(SYSTEM_ROLE)
-       onlyRegistered(player)
-    {
-        playerDatas[player].xp += xp;
-        if (0 != karma)
-        {
-            if (KARMA_MIN != playerDatas[player].karma) // Cannot come back from KARMA_MIN karma (once a pirate, always a pirate)
-            {
-                if (playerDatas[player].karma + karma > KARMA_MAX)
-                {
-                    // Reached max positive karma
-                    karma = KARMA_MAX - playerDatas[player].karma;
-                    playerDatas[player].karma = KARMA_MAX;
-                }
-                else if (playerDatas[player].karma + karma < KARMA_MIN)
-                {
-                    // Reached max negative karma
-                    karma = KARMA_MIN - playerDatas[player].karma;
-
-                    // Mark as pirate (for life)
-                    _turnPirate(player);
-                }
-                else 
-                {
-                    // Add karma
-                    playerDatas[player].karma = playerDatas[player].karma + karma;
-                }
-            }
-            else 
-            {
-                karma = 0;
-            }
-        }
-
-        // Emit
-        emit PlayerAward(player, xp, karma);
     }
 
 
@@ -519,7 +474,7 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
         else if (stat == PlayerStat.Strength)
         {
             IInventories(inventoriesContract)
-                .setPlayerInventory(player, INVENTORY_MAX_WEIGHT_BASE + playerData.strength * INVENTORY_STRENGTH_MULTIPLIER);
+                .__setPlayerInventory(player, INVENTORY_MAX_WEIGHT_BASE + playerData.strength * INVENTORY_STRENGTH_MULTIPLIER);
 
             playerData.strength++;
         }
@@ -534,6 +489,54 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
 
         // Emit
         emit PlayerLevelUp(msg.sender, playerData.level, stat);
+    }
+
+
+    /**
+     * System functions
+     */
+    /// @dev Award xp and/or karma to player 
+    /// @param player The player to award
+    /// @param xp The amount of xp that's awarded
+    /// @param karma The amount of karma
+    function __award(address player, uint24 xp, int16 karma)
+       public virtual override 
+       onlyRole(SYSTEM_ROLE)
+       onlyRegistered(player)
+    {
+        playerDatas[player].xp += xp;
+        if (0 != karma)
+        {
+            if (KARMA_MIN != playerDatas[player].karma) // Cannot come back from KARMA_MIN karma (once a pirate, always a pirate)
+            {
+                if (playerDatas[player].karma + karma > KARMA_MAX)
+                {
+                    // Reached max positive karma
+                    karma = KARMA_MAX - playerDatas[player].karma;
+                    playerDatas[player].karma = KARMA_MAX;
+                }
+                else if (playerDatas[player].karma + karma < KARMA_MIN)
+                {
+                    // Reached max negative karma
+                    karma = KARMA_MIN - playerDatas[player].karma;
+
+                    // Mark as pirate (for life)
+                    _turnPirate(player);
+                }
+                else 
+                {
+                    // Add karma
+                    playerDatas[player].karma = playerDatas[player].karma + karma;
+                }
+            }
+            else 
+            {
+                karma = 0;
+            }
+        }
+
+        // Emit
+        emit PlayerAward(player, xp, karma);
     }
 
 
@@ -571,24 +574,24 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
 
         // Create ship
         (uint ship, uint inventory) = IShips(shipTokenContract)
-            .mintStarterShip(account, faction, true);
+            .__mintStarterShip(account, faction, true);
 
         // Assign ship
         playerData.ship = ship;
 
         // Create inventory
         IInventories(inventoriesContract)
-            .setPlayerInventory(account, INVENTORY_MAX_WEIGHT_BASE);
+            .__setPlayerInventory(account, INVENTORY_MAX_WEIGHT_BASE);
 
         IInventories(inventoriesContract)
-            .setPlayerShip(account, playerData.ship);
+            .__setPlayerShip(account, playerData.ship);
         
         IInventories(inventoriesContract)
-            .setShipInventory(playerData.ship, inventory);
+            .__setShipInventory(playerData.ship, inventory);
 
         // Setup crafting
         ICrafting(craftingContract)
-            .setCraftingSlots(account, CRAFTING_SLOTS_BASE);
+            .__setCraftingSlots(account, CRAFTING_SLOTS_BASE);
 
         // Emit
         emit RegisterPlayer(tx.origin, account, username, faction, sex);

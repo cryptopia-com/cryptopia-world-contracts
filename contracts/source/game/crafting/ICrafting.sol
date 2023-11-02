@@ -9,24 +9,6 @@ import "../inventories/types/InventoryEnums.sol";
 interface ICrafting {
 
     /** 
-     * Admin functions
-     */
-    /// @dev Set the crafting `slotCount` for `player`
-    /// @param player The player to set the slot count for
-    /// @param slotCount The new slot count
-    function setCraftingSlots(address player, uint slotCount)
-        external;
-
-
-    /// @dev The `player` is able to craft the item after learning the `asset` `recipe` 
-    /// @param player The player that learns the recipe
-    /// @param asset The contract address of the asset to which the recipe applies
-    /// @param recipe The name of the asset recipe
-    function learn(address player, address asset, bytes32 recipe) 
-        external;
-
-
-    /** 
      * Public functions
      */
     /// @dev Returns the amount of different `asset` recipes
@@ -233,5 +215,22 @@ interface ICrafting {
     /// @dev Empties a slot without claiming the crafted item (without refunding ingredients, if any)
     /// @param slot The number (non-zero based) of the slot to empty
     function empty(uint slot) 
+        external;
+
+    /**
+     * System functions
+     */
+    /// @dev Set the crafting `slotCount` for `player`
+    /// @param player The player to set the slot count for
+    /// @param slotCount The new slot count
+    function __setCraftingSlots(address player, uint slotCount)
+        external;
+
+
+    /// @dev The `player` is able to craft the item after learning the `asset` `recipe` 
+    /// @param player The player that learns the recipe
+    /// @param asset The contract address of the asset to which the recipe applies
+    /// @param recipe The name of the asset recipe
+    function __learn(address player, address asset, bytes32 recipe) 
         external;
 }

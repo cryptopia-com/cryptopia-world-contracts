@@ -10,6 +10,9 @@ import "./types/PlayerEnums.sol";
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface IPlayerRegister {
 
+    /**
+     * Public functions
+     */
     /// @dev Creates an account (see CryptopiaAccountRegister.sol) and registers the account as a player
     /// @param owners List of initial owners
     /// @param required Number of required confirmations
@@ -122,17 +125,20 @@ interface IPlayerRegister {
     function equiptShip(uint ship)
         external;
 
-    
-    /// @dev Award xp/ karma to the player
-    /// @param player The player to award
-    /// @param xp The amount of xp that's awarded
-    /// @param karma The amount of karma
-    function award(address player, uint24 xp, int16 karma)
-        external;
-
 
     /// @dev Level up by spending xp 
     /// @param stat The type of stat to increase
     function levelUp(PlayerStat stat)
+        external;
+
+
+    /**
+     * System functions
+     */
+    /// @dev Award xp/ karma to the player
+    /// @param player The player to award
+    /// @param xp The amount of xp that's awarded
+    /// @param karma The amount of karma
+    function __award(address player, uint24 xp, int16 karma)
         external;
 }

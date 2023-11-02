@@ -44,14 +44,14 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
         // Location intercept took place
         uint16 location;
 
+        // Arrival timestamp of the defender (used to prevent multiple interceptions)
+        uint64 arrival;
+
         // Deadline for the defender to respond
         uint64 deadline;
 
-         // Timestamp of the confrontation
-        uint64 start;
-
-        // Timestamp at which the confrontation ends (either by player action or timeout)
-        uint64 end;
+        // Timestamp after which the confrontation expires (can be extended by the defender)
+        uint64 expiration;
     }
 
 
@@ -84,7 +84,8 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
     /// @param target The account of the defender
     /// @param location The location at which the confrontation took place
     /// @param deadline The deadline for the defender to respond
-    event PirateConfrontationStart(address indexed attacker, address indexed target, uint16 indexed location, uint64 deadline);
+    /// @param expiration Timestamp after which the confrontation expires (can be extended by the defender)
+    event PirateConfrontationStart(address indexed attacker, address indexed target, uint16 indexed location, uint64 deadline, uint64 expiration);
 
     /// @dev Emits when a confrontation ends
     /// @param attacker The account of the attacker
@@ -220,7 +221,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
         }
 
         // Ensure that the attacker is not already intercepting a target
-        if (confrontations[targets[msg.sender]].end > block.timestamp) 
+        if (confrontations[targets[msg.sender]].expiration > block.timestamp) 
         {
             revert AttackerAlreadyIntercepting(msg.sender);
         }
@@ -261,6 +262,19 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
             revert TargetIsIdle(target);
         }
 
+        // Ensure that the target is not already intercepted
+        Confrontation storage confrontation = confrontations[target];
+        if (confrontation.expiration > block.timestamp) 
+        {
+            revert TargetAlreadyIntercepted(target);
+        }
+
+        // Ensure that the target has not been intercepted before on this voyage
+        else if (confrontation.arrival == targetArrival) 
+        {
+            revert TargetAlreadyIntercepted(target);
+        }
+
         // Ensure that the target is reachable from the attacker's location
         if (attackerTileIndex != targetTileIndex)
         {
@@ -293,13 +307,6 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
             }
         } 
 
-        // Ensure that the target is not already intercepted
-        Confrontation storage confrontation = confrontations[target];
-        if (confrontation.end > block.timestamp) 
-        {
-            revert TargetAlreadyIntercepted(target);
-        }
-
 
         /**
          * Create confrontation
@@ -307,33 +314,33 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
         confrontation.attacker = msg.sender;
         confrontation.defender = target;
         confrontation.location = attackerTileIndex;
-        confrontation.start = uint64(block.timestamp);
-        confrontation.deadline = confrontation.start + MAX_RESPONSE_TIME;
-        confrontation.end = confrontation.deadline + MAX_RESPONSE_TIME;
+        confrontation.arrival = targetArrival;
+        confrontation.deadline = uint64(block.timestamp) + MAX_RESPONSE_TIME;
+        confrontation.expiration = confrontation.deadline + MAX_RESPONSE_TIME;
 
         // Link target to attacker
         targets[msg.sender] = target;
 
         // Emit event
-        emit PirateConfrontationStart(msg.sender, target, attackerTileIndex, confrontation.deadline);
+        emit PirateConfrontationStart(msg.sender, target, attackerTileIndex, confrontation.deadline, confrontation.expiration);
     }
 
 
     /// @dev Attacker accepts the offer from the target to resolve the confrontation
     /// @param signatures Array of signatures authorizing the attacker to accept the offer
+    /// @param inventories_from The inventories in which the assets are located
+    /// @param inventories_to The inventories to which the assets will be moved
     /// @param assets The assets that the target is willing to offer
     /// @param amounts The amounts of the assets that the target is willing to offer
     /// @param tokenIds The ids of the assets that the target is willing to offer
-    /// @param inventories_from The inventories in which the assets are located
-    /// @param inventories_to The inventories to which the assets will be moved
-    function acceptOffer(bytes[] memory signatures, address[] memory assets, uint[] memory amounts, uint[] memory tokenIds, Inventory[] memory inventories_from, Inventory[] memory inventories_to)
+    function acceptOffer(bytes[] memory signatures, Inventory[] memory inventories_from, Inventory[] memory inventories_to, address[] memory assets, uint[] memory amounts, uint[] memory tokenIds)
         public virtual override
     {
         address target = targets[msg.sender];
         Confrontation storage confrontation = confrontations[target];
 
         // Ensure that the confrontation has not ended
-        if (confrontation.end < block.timestamp) 
+        if (confrontation.expiration < block.timestamp) 
         {
             revert ConfrontationNotFound(msg.sender, target);
         }
@@ -349,10 +356,10 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
             MetaTransactions.EIP712_TRANSFER_PROPOSAL_SCHEMA_HASH,
             target,
             msg.sender,
+            keccak256(abi.encodePacked(inventories_from)),
             keccak256(abi.encodePacked(assets)),
             keccak256(abi.encodePacked(amounts)),
             keccak256(abi.encodePacked(tokenIds)),
-            keccak256(abi.encodePacked(inventories_from)),
             confrontation.deadline,
             _useNonce(target),
             address(this)
@@ -374,7 +381,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
             tokenIds);
 
         // Mark confrontation as ended
-        confrontation.end = 0;
+        confrontation.expiration = 0;
 
         // Emit
         emit PirateConfrontationEnd(msg.sender, target, confrontation.location);

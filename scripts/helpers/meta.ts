@@ -10,10 +10,11 @@ const EIP712_DOMAIN_VERSION = "1.0.0";
  * 
  * @param signer The signer
  * @param contract The contract address of the executor
+ * @param nonce The nonce of the proposal
  * @param proposal The proposal
  * @returns The signature
  */
-export const getTransferProposalSignature = async (signer: HardhatEthersSigner, contract: string, proposal: TransferProposal) : Promise<string> =>
+export const getTransferProposalSignature = async (signer: HardhatEthersSigner, contract: string, nonce: number, proposal: TransferProposal) : Promise<string> =>
 {
     const domain: EIP712Domain = {
         name: EIP712_DOMAIN_NAME,
@@ -26,10 +27,10 @@ export const getTransferProposalSignature = async (signer: HardhatEthersSigner, 
         TransferProposal: [
             { name: "from", type: "address" },
             { name: "to", type: "address" },
+            { name: "inventories", type: "bytes32" },
             { name: "assets", type: "bytes32" },
             { name: "amounts", type: "bytes32" },
             { name: "tokenIds", type: "bytes32" },
-            { name: "inventories", type: "bytes32" },
             { name: "deadline", type: "uint256"},
             { name: "nonce", type: "uint256"},
             { name: "contract", type: "address"}
@@ -42,12 +43,12 @@ export const getTransferProposalSignature = async (signer: HardhatEthersSigner, 
         {
             from: proposal.from,
             to: proposal.to,
+            inventories: ethers.solidityPackedKeccak256(["uint8[]"], [proposal.inventories]),
             assets: ethers.solidityPackedKeccak256(["address[]"], [proposal.assets]),
             tokenIds: ethers.solidityPackedKeccak256(["uint256[]"], [proposal.tokenIds]),
             amounts: ethers.solidityPackedKeccak256(["uint256[]"], [proposal.amounts]),
-            inventories: ethers.solidityPackedKeccak256(["uint8[]"], [proposal.inventories]),
             deadline: proposal.deadline,
-            nonce: 0,
+            nonce: nonce,
             contract: contract
         });
 }

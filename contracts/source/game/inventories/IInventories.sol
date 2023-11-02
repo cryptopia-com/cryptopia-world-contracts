@@ -205,7 +205,7 @@ interface IInventories {
     /// @param asset The asset contract address 
     /// @param amount The amounts of assets to assign
     /// @param tokenId The token ids from asset to assign
-    function __assign(address[] memory player, Inventory[] memory inventory, address[] memory asset, uint[] memory amount, uint[] memory tokenId)
+    function __assign(address player, Inventory[] memory inventory, address[] memory asset, uint[] memory amount, uint[] memory tokenId)
         external;
 
 

@@ -578,23 +578,23 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @param inventory The inventory type to assign the asset to {BackPack | Ship}
     /// @param asset The asset contract address 
     /// @param tokenId The token ids from asset to assign
-    function __assign(address[] memory player, Inventory[] memory inventory, address[] memory asset, uint[] memory amount, uint[] memory tokenId)
+    function __assign(address player, Inventory[] memory inventory, address[] memory asset, uint[] memory amount, uint[] memory tokenId)
         public virtual override 
         onlyRole(SYSTEM_ROLE)
     { 
-        for (uint i = 0; i < player.length; i++)
+        for (uint i = 0; i < asset.length; i++)
         {
             if (0 != tokenId[i])
             {
                 // Non-Fungible
                 _assignNonFungibleToken(
-                    player[i], inventory[i], asset[i], tokenId[i]);
+                    player, inventory[i], asset[i], tokenId[i]);
             }
             else if (0 != amount[i])
             {
                 // Fungible
                 _assignFungibleToken(
-                    player[i], inventory[i], asset[i], amount[i]);
+                    player, inventory[i], asset[i], amount[i]);
             }
             else 
             {

@@ -20,6 +20,7 @@ import {
     CryptopiaInventories,
     CryptopiaPirateMechanics,
 } from "../typechain-types";
+import { AddressLike } from "ethers";
 
 /**
  * Pirate Mechanics tests
@@ -32,7 +33,6 @@ describe("PirateMechanics Contract", function () {
     // Accounts
     let deployer: string;
     let system: string;
-    let minter: string;
     let account1: string;
     let account2: string;
     let account3: string;
@@ -132,7 +132,7 @@ describe("PirateMechanics Contract", function () {
     before(async () => {
 
         // Accounts
-        [deployer, system, minter, account1, account2, account3, account4, treasury] = (
+        [deployer, system, account1, account2, account3, account4, treasury] = (
             await ethers.getSigners()).map(s => s.address);
 
         // Signers
@@ -290,7 +290,7 @@ describe("PirateMechanics Contract", function () {
                 .getContractAt("CryptopiaAssetToken", asset.contractAddress);
 
             await asset.contractInstance
-                .grantRole(SYSTEM_ROLE, minter);
+                .grantRole(SYSTEM_ROLE, system);
             
             await assetRegisterInstance
                 .connect(systemSigner)
@@ -869,7 +869,6 @@ describe("PirateMechanics Contract", function () {
             const inventoriesAddress = await inventoriesInstance.getAddress();
             const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
             const systemSigner = await ethers.provider.getSigner(system);
-            const minterSigner = await ethers.provider.getSigner(minter);
             const pirateAccountSigner = await ethers.provider.getSigner(account1);
             const pirateAccountAddress = await pirateAccountInstance.getAddress();
             const targetAccountSigner = await ethers.provider.getSigner(account2);
@@ -878,7 +877,7 @@ describe("PirateMechanics Contract", function () {
             
             // Ensure the pirate has enough fuel
             await fuelAsset.contractInstance
-                ?.connect(minterSigner)
+                ?.connect(systemSigner)
                  .__mintTo(inventoriesAddress, PirateMechanicsConfig.BASE_FUEL_COST);
 
             await inventoriesInstance
@@ -918,14 +917,13 @@ describe("PirateMechanics Contract", function () {
             const inventoriesAddress = await inventoriesInstance.getAddress();
             const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
             const systemSigner = await ethers.provider.getSigner(system);
-            const minterSigner = await ethers.provider.getSigner(minter);
             const anotherPirateAccountSigner = await ethers.provider.getSigner(account3);
             const anotherPirateAccountAddress = await anotherPirateAccountInstance.getAddress();
             const targetAccountAddress = await targetAccountInstance.getAddress();
             
             // Ensure the pirate has enough fuel
             await fuelAsset.contractInstance
-                ?.connect(minterSigner)
+                ?.connect(systemSigner)
                  .__mintTo(inventoriesAddress, PirateMechanicsConfig.BASE_FUEL_COST);
 
             await inventoriesInstance
@@ -1131,11 +1129,100 @@ describe("PirateMechanics Contract", function () {
                 .submitTransaction(await mapInstance.getAddress(), 0, playerEnterCalldata);
         });
 
+        it ("Should not accept an offer when the target has insufficient assets", async function () {
+
+            // Setup
+            const ironAsset = getAssetByResource(Resource.Iron);
+            const goldAsset = getAssetByResource(Resource.Gold);
+            const mapContractAddress = await mapInstance.getAddress();
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const pirateAccountSigner = await ethers.provider.getSigner(account1);
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+            const targetAccountSigner = await ethers.provider.getSigner(account2);
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+
+            const interceptCalldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("intercept", [targetAccountAddress, 0]);
+
+            const interceptTransaction = await pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, interceptCalldata);
+            const interceptReceipt = await interceptTransaction.wait();
+
+            const deadline = getParamFromEvent(
+                pirateMechanicsInstance, interceptReceipt, "deadline", "PirateConfrontationStart");
+            const expiration = getParamFromEvent(
+                pirateMechanicsInstance, interceptReceipt, "expiration", "PirateConfrontationStart");
+
+            // Create proposal
+            const proposal: TransferProposal = {
+                from: targetAccountAddress,
+                to: pirateAccountAddress,
+                inventories: [Inventory.Ship, Inventory.Backpack],
+                assets: [ironAsset.contractAddress, goldAsset.contractAddress],
+                amounts: ["2".toWei(), "1".toWei()],
+                tokenIds: [0, 0],
+                deadline: deadline
+            }
+
+            const signatures = await getTransferProposalSignature(
+                targetAccountSigner, 
+                pirateMechanicsAddress,
+                0,
+                proposal);
+
+            // Act
+            const acceptOfferCalldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("acceptOffer", [
+                    [signatures], 
+                    proposal.inventories, 
+                    [Inventory.Ship, Inventory.Ship], 
+                    proposal.assets, 
+                    proposal.amounts, 
+                    proposal.tokenIds]);
+
+            const operation = pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, acceptOfferCalldata);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(inventoriesInstance, "InventoryInsufficientBalance")
+                    .withArgs(targetAccountAddress, proposal.inventories[0], ironAsset.contractAddress, proposal.amounts[0]);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(pirateAccountInstance, "ExecutionFailure");
+            }
+
+            // Cleanup
+            await time.increaseTo(expiration);
+
+            // Move target to new location
+            const revertMoveCalldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [[0, 1]]);
+
+            const revertMoveTransaction = await targetAccountInstance
+                .connect(targetAccountSigner)
+                .submitTransaction(mapContractAddress, 0, revertMoveCalldata);
+                
+            const revertMoveReceipt = await revertMoveTransaction.wait();
+            const revertArrival = getParamFromEvent(
+                mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
+
+            await time.increaseTo(revertArrival);
+        });
+
         it ("Should allow a pirate to accept an offer from the targed", async function () {
 
             // Setup
             const ironAsset = getAssetByResource(Resource.Iron);
             const goldAsset = getAssetByResource(Resource.Gold);
+            const inventoriesAddress = await inventoriesInstance.getAddress();
+            const systemSigner = await ethers.provider.getSigner(system);
             const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
             const pirateAccountSigner = await ethers.provider.getSigner(account1);
             const pirateAccountAddress = await pirateAccountInstance.getAddress();
@@ -1157,21 +1244,46 @@ describe("PirateMechanics Contract", function () {
             const proposal: TransferProposal = {
                 from: targetAccountAddress,
                 to: pirateAccountAddress,
-                assets: [ironAsset.contractAddress, goldAsset.contractAddress],
-                tokenIds: [0, 0],
-                amounts: ["2".toWei(), "1".toWei()],
                 inventories: [Inventory.Ship, Inventory.Backpack],
+                assets: [ironAsset.contractAddress, goldAsset.contractAddress],
+                amounts: ["2".toWei(), "1".toWei()],
+                tokenIds: [0, 0],
                 deadline: deadline
             }
 
-            const signedProposal = await getTransferProposalSignature(
+            const signatures = await getTransferProposalSignature(
                 targetAccountSigner, 
                 pirateMechanicsAddress,
+                0,
                 proposal);
+
+            // Ensure target has enough assets
+            await ironAsset.contractInstance
+                ?.connect(systemSigner)
+                .__mintTo(inventoriesAddress, proposal.amounts[0]);
+            
+            await goldAsset.contractInstance
+                ?.connect(systemSigner)
+                .__mintTo(inventoriesAddress, proposal.amounts[1]);
+
+            await inventoriesInstance
+                .connect(systemSigner)
+                .__assign(
+                    targetAccountAddress, 
+                    proposal.inventories, 
+                    proposal.assets,
+                    proposal.amounts,
+                    proposal.tokenIds);
 
             // Act
             const acceptOfferCalldata = pirateMechanicsInstance.interface
-                .encodeFunctionData("acceptOffer", [[signedProposal], proposal.assets, proposal.amounts, proposal.tokenIds, proposal.inventories, [Inventory.Ship]]);
+                .encodeFunctionData("acceptOffer", [
+                    [signatures], 
+                    proposal.inventories, 
+                    [Inventory.Ship, Inventory.Ship], 
+                    proposal.assets, 
+                    proposal.amounts, 
+                    proposal.tokenIds]);
 
             const operation = pirateAccountInstance
                 .connect(pirateAccountSigner)

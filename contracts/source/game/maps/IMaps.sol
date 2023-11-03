@@ -9,6 +9,9 @@ import "../assets/types/AssetEnums.sol";
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface IMaps {
 
+    /**
+     * Public functions
+     */
     /// @dev Retrieve a tile
     /// @param tileIndex Index of hte tile to retrieve
     /// @return landmassIndex The index of the landmass that the tile belongs to

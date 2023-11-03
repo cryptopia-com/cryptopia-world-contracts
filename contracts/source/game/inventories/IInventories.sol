@@ -11,6 +11,14 @@ interface IInventories {
     /**
      * Public functions
      */
+    /// @dev True if the inventories of `player` are frozen
+    /// @param player The account of the player to check
+    /// @return frozen True if the inventories of `player` are frozen
+    function isFrozen(address player)
+        external view 
+        returns (bool frozen);
+
+
     /// @dev Retrieves info about 'player' inventory 
     /// @param player The account of the player to retrieve the info for
     /// @return weight The current total weight of player's inventory

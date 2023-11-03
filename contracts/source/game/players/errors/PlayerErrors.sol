@@ -10,6 +10,11 @@ error PlayerNotRegistered(address account);
 /// @param arrival The arrival time of the player
 error PlayerIsTraveling(address account, uint64 arrival);
 
+/// @dev Emits if a player attempts to travel while frozen
+/// @param account Player that is frozen
+/// @param until The datetime at which the player is no longer frozen
+error PlayerIsFrozen(address account, uint64 until);
+
 /// @dev Emitted when `player` level is too low
 /// @param player The player that has a level that is too low
 /// @param level The level of the player

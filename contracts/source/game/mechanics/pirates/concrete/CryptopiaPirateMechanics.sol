@@ -9,6 +9,7 @@ import "../../../maps/IMaps.sol";
 import "../../../maps/types/MapEnums.sol";
 import "../../../players/IPlayerRegister.sol";
 import "../../../players/errors/PlayerErrors.sol";
+import "../../../players/control/IPlayerFreezeControl.sol";
 import "../../../inventories/IInventories.sol";
 import "../../../meta/MetaTransactions.sol";
 import "../../../../tokens/ERC721/ships/IShips.sol";
@@ -17,19 +18,20 @@ import "../../../../game/errors/TimingErrors.sol";
 import "../../../../accounts/multisig/IMultiSigWallet.sol";
 import "../../../../accounts/multisig/errors/MultisigErrors.sol";
 
+
 /// @title Cryptopia pirate game mechanics
 /// @dev Provides the mechanics for the pirate gameplay
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMechanics {
 
     // TODO
-    // * Add intercept function that allows the attacker to intercept the defender
-    //     * Determine if the attacker is able to intercept the defender
+    // * Add intercept function that allows the attacker to intercept the target
+    //     * Determine if the attacker is able to intercept the target
     //     - Deduct the required amount of fuel from the attacker
-    //     * Generate an event that indicates that the defender has been intercepted
+    //     * Generate an event that indicates that the target has been intercepted
     //
-    // - Add negotiate function that allows the attacker to negotiate with the defender
-    // - Add a flee function that allows the defender to flee from the attacker
+    // - Add negotiate function that allows the attacker to negotiate with the target
+    // - Add a flee function that allows the target to flee from the attacker
     // - Add quick auto resolution of battles
     // - Add manual resolution of battles
 
@@ -38,19 +40,16 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
         // Pirate
         address attacker;
 
-        // Defender
-        address defender;
-
         // Location intercept took place
         uint16 location;
 
-        // Arrival timestamp of the defender (used to prevent multiple interceptions)
+        // Arrival timestamp of the target (used to prevent multiple interceptions)
         uint64 arrival;
 
-        // Deadline for the defender to respond
+        // Deadline for the target to respond
         uint64 deadline;
 
-        // Timestamp after which the confrontation expires (can be extended by the defender)
+        // Timestamp after which the confrontation expires (can be extended by the target)
         uint64 expiration;
     }
 
@@ -81,15 +80,15 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
      */
     /// @dev Emits when a pirate intercepts another player
     /// @param attacker The account of the attacker
-    /// @param target The account of the defender
+    /// @param target The account of the target
     /// @param location The location at which the confrontation took place
-    /// @param deadline The deadline for the defender to respond
-    /// @param expiration Timestamp after which the confrontation expires (can be extended by the defender)
+    /// @param deadline The deadline for the target to respond
+    /// @param expiration Timestamp after which the confrontation expires (can be extended by the target)
     event PirateConfrontationStart(address indexed attacker, address indexed target, uint16 indexed location, uint64 deadline, uint64 expiration);
 
     /// @dev Emits when a confrontation ends
     /// @param attacker The account of the attacker
-    /// @param target The account of the defender
+    /// @param target The account of the target
     /// @param location The location at which the confrontation took place
     event PirateConfrontationEnd(address indexed attacker, address indexed target, uint16 indexed location);
 
@@ -123,18 +122,15 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
     error TargetNotReachable(address attacker, address target);
 
     /// @dev Revert if target is already intercepted
-    /// @param target The account of the defender
+    /// @param target The account of the target
     error TargetAlreadyIntercepted(address target);
 
     /// @dev Revert if the confrontation is has ended
     /// @param attacker The account of the attacker
-    /// @param target The account of the defender
+    /// @param target The account of the target
     error ConfrontationNotFound(address attacker, address target);
 
 
-    /**
-     * Public functions
-     */
     /// @dev Constructor
     /// @param _treasury The address of the treasury
     /// @param _playerRegisterContract The address of the player register
@@ -164,9 +160,35 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
         intentoriesContract = _intentoriesContract;
     }
 
+
+    /**
+     * Public functions
+     */
+    /// @dev Get confrontation data
+    /// @param target The account of the defender
+    /// @return attacker The account of the pirate
+    /// @return location The location at which the confrontation took place
+    /// @return deadline The deadline for the target to respond
+    /// @return expiration The timestamp after which the confrontation expires (can be extended by the target)
+    function getConfrontation(address target)
+        public override virtual view 
+        returns (
+            address attacker,
+            uint16 location,
+            uint64 deadline,
+            uint64 expiration
+        )
+    {
+        Confrontation storage confrontation = confrontations[target];
+        attacker = confrontation.attacker;
+        location = confrontation.location;
+        deadline = confrontation.deadline;
+        expiration = confrontation.expiration;
+    }
+
     
     /// @dev Intercepts the target at the specified location
-    /// @param target The account of the defender
+    /// @param target The account of the target
     /// @param indexInRoute The index of the tile in the route that the target is traveling
     /// 
     /// Requirements:
@@ -312,7 +334,6 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
          * Create confrontation
          */
         confrontation.attacker = msg.sender;
-        confrontation.defender = target;
         confrontation.location = attackerTileIndex;
         confrontation.arrival = targetArrival;
         confrontation.deadline = uint64(block.timestamp) + MAX_RESPONSE_TIME;
@@ -320,6 +341,11 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
 
         // Link target to attacker
         targets[msg.sender] = target;
+
+        // Freeze players
+        IPlayerFreezeControl(mapsContract).__freeze(target, confrontation.expiration);
+        IPlayerFreezeControl(mapsContract).__freeze(msg.sender, confrontation.expiration);
+        IPlayerFreezeControl(intentoriesContract).__freeze(target, confrontation.expiration);
 
         // Emit event
         emit PirateConfrontationStart(msg.sender, target, attackerTileIndex, confrontation.deadline, confrontation.expiration);
@@ -370,15 +396,21 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
             revert InvalidSignatureSet(target);
         }
 
+        // Unfreeze players
+        IPlayerFreezeControl(mapsContract).__unfreeze(target);
+        IPlayerFreezeControl(mapsContract).__unfreeze(msg.sender);
+        IPlayerFreezeControl(intentoriesContract).__unfreeze(target);
+
         // Move assets
-        IInventories(intentoriesContract).__transfer(
-            target, 
-            msg.sender, 
-            inventories_from, 
-            inventories_to,
-            assets, 
-            amounts,
-            tokenIds);
+        IInventories(intentoriesContract)
+            .__transfer(
+                target, 
+                msg.sender, 
+                inventories_from, 
+                inventories_to,
+                assets, 
+                amounts,
+                tokenIds);
 
         // Mark confrontation as ended
         confrontation.expiration = 0;

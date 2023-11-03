@@ -11,13 +11,15 @@ import "../IInventories.sol";
 import "../types/InventoryEnums.sol";
 import "../errors/InventoryErrors.sol";
 import "../../players/IPlayerRegister.sol";
+import "../../players/errors/PlayerErrors.sol";
+import "../../players/control/IPlayerFreezeControl.sol";
 import "../../assets/errors/AssetErrors.sol";
 import "../../../errors/ArgumentErrors.sol";
 
 /// @title Cryptopia Inventories
 /// @dev Contains player and ship assets
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInventories, IERC721Receiver {
+contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInventories, IPlayerFreezeControl, IERC721Receiver {
 
     struct Asset 
     {
@@ -58,6 +60,12 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         Inventory inventory;
     }
 
+    struct PlayerData 
+    {
+        // Frozen until
+        uint64 frozenUntil;
+    }
+
 
     /**
      * Roles
@@ -90,6 +98,9 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
 
     // Player => Starter ship | Backpack => InventorySpace
     mapping (address => InventorySpace) playerInventories;
+
+    // Player => PlayerData
+    mapping (address => PlayerData) playerData;
 
     // Refs
     address public treasury;
@@ -167,6 +178,21 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     error ShipInventoryTooHeavy(uint ship);
 
 
+    /**
+     * Modifiers
+     */
+    /// @dev Reverts if the inventories of `player` are frozen
+    /// @param player The account of the player to check
+    modifier notFrozen(address player) 
+    {
+        if (playerData[player].frozenUntil > block.timestamp)
+        {
+            revert PlayerIsFrozen(player, playerData[player].frozenUntil);
+        }
+        _;
+    }
+
+
     /// @dev Construct
     /// @param _treasury token (ERC20) receiver
     function initialize(
@@ -221,6 +247,17 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /**
      * Public functions
      */
+    /// @dev True if the inventories of `player` are frozen
+    /// @param player The account of the player to check
+    /// @return frozen True if the inventories of `player` are frozen
+    function isFrozen(address player)
+        public virtual override view
+        returns (bool frozen)
+    {
+        return playerData[player].frozenUntil > block.timestamp;
+    }
+
+
     /// @dev Retrieves info about 'player' inventory 
     /// @param player The account of the player to retrieve the info for
     /// @return weight The current total weight of player's inventory
@@ -401,6 +438,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @param tokenIds The token ID to send (zero indicates fungible)
     function transfer(address[] memory player_to, Inventory[] memory inventory_from, Inventory[] memory inventory_to, address[] memory asset, uint[] memory amount, uint[][] memory tokenIds)
         public virtual override 
+        notFrozen(_msgSender())
     {
         address player_from = _msgSender();
         for (uint i = 0; i < player_to.length; i++)
@@ -445,11 +483,33 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /**
      * System functions
      */
+    /// @dev Prevents `account` from traveling `until`
+    /// @param account The player to lock
+    /// @param until The datetime on which the lock expires
+    function __freeze(address account, uint64 until) 
+        public override virtual 
+        onlyRole(SYSTEM_ROLE)
+    {
+        playerData[account].frozenUntil = until;
+    }
+
+    
+    /// @dev Unfreeze `account`
+    /// @param account The player to unfreeze
+    function __unfreeze(address account)
+        public override virtual 
+        onlyRole(SYSTEM_ROLE)
+    {
+        playerData[account].frozenUntil = 0;
+    }
+
+
     /// @dev Update equipted ship for `player`
     /// @param player The player that equipted the `ship`
     /// @param ship The tokenId of the equipted ship
     function __setPlayerShip(address player, uint ship) 
         public virtual override  
+        notFrozen(player)
         onlyRole(SYSTEM_ROLE) 
     {
         playerToShip[player] = ship;
@@ -615,6 +675,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @param amount The amount of asset to deduct
     function __deductFungibleToken(address player, Inventory inventory, address asset, uint amount)
         public virtual override 
+        notFrozen(player)
         onlyRole(SYSTEM_ROLE)
     {
         _deductFungibleToken(player, inventory, asset, amount);
@@ -631,6 +692,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @param amount The amounts of assets to deduct
     function __deduct(address player, Inventory inventory, address[] memory asset, uint[] memory amount)
         public virtual override 
+        notFrozen(player)
         onlyRole(SYSTEM_ROLE)
     {
         for (uint i = 0; i < asset.length; i++)
@@ -653,6 +715,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @param tokenId The token ID to transfer (zero indicates fungible)
     function __transfer(address player_from, address player_to, Inventory[] memory inventory_from, Inventory[] memory inventory_to, address[] memory asset, uint[] memory amount, uint[] memory tokenId)
         public virtual override 
+        notFrozen(player_from)
         onlyRole(SYSTEM_ROLE)
     {
         for (uint i = 0; i < asset.length; i++)

@@ -5,6 +5,7 @@ import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { getParamFromEvent} from '../scripts/helpers/events';
 import { getTransferProposalSignature } from "../scripts/helpers/meta";
 import { TransferProposal } from "../scripts/types/meta";
+import { ZERO_ADDRESS } from "./settings/constants";
 import { REVERT_MODE, PLAYER_IDLE_TIME, MOVEMENT_TURN_DURATION, PirateMechanicsConfig } from "./settings/config";
 import { SYSTEM_ROLE } from "./settings/roles";   
 import { Resource, Terrain, Biome, Inventory } from '../scripts/types/enums';
@@ -13,14 +14,12 @@ import { Asset, Map } from "../scripts/types/input";
 import { 
     CryptopiaAccount,
     CryptopiaMaps,
-    CryptopiaAssetToken,
     CryptopiaShipToken,
     CryptopiaTitleDeedToken,
     CryptopiaPlayerRegister,
     CryptopiaInventories,
     CryptopiaPirateMechanics,
 } from "../typechain-types";
-import { AddressLike } from "ethers";
 
 /**
  * Pirate Mechanics tests
@@ -163,6 +162,10 @@ describe("PirateMechanics Contract", function () {
         const inventoriesAddress = await inventoriesProxy.getAddress();
         inventoriesInstance = await ethers.getContractAt("CryptopiaInventories", inventoriesAddress);
 
+        // Grant roles
+        await inventoriesInstance.grantRole(SYSTEM_ROLE, system);
+
+
         // Deploy Whitelist
         const whitelistProxy = await (
             await upgrades.deployProxy(
@@ -176,12 +179,14 @@ describe("PirateMechanics Contract", function () {
 
         const whitelistAddress = await whitelistProxy.getAddress();
 
+
         // Deploy Account register
         const accountRegisterProxy = await (
             await upgrades.deployProxy(AccountRegisterFactory)
         ).waitForDeployment();
 
         const accountRegisterAddress = await accountRegisterProxy.getAddress();
+
 
         // Deploy Asset Register
         const assetRegisterProxy = await (
@@ -191,6 +196,10 @@ describe("PirateMechanics Contract", function () {
 
         const assetRegisterAddress = await assetRegisterProxy.getAddress();
         const assetRegisterInstance = await ethers.getContractAt("CryptopiaAssetRegister", assetRegisterAddress);
+
+        // Grant roles
+        await assetRegisterInstance.grantRole(SYSTEM_ROLE, system);
+
 
         // Deploy Ships
         const shipTokenProxy = await (
@@ -206,6 +215,7 @@ describe("PirateMechanics Contract", function () {
         const shipTokenAddress = await shipTokenProxy.getAddress();
         shipTokenInstance = await ethers.getContractAt("CryptopiaShipToken", shipTokenAddress);
 
+
         // Deploy Crafting
         const craftingProxy = await (
             await upgrades.deployProxy(
@@ -217,6 +227,11 @@ describe("PirateMechanics Contract", function () {
 
         const craftingAddress = await craftingProxy.getAddress();
         const craftingInstance = await ethers.getContractAt("CryptopiaCrafting", craftingAddress);
+
+        // Grant roles
+        await craftingInstance.grantRole(SYSTEM_ROLE, system);
+        await inventoriesInstance.grantRole(SYSTEM_ROLE, craftingAddress);
+        
 
         // Deploy Player Register
         const playerRegisterProxy = await (await upgrades.deployProxy(
@@ -234,6 +249,12 @@ describe("PirateMechanics Contract", function () {
         const playerRegisterAddress = await playerRegisterProxy.getAddress();
         playerRegisterInstance = await ethers.getContractAt("CryptopiaPlayerRegister", playerRegisterAddress);
 
+        // Grant roles
+        await shipTokenInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
+        await inventoriesInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
+        await craftingInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
+
+
         // Deploy title deed token
         const titleDeedTokenProxy = await (
             await upgrades.deployProxy(
@@ -247,6 +268,7 @@ describe("PirateMechanics Contract", function () {
 
         const titleDeedTokenAddress = await titleDeedTokenProxy.getAddress();
         titleDeedTokenInstance = await ethers.getContractAt("CryptopiaTitleDeedToken", titleDeedTokenAddress);
+
 
         // Deploy Maps
         const mapsProxy = await (
@@ -264,15 +286,9 @@ describe("PirateMechanics Contract", function () {
         mapInstance = await ethers.getContractAt("CryptopiaMaps", mapsAddress);
 
         // Grant roles
-        await assetRegisterInstance.grantRole(SYSTEM_ROLE, system);
-        await shipTokenInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
         await titleDeedTokenInstance.grantRole(SYSTEM_ROLE, mapsAddress);
-        await inventoriesInstance.grantRole(SYSTEM_ROLE, system);
-        await inventoriesInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
-        await inventoriesInstance.grantRole(SYSTEM_ROLE, craftingAddress);
-        await craftingInstance.grantRole(SYSTEM_ROLE, system);
-        await craftingInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
-
+        
+        
         // Deploy assets
         for (let asset of assets)
         {
@@ -321,7 +337,7 @@ describe("PirateMechanics Contract", function () {
 
         // Grant roles
         await inventoriesInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
-
+        await mapInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
 
         // Create map 
         await mapInstance.createMap(
@@ -1088,6 +1104,56 @@ describe("PirateMechanics Contract", function () {
                 .emit(pirateMechanicsInstance, "PirateConfrontationStart")
                 .withArgs(anotherPirateAccountAddress, anotherTargetAccountAddress, path[0], expectedDeadline);
         });
+
+        it("Should freeze the target's inventories when intercepted", async function () {
+
+            // Setup
+            const anotherTargetAccountAddress = await anotherTargetAccountInstance.getAddress();
+
+            // Act
+            const isFrozen = await inventoriesInstance
+                .isFrozen(anotherTargetAccountAddress);
+
+            // Assert
+            expect(isFrozen).to.be.true;
+        });
+
+        it("Should freeze the target in the map when intercepted", async function () {
+            
+            // Setup
+            const anotherTargetAccountAddress = await anotherTargetAccountInstance.getAddress();
+            
+            // Act
+            const mapPlayerData = await mapInstance
+                .getPlayerDatas([
+                    anotherTargetAccountAddress
+                ]);
+            
+            const confrontationData = await pirateMechanicsInstance
+                .getConfrontation(anotherTargetAccountAddress);
+
+            // Assert 
+            expect(mapPlayerData.frozenUntil[0]).to.equal(confrontationData.expiration);
+        });
+
+        it("Should freeze the pirate in the map when intercepted", async function () {
+            
+            // Setup
+            const anotherPirateAccountAddress = await anotherPirateAccountInstance.getAddress();
+            const anotherTargetAccountAddress = await anotherTargetAccountInstance.getAddress();
+            
+            // Act
+            const mapPlayerData = await mapInstance
+                .getPlayerDatas([
+                    anotherPirateAccountAddress
+                ]);
+            
+            const confrontationData = await pirateMechanicsInstance
+                .getConfrontation(anotherTargetAccountAddress);
+
+            // Assert 
+            expect(mapPlayerData.frozenUntil[0]).to.equal(confrontationData.expiration);
+        });
     });
 
     /**
@@ -1127,6 +1193,151 @@ describe("PirateMechanics Contract", function () {
             await targetAccountInstance
                 .connect(await ethers.provider.getSigner(account2))
                 .submitTransaction(await mapInstance.getAddress(), 0, playerEnterCalldata);
+        });
+
+        it ("Should not accept an offer when the target was not intercepted", async function () {
+
+            // Setup
+            const ironAsset = getAssetByResource(Resource.Iron);
+            const goldAsset = getAssetByResource(Resource.Gold);
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const pirateAccountSigner = await ethers.provider.getSigner(account1);
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+            const targetAccountSigner = await ethers.provider.getSigner(account2);
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+
+            // Create proposal
+            const proposal: TransferProposal = {
+                from: targetAccountAddress,
+                to: pirateAccountAddress,
+                inventories: [Inventory.Ship, Inventory.Backpack],
+                assets: [ironAsset.contractAddress, goldAsset.contractAddress],
+                amounts: ["2".toWei(), "1".toWei()],
+                tokenIds: [0, 0],
+                deadline: 0
+            }
+
+            const signatures = await getTransferProposalSignature(
+                targetAccountSigner, 
+                pirateMechanicsAddress,
+                0,
+                proposal);
+
+            // Act
+            const acceptOfferCalldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("acceptOffer", [
+                    [signatures], 
+                    proposal.inventories, 
+                    [Inventory.Ship, Inventory.Ship], 
+                    proposal.assets, 
+                    proposal.amounts, 
+                    proposal.tokenIds]);
+
+            const operation = pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, acceptOfferCalldata);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(pirateMechanicsInstance, "ConfrontationNotFound")
+                    .withArgs(pirateAccountAddress, ZERO_ADDRESS);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(pirateAccountInstance, "ExecutionFailure");
+            }
+        });
+
+        it ("Should not accept an offer when the dealine for the target to respond expired", async function () {
+
+            // Setup
+            const ironAsset = getAssetByResource(Resource.Iron);
+            const goldAsset = getAssetByResource(Resource.Gold);
+            const mapContractAddress = await mapInstance.getAddress();
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const pirateAccountSigner = await ethers.provider.getSigner(account1);
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+            const targetAccountSigner = await ethers.provider.getSigner(account2);
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+
+            const interceptCalldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("intercept", [targetAccountAddress, 0]);
+
+            const interceptTransaction = await pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, interceptCalldata);
+            const interceptReceipt = await interceptTransaction.wait();
+
+            const deadline = getParamFromEvent(
+                pirateMechanicsInstance, interceptReceipt, "deadline", "PirateConfrontationStart");
+            const expiration = getParamFromEvent(
+                pirateMechanicsInstance, interceptReceipt, "expiration", "PirateConfrontationStart");
+
+            // Create proposal
+            const proposal: TransferProposal = {
+                from: targetAccountAddress,
+                to: pirateAccountAddress,
+                inventories: [Inventory.Ship, Inventory.Backpack],
+                assets: [ironAsset.contractAddress, goldAsset.contractAddress],
+                amounts: ["2".toWei(), "1".toWei()],
+                tokenIds: [0, 0],
+                deadline: deadline
+            }
+
+            const signatures = await getTransferProposalSignature(
+                targetAccountSigner, 
+                pirateMechanicsAddress,
+                0,
+                proposal);
+
+            // Act
+            await time.increaseTo(deadline + BigInt(1));
+
+            const acceptOfferCalldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("acceptOffer", [
+                    [signatures], 
+                    proposal.inventories, 
+                    [Inventory.Ship, Inventory.Ship], 
+                    proposal.assets, 
+                    proposal.amounts, 
+                    proposal.tokenIds]);
+
+            const operation = pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, acceptOfferCalldata);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(pirateMechanicsInstance, "ResponseTimeExpired")
+                    .withArgs(targetAccountAddress, deadline);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(pirateAccountInstance, "ExecutionFailure");
+            }
+
+            // Cleanup
+            await time.increaseTo(expiration);
+
+            // Move target to new location
+            const revertMoveCalldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [[0, 1]]);
+
+            const revertMoveTransaction = await targetAccountInstance
+                .connect(targetAccountSigner)
+                .submitTransaction(mapContractAddress, 0, revertMoveCalldata);
+                
+            const revertMoveReceipt = await revertMoveTransaction.wait();
+            const revertArrival = getParamFromEvent(
+                mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
+
+            await time.increaseTo(revertArrival);
         });
 
         it ("Should not accept an offer when the target has insufficient assets", async function () {
@@ -1203,7 +1414,7 @@ describe("PirateMechanics Contract", function () {
 
             // Move target to new location
             const revertMoveCalldata = mapInstance.interface
-                .encodeFunctionData("playerMove", [[0, 1]]);
+                .encodeFunctionData("playerMove", [[1, 0]]);
 
             const revertMoveTransaction = await targetAccountInstance
                 .connect(targetAccountSigner)
@@ -1293,6 +1504,49 @@ describe("PirateMechanics Contract", function () {
             await expect(operation).to
                 .emit(pirateMechanicsInstance, "PirateConfrontationEnd")
                 .withArgs(pirateAccountAddress, targetAccountAddress, 0);
+        });
+
+        it("Should unfreeze the target's inventories after accepting the offer", async function () {
+
+            // Setup
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+
+            // Act
+            const isFrozen = await inventoriesInstance
+                .isFrozen(targetAccountInstance);
+
+            // Assert
+            expect(isFrozen).to.be.false;
+        });
+
+        it("Should unfreeze the target in the map when intercepted", async function () {
+            
+            // Setup
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+            
+            // Act
+            const mapPlayerData = await mapInstance
+                .getPlayerDatas([
+                    targetAccountAddress
+                ]);
+ 
+            // Assert 
+            expect(mapPlayerData.frozenUntil[0]).to.equal(0);
+        });
+
+        it("Should freeze the pirate in the map when intercepted", async function () {
+            
+            // Setup
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+            
+            // Act
+            const mapPlayerData = await mapInstance
+                .getPlayerDatas([
+                    pirateAccountAddress
+                ]);
+
+            // Assert 
+            expect(mapPlayerData.frozenUntil[0]).to.equal(0);
         });
     });
 

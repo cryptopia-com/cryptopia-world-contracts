@@ -11,6 +11,7 @@ import "../types/MapEnums.sol";
 import "../../assets/types/AssetEnums.sol";
 import "../../players/IPlayerRegister.sol";
 import "../../players/errors/PlayerErrors.sol";
+import "../../players/control/IPlayerFreezeControl.sol";
 import "../../../errors/ArgumentErrors.sol";
 import "../../../tokens/ERC721/deeds/ITitleDeeds.sol";
 import "../../../tokens/ERC721/ships/IShips.sol";
@@ -18,7 +19,7 @@ import "../../../tokens/ERC721/ships/IShips.sol";
 /// @title Cryptopia Maps
 /// @dev Contains world data and player positions
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
+contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlayerFreezeControl {
 
     struct Map 
     {
@@ -120,6 +121,9 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
 
         /// @dev Player movement budget
         uint16 movement;
+
+        /// @dev The datetime at which the player is no longer frozen
+        uint64 frozenUntil;
 
         /// @dev Tile that the player is currently on
         uint16 location_tileIndex;
@@ -849,19 +853,22 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
     /// @return location_tileIndex The tile that the player is at
     /// @return location_arrival The datetime on wich the player arrives at `location_tileIndex`
     /// @return movement Player movement budget
+    /// @return frozenUntil The datetime on wich the player is no longer frozen
     function getPlayerDatas(address[] memory accounts)
         public virtual view 
         returns (
             bytes32[] memory location_mapName,
             uint16[] memory location_tileIndex,
             uint64[] memory location_arrival,
-            uint16[] memory movement)
+            uint16[] memory movement,
+            uint64[] memory frozenUntil)
     {
         uint length = accounts.length;
         location_mapName = new bytes32[](length);
         location_tileIndex = new uint16[](length);
         location_arrival = new uint64[](length);
         movement = new uint16[](length);
+        frozenUntil = new uint64[](length);
 
         for (uint i = 0; i < length; i++)
         {
@@ -869,6 +876,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
             location_tileIndex[i] = playerData[accounts[i]].location_tileIndex;
             location_arrival[i] = playerData[accounts[i]].location_arrival;
             location_mapName[i] = mapsIndex[tiles[location_tileIndex[i]].mapIndex];
+            frozenUntil[i] = playerData[accounts[i]].frozenUntil;
         }
     }
 
@@ -994,7 +1002,31 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
     }
 
 
-    /*
+    /**
+     * System functions
+     */
+    /// @dev Prevents `account` from traveling `until`
+    /// @param account The player to lock
+    /// @param until The datetime on which the lock expires
+    function __freeze(address account, uint64 until) 
+        public override virtual 
+        onlyRole(SYSTEM_ROLE)
+    {
+        playerData[account].frozenUntil = until;
+    }
+
+    
+    /// @dev Unfreeze `account`
+    /// @param account The player to unfreeze
+    function __unfreeze(address account)
+        public override virtual 
+        onlyRole(SYSTEM_ROLE)
+    {
+        playerData[account].frozenUntil = 0;
+    }
+
+
+    /**
      * Internal functions
      */
     /// @dev Returns true if an initialized tile with `index` exists in a finalized map
@@ -1413,6 +1445,12 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps {
         internal 
     {
         PlayerData storage data = playerData[account];
+
+        // Enforce player not frozen
+        if (data.frozenUntil > block.timestamp)
+        {
+            revert PlayerIsFrozen(account, data.frozenUntil);
+        }
 
         // Traverse path
         (bool isValidPath, uint turns, bytes32 route) = _traversePath(

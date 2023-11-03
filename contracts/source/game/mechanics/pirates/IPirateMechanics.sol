@@ -8,6 +8,21 @@ import "../../inventories/types/InventoryEnums.sol";
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface IPirateMechanics {
 
+    /// @dev Get confrontation data
+    /// @param target The account of the defender
+    /// @return attacker The account of the pirate
+    /// @return location The location at which the confrontation took place
+    /// @return deadline The deadline for the target to respond
+    /// @return expiration The timestamp after which the confrontation expires (can be extended by the target)
+    function getConfrontation(address target)
+        external view 
+        returns (
+            address attacker,
+            uint16 location,
+            uint64 deadline,
+            uint64 expiration
+        );
+
     /// @dev Intercepts the target at the specified location
     /// @param target The account of the defender
     /// @param indexInRoute The index of the tile in the route that the target is traveling

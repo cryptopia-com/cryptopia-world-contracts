@@ -418,4 +418,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
         // Emit
         emit PirateConfrontationEnd(msg.sender, target, confrontation.location);
     }
+
+
+    
 }

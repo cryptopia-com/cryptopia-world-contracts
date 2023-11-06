@@ -49,4 +49,16 @@ interface IPirateMechanics {
     /// @param tokenIds The ids of the assets that the target is willing to offer
     function acceptOffer(bytes[] memory signatures, Inventory[] memory inventories_from, Inventory[] memory inventories_to, address[] memory assets, uint[] memory amounts, uint[] memory tokenIds)
         external;
+
+
+    function attemptEscape() 
+        external;
+
+
+    function startQuickBattle() 
+        external;
+
+
+    function startTurnBasedBattle() 
+        external;
 }

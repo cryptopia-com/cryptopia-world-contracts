@@ -12,6 +12,7 @@ import "../../../players/errors/PlayerErrors.sol";
 import "../../../players/control/IPlayerFreezeControl.sol";
 import "../../../inventories/IInventories.sol";
 import "../../../meta/MetaTransactions.sol";
+import "../../../utils/random/PseudoRandomness.sol";
 import "../../../../tokens/ERC721/ships/IShips.sol";
 import "../../../../errors/ArgumentErrors.sol";
 import "../../../../game/errors/TimingErrors.sol";
@@ -22,18 +23,7 @@ import "../../../../accounts/multisig/errors/MultisigErrors.sol";
 /// @title Cryptopia pirate game mechanics
 /// @dev Provides the mechanics for the pirate gameplay
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMechanics {
-
-    // TODO
-    // * Add intercept function that allows the attacker to intercept the target
-    //     * Determine if the attacker is able to intercept the target
-    //     - Deduct the required amount of fuel from the attacker
-    //     * Generate an event that indicates that the target has been intercepted
-    //
-    // - Add negotiate function that allows the attacker to negotiate with the target
-    // - Add a flee function that allows the target to flee from the attacker
-    // - Add quick auto resolution of battles
-    // - Add manual resolution of battles
+contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRandomness, IPirateMechanics {
 
     struct Confrontation 
     {
@@ -51,14 +41,32 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
 
         // Timestamp after which the confrontation expires (can be extended by the target)
         uint64 expiration;
+
+        // Escape attempt (can only be attempted once)
+        bool escapeAttempted;
     }
 
 
     /**
      * Storage
-     */ 
+     */
+    uint constant private MAX_CHARISMA = 100; // Denominator
+    
+    // Settings
     uint64 constant private MAX_RESPONSE_TIME = 600; // 10 minutes
 
+    // Scaling factors
+    uint16 constant private SPEED_SCALING_FACTOR = 50;
+    uint16 constant private LUCK_SCALING_FACTOR = 10;
+
+    // Other factors
+    uint constant private BASE_NEGOCIATION_DEDUCTION_FACTOR = 20; // 20%
+    uint constant private BASE_NEGOCIATION_DEDUCTION_FACTOR_PRECISION = 100; // Denominator
+
+    // Randomness
+    uint constant private BASE_ESCAPE_THRESHOLD = 5_000; // 50%
+
+    
     /// @dev target => Confrontation
     mapping(address => Confrontation) public confrontations;
 
@@ -92,10 +100,33 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
     /// @param location The location at which the confrontation took place
     event PirateConfrontationEnd(address indexed attacker, address indexed target, uint16 indexed location);
 
+    /// @dev Emits when a negotiation succeeds
+    /// @param attacker The account of the attacker
+    /// @param target The account of the target
+    /// @param location The location at which the confrontation took place
+    event NegotiationSuccess(address indexed attacker, address indexed target, uint16 indexed location);
+
+    /// @dev Emits when an escape attempt succeeds
+    /// @param attacker The account of the attacker
+    /// @param target The account of the target
+    /// @param location The location at which the confrontation took place
+    event EscapeSuccess(address indexed attacker, address indexed target, uint16 indexed location);
+
+    /// @dev Emits when an escape attempt fails
+    /// @param attacker The account of the attacker
+    /// @param target The account of the target
+    /// @param location The location at which the confrontation took place
+    event EscapeFail(address indexed attacker, address indexed target, uint16 indexed location);
+
 
     /**
      * Errors
      */
+    /// @dev Revert if the confrontation is has ended
+    /// @param attacker The account of the attacker
+    /// @param target The account of the target
+    error ConfrontationNotFound(address attacker, address target);
+
     /// @dev Revert if the attacker is already intercepting a target
     /// @param attacker The account of the attacker
     error AttackerAlreadyIntercepting(address attacker);
@@ -125,10 +156,9 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
     /// @param target The account of the target
     error TargetAlreadyIntercepted(address target);
 
-    /// @dev Revert if the confrontation is has ended
-    /// @param attacker The account of the attacker
+    /// @dev Revert if target has already attempted escape
     /// @param target The account of the target
-    error ConfrontationNotFound(address attacker, address target);
+    error TargetAlreadyAttemptedEscape(address target);
 
 
     /// @dev Constructor
@@ -151,6 +181,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
         initializer public 
     {
         __Nonces_init();
+        __PseudoRandomness_init();
         treasury = _treasury;
         playerRegisterContract = _playerRegisterContract;
         assetRegisterContract = _assetRegisterContract;
@@ -202,7 +233,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
     /// - The target must not be idle (when not traveling)
     /// - The target must not be already intercepted
     function intercept(address target, uint indexInRoute) 
-        public 
+        public virtual override 
     {
         // Prevent self-interception
         if (msg.sender == target) 
@@ -396,12 +427,36 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
             revert InvalidSignatureSet(target);
         }
 
-        // Unfreeze players
-        IPlayerFreezeControl(mapsContract).__unfreeze(target);
-        IPlayerFreezeControl(mapsContract).__unfreeze(msg.sender);
+        // Unfreeze inventory
         IPlayerFreezeControl(intentoriesContract).__unfreeze(target);
 
-        // Move assets
+        // Take charisma into account
+        uint charisma = IPlayerRegister(playerRegisterContract)
+            .getCharisma(target);
+
+        for (uint i = 0; i < assets.length; i++) 
+        {
+            if (0 != tokenIds[i]) 
+            {
+                continue;
+            }
+
+            // Deduct from offer based on charisma
+            uint deduct = amounts[i] 
+                * BASE_NEGOCIATION_DEDUCTION_FACTOR 
+                * (MAX_CHARISMA + 1 - charisma) 
+                / (MAX_CHARISMA * BASE_NEGOCIATION_DEDUCTION_FACTOR_PRECISION);
+            amounts[i] -= deduct;
+
+            IInventories(intentoriesContract)
+                .__deductFungibleToken(
+                    target, 
+                    inventories_from[i], 
+                    assets[i], 
+                    deduct);
+        }
+
+        // Transfer assets to attacker
         IInventories(intentoriesContract)
             .__transfer(
                 target, 
@@ -415,10 +470,110 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, IPirateMe
         // Mark confrontation as ended
         confrontation.expiration = 0;
 
+        // Unfreeze players
+        IPlayerFreezeControl(mapsContract).__unfreeze(target);
+        IPlayerFreezeControl(mapsContract).__unfreeze(msg.sender);
+
         // Emit
+        emit NegotiationSuccess(msg.sender, target, confrontation.location);
         emit PirateConfrontationEnd(msg.sender, target, confrontation.location);
     }
 
 
-    
+    /// @dev The escape calculation is based on a combination of randomness, ship speed differences, and 
+    /// player luck differences. A base score is generated using a pseudo-random seed. To this base score, 
+    /// we add the scaled difference in ship speeds and player luck values. 
+    ///
+    /// The final score determines the outcome of the escape attempt:
+    /// - If the score is greater than or equal to the BASE_ESCAPE_THRESHOLD, the escape is successful
+    /// - Otherwise, the escape fails
+    ///
+    /// Factors like ship speed and player luck play a crucial role in influencing the escape outcome, ensuring that 
+    /// players with faster ships and higher luck values have a better chance of escaping
+    function attemptEscape() 
+        public virtual override 
+    {
+        Confrontation storage confrontation = confrontations[msg.sender];
+        address attacker = confrontation.attacker;
+
+        // Ensure that the confrontation has not ended
+        if (confrontation.expiration < block.timestamp) 
+        {
+            revert ConfrontationNotFound(attacker, msg.sender);
+        }
+
+        // Ensure that the response time has not expired
+        if (block.timestamp > confrontation.deadline) 
+        {
+            revert ResponseTimeExpired(msg.sender, confrontation.deadline);
+        }
+
+        // Ensure that the escape attempt has not been attempted before
+        if (confrontation.escapeAttempted)
+        {
+            revert TargetAlreadyAttemptedEscape(msg.sender);
+        }
+
+        // Attacker ship data
+        uint attackerShipTokenId = IPlayerRegister(playerRegisterContract)
+            .getEquiptedShip(attacker);
+        (
+            uint16 attackerShipSpeed,
+        ) = IShips(shipContract).getShipTravelData(attackerShipTokenId);
+
+        // Target ship data
+        uint targetShipTokenId = IPlayerRegister(playerRegisterContract)
+            .getEquiptedShip(msg.sender);
+        (
+            uint16 targetShipSpeed,
+            uint targetShipFuelConsumption
+        ) = IShips(shipContract).getShipTravelData(targetShipTokenId);
+
+        // Player luck data
+        uint attackerLuck = IPlayerRegister(playerRegisterContract).getLuck(attacker);
+        uint targetLuck = IPlayerRegister(playerRegisterContract).getLuck(msg.sender);
+
+         // Handle fuel consumption
+        IInventories(intentoriesContract)
+            .__deductFungibleToken(
+                msg.sender, 
+                Inventory.Ship, 
+                fuelContact, 
+                targetShipFuelConsumption);
+
+        // Get base score
+        uint score = _getRandomNumberAt(_generateRandomSeed(), 0);
+
+        // Take ship speed into account
+        score += (targetShipSpeed - attackerShipSpeed) * SPEED_SCALING_FACTOR;
+
+        // Take luck into account
+        score += (targetLuck - attackerLuck) * LUCK_SCALING_FACTOR;
+
+        // Successful escape
+        if(score >= BASE_ESCAPE_THRESHOLD)
+        {
+            // Mark confrontation as ended
+            confrontation.expiration = 0;
+
+            // Unfreeze players
+            IPlayerFreezeControl(mapsContract).__unfreeze(msg.sender);
+            IPlayerFreezeControl(mapsContract).__unfreeze(attacker);
+            IPlayerFreezeControl(intentoriesContract).__unfreeze(msg.sender);
+
+            // Emit
+            emit EscapeSuccess(attacker, msg.sender, confrontation.location);
+            emit PirateConfrontationEnd(attacker, msg.sender, confrontation.location);
+        }
+
+        // Failed escape
+        else 
+        {
+            // Mark escape attempt
+            confrontation.escapeAttempted = true;
+
+            // Emit
+            emit EscapeFail(attacker, msg.sender, confrontation.location);
+        }
+    }
 }

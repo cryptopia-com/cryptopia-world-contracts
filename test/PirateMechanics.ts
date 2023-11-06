@@ -20,12 +20,17 @@ import {
     CryptopiaInventories,
     CryptopiaPirateMechanics,
 } from "../typechain-types";
+import { inventories } from "../typechain-types/contracts/source/game";
 
 /**
  * Pirate Mechanics tests
  * 
  * Test cases:
  * - Intercept
+ * - Negotiate
+ * - Escape
+ * - Quick battle
+ * - Turn based battle
  */
 describe("PirateMechanics Contract", function () {
 
@@ -1399,9 +1404,12 @@ describe("PirateMechanics Contract", function () {
             // Assert
             if (REVERT_MODE)
             {
+                const expectedDeductedAmount = BigInt(proposal.amounts[0]) 
+                    * BigInt(PirateMechanicsConfig.BASE_NEGOCIATION_DEDUCTION_FACTOR) 
+                    / BigInt(PirateMechanicsConfig.BASE_NEGOCIATION_DEDUCTION_FACTOR_PRECISION);
                 await expect(operation).to.be
                     .revertedWithCustomError(inventoriesInstance, "InventoryInsufficientBalance")
-                    .withArgs(targetAccountAddress, proposal.inventories[0], ironAsset.contractAddress, proposal.amounts[0]);
+                    .withArgs(targetAccountAddress, proposal.inventories[0], ironAsset.contractAddress, expectedDeductedAmount);
             }
             else
             {
@@ -1506,6 +1514,31 @@ describe("PirateMechanics Contract", function () {
                 .withArgs(pirateAccountAddress, targetAccountAddress, 0);
         });
 
+        it("Should transfer the correct amount of assets from the target to the pirate taking charisma into account", async function () {
+
+            // Setup 
+            const expectedIronBalance = "1.6".toWei(); // Deduct 20% for charisma
+            const expectedGoldBalance = "0.8".toWei(); // Deduct 20% for charisma
+
+            const ironAsset = getAssetByResource(Resource.Iron);
+            const goldAsset = getAssetByResource(Resource.Gold);
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+
+            // Act
+            const pirateEquipedShip = await playerRegisterInstance
+                .getEquiptedShip(pirateAccountAddress);
+
+            const actualPirateIronBalance = await inventoriesInstance
+                .getShipBalanceFungible(pirateEquipedShip, ironAsset.contractAddress);
+
+            const actualPirateGoldBalance = await inventoriesInstance
+                .getShipBalanceFungible(pirateEquipedShip, goldAsset.contractAddress);
+
+            // Assert
+            expect(actualPirateIronBalance).to.equal(expectedIronBalance);
+            expect(actualPirateGoldBalance).to.equal(expectedGoldBalance);
+        });
+
         it("Should unfreeze the target's inventories after accepting the offer", async function () {
 
             // Setup
@@ -1513,7 +1546,7 @@ describe("PirateMechanics Contract", function () {
 
             // Act
             const isFrozen = await inventoriesInstance
-                .isFrozen(targetAccountInstance);
+                .isFrozen(targetAccountAddress);
 
             // Assert
             expect(isFrozen).to.be.false;

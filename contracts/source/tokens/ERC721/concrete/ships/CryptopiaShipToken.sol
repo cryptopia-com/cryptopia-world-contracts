@@ -519,6 +519,23 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     }
 
 
+    /// @dev Retrieve the travel data of a ship instance (after modules)
+    /// @param tokenId The id of the ship to retreive the travel data for
+    /// @return speed Ship speed (after modules)
+    /// @return fuelConsumption Ship fuel consumption (after modules)
+    function getShipTravelData(uint tokenId)
+        public virtual override view
+        returns (
+            uint16 speed,
+            uint fuelConsumption
+        )
+    {
+        Ship storage ship = ships[shipInstances[tokenId].name];
+        speed = ship.base_speed + shipInstances[tokenId].speed;
+        fuelConsumption = ship.base_fuelConsumption + shipInstances[tokenId].fuelConsumption;
+    }
+
+
     /**
      * System functions
      */

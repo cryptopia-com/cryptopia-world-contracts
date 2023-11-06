@@ -24,6 +24,24 @@ export const MOVEMENT_COST_WATER_EMBARK_DISEMBARK = 25;
  * Pirate mechanics settings
  */
 export const PirateMechanicsConfig = {
+
+    // Base values
+    MAX_CHARISMA : 100, // Denominator
+    
+    // Settings
     MAX_RESPONSE_TIME : 600, // 10 minutes
-    BASE_FUEL_COST : BigInt("1000000000000000000")
+
+    // Scaling factors
+    SPEED_SCALING_FACTOR : 50,
+    LUCK_SCALING_FACTOR : 10,
+
+    // Other factors
+    BASE_NEGOCIATION_DEDUCTION_FACTOR : 20, // 20%
+    BASE_NEGOCIATION_DEDUCTION_FACTOR_PRECISION : 100, // Denominator
+
+    // Randomness
+    BASE_ESCAPE_THRESHOLD : 5_000, // 50%
+
+    // Costs
+    BASE_FUEL_COST : BigInt("1000000000000000000"),
 }

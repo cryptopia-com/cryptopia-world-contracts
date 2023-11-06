@@ -51,14 +51,24 @@ interface IPirateMechanics {
         external;
 
 
+    /// @dev The escape calculation is based on a combination of randomness, ship speed differences, and 
+    /// player luck differences. A base score is generated using a pseudo-random seed. To this base score, 
+    /// we add the scaled difference in ship speeds and player luck values. 
+    ///
+    /// The final score determines the outcome of the escape attempt:
+    /// - If the score is greater than or equal to the BASE_ESCAPE_THRESHOLD, the escape is successful
+    /// - Otherwise, the escape fails
+    ///
+    /// Factors like ship speed and player luck play a crucial role in influencing the escape outcome, ensuring that 
+    /// players with faster ships and higher luck values have a better chance of escaping
     function attemptEscape() 
         external;
 
 
-    function startQuickBattle() 
-        external;
+    // function startQuickBattle() 
+    //     external;
 
 
-    function startTurnBasedBattle() 
-        external;
+    // function startTurnBasedBattle() 
+    //     external;
 }

@@ -361,6 +361,28 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     }
 
 
+    /// @dev Returns `player` luck
+    /// @param player CryptopiaAccount address (registered as a player)
+    /// @return luck STATS_BASE_LUCK + (0 - MAX_LEVEL player choice when leveling up)
+    function getLuck(address player) 
+        public virtual override view 
+        returns (uint24)
+    {
+        return playerDatas[player].luck;
+    } 
+
+
+    /// @dev Returns `player` charisma
+    /// @param player CryptopiaAccount address (registered as a player)
+    /// @return charisma STATS_CHARISMA_BASE + (0 - MAX_LEVEL player choice when leveling up)
+    function getCharisma(address player) 
+        public virtual override view 
+        returns (uint24)
+    {
+        return playerDatas[player].charisma;
+    }
+
+
     /// @dev Returns the tokenId from the ship that's equipted by `player`
     /// @param player The player to retrieve the ship for
     /// @return uint the tokenId of the equipted ship

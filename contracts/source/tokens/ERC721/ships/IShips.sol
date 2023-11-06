@@ -181,6 +181,18 @@ interface IShips {
         external view 
         returns (uint fuelConsumption);
 
+
+    /// @dev Retrieve the travel data of a ship instance (after modules)
+    /// @param tokenId The id of the ship to retreive the travel data for
+    /// @return speed Ship speed (after modules)
+    /// @return fuelConsumption Ship fuel consumption (after modules)
+    function getShipTravelData(uint tokenId)
+        external view 
+        returns (
+            uint16 speed,
+            uint fuelConsumption
+        );
+
     
     /**
      * System functions

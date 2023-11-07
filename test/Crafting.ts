@@ -680,7 +680,7 @@ describe("Crafting Contract", function () {
 
             const signer = await ethers.provider.getSigner(account1);
             const callData = craftingInstance.interface
-                .encodeFunctionData("learn", [registeredAccountAddress, craftableTokenAddress, recipeName]);
+                .encodeFunctionData("__learn", [registeredAccountAddress, craftableTokenAddress, recipeName]);
 
             // Act
             const operation = registeredAccountInstance
@@ -712,7 +712,7 @@ describe("Crafting Contract", function () {
             const signer = await ethers.provider.getSigner(system);
             const operation = craftingInstance
                 .connect(signer)
-                .learn(registeredAccountAddress, craftableTokenAddress, recipeName)
+                .__learn(registeredAccountAddress, craftableTokenAddress, recipeName)
 
             // Assert
             await expect(operation).to

@@ -5,7 +5,7 @@ import { BytesLike } from "ethers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { getParamFromEvent} from '../scripts/helpers/events';
-import { REVERT_MODE, MOVEMENT_TURN_DURATION } from "./settings/config";
+import { REVERT_MODE, MapsSettings } from "./settings/config";
 import { DEFAULT_ADMIN_ROLE, SYSTEM_ROLE } from "./settings/roles";   
 import { ZERO_ADDRESS } from "./settings/constants";
 import { HexDirection, Resource, Terrain, Biome, RoutePosition } from '../scripts/types/enums';
@@ -711,7 +711,7 @@ describe("Maps Contract", function () {
                 .submitTransaction(await mapInstance.getAddress(), 0, calldata);
 
             // Assert
-            const expectedArrivalTime = await time.latest() + (expectedTurns * MOVEMENT_TURN_DURATION);
+            const expectedArrivalTime = await time.latest() + (expectedTurns * MapsSettings.MOVEMENT_TURN_DURATION);
             await time.increaseTo(expectedArrivalTime);
 
             await expect(receipt).to
@@ -734,7 +734,7 @@ describe("Maps Contract", function () {
             ];
 
             const expectedRoute: UnpackedRoute = {
-                durationPerTurn: MOVEMENT_TURN_DURATION,
+                durationPerTurn: MapsSettings.MOVEMENT_TURN_DURATION,
                 totalTurns: 7,
                 totalTilesInPath: 8,
                 totalTilesPacked: 3,
@@ -757,7 +757,7 @@ describe("Maps Contract", function () {
             const route = getParamFromEvent(mapInstance, receipt, "route", "PlayerMove");
             const arrival = getParamFromEvent(mapInstance, receipt, "arrival", "PlayerMove");
             
-            const expectedArrivalTime = await time.latest() + (expectedRoute.totalTurns * MOVEMENT_TURN_DURATION);
+            const expectedArrivalTime = await time.latest() + (expectedRoute.totalTurns * MapsSettings.MOVEMENT_TURN_DURATION);
             await time.increaseTo(arrival);
 
             // Assert
@@ -1378,7 +1378,7 @@ describe("Maps Contract", function () {
         it ("Should advance time to halfway through the route", async function () {
 
             // Setup
-            const timeToHalfway = arrival - BigInt(turns * MOVEMENT_TURN_DURATION / 2);
+            const timeToHalfway = arrival - BigInt(turns * MapsSettings.MOVEMENT_TURN_DURATION / 2);
 
             // Act
             await time.increaseTo(timeToHalfway);
@@ -2143,7 +2143,7 @@ describe("Maps Contract", function () {
         it ("Should advance time to after the end of the route", async function () {
 
             // Setup
-            const timeAfterArrival = arrival + BigInt(MOVEMENT_TURN_DURATION);
+            const timeAfterArrival = arrival + BigInt(MapsSettings.MOVEMENT_TURN_DURATION);
 
             // Act
             await time.increaseTo(timeAfterArrival);

@@ -60,7 +60,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
     uint16 constant private LUCK_SCALING_FACTOR = 10;
 
     // Other factors
-    uint constant private BASE_NEGOCIATION_DEDUCTION_FACTOR = 20; // 20%
+    uint constant private BASE_NEGOCIATION_DEDUCTION_FACTOR = 50; // 50%
     uint constant private BASE_NEGOCIATION_DEDUCTION_FACTOR_PRECISION = 100; // Denominator
 
     // Randomness
@@ -427,38 +427,41 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
             revert InvalidSignatureSet(target);
         }
 
-        // Unfreeze inventory
-        IPlayerFreezeControl(intentoriesContract).__unfreeze(target);
-
         // Take charisma into account
         uint charisma = IPlayerRegister(playerRegisterContract)
             .getCharisma(target);
 
-        for (uint i = 0; i < assets.length; i++) 
+        if (charisma < MAX_CHARISMA)
         {
-            if (0 != tokenIds[i]) 
+            for (uint i = 0; i < assets.length; i++) 
             {
-                continue;
+                if (0 != tokenIds[i]) 
+                {
+                    continue;
+                }
+
+                // Deduct from offer based on charisma
+                uint deduct = amounts[i] 
+                    * BASE_NEGOCIATION_DEDUCTION_FACTOR 
+                    * (MAX_CHARISMA + 1 - charisma) 
+                    / (MAX_CHARISMA * BASE_NEGOCIATION_DEDUCTION_FACTOR_PRECISION);
+
+                // Deduct from offer
+                amounts[i] -= deduct;
+
+                // Send to treasury
+                IInventories(intentoriesContract)
+                    .__deductFungibleTokenUnchecked(
+                        target, 
+                        inventories_from[i], 
+                        assets[i], 
+                        deduct);
             }
-
-            // Deduct from offer based on charisma
-            uint deduct = amounts[i] 
-                * BASE_NEGOCIATION_DEDUCTION_FACTOR 
-                * (MAX_CHARISMA + 1 - charisma) 
-                / (MAX_CHARISMA * BASE_NEGOCIATION_DEDUCTION_FACTOR_PRECISION);
-            amounts[i] -= deduct;
-
-            IInventories(intentoriesContract)
-                .__deductFungibleToken(
-                    target, 
-                    inventories_from[i], 
-                    assets[i], 
-                    deduct);
         }
 
         // Transfer assets to attacker
         IInventories(intentoriesContract)
-            .__transfer(
+            .__transferUnchecked(
                 target, 
                 msg.sender, 
                 inventories_from, 
@@ -473,6 +476,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
         // Unfreeze players
         IPlayerFreezeControl(mapsContract).__unfreeze(target);
         IPlayerFreezeControl(mapsContract).__unfreeze(msg.sender);
+        IPlayerFreezeControl(intentoriesContract).__unfreeze(target);
 
         // Emit
         emit NegotiationSuccess(msg.sender, target, confrontation.location);
@@ -499,7 +503,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
         // Ensure that the confrontation has not ended
         if (confrontation.expiration < block.timestamp) 
         {
-            revert ConfrontationNotFound(attacker, msg.sender);
+            revert ConfrontationNotFound(address(0), msg.sender);
         }
 
         // Ensure that the response time has not expired
@@ -533,9 +537,9 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
         uint attackerLuck = IPlayerRegister(playerRegisterContract).getLuck(attacker);
         uint targetLuck = IPlayerRegister(playerRegisterContract).getLuck(msg.sender);
 
-         // Handle fuel consumption
+        // Handle fuel consumption
         IInventories(intentoriesContract)
-            .__deductFungibleToken(
+            .__deductFungibleTokenUnchecked(
                 msg.sender, 
                 Inventory.Ship, 
                 fuelContact, 

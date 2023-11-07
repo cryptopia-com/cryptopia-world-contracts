@@ -222,6 +222,7 @@ interface IInventories {
     /// - Assumes inventory exists
     /// - Assumes asset exists
     /// - Assumes amount of asset is allocated to player
+    /// - Checks if the players inventory is frozen
     /// @param player The inventory owner to deduct the asset from
     /// @param inventory The inventory type to deduct the asset from {BackPack | Ship}
     /// @param asset The asset contract address 
@@ -229,11 +230,26 @@ interface IInventories {
     function __deductFungibleToken(address player, Inventory inventory, address asset, uint amount)
         external;
 
+    
+    /// @dev Deducts `amount` of `asset` from the `inventory` of `player` 
+    /// SYSTEM caller is trusted so checks can be omitted
+    /// - Assumes inventory exists
+    /// - Assumes asset exists
+    /// - Assumes amount of asset is allocated to player
+    /// @param player The inventory owner to deduct the asset from
+    /// @param inventory The inventory type to deduct the asset from {BackPack | Ship}
+    /// @param asset The asset contract address 
+    /// @param amount The amount of asset to deduct
+    function __deductFungibleTokenUnchecked(address player, Inventory inventory, address asset, uint amount)
+        external;
+
 
     /// @dev Deducts fungible and non-fungible tokens in a single transaction
     /// SYSTEM caller is trusted so checks can be omitted
     /// - Assumes inventory exists
     /// - Assumes asset exists
+    /// - Assumes amount of asset is allocated to player
+    /// - Checks if the players inventory is frozen
     /// @param player The inventory owner to deduct the assets from
     /// @param inventory The inventory type to deduct the assets from {BackPack | Ship}
     /// @param asset The asset contract addresses 
@@ -242,10 +258,25 @@ interface IInventories {
         external;
 
 
+    /// @dev Deducts fungible and non-fungible tokens in a single transaction
+    /// SYSTEM caller is trusted so checks can be omitted
+    /// - Assumes inventory exists
+    /// - Assumes asset exists
+    /// - Assumes amount of asset is allocated to player
+    /// @param player The inventory owner to deduct the assets from
+    /// @param inventory The inventory type to deduct the assets from {BackPack | Ship}
+    /// @param asset The asset contract addresses 
+    /// @param amount The amounts of assets to deduct
+    function __deductUnchecked(address player, Inventory inventory, address[] memory asset, uint[] memory amount)
+        external;
+
+
     /// @dev Transfers `asset` from `player_from` to `player_to`
     /// SYSTEM caller is trusted so checks can be omitted
     /// - Assumes inventory exists
     /// - Assumes asset exists
+    /// - Assumes amount of asset is allocated to player
+    /// - Checks if the players inventories are frozen
     /// @param player_from The sending player
     /// @param player_to The receiving player
     /// @param inventory_from Origin {Inventories}
@@ -254,5 +285,21 @@ interface IInventories {
     /// @param amount The amount of fungible tokens to transfer (zero indicates non-fungible)
     /// @param tokenId The token ID to transfer (zero indicates fungible)
     function __transfer(address player_from, address player_to, Inventory[] memory inventory_from, Inventory[] memory inventory_to, address[] memory asset, uint[] memory amount, uint[] memory tokenId)
+        external;
+
+
+    /// @dev Transfers `asset` from `player_from` to `player_to`
+    /// SYSTEM caller is trusted so checks can be omitted
+    /// - Assumes inventory exists
+    /// - Assumes asset exists
+    /// - Assumes amount of asset is allocated to player
+    /// @param player_from The sending player
+    /// @param player_to The receiving player
+    /// @param inventory_from Origin {Inventories}
+    /// @param inventory_to Destination {Inventories} 
+    /// @param asset The address of the ERC20 or ERC721 contract
+    /// @param amount The amount of fungible tokens to transfer (zero indicates non-fungible)
+    /// @param tokenId The token ID to transfer (zero indicates fungible)
+    function __transferUnchecked(address player_from, address player_to, Inventory[] memory inventory_from, Inventory[] memory inventory_to, address[] memory asset, uint[] memory amount, uint[] memory tokenId)
         external;
 }

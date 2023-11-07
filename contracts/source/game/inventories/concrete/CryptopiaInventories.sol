@@ -669,8 +669,10 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// SYSTEM caller is trusted so checks can be omitted
     /// - Assumes inventory exists
     /// - Assumes asset exists
+    /// - Assumes amount of asset is allocated to player
+    /// - Checks if the players inventory is frozen
     /// @param player The inventory owner to deduct the asset from
-    /// @param inventory The inventory type to deduct the asset from {Backpack | Ship}
+    /// @param inventory The inventory type to deduct the asset from {BackPack | Ship}
     /// @param asset The asset contract address 
     /// @param amount The amount of asset to deduct
     function __deductFungibleToken(address player, Inventory inventory, address asset, uint amount)
@@ -682,10 +684,29 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     }
 
 
+    /// @dev Deducts `amount` of `asset` from the `inventory` of `player` 
+    /// SYSTEM caller is trusted so checks can be omitted
+    /// - Assumes inventory exists
+    /// - Assumes asset exists
+    /// - Assumes amount of asset is allocated to player
+    /// @param player The inventory owner to deduct the asset from
+    /// @param inventory The inventory type to deduct the asset from {BackPack | Ship}
+    /// @param asset The asset contract address 
+    /// @param amount The amount of asset to deduct
+    function __deductFungibleTokenUnchecked(address player, Inventory inventory, address asset, uint amount)
+        public virtual override 
+        onlyRole(SYSTEM_ROLE)
+    {
+        _deductFungibleToken(player, inventory, asset, amount);
+    }
+
+
     /// @dev Deducts fungible and non-fungible tokens in a single transaction
     /// SYSTEM caller is trusted so checks can be omitted
     /// - Assumes inventory exists
     /// - Assumes asset exists
+    /// - Assumes amount of asset is allocated to player
+    /// - Checks if the players inventory is frozen
     /// @param player The inventory owner to deduct the assets from
     /// @param inventory The inventory type to deduct the assets from {BackPack | Ship}
     /// @param asset The asset contract addresses 
@@ -702,10 +723,32 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     }
 
 
-    /// @dev Moves `asset` from `player_from` to `player_to`
+    /// @dev Deducts fungible and non-fungible tokens in a single transaction
     /// SYSTEM caller is trusted so checks can be omitted
     /// - Assumes inventory exists
     /// - Assumes asset exists
+    /// - Assumes amount of asset is allocated to player
+    /// @param player The inventory owner to deduct the assets from
+    /// @param inventory The inventory type to deduct the assets from {BackPack | Ship}
+    /// @param asset The asset contract addresses 
+    /// @param amount The amounts of assets to deduct
+    function __deductUnchecked(address player, Inventory inventory, address[] memory asset, uint[] memory amount)
+        public virtual override 
+        onlyRole(SYSTEM_ROLE)
+    {
+        for (uint i = 0; i < asset.length; i++)
+        {
+            _deductFungibleToken(player, inventory, asset[i], amount[i]);
+        }
+    }
+
+
+    /// @dev Transfers `asset` from `player_from` to `player_to`
+    /// SYSTEM caller is trusted so checks can be omitted
+    /// - Assumes inventory exists
+    /// - Assumes asset exists
+    /// - Assumes amount of asset is allocated to player
+    /// - Checks if the players inventories are frozen
     /// @param player_from The sending player
     /// @param player_to The receiving player
     /// @param inventory_from Origin {Inventories}
@@ -716,6 +759,46 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     function __transfer(address player_from, address player_to, Inventory[] memory inventory_from, Inventory[] memory inventory_to, address[] memory asset, uint[] memory amount, uint[] memory tokenId)
         public virtual override 
         notFrozen(player_from)
+        notFrozen(player_to)
+        onlyRole(SYSTEM_ROLE)
+    {
+        for (uint i = 0; i < asset.length; i++)
+        {
+            if (0 != tokenId[i])
+            {
+                // Non-Fungible
+                _transferNonFungible(
+                    player_from, player_to, inventory_from[i], inventory_to[i], asset[i], tokenId[i]);
+            }
+            else if (0 != amount[i])
+            {
+                // Fungible
+                _transferFungible(
+                    player_from, player_to, inventory_from[i], inventory_to[i], asset[i], amount[i]);
+            }
+            else 
+            {
+                // Amount and token id zero
+                revert ArgumentInvalid();
+            }
+        }
+    }
+
+
+    /// @dev Transfers `asset` from `player_from` to `player_to`
+    /// SYSTEM caller is trusted so checks can be omitted
+    /// - Assumes inventory exists
+    /// - Assumes asset exists
+    /// - Assumes amount of asset is allocated to player
+    /// @param player_from The sending player
+    /// @param player_to The receiving player
+    /// @param inventory_from Origin {Inventories}
+    /// @param inventory_to Destination {Inventories} 
+    /// @param asset The address of the ERC20 or ERC721 contract
+    /// @param amount The amount of fungible tokens to transfer (zero indicates non-fungible)
+    /// @param tokenId The token ID to transfer (zero indicates fungible)
+    function __transferUnchecked(address player_from, address player_to, Inventory[] memory inventory_from, Inventory[] memory inventory_to, address[] memory asset, uint[] memory amount, uint[] memory tokenId)
+        public virtual override 
         onlyRole(SYSTEM_ROLE)
     {
         for (uint i = 0; i < asset.length; i++)

@@ -350,6 +350,17 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     }
 
 
+    /// @dev Returns true if `player` is a pirate
+    /// @param player CryptopiaAccount address (registered as a player)
+    /// @return true if player is a pirate
+    function isPirate(address player) 
+        public virtual override view 
+        returns (bool)
+    {
+        return _isPirate(player);
+    }
+
+
     /// @dev Returns `player` level
     /// @param player CryptopiaAccount address (registered as a player)
     /// @return level Current level (zero signals not initialized)
@@ -562,6 +573,19 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     }
 
 
+    /// @dev Award max negative karma to the player and turn pirate instantly
+    /// @param player The player to turn pirate
+    function __turnPirate(address player)
+        public virtual override 
+       onlyRole(SYSTEM_ROLE)
+    {
+        if (!_isPirate(player))
+        {
+            _turnPirate(player);
+        }
+    }
+
+
     /**
      * Internal functions
      */
@@ -618,6 +642,17 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
         // Emit
         emit RegisterPlayer(tx.origin, account, username, faction, sex);
         emit PlayerEquiptShip(account, playerData.ship);
+    }
+
+
+    /// @dev Returns true if `player` is a pirate
+    /// @param player CryptopiaAccount address (registered as a player)
+    /// @return true if player is a pirate
+    function _isPirate(address player) 
+        internal view 
+        returns (bool)
+    {
+        return playerDatas[player].subFaction == SubFaction.Pirate;
     }
 
 

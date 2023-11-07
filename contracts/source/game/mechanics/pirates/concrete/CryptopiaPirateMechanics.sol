@@ -149,6 +149,9 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
     /// @dev Revert if the target is idle (when not traveling)
     error TargetIsIdle(address target);
 
+    /// @dev Revert if the target is a pirate
+    error TargetIsPirate(address target);
+
     /// @dev Revert if the target is not reachable from the attacker's location
     error TargetNotReachable(address attacker, address target);
 
@@ -328,6 +331,12 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
             revert TargetAlreadyIntercepted(target);
         }
 
+        // Ensure that the target is not a pirate
+        if (IPlayerRegister(playerRegisterContract).isPirate(target))
+        {
+            revert TargetIsPirate(target);
+        }
+
         // Ensure that the target is reachable from the attacker's location
         if (attackerTileIndex != targetTileIndex)
         {
@@ -359,6 +368,13 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
                 }
             }
         } 
+
+
+        /**
+         * Ensure attacker turns pirate
+         */ 
+        IPlayerRegister(playerRegisterContract)
+            .__turnPirate(msg.sender);
 
 
         /**
@@ -580,4 +596,11 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
             emit EscapeFail(attacker, msg.sender, confrontation.location);
         }
     }
+
+
+    // function startQuickBattle() 
+    //    public override 
+    // {
+
+    // }
 }

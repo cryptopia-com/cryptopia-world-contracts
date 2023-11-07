@@ -340,6 +340,7 @@ describe("PirateMechanics Contract", function () {
         pirateMechanicsInstance = await ethers.getContractAt("CryptopiaPirateMechanics", pirateMechanicsAddress);
 
         // Grant roles
+        await playerRegisterInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
         await inventoriesInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
         await mapInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
 
@@ -1067,6 +1068,19 @@ describe("PirateMechanics Contract", function () {
             await time.increaseTo(revertArrival);
         });
 
+        it("Should not mark the attakcer as pirate before intercepting a target", async function () {
+
+            // Setup
+            const anotherPirateAccountAddress = await anotherPirateAccountInstance.getAddress();
+
+            // Act
+            const isPirate = await playerRegisterInstance
+                .isPirate(anotherPirateAccountAddress);
+
+            // Assert
+            expect(isPirate).to.be.false;
+        });
+
         it ("Should allow a pirate to intercept a target statinary from an adjacent tile", async function () {
 
             // Setup
@@ -1159,6 +1173,19 @@ describe("PirateMechanics Contract", function () {
 
             // Assert 
             expect(mapPlayerData.frozenUntil[0]).to.equal(confrontationData.expiration);
+        });
+
+        it("Should mark the attakcer as pirate after intercepting a target", async function () {
+
+            // Setup
+            const anotherPirateAccountAddress = await anotherPirateAccountInstance.getAddress();
+
+            // Act
+            const isPirate = await playerRegisterInstance
+                .isPirate(anotherPirateAccountAddress);
+
+            // Assert
+            expect(isPirate).to.be.true;
         });
     });
 

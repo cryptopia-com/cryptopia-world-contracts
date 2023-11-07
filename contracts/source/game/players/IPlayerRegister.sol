@@ -104,6 +104,14 @@ interface IPlayerRegister {
         );
 
     
+    /// @dev Returns true if `player` is a pirate
+    /// @param player CryptopiaAccount address (registered as a player)
+    /// @return true if player is a pirate
+    function isPirate(address player) 
+        external view 
+        returns (bool);
+
+    
     /// @dev Returns `player` level
     /// @param player CryptopiaAccount address (registered as a player)
     /// @return level Current level (zero signals not initialized)
@@ -156,5 +164,11 @@ interface IPlayerRegister {
     /// @param xp The amount of xp that's awarded
     /// @param karma The amount of karma
     function __award(address player, uint24 xp, int16 karma)
+        external;
+
+    
+    /// @dev Award max negative karma to the player and turn pirate instantly
+    /// @param player The player to turn pirate
+    function __turnPirate(address player)
         external;
 }

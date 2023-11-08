@@ -65,8 +65,8 @@ interface IPirateMechanics {
         external;
 
 
-    // function startQuickBattle() 
-    //    external;
+    function startQuickBattle() 
+       external;
 
 
     // function startTurnBasedBattle() 

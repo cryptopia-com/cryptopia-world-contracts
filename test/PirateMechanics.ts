@@ -1187,6 +1187,55 @@ describe("PirateMechanics Contract", function () {
             // Assert
             expect(isPirate).to.be.true;
         });
+
+        it ("Should not allow a pirate to intercept another pirate", async function () {
+
+            // Setup
+            const path = [
+                0,  // Turn 1 (packed)
+                5   // Turn 1 
+            ];
+
+            // Setup 
+            const mapContractAddress = await mapInstance.getAddress();
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const anotherPirateAccountSigner = await ethers.provider.getSigner(account3);
+            const anotherPirateAccountAddress = await anotherPirateAccountInstance.getAddress();
+            const anotherTargetAccountSigner = await ethers.provider.getSigner(account4);
+            const anotherTargetAccountAddress = await anotherTargetAccountInstance.getAddress();
+            
+            // End previous confrontation
+            const confrontation = await pirateMechanicsInstance
+                .getConfrontation(anotherTargetAccountAddress);
+
+            await time.increaseTo(confrontation.expiration);
+
+            // Ensure not idle
+            const playerMoveCalldata = mapInstance.interface
+                .encodeFunctionData("playerMove", [path]);
+
+            const playerMovetransaction = await anotherPirateAccountInstance
+                .connect(anotherPirateAccountSigner)
+                .submitTransaction(mapContractAddress, 0, playerMoveCalldata);
+            const playerMoveReceipt = await playerMovetransaction.wait();
+
+            const arrival = getParamFromEvent(
+                mapInstance, playerMoveReceipt, "arrival", "PlayerMove");
+            await time.increaseTo(arrival);
+
+            // Act
+            const calldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("intercept", [anotherPirateAccountAddress, 0]);
+
+            const operation = anotherTargetAccountInstance
+                .connect(anotherTargetAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, calldata);
+
+            // Assert
+            await expect(operation).to.be
+                .revertedWithCustomError(pirateMechanicsInstance, "TargetIsPirate")
+                .withArgs(anotherPirateAccountAddress);
+        });
     });
 
     /**

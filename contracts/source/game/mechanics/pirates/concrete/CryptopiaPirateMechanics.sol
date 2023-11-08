@@ -353,7 +353,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
 
                 // Handle fuel consumption
                 IInventories(intentoriesContract)
-                    .__deductFungibleToken(
+                    .__deductFungibleTokenUnchecked(
                         msg.sender, 
                         Inventory.Ship, 
                         fuelContact, 
@@ -598,9 +598,9 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
     }
 
 
-    // function startQuickBattle() 
-    //    public override 
-    // {
-
-    // }
+    function startQuickBattle() 
+       public override 
+    {
+        
+    }
 }

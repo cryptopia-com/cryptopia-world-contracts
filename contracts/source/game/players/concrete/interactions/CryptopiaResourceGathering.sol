@@ -175,16 +175,10 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
         (
             uint16 tileIndex, 
             bool canInteract
-        ) = IMaps(mapContract).getPlayerData(account);
+        ) = IMaps(mapContract).getPlayerLocationData(account);
 
-        (,,, 
-            uint8 elevation, 
-            uint8 waterLevel, 
-            uint8 vegitationLevel, 
-            uint8 rockLevel, 
-            uint8 wildlifeLevel,,, 
-            bool hasLake
-        ) = IMaps(mapContract).getTile(tileIndex);
+        Tile memory tile = IMaps(mapContract)
+            .getTile(tileIndex);
 
         if (!canInteract)
         {
@@ -195,13 +189,13 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
         if (resource == ResourceType.Fish)
         {
             // On the sea
-            if (waterLevel > elevation)
+            if (tile.waterLevel > tile.elevation)
             {
-                return (waterLevel - elevation) * RESOURCE_PRECISION;
+                return (tile.waterLevel - tile.elevation) * RESOURCE_PRECISION;
             }
 
             // On land (has lake)
-            else if (hasLake)
+            else if (tile.hasLake)
             {
                 return RESOURCE_PRECISION;
             }
@@ -213,40 +207,40 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
         // Meat
         if (resource == ResourceType.Meat)
         {
-            if (waterLevel > elevation)
+            if (tile.waterLevel > tile.elevation)
             {
                 return 0;
             }
 
-            return wildlifeLevel * RESOURCE_PRECISION;
+            return tile.wildlifeLevel * RESOURCE_PRECISION;
         }
 
         // Fruit || Wood
         if (resource == ResourceType.Fruit || resource == ResourceType.Wood)
         {
-            if (waterLevel > elevation)
+            if (tile.waterLevel > tile.elevation)
             {
                 return 0;
             }
 
-            return vegitationLevel * RESOURCE_PRECISION;
+            return tile.vegitationLevel * RESOURCE_PRECISION;
         }
         
         // Stone
         if (resource == ResourceType.Stone)
         {
-            if (waterLevel > elevation)
+            if (tile.waterLevel > tile.elevation)
             {
                 return 0;
             }
 
-            return rockLevel * RESOURCE_PRECISION;
+            return tile.rockLevel * RESOURCE_PRECISION;
         }
 
         // Sand
         if (resource == ResourceType.Sand)
         {
-            if (waterLevel > elevation)
+            if (tile.waterLevel > tile.elevation)
             {
                 return 0;
             }

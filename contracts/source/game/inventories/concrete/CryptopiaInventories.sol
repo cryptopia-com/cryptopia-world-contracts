@@ -493,6 +493,19 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         playerData[account].frozenUntil = until;
     }
 
+
+    /// @dev Freezes `account1` and `account2` `until`
+    /// @param account1 The first player to freeze
+    /// @param account2 The second player to freeze
+    /// @param until The datetime on which the lock expires
+    function __freeze(address account1, address account2, uint64 until) 
+        public override virtual 
+        onlyRole(SYSTEM_ROLE)
+    {
+        playerData[account1].frozenUntil = until;
+        playerData[account2].frozenUntil = until;
+    }
+
     
     /// @dev Unfreeze `account`
     /// @param account The player to unfreeze
@@ -501,6 +514,18 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         onlyRole(SYSTEM_ROLE)
     {
         playerData[account].frozenUntil = 0;
+    }
+
+
+    /// @dev Unfreeze `account1` and `account2`
+    /// @param account1 The first player to unfreeze
+    /// @param account2 The second player to unfreeze
+    function __unfreeze(address account1, address account2)
+        public override virtual 
+        onlyRole(SYSTEM_ROLE)
+    {
+        playerData[account1].frozenUntil = 0;
+        playerData[account2].frozenUntil = 0;
     }
 
 

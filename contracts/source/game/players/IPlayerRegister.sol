@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: ISC
 pragma solidity ^0.8.20 < 0.9.0;
 
+import "../../tokens/ERC721/types/ERC721DataTypes.sol";
 import "../../accounts/types/AccountEnums.sol";
 import "../types/FactionEnums.sol";
 import "./types/PlayerEnums.sol";
@@ -128,6 +129,19 @@ interface IPlayerRegister {
         returns (uint24);
 
 
+    /// @dev Returns `player1` and `player2` luck
+    /// @param player1 CryptopiaAccount address (registered as a player)
+    /// @param player2 CryptopiaAccount address (registered as a player)
+    /// @return luck1 Luck for player1; STATS_BASE_LUCK + (0 - MAX_LEVEL player choice when leveling up)
+    /// @return luck2 Luck for player2; STATS_BASE_LUCK + (0 - MAX_LEVEL player choice when leveling up)
+    function getLuck(address player1, address player2) 
+        external view 
+        returns (
+            uint24 luck1, 
+            uint24 luck2
+        );
+
+
     /// @dev Returns `player` charisma
     /// @param player CryptopiaAccount address (registered as a player)
     /// @return charisma STATS_CHARISMA_BASE + (0 - MAX_LEVEL player choice when leveling up)
@@ -136,17 +150,26 @@ interface IPlayerRegister {
         returns (uint24);
 
 
-    /// @dev Returns the tokenId from the ship that's equipted by `player`
+    /// @dev Returns the tokenId from the ship that's equipped by `player`
     /// @param player The player to retrieve the ship for
-    /// @return uint the tokenId of the equipted ship
-    function getEquiptedShip(address player) 
+    /// @return uint the tokenId of the equipped ship
+    function getEquippedShip(address player) 
         external view 
         returns (uint);
+
+    
+    /// @dev Returns the tokenId from the ship that's equipped by `player1` and `player2`
+    /// @param player1 The first player to retrieve the ship for
+    /// @param player2 The second player to retrieve the ship for
+    /// @return TokenPair the tokenId of the equipped ship
+    function getEquippedShips(address player1, address player2)
+        external view 
+        returns (TokenPair memory);
 
 
     /// @dev Equipt `ship` to calling sender
     /// @param ship The tokenId of the ship to equipt
-    function equiptShip(uint ship)
+    function equipShip(uint ship)
         external;
 
 

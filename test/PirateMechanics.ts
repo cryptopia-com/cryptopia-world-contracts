@@ -93,39 +93,39 @@ describe("PirateMechanics Contract", function () {
         tiles: [
             
             // Bottom row
-            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 0, biome: Biome.Reef, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
+            { group: 0, biome: Biome.Reef, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
             
             // Second row
-            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 1, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 7, waterLevel: 5, vegitationLevel: 1, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 1, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 1, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 1, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: true, resources: [Resource.Iron, Resource.Gold], resources_amounts: ["10000".toWei(), "500".toWei()] },
-            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
+            { group: 1, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 7, waterLevel: 5, vegitationLevel: 1, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
+            { group: 1, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 1, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
+            { group: 1, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: true, resource1_type: Resource.Iron, resource1_amount: "10000".toWei(), resource2_type: Resource.Gold, resource2_amount: "500".toWei(), resource3_type: 0, resource3_amount: "0" },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
             
             // Third row
-            { group: 0, biome: Biome.Reef, terrain: Terrain.Water, elevation: 4, waterLevel: 5, vegitationLevel: 2, rockLevel: 0, wildlifeLevel: 2, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 1, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 1, biome: Biome.RainForest, terrain: Terrain.Mountains, elevation: 8, waterLevel: 5, vegitationLevel: 3, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 1, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [Resource.Gold], resources_amounts: ["1000".toWei()] },
-            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 2, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 0, biome: Biome.Reef, terrain: Terrain.Water, elevation: 4, waterLevel: 5, vegitationLevel: 2, rockLevel: 0, wildlifeLevel: 2, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
+            { group: 1, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
+            { group: 1, biome: Biome.RainForest, terrain: Terrain.Mountains, elevation: 8, waterLevel: 5, vegitationLevel: 3, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
+            { group: 1, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: Resource.Gold, resource1_amount: "1000".toWei(), resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 2, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
 
             // Fourth row
-            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 1, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 1, wildlifeLevel: 1, riverFlags: 0, hasRoad: true, hasLake: false, resources: [Resource.Iron], resources_amounts: ["20000".toWei()] },
-            { group: 1, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 0, biome: Biome.Reef, terrain: Terrain.Water, elevation: 4, waterLevel: 5, vegitationLevel: 3, rockLevel: 0, wildlifeLevel: 3, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
+            { group: 1, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 1, wildlifeLevel: 1, riverFlags: 0, hasRoad: true, hasLake: false, resource1_type: Resource.Iron, resource1_amount: "20000".toWei(), resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
+            { group: 1, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegitationLevel: 1, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
+            { group: 0, biome: Biome.Reef, terrain: Terrain.Water, elevation: 4, waterLevel: 5, vegitationLevel: 3, rockLevel: 0, wildlifeLevel: 3, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 1, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
 
             // Top row
-            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 2, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
-            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 2, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [], resources_amounts: [] },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 2, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
+            { group: 0, biome: Biome.None, terrain: Terrain.Water, elevation: 2, waterLevel: 5, vegitationLevel: 0, rockLevel: 0, wildlifeLevel: 0, riverFlags: 0, hasRoad: false, hasLake: false, resource1_type: 0, resource1_amount: "0", resource2_type: 0, resource2_amount: "0", resource3_type: 0, resource3_amount: "0" },
         ]
     };
     
@@ -353,10 +353,24 @@ describe("PirateMechanics Contract", function () {
             map.tiles.map(tile => ({
                 initialized: true, 
                 mapIndex: 0,
-                ...tile
+                group: tile.group,
+                biome: tile.biome,
+                terrain: tile.terrain,
+                elevation: tile.elevation,
+                waterLevel: tile.waterLevel,
+                vegitationLevel: tile.vegitationLevel,
+                rockLevel: tile.rockLevel,
+                wildlifeLevel: tile.wildlifeLevel,
+                riverFlags: tile.riverFlags,
+                hasRoad: tile.hasRoad,
+                hasLake: tile.hasLake
             })), 
-            map.tiles.map(tile => tile.resources), 
-            map.tiles.map(tile => tile.resources_amounts));
+            map.tiles.map(tile => tile.resource1_type), 
+            map.tiles.map(tile => tile.resource2_type), 
+            map.tiles.map(tile => tile.resource3_type), 
+            map.tiles.map(tile => tile.resource1_amount), 
+            map.tiles.map(tile => tile.resource2_amount), 
+            map.tiles.map(tile => tile.resource3_amount));
         
         await mapInstance.finalizeMap();
     });
@@ -1145,15 +1159,13 @@ describe("PirateMechanics Contract", function () {
             
             // Act
             const mapPlayerData = await mapInstance
-                .getPlayerDatas([
-                    anotherTargetAccountAddress
-                ]);
+                .getPlayerData(anotherTargetAccountAddress);
             
             const confrontationData = await pirateMechanicsInstance
                 .getConfrontation(anotherTargetAccountAddress);
 
             // Assert 
-            expect(mapPlayerData.frozenUntil[0]).to.equal(confrontationData.expiration);
+            expect(mapPlayerData.frozenUntil).to.equal(confrontationData.expiration);
         });
 
         it("Should freeze the pirate in the map when intercepted", async function () {
@@ -1164,15 +1176,13 @@ describe("PirateMechanics Contract", function () {
             
             // Act
             const mapPlayerData = await mapInstance
-                .getPlayerDatas([
-                    anotherPirateAccountAddress
-                ]);
+                .getPlayerData(anotherPirateAccountAddress);
             
             const confrontationData = await pirateMechanicsInstance
                 .getConfrontation(anotherTargetAccountAddress);
 
             // Assert 
-            expect(mapPlayerData.frozenUntil[0]).to.equal(confrontationData.expiration);
+            expect(mapPlayerData.frozenUntil).to.equal(confrontationData.expiration);
         });
 
         it("Should mark the attakcer as pirate after intercepting a target", async function () {
@@ -1603,7 +1613,7 @@ describe("PirateMechanics Contract", function () {
 
             // Act
             const pirateEquipedShip = await playerRegisterInstance
-                .getEquiptedShip(pirateAccountAddress);
+                .getEquippedShip(pirateAccountAddress);
 
             const actualPirateIronBalance = await inventoriesInstance
                 .getShipBalanceFungible(pirateEquipedShip, ironAsset.contractAddress);
@@ -1636,12 +1646,10 @@ describe("PirateMechanics Contract", function () {
             
             // Act
             const mapPlayerData = await mapInstance
-                .getPlayerDatas([
-                    targetAccountAddress
-                ]);
+                .getPlayerData(targetAccountAddress);
  
             // Assert 
-            expect(mapPlayerData.frozenUntil[0]).to.equal(0);
+            expect(mapPlayerData.frozenUntil).to.equal(0);
         });
 
         it("Should freeze the pirate in the map when intercepted", async function () {
@@ -1651,12 +1659,10 @@ describe("PirateMechanics Contract", function () {
             
             // Act
             const mapPlayerData = await mapInstance
-                .getPlayerDatas([
-                    pirateAccountAddress
-                ]);
+                .getPlayerData(pirateAccountAddress);
 
             // Assert 
-            expect(mapPlayerData.frozenUntil[0]).to.equal(0);
+            expect(mapPlayerData.frozenUntil).to.equal(0);
         });
     });
 
@@ -1946,7 +1952,7 @@ describe("PirateMechanics Contract", function () {
                     .connect(await ethers.provider.getSigner(account2))
                     .submitTransaction(await mapInstance.getAddress(), 0, playerEnterCalldata);
 
-                    const interceptCalldata = pirateMechanicsInstance.interface
+                const interceptCalldata = pirateMechanicsInstance.interface
                     .encodeFunctionData("intercept", [targetAccountAddress, 0]);
     
                 await pirateAccountInstance
@@ -2101,6 +2107,75 @@ describe("PirateMechanics Contract", function () {
                 await expect(operation).to
                     .emit(pirateAccountInstance, "ExecutionFailure");
             }
+        });
+    });
+
+    /**
+     * Test resolving a confrontation through a quick battle
+     */
+    describe("Quick Battle", function () { 
+
+        // Players
+        let pirateAccountInstance: CryptopiaAccount;
+        let targetAccountInstance: CryptopiaAccount;
+
+        /**
+         * Deploy players
+         */
+        before(async () => {
+
+            // Create pirate account
+            const createPirateAccountTransaction = await playerRegisterInstance.create([account1], 1, 0, "QuickBattle_Pirate".toBytes32(), 0, 0);
+            const createPirateAccountReceipt = await createPirateAccountTransaction.wait();
+            const pirateAccountAddress = getParamFromEvent(playerRegisterInstance, createPirateAccountReceipt, "account", "RegisterPlayer");
+            pirateAccountInstance = await ethers.getContractAt("CryptopiaAccount", pirateAccountAddress);
+
+            // Create target account
+            const createTargetAccountTransaction = await playerRegisterInstance.create([account2], 1, 0, "QuickBattle_Target".toBytes32(), 0, 0);
+            const createTargetAccountReceipt = await createTargetAccountTransaction.wait();
+            const targetAccountAddress = getParamFromEvent(playerRegisterInstance, createTargetAccountReceipt, "account", "RegisterPlayer");
+            targetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAccountAddress);
+
+            // Add another pirate and target to the map
+            const playerEnterCalldata = mapInstance.interface
+                .encodeFunctionData("playerEnter");
+
+            await pirateAccountInstance
+                .connect(await ethers.provider.getSigner(account1))
+                .submitTransaction(await mapInstance.getAddress(), 0, playerEnterCalldata);
+
+            await targetAccountInstance
+                .connect(await ethers.provider.getSigner(account2))
+                .submitTransaction(await mapInstance.getAddress(), 0, playerEnterCalldata);
+
+            const interceptCalldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("intercept", [targetAccountAddress, 0]);
+
+            await pirateAccountInstance
+                .connect(await ethers.provider.getSigner(account1))
+                .submitTransaction(await pirateMechanicsInstance.getAddress(), 0, interceptCalldata);
+        });
+
+        it ("Should allow a target to resolve a confrontation through a quick battle", async function () {
+
+            // Setup
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const targetAccountSigner = await ethers.provider.getSigner(account2);
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+
+            // Act
+            const quickBattleCalldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("startQuickBattleAsTarget");
+
+            const operation = targetAccountInstance
+                .connect(targetAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, quickBattleCalldata);
+
+            // Assert
+            await expect(operation).to
+                .emit(pirateMechanicsInstance, "PirateConfrontationEnd")
+                .withArgs(pirateAccountAddress, targetAccountAddress, 0);
         });
     });
 

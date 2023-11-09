@@ -62,14 +62,14 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         /// @dev If true the ship cannot be transferred
         bool locked;
 
+        /// @dev Damage (0 - 250)
+        uint8 damage;
+
         /// @dev Speed (after modules)
         uint16 speed;
 
         /// @dev Attack (after modules)
         uint16 attack;
-
-        /// @dev Health (after modules)
-        uint16 health;
 
         /// @dev Defence (after modules)
         uint16 defence;
@@ -95,9 +95,6 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
 
         /// @dev The base attack power of the ship before any modules are applied
         uint16 attack;
-
-        /// @dev The base health of the ship before any modules are applied
-        uint16 health;
 
         /// @dev The base defence capability of the ship before any modules are applied
         uint16 defence;
@@ -168,7 +165,6 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             co2: 0,
             speed: 25,
             attack: 15,
-            health: 100,
             defence: 100,
             inventory: 12_000_000_000_000_000_000_000,
             fuelConsumption: 1_000_000_000_000_000_000
@@ -179,7 +175,6 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             co2: 25,
             speed: 25,
             attack: 15,
-            health: 100,
             defence: 100,
             inventory: 12_000_000_000_000_000_000_000,
             fuelConsumption: 1_000_000_000_000_000_000
@@ -190,7 +185,6 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             co2: 50,
             speed: 25,
             attack: 15,
-            health: 100,
             defence: 100,
             inventory: 12_000_000_000_000_000_000_000,
             fuelConsumption: 1_000_000_000_000_000_000
@@ -201,7 +195,6 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             co2: 25,
             speed: 25,
             attack: 15,
-            health: 100,
             defence: 100,
             inventory: 12_000_000_000_000_000_000_000,
             fuelConsumption: 1_000_000_000_000_000_000
@@ -233,7 +226,6 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @return modules the amount of module slots
     /// @return base_speed Ship starting speed (before modules)
     /// @return base_attack Ship starting attack (before modules)
-    /// @return base_health Ship starting health (before modules)
     /// @return base_defence Ship starting defence (before modules)
     /// @return base_inventory Ship starting storage (before modules)
     /// @return base_fuelConsumption Ship starting fuel consumption (before modules)
@@ -248,7 +240,6 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             uint8[] memory modules, 
             uint16[] memory base_speed,
             uint16[] memory base_attack,
-            uint16[] memory base_health,
             uint16[] memory base_defence,
             uint[] memory base_inventory,
             uint[] memory base_fuelConsumption
@@ -262,7 +253,6 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         modules = new uint8[](take);
         base_speed = new uint16[](take);
         base_attack = new uint16[](take);
-        base_health = new uint16[](take);
         base_defence = new uint16[](take);
         base_inventory = new uint[](take);
         base_fuelConsumption = new uint[](take);
@@ -278,7 +268,6 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             modules[i] = ships[name[i]].modules;
             base_speed[i] = ships[name[i]].base_speed;
             base_attack[i] = ships[name[i]].base_attack;
-            base_health[i] = ships[name[i]].base_health;
             base_defence[i] = ships[name[i]].base_defence;
             base_inventory[i] = ships[name[i]].base_inventory;
             base_fuelConsumption[i] = ships[name[i]].base_fuelConsumption;
@@ -296,7 +285,6 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @return modules the amount of module slots
     /// @return base_speed Ship starting speed (before modules)
     /// @return base_attack Ship starting attack (before modules)
-    /// @return base_health Ship starting health (before modules)
     /// @return base_defence Ship starting defence (before modules)
     /// @return base_inventory Ship starting storage (before modules)
     /// @return base_fuelConsumption Ship starting fuel consumption (before modules)
@@ -310,7 +298,6 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             uint8 modules,
             uint16 base_speed,
             uint16 base_attack,
-            uint16 base_health,
             uint16 base_defence,
             uint base_inventory,
             uint base_fuelConsumption
@@ -323,7 +310,6 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         modules = ships[name].modules;
         base_speed = ships[name].base_speed;
         base_attack = ships[name].base_attack;
-        base_health = ships[name].base_health;
         base_defence = ships[name].base_defence;
         base_inventory = ships[name].base_inventory;
         base_fuelConsumption = ships[name].base_fuelConsumption;
@@ -335,7 +321,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @param generic if true faction and subfaction are disregarded (any player can equipt)
     /// @param faction {Faction} (can only be equipted by this faction)
     /// @param subFaction {SubFaction} (pirate/bountyhunter)
-    /// @param stats modules, arbitrary, base_speed, base_attack, base_health, base_defence, base_inventory
+    /// @param stats modules, arbitrary, base_speed, base_attack, base_defence, base_inventory
     function setShips(
         bytes32[] memory name, 
         bool[] memory generic, 
@@ -369,9 +355,9 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @return subFaction {SubFaction} (pirate/bountyhunter)
     /// @return rarity Ship rarity {Rarity}
     /// @return modules the amount of module slots
+    /// @return damage Ship damage (0 - 250)
     /// @return speed Ship speed (after modules)
     /// @return attack Ship attack (after modules)
-    /// @return health Ship health (after modules)
     /// @return defence Ship defence (after modules)
     /// @return inventory Ship storage (after modules)
     /// @return fuelConsumption Ship fuel consumption (after modules)
@@ -385,9 +371,9 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             SubFaction subFaction,
             Rarity rarity,
             uint8 modules,
+            uint8 damage, 
             uint16 speed,
             uint16 attack,
-            uint16 health,
             uint16 defence,
             uint inventory,
             uint fuelConsumption
@@ -400,9 +386,9 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         subFaction = ships[name].subFaction;
         rarity = ships[name].rarity;
         modules = ships[name].modules;
+        damage = shipInstances[tokenId].damage;
         speed = ships[name].base_speed + shipInstances[tokenId].speed;
         attack = ships[name].base_attack + shipInstances[tokenId].attack;
-        health = ships[name].base_health + shipInstances[tokenId].health;
         defence = ships[name].base_defence + shipInstances[tokenId].defence;
         inventory = ships[name].base_inventory + shipInstances[tokenId].inventory;
         fuelConsumption = ships[name].base_fuelConsumption + shipInstances[tokenId].fuelConsumption;
@@ -418,12 +404,12 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @return subFaction {SubFaction} (pirate/bountyhunter)
     /// @return rarity Ship rarity {Rarity}
     /// @return modules Amount of module slots
+    /// @return damage Ship damage (0 - 250)
     /// @return speed Ship speed (after modules)
     /// @return attack Ship attack (after modules)
-    /// @return health Ship health (after modules)
     /// @return defence Ship defence (after modules)
     /// @return inventory Ship storage (after modules)
-    function getShipInstances(uint[] memory tokenIds) 
+    function getShipInstances(uint[] memory tokenIds)
         public virtual override view 
         returns (
             bytes32[] memory name,
@@ -433,9 +419,9 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             SubFaction[] memory subFaction,
             Rarity[] memory rarity,
             uint8[] memory modules,
+            uint8[] memory damage,
             uint16[] memory speed,
             uint16[] memory attack,
-            uint16[] memory health,
             uint16[] memory defence,
             uint[] memory inventory
         )
@@ -447,9 +433,9 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         subFaction = new SubFaction[](tokenIds.length);
         rarity = new Rarity[](tokenIds.length);
         modules = new uint8[](tokenIds.length);
+        damage = new uint8[](tokenIds.length);
         speed = new uint16[](tokenIds.length);
         attack = new uint16[](tokenIds.length);
-        health = new uint16[](tokenIds.length);
         defence = new uint16[](tokenIds.length);
         inventory = new uint[](tokenIds.length);
 
@@ -462,9 +448,9 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             subFaction[i] = ships[name[i]].subFaction;
             rarity[i] = ships[name[i]].rarity;
             modules[i] = ships[name[i]].modules;
+            damage[i] = shipInstances[tokenIds[i]].damage;
             speed[i] = ships[name[i]].base_speed + shipInstances[tokenIds[i]].speed;
             attack[i] = ships[name[i]].base_attack + shipInstances[tokenIds[i]].attack;
-            health[i] = ships[name[i]].base_health + shipInstances[tokenIds[i]].health;
             defence[i] = ships[name[i]].base_defence + shipInstances[tokenIds[i]].defence;
             inventory[i] = ships[name[i]].base_inventory + shipInstances[tokenIds[i]].inventory;
         }
@@ -473,27 +459,19 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
 
     /// @dev Retrieve equipt data for a ship instance
     /// @param tokenId The id of the ship to retreive the inventory data for
-    /// @return locked If true the ship cannot be transferred
-    /// @return generic if true faction and subfaction are disregarded (any player can equipt)
-    /// @return faction {Faction} (can only be equipted by this faction)
-    /// @return subFaction {SubFaction} (pirate/bountyhunter)
-    /// @return inventory Ship storage (after modules)
-    function getShipEquiptData(uint tokenId)
-        public virtual override view 
-        returns (
-            bool locked,
-            bool generic,
-            Faction faction,
-            SubFaction subFaction,
-            uint inventory
-        )
+    /// @return equipData Ship equip data
+    function getShipEquipData(uint tokenId)
+        public virtual override view  
+        returns (ShipEquipData memory)
     {
         Ship storage ship = ships[shipInstances[tokenId].name];
-        locked = shipInstances[tokenId].locked;
-        generic = ship.generic;
-        faction = ship.faction;
-        subFaction = ship.subFaction;
-        inventory = ship.base_inventory + shipInstances[tokenId].inventory;
+        return ShipEquipData({
+            locked: shipInstances[tokenId].locked,
+            generic: ship.generic,
+            faction: ship.faction,
+            subFaction: ship.subFaction,
+            inventory: ship.base_inventory + shipInstances[tokenId].inventory
+        });
     }
 
 
@@ -521,18 +499,78 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
 
     /// @dev Retrieve the travel data of a ship instance (after modules)
     /// @param tokenId The id of the ship to retreive the travel data for
-    /// @return speed Ship speed (after modules)
-    /// @return fuelConsumption Ship fuel consumption (after modules)
+    /// @return travelData Ship travel data (after modules)
     function getShipTravelData(uint tokenId)
-        public virtual override view
+        external view 
+        returns (ShipTravelData memory travelData)
+    {
+        return ShipTravelData({
+            speed: ships[shipInstances[tokenId].name].base_speed + shipInstances[tokenId].speed,
+            fuelConsumption: ships[shipInstances[tokenId].name].base_fuelConsumption + shipInstances[tokenId].fuelConsumption
+        });
+    }
+
+
+    /// @dev Retrieve the travel data of a ship instance (after modules)
+    /// @param tokenIds The ids of the ships to retreive the travel data for
+    /// @return travelData1 The travel data of ship 1 (after modules)
+    /// @return travelData2 The travel data of ship 2 (after modules)
+    function getShipTravelData(TokenPair memory tokenIds)
+        public virtual override view 
         returns (
-            uint16 speed,
-            uint fuelConsumption
+            ShipTravelData memory travelData1, 
+            ShipTravelData memory travelData2
         )
     {
-        Ship storage ship = ships[shipInstances[tokenId].name];
-        speed = ship.base_speed + shipInstances[tokenId].speed;
-        fuelConsumption = ship.base_fuelConsumption + shipInstances[tokenId].fuelConsumption;
+        travelData1 = ShipTravelData({
+            speed: ships[shipInstances[tokenIds.tokenId1].name].base_speed + shipInstances[tokenIds.tokenId1].speed,
+            fuelConsumption: ships[shipInstances[tokenIds.tokenId1].name].base_fuelConsumption + shipInstances[tokenIds.tokenId1].fuelConsumption
+        });
+
+        travelData2 = ShipTravelData({
+            speed: ships[shipInstances[tokenIds.tokenId2].name].base_speed + shipInstances[tokenIds.tokenId2].speed,
+            fuelConsumption: ships[shipInstances[tokenIds.tokenId2].name].base_fuelConsumption + shipInstances[tokenIds.tokenId2].fuelConsumption
+        });
+    }
+
+
+    /// @dev Retrieve the battle data of a ship instance (after modules)
+    /// @param tokenId The id of the ship to retreive the battle data for
+    /// @return battleData Ship battle data (after modules)
+    function getShipBattleData(uint tokenId) 
+        public virtual override view
+        returns (ShipBattleData memory battleData)
+    {
+        battleData = ShipBattleData({
+            damage: shipInstances[tokenId].damage,
+            attack: ships[shipInstances[tokenId].name].base_attack + shipInstances[tokenId].attack,
+            defence: ships[shipInstances[tokenId].name].base_defence + shipInstances[tokenId].defence
+        });
+    }
+
+
+    /// @dev Retrieve the battle data of a ship instance (after modules)
+    /// @param tokenIds The ids of the ships to retreive the battle data for
+    /// @return battleData1 The battle data of ship 1
+    /// @return battleData2 The battle data of ship 2
+    function getShipBattleData(TokenPair memory tokenIds)
+        external view 
+        returns (
+            ShipBattleData memory battleData1,
+            ShipBattleData memory battleData2 
+        )
+    {
+        battleData1 = ShipBattleData({
+            damage: shipInstances[tokenIds.tokenId1].damage,
+            attack: ships[shipInstances[tokenIds.tokenId1].name].base_attack + shipInstances[tokenIds.tokenId1].attack,
+            defence: ships[shipInstances[tokenIds.tokenId1].name].base_defence + shipInstances[tokenIds.tokenId1].defence
+        });
+
+        battleData2 = ShipBattleData({
+            damage: shipInstances[tokenIds.tokenId2].damage,
+            attack: ships[shipInstances[tokenIds.tokenId2].name].base_attack + shipInstances[tokenIds.tokenId2].attack,
+            defence: ships[shipInstances[tokenIds.tokenId2].name].base_defence + shipInstances[tokenIds.tokenId2].defence
+        });
     }
 
 
@@ -619,7 +657,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @param faction {Faction} (can only be equipted by this faction)
     /// @param subFaction {SubFaction} (pirate/bountyhunter)
     /// @param rarity Ship rarity {Rarity}
-    /// @param stats modules, c02, base_speed, base_attack, base_health, base_defence, base_inventory
+    /// @param stats modules, c02, base_speed, base_attack, base_defence, base_inventory
     function _setShip(bytes32 name, bool generic, Faction faction, SubFaction subFaction, Rarity rarity, ShipStatValues memory stats) 
         internal 
     {
@@ -639,7 +677,6 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         ship.modules = stats.modules;
         ship.base_speed = stats.speed;
         ship.base_attack = stats.attack;
-        ship.base_health = stats.health;
         ship.base_defence = stats.defence;
         ship.base_inventory = stats.inventory;
         ship.base_fuelConsumption = stats.fuelConsumption;

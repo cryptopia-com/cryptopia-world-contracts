@@ -69,4 +69,19 @@ abstract contract PseudoRandomness is ContextUpgradeable
     {
         return uint(keccak256(abi.encodePacked(_hash, index))) % RANDOMNESS_PRECISION_FACTOR;
     }
+
+
+    /// @dev Get two numbers between 0 (inlcuding) and RANDOMNESS_PRECISION_FACTOR from `_hash` at `index1` and `index2`
+    /// @param _hash Pseudo randomly generated hash
+    /// @param index1 Used as salt
+    /// @param index2 Used as salt
+    /// @return value1 Pseudo random number
+    /// @return value2 Pseudo random number
+    function _getRandomNumberPairAt(bytes32 _hash, uint index1, uint index2) 
+        internal pure 
+        returns (uint value1, uint value2)
+    {
+        value1 = _getRandomNumberAt(_hash, index1);
+        value2 = _getRandomNumberAt(_hash, index2);
+    }
 }

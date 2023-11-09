@@ -3,6 +3,8 @@ pragma solidity ^0.8.20 < 0.9.0;
 
 import "../../../game/types/GameEnums.sol";
 import "../../../game/types/FactionEnums.sol";
+import "../types/ERC721DataTypes.sol";
+import "./types/ShipDataTypes.sol";
 
 /// @title Ships
 /// @dev Non-fungible token (ERC721) 
@@ -30,7 +32,6 @@ interface IShips {
     /// @return modules the amount of module slots
     /// @return base_speed Ship starting speed (before modules)
     /// @return base_attack Ship starting attack (before modules)
-    /// @return base_health Ship starting health (before modules)
     /// @return base_defence Ship starting defence (before modules)
     /// @return base_inventory Ship starting storage (before modules)
     /// @return base_fuelConsumption Ship starting fuel consumption (before modules)
@@ -45,7 +46,6 @@ interface IShips {
             uint8[] memory modules, 
             uint16[] memory base_speed,
             uint16[] memory base_attack,
-            uint16[] memory base_health,
             uint16[] memory base_defence,
             uint[] memory base_inventory,
             uint[] memory base_fuelConsumption
@@ -61,7 +61,6 @@ interface IShips {
     /// @return modules Amount of module slots
     /// @return base_speed Ship starting speed (before modules)
     /// @return base_attack Ship starting attack (before modules)
-    /// @return base_health Ship starting health (before modules)
     /// @return base_defence Ship starting defence (before modules)
     /// @return base_inventory Ship starting storage (before modules)
     /// @return base_fuelConsumption Ship starting fuel consumption (before modules)
@@ -75,7 +74,6 @@ interface IShips {
             uint8 modules, 
             uint16 base_speed,
             uint16 base_attack,
-            uint16 base_health,
             uint16 base_defence,
             uint base_inventory,
             uint base_fuelConsumption
@@ -91,9 +89,9 @@ interface IShips {
     /// @return subFaction {SubFaction} (pirate/bountyhunter)
     /// @return rarity Ship rarity {Rarity}
     /// @return modules Amount of module slots
+    /// @return damage Ship damage (0 - 250)
     /// @return speed Ship speed (after modules)
     /// @return attack Ship attack (after modules)
-    /// @return health Ship health (after modules)
     /// @return defence Ship defence (after modules)
     /// @return inventory Ship storage (after modules)
     /// @return fuelConsumption Ship fuel consumption (after modules)
@@ -107,9 +105,9 @@ interface IShips {
             SubFaction subFaction,
             Rarity rarity,
             uint8 modules,
+            uint8 damage,
             uint16 speed,
             uint16 attack,
-            uint16 health,
             uint16 defence,
             uint inventory,
             uint fuelConsumption
@@ -125,11 +123,11 @@ interface IShips {
     /// @return subFaction {SubFaction} (pirate/bountyhunter)
     /// @return rarity Ship rarity {Rarity}
     /// @return modules Amount of module slots
+    /// @return damage Ship damage (0 - 250)
     /// @return speed Ship speed (after modules)
     /// @return attack Ship attack (after modules)
-    /// @return health Ship health (after modules)
     /// @return defence Ship defence (after modules)
-    /// @return inventory Ship storage (after modules)
+    /// @return inventory Ship storage (after modules) 
     function getShipInstances(uint[] memory tokenIds) 
         external view 
         returns (
@@ -140,9 +138,9 @@ interface IShips {
             SubFaction[] memory subFaction,
             Rarity[] memory rarity,
             uint8[] memory modules,
+            uint8[] memory damage,
             uint16[] memory speed,
             uint16[] memory attack,
-            uint16[] memory health,
             uint16[] memory defence,
             uint[] memory inventory
         );
@@ -150,20 +148,10 @@ interface IShips {
 
     /// @dev Retrieve equipt data for a ship instance
     /// @param tokenId The id of the ship to retreive the inventory data for
-    /// @return locked If true the ship cannot be transferred
-    /// @return generic if true faction and subfaction are disregarded (any player can equipt)
-    /// @return faction {Faction} (can only be equipted by this faction)
-    /// @return subFaction {SubFaction} (pirate/bountyhunter)
-    /// @return inventory Ship storage (after modules)
-    function getShipEquiptData(uint tokenId)
+    /// @return equipData Ship equip data
+    function getShipEquipData(uint tokenId)
         external view 
-        returns (
-            bool locked,
-            bool generic,
-            Faction faction,
-            SubFaction subFaction,
-            uint inventory
-        );
+        returns (ShipEquipData memory);
 
     
     /// @dev Retrieve the speed of a ship instance (after modules)
@@ -184,13 +172,41 @@ interface IShips {
 
     /// @dev Retrieve the travel data of a ship instance (after modules)
     /// @param tokenId The id of the ship to retreive the travel data for
-    /// @return speed Ship speed (after modules)
-    /// @return fuelConsumption Ship fuel consumption (after modules)
+    /// @return travelData Ship travel data (after modules)
     function getShipTravelData(uint tokenId)
         external view 
+        returns (ShipTravelData memory travelData);
+
+    
+    /// @dev Retrieve the travel data of a ship instance (after modules)
+    /// @param tokenIds The ids of the ships to retreive the travel data for
+    /// @return travelData1 The travel data of ship 1 (after modules)
+    /// @return travelData2 The travel data of ship 2 (after modules)
+    function getShipTravelData(TokenPair memory tokenIds)
+        external view 
         returns (
-            uint16 speed,
-            uint fuelConsumption
+            ShipTravelData memory travelData1, 
+            ShipTravelData memory travelData2
+        );
+
+
+    /// @dev Retrieve the battle data of a ship instance (after modules)
+    /// @param tokenId The id of the ship to retreive the battle data for
+    /// @return battleData Ship battle data (after modules)
+    function getShipBattleData(uint tokenId)
+        external view 
+        returns (ShipBattleData memory battleData);
+
+    
+    /// @dev Retrieve the battle data of a ship instance (after modules)
+    /// @param tokenIds The ids of the ships to retreive the battle data for
+    /// @return battleData1 The battle data of ship 1
+    /// @return battleData2 The battle data of ship 2
+    function getShipBattleData(TokenPair memory tokenIds)
+        external view 
+        returns (
+            ShipBattleData memory battleData1,
+            ShipBattleData memory battleData2 
         );
 
     

@@ -10,6 +10,7 @@ import "../../../accounts/IAccountRegister.sol";
 import "../../../accounts/types/AccountEnums.sol";
 import "../../../accounts/errors/AccountErrors.sol";
 import "../../../tokens/ERC721/ships/IShips.sol";
+import "../../../tokens/ERC721/ships/types/ShipDataTypes.sol";
 import "../../../tokens/ERC721/ships/errors/ShipErrors.sol";
 import "../../inventories/IInventories.sol";
 import "../../crafting/ICrafting.sol";
@@ -35,7 +36,7 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
         uint24 intelligence;  // STATS_INTELLIGENCE_BASE + (0 - MAX_LEVEL player choice when leveling up)
         uint24 strength; // STATS_STRENGTH_BASE + (0 - MAX_LEVEL player choice when leveling up)
         uint24 speed; // STATS_SPEED_BASE + (0 - MAX_LEVEL player choice when leveling up)
-        uint ship; // Equipted ship
+        uint ship; // Equipped ship
     }
 
 
@@ -90,10 +91,10 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     /// @param sex {Undefined, Male, Female}
     event RegisterPlayer(address indexed sender, address indexed account, bytes32 indexed username, Faction faction, Sex sex);
 
-    /// @dev Emitted when `player` equipts a 'ship'
+    /// @dev Emitted when `player` equips a 'ship'
     /// @param player The address of the account (contract)
-    /// @param ship The tokenId of the equipted ship
-    event PlayerEquiptShip(address indexed player, uint indexed ship);
+    /// @param ship The tokenId of the equipped ship
+    event PlayerEquipShip(address indexed player, uint indexed ship);
 
     /// @dev Emitted when `player` is awarded xp and/or karma
     /// @param player The address of the account (contract)
@@ -254,7 +255,7 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     /// @return intelligence STATS_INTELLIGENCE_BASE + (0 - MAX_LEVEL player choice when leveling up)
     /// @return strength STATS_STRENGTH_BASE + (0 - MAX_LEVEL player choice when leveling up)
     /// @return speed STATS_SPEED_BASE + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return ship The equipted ship
+    /// @return ship The equipped ship
     function getPlayerData(address payable player) 
         public virtual override view 
         returns (
@@ -301,7 +302,7 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     /// @return intelligence STATS_INTELLIGENCE_BASE + (0 - MAX_LEVEL player choice when leveling up)
     /// @return strength STATS_STRENGTH_BASE + (0 - MAX_LEVEL player choice when leveling up)
     /// @return speed STATS_SPEED_BASE + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return ship The equipted ship
+    /// @return ship The equipped ship
     function getPlayerDatas(address payable[] memory players) 
         public virtual override view 
         returns (
@@ -383,6 +384,23 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     } 
 
 
+    /// @dev Returns `player1` and `player2` luck
+    /// @param player1 CryptopiaAccount address (registered as a player)
+    /// @param player2 CryptopiaAccount address (registered as a player)
+    /// @return luck1 Luck for player1; STATS_BASE_LUCK + (0 - MAX_LEVEL player choice when leveling up)
+    /// @return luck2 Luck for player2; STATS_BASE_LUCK + (0 - MAX_LEVEL player choice when leveling up)
+    function getLuck(address player1, address player2) 
+        public virtual override view 
+        returns (
+            uint24 luck1, 
+            uint24 luck2
+        )
+    {
+        luck1 = playerDatas[player1].luck;
+        luck2 = playerDatas[player2].luck;
+    }
+
+
     /// @dev Returns `player` charisma
     /// @param player CryptopiaAccount address (registered as a player)
     /// @return charisma STATS_CHARISMA_BASE + (0 - MAX_LEVEL player choice when leveling up)
@@ -394,43 +412,52 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     }
 
 
-    /// @dev Returns the tokenId from the ship that's equipted by `player`
+    /// @dev Returns the tokenId from the ship that's equipped by `player`
     /// @param player The player to retrieve the ship for
-    /// @return uint the tokenId of the equipted ship
-    function getEquiptedShip(address player) 
-        public override view 
+    /// @return uint the tokenId of the equipped ship
+    function getEquippedShip(address player) 
+        public virtual override view 
         returns (uint)
     {
         return playerDatas[player].ship;
     }
 
 
-    /// @dev Equipt `ship` to calling sender
-    /// @param ship The tokenId of the ship to equipt
-    function equiptShip(uint ship)
+    /// @dev Returns the tokenId from the ship that's equipped by `player1` and `player2`
+    /// @param player1 The first player to retrieve the ship for
+    /// @param player2 The second player to retrieve the ship for
+    /// @return TokenPair the tokenId of the equipped ship
+    function getEquippedShips(address player1, address player2)
+        public virtual override view 
+        returns (TokenPair memory)
+    {
+        return TokenPair({
+            tokenId1: playerDatas[player1].ship,
+            tokenId2: playerDatas[player2].ship
+        });
+    }
+
+
+    /// @dev Equip `ship` to calling sender
+    /// @param ship The tokenId of the ship to equip
+    function equipShip(uint ship)
         public override 
         onlyRegistered(_msgSender())
     {
         address player = _msgSender();
-        (
-            bool locked, 
-            bool generic, 
-            Faction faction, 
-            SubFaction subFaction, 
-            uint inventory
-        ) = IShips(shipTokenContract)
-            .getShipEquiptData(ship);
+        ShipEquipData memory shipData = IShips(shipTokenContract)
+            .getShipEquipData(ship);
 
         // Locked?
-        if (locked) 
+        if (shipData.locked) 
         {
             revert ShipLocked(ship);
         }
 
         // Generic? or faction specific?
-        if (!generic && faction != playerDatas[player].faction)
+        if (!shipData.generic && shipData.faction != playerDatas[player].faction)
         {
-            revert UnexpectedFaction(faction, playerDatas[player].faction);
+            revert UnexpectedFaction(shipData.faction, playerDatas[player].faction);
         }
 
         // Owned?
@@ -451,17 +478,17 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
             .__setPlayerShip(player, ship);
         
         IInventories(inventoriesContract)
-            .__setShipInventory(ship, inventory);
+            .__setShipInventory(ship, shipData.inventory);
 
         // Pirate?
-        if (subFaction == SubFaction.Pirate && playerDatas[player].subFaction != SubFaction.Pirate)
+        if (shipData.subFaction == SubFaction.Pirate && playerDatas[player].subFaction != SubFaction.Pirate)
         {
             // Mark as pirate (for life)
             _turnPirate(player);
         }
 
         // Emit
-        emit PlayerEquiptShip(player, ship);
+        emit PlayerEquipShip(player, ship);
     }
 
 
@@ -641,7 +668,7 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
 
         // Emit
         emit RegisterPlayer(tx.origin, account, username, faction, sex);
-        emit PlayerEquiptShip(account, playerData.ship);
+        emit PlayerEquipShip(account, playerData.ship);
     }
 
 

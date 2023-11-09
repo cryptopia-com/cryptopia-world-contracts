@@ -30,6 +30,10 @@ export interface Tile {
     riverFlags: BigNumberish;
     hasRoad: boolean;
     hasLake: boolean;
-    resources: Resource[];
-    resources_amounts: string[];
+    resource1_type: Resource;
+    resource1_amount: string;
+    resource2_type: Resource;
+    resource2_amount: string;
+    resource3_type: Resource;
+    resource3_amount: string;
   }

@@ -56,8 +56,10 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
     uint64 constant private MAX_RESPONSE_TIME = 600; // 10 minutes
 
     // Scaling factors
-    uint16 constant private SPEED_SCALING_FACTOR = 50;
-    uint16 constant private LUCK_SCALING_FACTOR = 10;
+    uint16 constant private SPEED_SCALING_FACTOR = 50; // Capped at 30% influence (speed is unknown)
+    uint16 constant private LUCK_SCALING_FACTOR = 20; // Max 20% influence (luck is 0-100) 
+
+    uint constant private SPEED_INFLUENCE_CAP = 3_000; // Max 30% influence (speed is unknown)
 
     // Other factors
     uint constant private BASE_NEGOCIATION_DEDUCTION_FACTOR = 50; // 50%
@@ -65,7 +67,14 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
 
     // Randomness
     uint constant private BASE_ESCAPE_THRESHOLD = 5_000; // 50%
-
+    
+    // Battle
+    uint8 constant private MAX_DAMAGE = 250;
+    uint constant private DEFENCE_PRECISION = 100; // Denominator
+    uint constant private ATTACK_EFFECTIVENESS_MARGIN_MIN = 90; // Min 90% attack effectiveness margin
+    uint constant private ATTACK_EFFECTIVENESS_MARGIN_MAX = 110; // Max 110% attack effectiveness margin
+    uint constant private ATTACK_EFFECTIVENESS_MARGIN_SPREAD = ATTACK_EFFECTIVENESS_MARGIN_MAX - ATTACK_EFFECTIVENESS_MARGIN_MIN; // Spread
+    uint constant private ATTACK_EFFECTIVENESS_MARGIN_PRECISION = 100; // Denominator
     
     /// @dev target => Confrontation
     mapping(address => Confrontation) public confrontations;
@@ -348,7 +357,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
                     revert TargetNotReachable(msg.sender, target);
                 }
 
-                uint shipTokenId = IPlayerRegister(playerRegisterContract).getEquiptedShip(msg.sender);
+                uint shipTokenId = IPlayerRegister(playerRegisterContract).getEquippedShip(msg.sender);
                 uint fuelConsumption = IShips(shipContract).getShipFuelConsumption(shipTokenId);
 
                 // Handle fuel consumption
@@ -390,8 +399,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
         targets[msg.sender] = target;
 
         // Freeze players
-        IPlayerFreezeControl(mapsContract).__freeze(target, confrontation.expiration);
-        IPlayerFreezeControl(mapsContract).__freeze(msg.sender, confrontation.expiration);
+        IPlayerFreezeControl(mapsContract).__freeze(target, msg.sender, confrontation.expiration);
         IPlayerFreezeControl(intentoriesContract).__freeze(target, confrontation.expiration);
 
         // Emit event
@@ -490,8 +498,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
         confrontation.expiration = 0;
 
         // Unfreeze players
-        IPlayerFreezeControl(mapsContract).__unfreeze(target);
-        IPlayerFreezeControl(mapsContract).__unfreeze(msg.sender);
+        IPlayerFreezeControl(mapsContract).__unfreeze(target, msg.sender);
         IPlayerFreezeControl(intentoriesContract).__unfreeze(target);
 
         // Emit
@@ -534,24 +541,20 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
             revert TargetAlreadyAttemptedEscape(msg.sender);
         }
 
-        // Attacker ship data
-        uint attackerShipTokenId = IPlayerRegister(playerRegisterContract)
-            .getEquiptedShip(attacker);
+        // Ship data
         (
-            uint16 attackerShipSpeed,
-        ) = IShips(shipContract).getShipTravelData(attackerShipTokenId);
+            ShipTravelData memory targetShipTravelData,
+            ShipTravelData memory attackerShipTravelData
+        ) = IShips(shipContract).getShipTravelData(
+            IPlayerRegister(playerRegisterContract)
+                .getEquippedShips(msg.sender, attacker));
 
-        // Target ship data
-        uint targetShipTokenId = IPlayerRegister(playerRegisterContract)
-            .getEquiptedShip(msg.sender);
+        // Player data
         (
-            uint16 targetShipSpeed,
-            uint targetShipFuelConsumption
-        ) = IShips(shipContract).getShipTravelData(targetShipTokenId);
-
-        // Player luck data
-        uint attackerLuck = IPlayerRegister(playerRegisterContract).getLuck(attacker);
-        uint targetLuck = IPlayerRegister(playerRegisterContract).getLuck(msg.sender);
+            uint targetLuck, 
+            uint attackerLuck
+        ) = IPlayerRegister(playerRegisterContract)
+            .getLuck(msg.sender, attacker);
 
         // Handle fuel consumption
         IInventories(intentoriesContract)
@@ -559,16 +562,70 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
                 msg.sender, 
                 Inventory.Ship, 
                 fuelContact, 
-                targetShipFuelConsumption);
+                targetShipTravelData.fuelConsumption);
 
-        // Get base score
+        // Generate randomness
         uint score = _getRandomNumberAt(_generateRandomSeed(), 0);
 
         // Take ship speed into account
-        score += (targetShipSpeed - attackerShipSpeed) * SPEED_SCALING_FACTOR;
+        if (targetShipTravelData.speed != attackerShipTravelData.speed) 
+        {
+            // Target has more speed
+            uint speedDifference;
+            if (targetShipTravelData.speed > attackerShipTravelData.speed) 
+            {
+                speedDifference = (targetShipTravelData.speed - attackerShipTravelData.speed) * SPEED_SCALING_FACTOR;
+                if (speedDifference > SPEED_INFLUENCE_CAP) 
+                {
+                    speedDifference = SPEED_INFLUENCE_CAP;
+                }
+
+                score += speedDifference;
+            }
+
+            // Attacker has more speed
+            else if (attackerShipTravelData.speed > targetShipTravelData.speed) 
+            {
+                speedDifference = (attackerShipTravelData.speed - targetShipTravelData.speed) * SPEED_SCALING_FACTOR;
+                if (speedDifference > SPEED_INFLUENCE_CAP) 
+                {
+                    speedDifference = SPEED_INFLUENCE_CAP;
+                }
+
+                if (score > speedDifference) 
+                {
+                    score -= speedDifference;
+                }
+                else 
+                {
+                    score = 0;
+                }
+            }
+        }
 
         // Take luck into account
-        score += (targetLuck - attackerLuck) * LUCK_SCALING_FACTOR;
+        if (targetLuck != attackerLuck) 
+        {
+            // Target has more luck
+            if (targetLuck > attackerLuck) 
+            {
+                score += (targetLuck - attackerLuck) * LUCK_SCALING_FACTOR;
+            }
+
+            // Attacker has more luck
+            else if (attackerLuck > targetLuck) 
+            {
+                uint luckDifference = (attackerLuck - targetLuck) * LUCK_SCALING_FACTOR;
+                if (score > luckDifference) 
+                {
+                    score -= luckDifference;
+                }
+                else 
+                {
+                    score = 0;
+                }
+            }
+        }
 
         // Successful escape
         if(score >= BASE_ESCAPE_THRESHOLD)
@@ -577,8 +634,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
             confrontation.expiration = 0;
 
             // Unfreeze players
-            IPlayerFreezeControl(mapsContract).__unfreeze(msg.sender);
-            IPlayerFreezeControl(mapsContract).__unfreeze(attacker);
+            IPlayerFreezeControl(mapsContract).__unfreeze(msg.sender, attacker);
             IPlayerFreezeControl(intentoriesContract).__unfreeze(msg.sender);
 
             // Emit
@@ -592,15 +648,141 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
             // Mark escape attempt
             confrontation.escapeAttempted = true;
 
-            // Emit
+            // Emit 
             emit EscapeFail(attacker, msg.sender, confrontation.location);
         }
     }
 
 
-    function startQuickBattle() 
+    function startQuickBattleAsTarget() 
+       public override
+    {
+        // Ensure that the confrontation has not ended
+        if (confrontations[msg.sender].expiration < block.timestamp) 
+        {
+            revert ConfrontationNotFound(address(0), msg.sender);
+        }
+
+        // Ensure that the response time has not expired (target)
+        if (block.timestamp > confrontations[msg.sender].deadline) 
+        {
+            revert ResponseTimeExpired(msg.sender, confrontations[msg.sender].deadline);
+        }
+
+        _resolveQuickBattle(msg.sender, confrontations[msg.sender].attacker);
+    }
+
+
+    function startQuickBattleAsAttacker() 
        public override 
     {
+        address target = targets[msg.sender];
+        Confrontation storage confrontation = confrontations[target];
+
+        // Ensure that the confrontation has not ended
+        if (confrontation.expiration < block.timestamp) 
+        {
+            revert ConfrontationNotFound(address(0), msg.sender);
+        }
+
+        // Ensure that the response time has not expired (target)
+        if (block.timestamp <= confrontation.deadline) 
+        {
+            revert ResponseTimeNotExpired(msg.sender, confrontation.deadline);
+        }
+
+        _resolveQuickBattle(target, msg.sender);
+    }
+
+
+    function _resolveQuickBattle(address target, address attacker)
+        internal 
+    {
+        // Ship data
+        (
+            ShipBattleData memory targetBattleData,
+            ShipBattleData memory attackerBattleData
+            
+        ) = IShips(shipContract).getShipBattleData( 
+            IPlayerRegister(playerRegisterContract)
+                .getEquippedShips(target, attacker));
+
+        // Player data
+        (
+            uint targetLuck, 
+            uint attackerLuck
+        ) = IPlayerRegister(playerRegisterContract)
+            .getLuck(target, attacker);
+
+        // Generate (pseudo) randomness
+        (
+            uint targetRandomness, 
+            uint attackerRandomness
+        ) = _getRandomNumberPairAt(_generateRandomSeed(), 0, 1);
+
+        // Take luck into account
+        if (attackerLuck != targetLuck)
+        {
+            // Attacker has more luck
+            if (attackerLuck > targetLuck)
+            {
+                attackerRandomness += (attackerLuck - targetLuck) * LUCK_SCALING_FACTOR;
+                if (attackerRandomness > RANDOMNESS_PRECISION_FACTOR)
+                {
+                    attackerRandomness = RANDOMNESS_PRECISION_FACTOR;
+                }
+            }
+
+            // Target has more luck
+            else 
+            {
+                targetRandomness += (targetLuck - attackerLuck) * LUCK_SCALING_FACTOR;
+                if (targetRandomness > RANDOMNESS_PRECISION_FACTOR)
+                {
+                    targetRandomness = RANDOMNESS_PRECISION_FACTOR;
+                }
+            }
+        }
+
+        /// For clarity:
+        /// int attackEffectiveness = ATTACK_EFFECTIVENESS_MARGIN_MIN + (ATTACK_EFFECTIVENESS_MARGIN_SPREAD * targetRandomness / RANDOMNESS_PRECISION_FACTOR);
+        /// uint attackAfterDefense = (attackerShipAttack * DEFENCE_PRECISION / targetShipDefense);
+        /// uint attackEffective = attackAfterDefense * attackEffectiveness / ATTACK_EFFECTIVENESS_MARGIN_PRECISION;
+        uint attackerEffectiveAttack = attackerBattleData.attack 
+            * DEFENCE_PRECISION // Take their defense score into account (ourAttack * 100 / theirDefense)
+            * (ATTACK_EFFECTIVENESS_MARGIN_MIN + (ATTACK_EFFECTIVENESS_MARGIN_SPREAD * attackerRandomness / RANDOMNESS_PRECISION_FACTOR)) // Random effectiveness
+            / (targetBattleData.defence * ATTACK_EFFECTIVENESS_MARGIN_PRECISION);
+
+        uint targetEffectiveAttack = targetBattleData.attack 
+            * DEFENCE_PRECISION // Take their defense score into account (ourAttack * 100 / theirDefense)
+            * (ATTACK_EFFECTIVENESS_MARGIN_MIN + (ATTACK_EFFECTIVENESS_MARGIN_SPREAD * targetRandomness / RANDOMNESS_PRECISION_FACTOR)) // Random effectiveness
+            / (attackerBattleData.defence * ATTACK_EFFECTIVENESS_MARGIN_PRECISION);
         
+        // Calculate turns it takes to win
+        uint turnsUntilAttackerWins = (attackerEffectiveAttack - 1 + MAX_DAMAGE - targetBattleData.damage) / attackerEffectiveAttack;
+        uint turnsUntilTargetWins = (targetEffectiveAttack - 1 + MAX_DAMAGE - attackerBattleData.damage) / targetEffectiveAttack;
+
+        // Attacker wins
+        if (turnsUntilAttackerWins < turnsUntilTargetWins || 
+           (turnsUntilAttackerWins == turnsUntilTargetWins && msg.sender == attacker)) // In case of tie, msg.sender wins
+        {
+
+        }
+
+        // Target wins
+        else 
+        {
+
+        }
+
+        // Mark confrontation as ended
+        confrontations[target].expiration = 0;
+
+        // Unfreeze players
+        IPlayerFreezeControl(mapsContract).__unfreeze(target, attacker);
+        IPlayerFreezeControl(intentoriesContract).__unfreeze(target);
+
+        // Emit
+        emit PirateConfrontationEnd(attacker, target, confrontations[target].location);
     }
 }

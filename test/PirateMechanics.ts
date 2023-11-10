@@ -342,6 +342,7 @@ describe("PirateMechanics Contract", function () {
         // Grant roles
         await playerRegisterInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
         await inventoriesInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
+        await shipTokenInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
         await mapInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
 
         // Create map 

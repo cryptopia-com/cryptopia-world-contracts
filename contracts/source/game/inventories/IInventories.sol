@@ -137,10 +137,23 @@ interface IInventories {
     /**
      * System functions
      */
+    /// @dev Create inventories for `player` and `ship`
+    /// SYSTEM caller is trusted so checks can be omitted
+    /// - Assumes player does not have inventories yet
+    /// - Assumes ship does not have inventories yet
+    /// @param player The player that owns the inventories
+    /// @param ship The tokenId of the ship that owns the inventories
+    /// @param maxWeight_backpack The max weight of the player's backpack
+    /// @param maxWeight_ship The max weight of the ship's inventory
+    function __create(address player, uint ship, uint maxWeight_backpack, uint maxWeight_ship)
+        external;
+
+
     /// @dev Update equipted ship for `player`
     /// @param player The player that equipted the `ship`
     /// @param ship The tokenId of the equipted ship
-    function __setPlayerShip(address player, uint ship) 
+    /// @param maxWeight The new max weight of the ship
+    function __setPlayerShip(address player, uint ship, uint maxWeight) 
         external;
 
 

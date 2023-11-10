@@ -46,6 +46,15 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
         bool escapeAttempted;
     }
 
+    struct Plunder  
+    {
+        // Deadline for the pirate to loot
+        uint64 deadline;
+
+        // Assets that the pirate has looted
+        bytes32 assets;
+    }
+
 
     /**
      * Storage
@@ -76,11 +85,14 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
     uint constant private ATTACK_EFFECTIVENESS_MARGIN_SPREAD = ATTACK_EFFECTIVENESS_MARGIN_MAX - ATTACK_EFFECTIVENESS_MARGIN_MIN; // Spread
     uint constant private ATTACK_EFFECTIVENESS_MARGIN_PRECISION = 100; // Denominator
     
+    /// @dev attacker => target
+    mapping(address => address) public targets;
+
     /// @dev target => Confrontation
     mapping(address => Confrontation) public confrontations;
 
-    /// @dev attacker => target
-    mapping(address => address) public targets;
+    /// @dev target => Plunder
+    mapping(address => Plunder) public plunders;
 
     /// @dev Refs
     address public treasury;
@@ -126,6 +138,26 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
     /// @param target The account of the target
     /// @param location The location at which the confrontation took place
     event EscapeFail(address indexed attacker, address indexed target, uint16 indexed location);
+
+    /// @dev Emits when a battle starts
+    /// @param target The account of the target
+    /// @param targetShip The id of the target's ship
+    /// @param attacker The account of the attacker
+    /// @param attackerShip The id of the attacker's ship
+    event NavalBattleStart(address indexed target, uint targetShip,address indexed attacker, uint attackerShip);
+
+    /// @dev Emits when a battle ends
+    /// @param target The account of the target
+    /// @param targetShip The id of the target's ship
+    /// @param targetDamage The damage that the target has taken during the battle
+    /// @param attacker The account of the attacker
+    /// @param attackerShip The id of the attacker's ship
+    /// @param attackerDamage The damage that the attacker has taken during the battle
+    /// @param attackerWins True if the pirate wins
+    event NavalBattleEnd(
+        address indexed target, uint targetShip, uint8 targetDamage, 
+        address indexed attacker, uint attackerShip, uint8 attackerDamage, 
+        bool attackerWins);
 
 
     /**
@@ -695,17 +727,28 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
     }
 
 
+    // function loot(Inventory[] memory inventory, address[] memory asset, uint[] memory amount, uint[] memory tokenId)
+    //     public virtual override
+    // {
+    //     // TODO in case pirate won the battle they can loot the target within a certain time frame
+    // }
+
+
+    /**
+     * Internal functions
+     */
     function _resolveQuickBattle(address target, address attacker)
         internal 
     {
+        TokenPair memory ships = IPlayerRegister(playerRegisterContract)
+            .getEquippedShips(target, attacker);
+
         // Ship data
         (
             ShipBattleData memory targetBattleData,
             ShipBattleData memory attackerBattleData
             
-        ) = IShips(shipContract).getShipBattleData( 
-            IPlayerRegister(playerRegisterContract)
-                .getEquippedShips(target, attacker));
+        ) = IShips(shipContract).getShipBattleData(ships);
 
         // Player data
         (
@@ -762,25 +805,51 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
         uint turnsUntilAttackerWins = (attackerEffectiveAttack - 1 + MAX_DAMAGE - targetBattleData.damage) / attackerEffectiveAttack;
         uint turnsUntilTargetWins = (targetEffectiveAttack - 1 + MAX_DAMAGE - attackerBattleData.damage) / targetEffectiveAttack;
 
-        // Attacker wins
+        // Emit
+        emit NavalBattleStart(
+            target, ships.tokenId1, // Target 
+            attacker, ships.tokenId2); // Attacker
+
+        // Pirate wins
         if (turnsUntilAttackerWins < turnsUntilTargetWins || 
            (turnsUntilAttackerWins == turnsUntilTargetWins && msg.sender == attacker)) // In case of tie, msg.sender wins
         {
+            // Apply damage
+            IShips(shipContract).__applyDamage(ships, 
+                MAX_DAMAGE - targetBattleData.damage, // Target damage (completely damaged)
+                uint8(turnsUntilAttackerWins * targetEffectiveAttack)); // Attacker damage
 
+            // Allow attacker to plunder
+            plunders[attacker].deadline = uint64(block.timestamp) + MAX_RESPONSE_TIME;
+
+            // Emit
+            emit NavalBattleEnd(
+                target, ships.tokenId1, MAX_DAMAGE - targetBattleData.damage, // Target 
+                attacker, ships.tokenId2, uint8(turnsUntilAttackerWins * targetEffectiveAttack), // Attacker 
+                true); // Pirate wins
         }
 
         // Target wins
         else 
         {
+            // Apply damage
+            IShips(shipContract).__applyDamage(ships, 
+                uint8(turnsUntilTargetWins * attackerEffectiveAttack), // Target damage 
+                MAX_DAMAGE - attackerBattleData.damage); // Attacker damage (completely damaged)
 
+            // Unfreeze players
+            IPlayerFreezeControl(mapsContract).__unfreeze(target, attacker);
+            IPlayerFreezeControl(intentoriesContract).__unfreeze(target);
+
+            // Emit
+            emit NavalBattleEnd(
+                target, ships.tokenId1, uint8(turnsUntilTargetWins * attackerEffectiveAttack), // Target 
+                attacker, ships.tokenId2, MAX_DAMAGE - attackerBattleData.damage, // Attacker 
+                false); // Target wins
         }
 
         // Mark confrontation as ended
         confrontations[target].expiration = 0;
-
-        // Unfreeze players
-        IPlayerFreezeControl(mapsContract).__unfreeze(target, attacker);
-        IPlayerFreezeControl(intentoriesContract).__unfreeze(target);
 
         // Emit
         emit PirateConfrontationEnd(attacker, target, confrontations[target].location);

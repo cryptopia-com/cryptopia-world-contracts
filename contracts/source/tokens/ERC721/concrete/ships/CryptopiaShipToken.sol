@@ -121,6 +121,15 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
 
 
     /**
+     * Events
+     */
+    /// @dev Emitted when the ship with `tokenId` took `damage`
+    /// @param tokenId The id of the ship that took damage
+    /// @param damage The amount of damage that was taken
+    event ApplyDamage(uint indexed tokenId, uint8 damage);
+
+
+    /**
      * Errors
      */
     /// @dev Emitted when `ship` does not exist
@@ -624,6 +633,23 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     {
         shipInstances[prev].locked = false;
         shipInstances[next].locked = true;
+    }
+
+
+    /// @dev Apply damage to a ship
+    /// @param ships_ The ids of the ships to apply damage to
+    /// @param damage1 The amount of damage to apply to ship 1
+    /// @param damage2 The amount of damage to apply to ship 2
+    function __applyDamage(TokenPair memory ships_, uint8 damage1, uint8 damage2)
+       public virtual override 
+        onlyRole(SYSTEM_ROLE)
+    {
+        shipInstances[ships_.tokenId1].damage += damage1;
+        shipInstances[ships_.tokenId2].damage += damage2;
+
+        // Emit 
+        emit ApplyDamage(ships_.tokenId1, damage1);
+        emit ApplyDamage(ships_.tokenId2, damage2);
     }
 
 

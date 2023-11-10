@@ -529,15 +529,44 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     }
 
 
+    /// @dev Create inventories for `player` and `ship`
+    /// SYSTEM caller is trusted so checks can be omitted
+    /// - Assumes player does not have inventories yet
+    /// - Assumes ship does not have inventories yet
+    /// @param player The player that owns the inventories
+    /// @param ship The tokenId of the ship that owns the inventories
+    /// @param maxWeight_backpack The max weight of the player's backpack
+    /// @param maxWeight_ship The max weight of the ship's inventory
+    function __create(address player, uint ship, uint maxWeight_backpack, uint maxWeight_ship)
+        public virtual override 
+    {
+        // Set ship
+        playerToShip[player] = ship;
+
+        // Create inventories
+        playerInventories[player].maxWeight = maxWeight_backpack;
+        shipInventories[ship].maxWeight = maxWeight_ship;
+
+        // Emit
+        emit PlayerInventoryChange(player, maxWeight_backpack);
+        emit ShipInventoryChange(ship, maxWeight_ship);
+    }
+
+
     /// @dev Update equipted ship for `player`
     /// @param player The player that equipted the `ship`
     /// @param ship The tokenId of the equipted ship
-    function __setPlayerShip(address player, uint ship) 
-        public virtual override  
+    /// @param maxWeight The new max weight of the ship
+    function __setPlayerShip(address player, uint ship, uint maxWeight) 
+        public virtual override 
         notFrozen(player)
         onlyRole(SYSTEM_ROLE) 
     {
+        // Set ship
         playerToShip[player] = ship;
+
+        // Update inventory
+        _setShipInventory(ship, maxWeight);
     }
 
 
@@ -549,22 +578,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         public virtual override 
         onlyRole(SYSTEM_ROLE) 
     {
-        if (shipInventories[ship].maxWeight == maxWeight)
-        {
-            return;
-        }
-        
-        // Check if ship not is too heavy
-        if (shipInventories[ship].weight > maxWeight)
-        {
-            revert ShipInventoryTooHeavy(ship);
-        }
-
-        // Update
-        shipInventories[ship].maxWeight = maxWeight;
-
-        // Emit 
-        emit ShipInventoryChange(ship, maxWeight);
+        _setShipInventory(ship, maxWeight);
     }
 
 
@@ -852,6 +866,32 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /**
      * Internal functions
      */
+    /// @dev Update a ships inventory max weight
+    /// - Fails if the ships weight exeeds the new max weight
+    /// @param ship The tokenId of the ship to update
+    /// @param maxWeight The new max weight of the ship
+    function _setShipInventory(uint ship, uint maxWeight)
+        internal 
+    {
+        if (shipInventories[ship].maxWeight == maxWeight)
+        {
+            return;
+        }
+        
+        // Check if ship not is too heavy
+        if (shipInventories[ship].weight > maxWeight)
+        {
+            revert ShipInventoryTooHeavy(ship);
+        }
+
+        // Update
+        shipInventories[ship].maxWeight = maxWeight;
+
+        // Emit 
+        emit ShipInventoryChange(ship, maxWeight);
+    }
+
+
     /// @dev Transfer fungible `asset` from 'inventory_from' to `inventory_to`
     /// @param player_from Owner of the asset
     /// @param player_to The receiver of the asset (can be the same as player_from)

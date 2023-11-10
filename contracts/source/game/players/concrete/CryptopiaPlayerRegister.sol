@@ -475,10 +475,7 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
 
         // Update inventory
         IInventories(inventoriesContract)
-            .__setPlayerShip(player, ship);
-        
-        IInventories(inventoriesContract)
-            .__setShipInventory(ship, shipData.inventory);
+            .__setPlayerShip(player, ship, shipData.inventory);
 
         // Pirate?
         if (shipData.subFaction == SubFaction.Pirate && playerDatas[player].subFaction != SubFaction.Pirate)
@@ -646,7 +643,7 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
         playerData.speed = STATS_SPEED_BASE;
 
         // Create ship
-        (uint ship, uint inventory) = IShips(shipTokenContract)
+        (uint ship, uint shipInventory) = IShips(shipTokenContract)
             .__mintStarterShip(account, faction, true);
 
         // Assign ship
@@ -654,13 +651,7 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
 
         // Create inventory
         IInventories(inventoriesContract)
-            .__setPlayerInventory(account, INVENTORY_MAX_WEIGHT_BASE);
-
-        IInventories(inventoriesContract)
-            .__setPlayerShip(account, playerData.ship);
-        
-        IInventories(inventoriesContract)
-            .__setShipInventory(playerData.ship, inventory);
+            .__create(account, playerData.ship, INVENTORY_MAX_WEIGHT_BASE, shipInventory);
 
         // Setup crafting
         ICrafting(craftingContract)

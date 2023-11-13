@@ -27,7 +27,7 @@ interface IPirateMechanics {
     /// @param target The account of the defender
     /// @param indexInRoute The index of the tile in the route that the target is traveling
     /// 
-    /// Requirements:
+    /// @notice Requirements:
     /// - The attacker must have entered the map
     /// - The attacker must not be traveling
     /// - The attacker must be embarked
@@ -54,22 +54,26 @@ interface IPirateMechanics {
     /// @dev The escape calculation is based on a combination of randomness, ship speed differences, and 
     /// player luck differences. A base score is generated using a pseudo-random seed. To this base score, 
     /// we add the scaled difference in ship speeds and player luck values. 
-    ///
-    /// The final score determines the outcome of the escape attempt:
+    /// @notice The final score determines the outcome of the escape attempt:
     /// - If the score is greater than or equal to the BASE_ESCAPE_THRESHOLD, the escape is successful
     /// - Otherwise, the escape fails
-    ///
-    /// Factors like ship speed and player luck play a crucial role in influencing the escape outcome, ensuring that 
-    /// players with faster ships and higher luck values have a better chance of escaping
+    /// @notice Factors like ship speed and player luck play a crucial role in influencing the escape outcome, 
+    /// ensuring that players with faster ships and higher luck values have a better chance of escaping
     function attemptEscape() 
         external;
 
 
+    /// @dev Allows the target to start a quick battle to resolve the confrontation
+    /// @notice The target is allowed to start a quick battle if the response time has not yet expired
+    /// @notice The player that initiates the battle has and advantage over the other player in case of a tie
     function startQuickBattleAsTarget() 
        external;
 
 
-    function startQuickBattleAsAttacker() 
+    /// @dev Allows the pirate to start a quick battle to resolve the confrontation
+    /// @notice The pirate is allowed to start a quick battle if the response time has expired
+    /// @notice The player that initiates the battle has and advantage over the other player in case of a tie
+    function startQuickBattleAsPirate() 
        external;
 
 

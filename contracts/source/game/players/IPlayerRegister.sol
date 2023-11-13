@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: ISC
 pragma solidity ^0.8.20 < 0.9.0;
 
+import "../../types/boxes/Uint24Box2.sol";
 import "../../tokens/ERC721/types/ERC721DataTypes.sol";
 import "../../accounts/types/AccountEnums.sol";
 import "../types/FactionEnums.sol";
@@ -132,14 +133,10 @@ interface IPlayerRegister {
     /// @dev Returns `player1` and `player2` luck
     /// @param player1 CryptopiaAccount address (registered as a player)
     /// @param player2 CryptopiaAccount address (registered as a player)
-    /// @return luck1 Luck for player1; STATS_BASE_LUCK + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return luck2 Luck for player2; STATS_BASE_LUCK + (0 - MAX_LEVEL player choice when leveling up)
+    /// @return luck STATS_BASE_LUCK + (0 - MAX_LEVEL player choice when leveling up)
     function getLuck(address player1, address player2) 
         external view 
-        returns (
-            uint24 luck1, 
-            uint24 luck2
-        );
+        returns (Uint24Box2 memory);
 
 
     /// @dev Returns `player` charisma

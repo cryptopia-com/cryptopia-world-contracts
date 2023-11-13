@@ -362,6 +362,16 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     }
 
 
+    /// @dev Retrieve tile safety score (0-100)
+    /// @param tileIndex Index of the tile to retrieve safety multiplier for
+    function getTileSafety(uint16 tileIndex)
+        public virtual view 
+        returns (uint8)
+    {
+        return tiles[tileIndex].safety;
+    }
+
+
     /// @dev True if the tile with `tileIndex` is adjacent to `adjecentTileIndex`
     /// @param tileIndex The tile to test against
     /// @param adjecentTileIndex The tile to test with
@@ -899,6 +909,8 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
 
         tiles[index].initialized = true;
         tiles[index].mapIndex = uint16(mapsIndex.length - 1);
+        tiles[index].group = values.group;
+        tiles[index].safety = values.safety;
         tiles[index].biome = values.biome;
         tiles[index].terrain = values.terrain;
         tiles[index].elevation = values.elevation;

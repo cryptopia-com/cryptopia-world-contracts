@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
+import "../../../types/boxes/Uint24Box2.sol";
 import "../../../accounts/IAccountRegister.sol";
 import "../../../accounts/types/AccountEnums.sol";
 import "../../../accounts/errors/AccountErrors.sol";
@@ -387,17 +388,14 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     /// @dev Returns `player1` and `player2` luck
     /// @param player1 CryptopiaAccount address (registered as a player)
     /// @param player2 CryptopiaAccount address (registered as a player)
-    /// @return luck1 Luck for player1; STATS_BASE_LUCK + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return luck2 Luck for player2; STATS_BASE_LUCK + (0 - MAX_LEVEL player choice when leveling up)
+    /// @return luck STATS_BASE_LUCK + (0 - MAX_LEVEL player choice when leveling up)
     function getLuck(address player1, address player2) 
         public virtual override view 
-        returns (
-            uint24 luck1, 
-            uint24 luck2
-        )
+        returns (Uint24Box2 memory)
     {
-        luck1 = playerDatas[player1].luck;
-        luck2 = playerDatas[player2].luck;
+        return Uint24Box2(
+            playerDatas[player1].luck, 
+            playerDatas[player2].luck);
     }
 
 

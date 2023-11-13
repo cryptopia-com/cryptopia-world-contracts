@@ -20,6 +20,7 @@ export interface Map {
 
 export interface Tile {
     group: BigNumberish,
+    safety: BigNumberish,
     biome: Biome;
     terrain: Terrain;
     elevation: BigNumberish;

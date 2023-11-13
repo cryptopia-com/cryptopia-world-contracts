@@ -29,6 +29,13 @@ interface IMaps {
         returns (TileData memory);
 
 
+    /// @dev Retrieve tile safety score (0-100)
+    /// @param tileIndex Index of the tile to retrieve safety multiplier for
+    function getTileSafety(uint16 tileIndex)
+        external view 
+        returns (uint8);
+
+
     /// @dev True if the tile with `tileIndex` is adjacent to `adjecentTileIndex`
     /// @param tileIndex The tile to test against
     /// @param adjecentTileIndex The tile to test with

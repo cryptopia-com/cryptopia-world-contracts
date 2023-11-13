@@ -16,6 +16,10 @@ struct Tile
     /// @notice Landmasses are global and can span multiple maps
     uint16 group;
 
+    /// @dev Ranges from 0 to 100 and indicates the safety level of the tile 
+    /// @notice 100 - safety for pirates
+    uint8 safety; 
+
     /// @dev The type of biome 
     /// {None, Plains, Grassland, Forest, RainForest, Desert, Tundra, Swamp, Reef}
     Biome biome;

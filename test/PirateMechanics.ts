@@ -6,7 +6,7 @@ import { getParamFromEvent, containsEvent } from '../scripts/helpers/events';
 import { getTransferProposalSignature } from "../scripts/helpers/meta";
 import { TransferProposal } from "../scripts/types/meta";
 import { ZERO_ADDRESS } from "./settings/constants";
-import { REVERT_MODE, MapsSettings, PirateMechanicsConfig } from "./settings/config";
+import { REVERT_MODE, MapConfig, PlayerConfig, ShipConfig, PirateMechanicsConfig } from "./settings/config";
 import { SYSTEM_ROLE } from "./settings/roles";   
 import { Resource, Terrain, Biome, Inventory } from '../scripts/types/enums';
 import { Asset, Map } from "../scripts/types/input";
@@ -503,7 +503,7 @@ describe("PirateMechanics Contract", function () {
             }
 
             // Cleanup
-            await time.increase(turns * MapsSettings.MOVEMENT_TURN_DURATION);
+            await time.increase(turns * MapConfig.MOVEMENT_TURN_DURATION);
         });
 
         it ("Should not allow a pirate to intercept from a location that's not on the water", async function () {
@@ -742,7 +742,7 @@ describe("PirateMechanics Contract", function () {
 
             const turns = 2;
             const totalTilesPacked = 2;
-            const totalTravelTime = turns * MapsSettings.MOVEMENT_TURN_DURATION;
+            const totalTravelTime = turns * MapConfig.MOVEMENT_TURN_DURATION;
             const interceptionWindowInSeconds = totalTravelTime / totalTilesPacked / 2;
 
             const mapContractAddress = await mapInstance.getAddress();
@@ -819,7 +819,7 @@ describe("PirateMechanics Contract", function () {
 
             const turns = 2;
             const totalTilesPacked = 2;
-            const totalTravelTime = turns * MapsSettings.MOVEMENT_TURN_DURATION;
+            const totalTravelTime = turns * MapConfig.MOVEMENT_TURN_DURATION;
             const interceptionWindowInSeconds = totalTravelTime / totalTilesPacked / 2;
 
             const fuelAsset = getAssetByResource(Resource.Fuel);
@@ -898,7 +898,7 @@ describe("PirateMechanics Contract", function () {
 
             const turns = 2;
             const totalTilesPacked = 2;
-            const totalTravelTime = turns * MapsSettings.MOVEMENT_TURN_DURATION;
+            const totalTravelTime = turns * MapConfig.MOVEMENT_TURN_DURATION;
             const interceptionWindowInSeconds = totalTravelTime / totalTilesPacked / 2;
 
             const fuelAsset = getAssetByResource(Resource.Fuel);
@@ -1046,7 +1046,7 @@ describe("PirateMechanics Contract", function () {
             await time.increaseTo(arrival);
 
             // Ensure the target is idle
-            await time.increase(MapsSettings.PLAYER_IDLE_TIME);
+            await time.increase(MapConfig.PLAYER_IDLE_TIME);
 
             // Act
             const calldata = pirateMechanicsInstance.interface
@@ -1984,6 +1984,11 @@ describe("PirateMechanics Contract", function () {
 
                 if (!escapeSuccess)
                 {
+                    if (i === PirateMechanicsConfig.MAX_ESCAPE_ATTEMPTS - 1)
+                    {
+                        throw new Error(`Failed to escape after ${PirateMechanicsConfig.MAX_ESCAPE_ATTEMPTS} attempts`);
+                    }
+
                     continue;
                 }
     
@@ -2066,6 +2071,11 @@ describe("PirateMechanics Contract", function () {
 
                 if (escapeSuccess)
                 {
+                    if (i === PirateMechanicsConfig.MAX_ESCAPE_ATTEMPTS - 1)
+                    {
+                        throw new Error(`Failed to escape after ${PirateMechanicsConfig.MAX_ESCAPE_ATTEMPTS} attempts`);
+                    }
+
                     continue;
                 }
     
@@ -2124,16 +2134,17 @@ describe("PirateMechanics Contract", function () {
         /**
          * Deploy players
          */
-        before(async () => {
+        let testAccountCounter = 0;
+        const setupTestAccounts = (async () => {
 
             // Create pirate account
-            const createPirateAccountTransaction = await playerRegisterInstance.create([account1], 1, 0, "QuickBattle_Pirate".toBytes32(), 0, 0);
+            const createPirateAccountTransaction = await playerRegisterInstance.create([account1], 1, 0, `${testAccountCounter}_QuickBattle_Pirate`.toBytes32(), 0, 0);
             const createPirateAccountReceipt = await createPirateAccountTransaction.wait();
             const pirateAccountAddress = getParamFromEvent(playerRegisterInstance, createPirateAccountReceipt, "account", "RegisterPlayer");
             pirateAccountInstance = await ethers.getContractAt("CryptopiaAccount", pirateAccountAddress);
 
             // Create target account
-            const createTargetAccountTransaction = await playerRegisterInstance.create([account2], 1, 0, "QuickBattle_Target".toBytes32(), 0, 0);
+            const createTargetAccountTransaction = await playerRegisterInstance.create([account2], 1, 0, `${testAccountCounter}_QuickBattle_Target`.toBytes32(), 0, 0);
             const createTargetAccountReceipt = await createTargetAccountTransaction.wait();
             const targetAccountAddress = getParamFromEvent(playerRegisterInstance, createTargetAccountReceipt, "account", "RegisterPlayer");
             targetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAccountAddress);
@@ -2156,11 +2167,49 @@ describe("PirateMechanics Contract", function () {
             await pirateAccountInstance
                 .connect(await ethers.provider.getSigner(account1))
                 .submitTransaction(await pirateMechanicsInstance.getAddress(), 0, interceptCalldata);
+
+            testAccountCounter++;
         });
 
-        it ("Should allow a target to resolve a confrontation through a quick battle", async function () {
+        it ("Should not allow a target to start a quick battle after the target's response time expired", async function () {
 
             // Setup
+            await setupTestAccounts();
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const targetAccountSigner = await ethers.provider.getSigner(account2);
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+
+            const confrontation = await pirateMechanicsInstance
+                .getConfrontation(targetAccountAddress);
+
+            await time.increaseTo(confrontation.deadline + BigInt(1));
+
+            // Act
+            const quickBattleCalldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("startQuickBattleAsTarget");
+
+            const operation = targetAccountInstance
+                .connect(targetAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, quickBattleCalldata);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(pirateMechanicsInstance, "ResponseTimeExpired")
+                    .withArgs(targetAccountAddress, confrontation.deadline);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(pirateAccountInstance, "ExecutionFailure");
+            }
+        });
+
+        it ("Should allow a target to start a quick battle before the target's response time expires", async function () {
+
+            // Setup
+            await setupTestAccounts();
             const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
             const targetAccountSigner = await ethers.provider.getSigner(account2);
             const targetAccountAddress = await targetAccountInstance.getAddress();
@@ -2178,6 +2227,248 @@ describe("PirateMechanics Contract", function () {
             await expect(operation).to
                 .emit(pirateMechanicsInstance, "PirateConfrontationEnd")
                 .withArgs(pirateAccountAddress, targetAccountAddress, 0);
+        });
+
+        it ("Should not allow a target to start a quick battle twice", async function () {
+
+            // Setup
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const targetAccountSigner = await ethers.provider.getSigner(account2);
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+
+            // Act
+            const quickBattleCalldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("startQuickBattleAsTarget");
+
+            const operation = targetAccountInstance
+                .connect(targetAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, quickBattleCalldata);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(pirateMechanicsInstance, "ConfrontationNotFound")
+                    .withArgs(ZERO_ADDRESS, targetAccountAddress);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(pirateAccountInstance, "ExecutionFailure");
+            }
+        });
+
+        it ("Should allow target to win a quick battle", async function () {
+
+            // Setup
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+
+            for (let i = 0; i < PirateMechanicsConfig.MAX_QUICK_BATTLE_ATTEMPTS; i++)
+            {
+                await setupTestAccounts();
+                const targetAccountSigner = await ethers.provider.getSigner(account2);
+                const targetAccountAddress = await targetAccountInstance.getAddress();
+                const pirateAccountAddress = await pirateAccountInstance.getAddress();
+
+                // Act
+                const quickBattleCalldata = pirateMechanicsInstance.interface
+                    .encodeFunctionData("startQuickBattleAsTarget");
+
+                const transaction = await targetAccountInstance
+                    .connect(targetAccountSigner)
+                    .submitTransaction(pirateMechanicsAddress, 0, quickBattleCalldata);
+                    const receipt = await transaction.wait();
+
+                const attackerWins = getParamFromEvent(
+                    pirateMechanicsInstance, receipt, "attackerWins", "NavalBattleEnd");
+
+                if (attackerWins)
+                {
+                    if (i === PirateMechanicsConfig.MAX_QUICK_BATTLE_ATTEMPTS - 1)
+                    {
+                        throw new Error(`Failed to win a quick battle after ${PirateMechanicsConfig.MAX_QUICK_BATTLE_ATTEMPTS} attempts`);
+                    }
+
+                    continue;
+                }
+    
+                // Assert
+                await expect(transaction).to
+                    .emit(pirateMechanicsInstance, "NavalBattleEnd");
+
+                await expect(transaction).to
+                    .emit(pirateMechanicsInstance, "PirateConfrontationEnd")
+                    .withArgs(pirateAccountAddress, targetAccountAddress, 0);
+
+                break;
+            }
+        });
+
+        it ("Should apply max damage to the pirate ship when the target wins", async function () {
+            
+            // Setup 
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+
+            // Act
+            const pirateShip = await playerRegisterInstance.getEquippedShip(pirateAccountAddress);
+            const pirateShipBattleData = await shipTokenInstance["getShipBattleData(uint256)"].call(shipTokenInstance, pirateShip);
+
+            // Assert
+            expect(pirateShipBattleData.damage).to.be.eq(ShipConfig.MAX_DAMAGE);
+        });
+
+        it ("Should not allow a pirate to start a quick battle before the target's response time expired", async function () {
+
+            // Setup
+            await setupTestAccounts();
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const pirateAccountSigner = await ethers.provider.getSigner(account1);
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+
+            const confrontation = await pirateMechanicsInstance
+                .getConfrontation(targetAccountAddress);
+
+            // Act
+            const quickBattleCalldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("startQuickBattleAsAttacker");
+
+            const operation = pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, quickBattleCalldata);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(pirateMechanicsInstance, "ResponseTimeNotExpired")
+                    .withArgs(targetAccountAddress, confrontation.deadline);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(pirateAccountInstance, "ExecutionFailure");
+            }
+        });
+
+        it ("Should allow a pirate to start a quick battle after the target's response time expired", async function () {
+
+            // Setup
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const pirateAccountSigner = await ethers.provider.getSigner(account1);
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+
+            const confrontation = await pirateMechanicsInstance
+                .getConfrontation(targetAccountAddress);
+
+            await time.increaseTo(confrontation.deadline + BigInt(1));
+
+            // Act
+            const quickBattleCalldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("startQuickBattleAsAttacker");
+
+            const operation = pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, quickBattleCalldata);
+
+            // Assert
+            // Assert
+            await expect(operation).to
+                .emit(pirateMechanicsInstance, "PirateConfrontationEnd")
+                .withArgs(pirateAccountAddress, targetAccountAddress, 0);
+        });
+
+        it ("Should not allow a pirate to start a quick battle twice", async function () {
+
+            // Setup
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const pirateAccountSigner = await ethers.provider.getSigner(account1);
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+
+            // Act
+            const quickBattleCalldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("startQuickBattleAsAttacker");
+
+            const operation = pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, quickBattleCalldata);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(pirateMechanicsInstance, "ConfrontationNotFound")
+                    .withArgs(pirateAccountAddress, ZERO_ADDRESS);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(pirateAccountInstance, "ExecutionFailure");
+            }
+        });
+
+        it ("Should allow pirate to win a quick battle", async function () {
+
+            // Setup
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+
+            for (let i = 0; i < PirateMechanicsConfig.MAX_QUICK_BATTLE_ATTEMPTS; i++)
+            {
+                await setupTestAccounts();
+                const pirateAccountSigner = await ethers.provider.getSigner(account1);
+                const targetAccountAddress = await targetAccountInstance.getAddress();
+                const pirateAccountAddress = await pirateAccountInstance.getAddress();
+
+                const confrontation = await pirateMechanicsInstance
+                    .getConfrontation(targetAccountAddress);
+
+                await time.increaseTo(confrontation.deadline + BigInt(1));
+
+                // Act
+                const quickBattleCalldata = pirateMechanicsInstance.interface
+                    .encodeFunctionData("startQuickBattleAsAttacker");
+
+                const transaction = await pirateAccountInstance
+                    .connect(pirateAccountSigner)
+                    .submitTransaction(pirateMechanicsAddress, 0, quickBattleCalldata);
+                const receipt = await transaction.wait();
+
+                const attackerWins = getParamFromEvent(
+                    pirateMechanicsInstance, receipt, "attackerWins", "NavalBattleEnd");
+
+                if (!attackerWins)
+                {
+                    if (i === PirateMechanicsConfig.MAX_QUICK_BATTLE_ATTEMPTS - 1)
+                    {
+                        throw new Error(`Failed to win a quick battle after ${PirateMechanicsConfig.MAX_QUICK_BATTLE_ATTEMPTS} attempts`);
+                    }
+
+                    continue;
+                }
+    
+                // Assert
+                await expect(transaction).to
+                    .emit(pirateMechanicsInstance, "NavalBattleEnd");
+
+                await expect(transaction).to
+                    .emit(pirateMechanicsInstance, "PirateConfrontationEnd")
+                    .withArgs(pirateAccountAddress, targetAccountAddress, 0);
+
+                break;
+            }
+        });
+
+        it ("Should apply max damage to the target ship when the pirate wins", async function () {
+            
+            // Setup 
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+
+            // Act
+            const targetShip = await playerRegisterInstance.getEquippedShip(targetAccountAddress);
+            const targetShipBattleData = await shipTokenInstance["getShipBattleData(uint256)"].call(shipTokenInstance, targetShip);
+
+            // Assert
+            expect(targetShipBattleData.damage).to.be.eq(ShipConfig.MAX_DAMAGE);
         });
     });
 

@@ -73,7 +73,7 @@ interface IPirateMechanics {
     /// @dev Allows the pirate to start a quick battle to resolve the confrontation
     /// @notice The pirate is allowed to start a quick battle if the response time has expired
     /// @notice The player that initiates the battle has and advantage over the other player in case of a tie
-    function startQuickBattleAsPirate() 
+    function startQuickBattleAsAttacker() 
        external;
 
 

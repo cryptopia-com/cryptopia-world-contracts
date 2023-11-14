@@ -796,9 +796,10 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
         }
 
         /// For clarity:
-        /// int attackEffectiveness = ATTACK_EFFECTIVENESS_MARGIN_MIN + (ATTACK_EFFECTIVENESS_MARGIN_SPREAD * targetRandomness / RANDOMNESS_PRECISION_FACTOR);
-        /// uint attackAfterDefense = (attackerShipAttack * DEFENCE_PRECISION / targetShipDefense);
-        /// uint attackEffective = attackAfterDefense * attackEffectiveness / ATTACK_EFFECTIVENESS_MARGIN_PRECISION;
+        /// safetyMultiplier = (isPirate ? TILE_SAFETY_PRECISION - tileSafety : tileSafety) / TILE_SAFETY_PRECISION;
+        /// attackEffectiveness = ATTACK_EFFECTIVENESS_MARGIN_MIN + (ATTACK_EFFECTIVENESS_MARGIN_SPREAD * targetRandomness / RANDOMNESS_PRECISION_FACTOR);
+        /// attackAfterDefense = (attackerShipAttack * DEFENCE_PRECISION / targetShipDefense) / ATTACK_EFFECTIVENESS_MARGIN_PRECISION;
+        /// attackEffective = safetyMultiplier * attackAfterDefense * attackEffectiveness;
         UintBox2 memory effectiveAttack = UintBox2(
 
             // Target 

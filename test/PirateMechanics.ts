@@ -325,7 +325,6 @@ describe("PirateMechanics Contract", function () {
             await upgrades.deployProxy(
                 PirateMechanicsFactory, 
                 [
-                    treasury,
                     playerRegisterAddress,
                     assetRegisterAddress,
                     mapsAddress,
@@ -705,7 +704,7 @@ describe("PirateMechanics Contract", function () {
             {
                 await expect(operation).to.be
                     .revertedWithCustomError(pirateMechanicsInstance, "TargetNotReachable")
-                    .withArgs(pirateAccountAddress, targetAccountAddress);
+                    .withArgs(targetAccountAddress, pirateAccountAddress);
             }
             else
             {
@@ -779,7 +778,7 @@ describe("PirateMechanics Contract", function () {
             {
                 await expect(operation).to.be
                     .revertedWithCustomError(pirateMechanicsInstance, "TargetNotReachable")
-                    .withArgs(pirateAccountAddress, targetAccountAddress);
+                    .withArgs(targetAccountAddress, pirateAccountAddress);
             }
             else
             {
@@ -945,7 +944,7 @@ describe("PirateMechanics Contract", function () {
             // Assert
             await expect(transaction).to
                 .emit(pirateMechanicsInstance, "PirateConfrontationStart")
-                .withArgs(pirateAccountAddress, targetAccountAddress, 0, expectedDeadline, expectedExpiration);
+                .withArgs(targetAccountAddress, pirateAccountAddress, 0, expectedDeadline, expectedExpiration);
         }); 
 
         it ("Should not allow a pirate to intercept a target that's already been intercepted", async function () {
@@ -1138,7 +1137,7 @@ describe("PirateMechanics Contract", function () {
             // Assert
             await expect(transaction).to
                 .emit(pirateMechanicsInstance, "PirateConfrontationStart")
-                .withArgs(anotherPirateAccountAddress, anotherTargetAccountAddress, path[0], expectedDeadline, expectedExpiration);
+                .withArgs(anotherTargetAccountAddress, anotherPirateAccountAddress, path[0], expectedDeadline, expectedExpiration);
         });
 
         it("Should freeze the target's inventories when intercepted", async function () {
@@ -1336,7 +1335,7 @@ describe("PirateMechanics Contract", function () {
             {
                 await expect(operation).to.be
                     .revertedWithCustomError(pirateMechanicsInstance, "ConfrontationNotFound")
-                    .withArgs(pirateAccountAddress, ZERO_ADDRESS);
+                    .withArgs(ZERO_ADDRESS, pirateAccountAddress);
             }
             else
             {
@@ -1600,7 +1599,7 @@ describe("PirateMechanics Contract", function () {
             // Assert
             await expect(operation).to
                 .emit(pirateMechanicsInstance, "PirateConfrontationEnd")
-                .withArgs(pirateAccountAddress, targetAccountAddress, 0);
+                .withArgs(targetAccountAddress, pirateAccountAddress, 0);
         });
 
         it("Should transfer the correct amount of assets from the target to the pirate taking charisma into account", async function () {
@@ -1727,7 +1726,7 @@ describe("PirateMechanics Contract", function () {
             {
                 await expect(operation).to.be
                     .revertedWithCustomError(pirateMechanicsInstance, "ConfrontationNotFound")
-                    .withArgs(ZERO_ADDRESS, targetAccountAddress);
+                    .withArgs(targetAccountAddress, ZERO_ADDRESS);
             }
             else
             {
@@ -1904,17 +1903,17 @@ describe("PirateMechanics Contract", function () {
             {
                 await expect(transaction).to
                     .emit(pirateMechanicsInstance, "EscapeSuccess")
-                    .withArgs(pirateAccountAddress, targetAccountAddress, 0);
+                    .withArgs(targetAccountAddress, pirateAccountAddress, 0);
 
                 await expect(transaction).to
                     .emit(pirateMechanicsInstance, "PirateConfrontationEnd")
-                    .withArgs(pirateAccountAddress, targetAccountAddress, 0);
+                    .withArgs(targetAccountAddress, pirateAccountAddress, 0);
             }
             else 
             {
                 await expect(transaction).to
                     .emit(pirateMechanicsInstance, "EscapeFail")
-                    .withArgs(pirateAccountAddress, targetAccountAddress, 0);
+                    .withArgs(targetAccountAddress, pirateAccountAddress, 0);
             }
         });
 
@@ -1995,11 +1994,11 @@ describe("PirateMechanics Contract", function () {
                 // Assert
                 await expect(transaction).to
                     .emit(pirateMechanicsInstance, "EscapeSuccess")
-                    .withArgs(pirateAccountAddress, targetAccountAddress, 0);
+                    .withArgs(targetAccountAddress, pirateAccountAddress, 0);
 
                 await expect(transaction).to
                     .emit(pirateMechanicsInstance, "PirateConfrontationEnd")
-                    .withArgs(pirateAccountAddress, targetAccountAddress, 0);
+                    .withArgs(targetAccountAddress, pirateAccountAddress, 0);
 
                 break;
             }
@@ -2082,7 +2081,7 @@ describe("PirateMechanics Contract", function () {
                 // Assert
                 await expect(transaction).to
                     .emit(pirateMechanicsInstance, "EscapeFail")
-                    .withArgs(pirateAccountAddress, targetAccountAddress, 0);
+                    .withArgs(targetAccountAddress, pirateAccountAddress, 0);
 
                 await expect(transaction).to.not
                     .emit(pirateMechanicsInstance, "PirateConfrontationEnd");
@@ -2226,7 +2225,7 @@ describe("PirateMechanics Contract", function () {
             // Assert
             await expect(operation).to
                 .emit(pirateMechanicsInstance, "PirateConfrontationEnd")
-                .withArgs(pirateAccountAddress, targetAccountAddress, 0);
+                .withArgs(targetAccountAddress, pirateAccountAddress, 0);
         });
 
         it ("Should not allow a target to start a quick battle twice", async function () {
@@ -2249,7 +2248,7 @@ describe("PirateMechanics Contract", function () {
             {
                 await expect(operation).to.be
                     .revertedWithCustomError(pirateMechanicsInstance, "ConfrontationNotFound")
-                    .withArgs(ZERO_ADDRESS, targetAccountAddress);
+                    .withArgs(targetAccountAddress, ZERO_ADDRESS);
             }
             else
             {
@@ -2298,10 +2297,23 @@ describe("PirateMechanics Contract", function () {
 
                 await expect(transaction).to
                     .emit(pirateMechanicsInstance, "PirateConfrontationEnd")
-                    .withArgs(pirateAccountAddress, targetAccountAddress, 0);
+                    .withArgs(targetAccountAddress, pirateAccountAddress, 0);
 
                 break;
             }
+        });
+
+        it ("Should apply some damage to the target ship when the target wins", async function () {
+            
+            // Setup 
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+
+            // Act
+            const targetShip = await playerRegisterInstance.getEquippedShip(targetAccountAddress);
+            const targetShipBattleData = await shipTokenInstance["getShipBattleData(uint256)"].call(shipTokenInstance, targetShip);
+
+            // Assert
+            expect(targetShipBattleData.damage).to.be.lessThanOrEqual(ShipConfig.MAX_DAMAGE);
         });
 
         it ("Should apply max damage to the pirate ship when the target wins", async function () {
@@ -2372,10 +2384,9 @@ describe("PirateMechanics Contract", function () {
                 .submitTransaction(pirateMechanicsAddress, 0, quickBattleCalldata);
 
             // Assert
-            // Assert
             await expect(operation).to
                 .emit(pirateMechanicsInstance, "PirateConfrontationEnd")
-                .withArgs(pirateAccountAddress, targetAccountAddress, 0);
+                .withArgs(targetAccountAddress, pirateAccountAddress, 0);
         });
 
         it ("Should not allow a pirate to start a quick battle twice", async function () {
@@ -2398,7 +2409,7 @@ describe("PirateMechanics Contract", function () {
             {
                 await expect(operation).to.be
                     .revertedWithCustomError(pirateMechanicsInstance, "ConfrontationNotFound")
-                    .withArgs(pirateAccountAddress, ZERO_ADDRESS);
+                    .withArgs(ZERO_ADDRESS, pirateAccountAddress);
             }
             else
             {
@@ -2452,10 +2463,23 @@ describe("PirateMechanics Contract", function () {
 
                 await expect(transaction).to
                     .emit(pirateMechanicsInstance, "PirateConfrontationEnd")
-                    .withArgs(pirateAccountAddress, targetAccountAddress, 0);
+                    .withArgs(targetAccountAddress, pirateAccountAddress, 0);
 
                 break;
             }
+        });
+
+        it ("Should apply some damage to the pirate ship when the pirate wins", async function () {
+            
+            // Setup 
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+
+            // Act
+            const pirateShip = await playerRegisterInstance.getEquippedShip(pirateAccountAddress);
+            const pirateShipBattleData = await shipTokenInstance["getShipBattleData(uint256)"].call(shipTokenInstance, pirateShip);
+
+            // Assert
+            expect(pirateShipBattleData.damage).to.be.lessThanOrEqual(ShipConfig.MAX_DAMAGE);
         });
 
         it ("Should apply max damage to the target ship when the pirate wins", async function () {

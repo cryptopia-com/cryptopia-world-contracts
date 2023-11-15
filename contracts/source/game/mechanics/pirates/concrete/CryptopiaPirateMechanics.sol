@@ -58,6 +58,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
         bytes32 assets;
     }
 
+    // Naval battle data; used to prevent stack too deep errors
     struct BattleData 
     {    
         uint targetEffectiveAttack;
@@ -107,7 +108,6 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
     mapping(address => Plunder) public plunders;
 
     /// @dev Refs
-    address public treasury;
     address public playerRegisterContract;
     address public assetRegisterContract;
     address public mapsContract;
@@ -120,93 +120,99 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
      * Events
      */
     /// @dev Emits when a pirate intercepts another player
-    /// @param attacker The account of the attacker
     /// @param target The account of the target
+    /// @param attacker The account of the attacker
     /// @param location The location at which the confrontation took place
     /// @param deadline The deadline for the target to respond
     /// @param expiration Timestamp after which the confrontation expires (can be extended by the target)
-    event PirateConfrontationStart(address indexed attacker, address indexed target, uint16 indexed location, uint64 deadline, uint64 expiration);
+    event PirateConfrontationStart(address indexed target, address indexed attacker, uint16 indexed location, uint64 deadline, uint64 expiration);
 
     /// @dev Emits when a confrontation ends
-    /// @param attacker The account of the attacker
     /// @param target The account of the target
+    /// @param attacker The account of the attacker
     /// @param location The location at which the confrontation took place
-    event PirateConfrontationEnd(address indexed attacker, address indexed target, uint16 indexed location);
+    event PirateConfrontationEnd(address indexed target, address indexed attacker, uint16 indexed location);
 
     /// @dev Emits when a negotiation succeeds
-    /// @param attacker The account of the attacker
     /// @param target The account of the target
+    /// @param attacker The account of the attacker
     /// @param location The location at which the confrontation took place
-    event NegotiationSuccess(address indexed attacker, address indexed target, uint16 indexed location);
+    event NegotiationSuccess(address indexed target, address indexed attacker, uint16 indexed location);
 
     /// @dev Emits when an escape attempt succeeds
-    /// @param attacker The account of the attacker
     /// @param target The account of the target
+    /// @param attacker The account of the attacker
     /// @param location The location at which the confrontation took place
-    event EscapeSuccess(address indexed attacker, address indexed target, uint16 indexed location);
+    event EscapeSuccess(address indexed target, address indexed attacker, uint16 indexed location);
 
     /// @dev Emits when an escape attempt fails
-    /// @param attacker The account of the attacker
     /// @param target The account of the target
+    /// @param attacker The account of the attacker
     /// @param location The location at which the confrontation took place
-    event EscapeFail(address indexed attacker, address indexed target, uint16 indexed location);
+    event EscapeFail(address indexed target, address indexed attacker, uint16 indexed location);
 
     /// @dev Emits when a battle starts
-    /// @param attacker The account of the attacker
-    /// @param attackerShip The id of the attacker's ship
     /// @param target The account of the target
     /// @param targetShip The id of the target's ship
-    event NavalBattleStart(address indexed attacker, uint attackerShip, address indexed target, uint targetShip);
-
-    /// @dev Emits when a battle ends
     /// @param attacker The account of the attacker
     /// @param attackerShip The id of the attacker's ship
-    /// @param attackerDamage The damage that the attacker has taken during the battle
+    event NavalBattleStart(address indexed target, uint targetShip, address indexed attacker, uint attackerShip);
+
+    /// @dev Emits when a battle ends
     /// @param target The account of the target
     /// @param targetShip The id of the target's ship
     /// @param targetDamage The damage that the target has taken during the battle
+    /// @param attacker The account of the attacker
+    /// @param attackerShip The id of the attacker's ship
+    /// @param attackerDamage The damage that the attacker has taken during the battle
     /// @param attackerWins True if the pirate wins
-    event NavalBattleEnd(
-        address indexed attacker, uint attackerShip, uint8 attackerDamage, 
-        address indexed target, uint targetShip, uint8 targetDamage, 
-        bool attackerWins);
+    event NavalBattleEnd(address indexed target, uint targetShip, uint8 targetDamage, address indexed attacker, uint attackerShip, uint8 attackerDamage, bool attackerWins);
 
 
     /**
      * Errors
      */
     /// @dev Revert if the confrontation is has ended
-    /// @param attacker The account of the attacker
     /// @param target The account of the target
-    error ConfrontationNotFound(address attacker, address target);
+    /// @param attacker The account of the attacker
+    error ConfrontationNotFound(address target, address attacker);
 
     /// @dev Revert if the attacker is already intercepting a target
     /// @param attacker The account of the attacker
     error AttackerAlreadyIntercepting(address attacker);
 
     /// @dev Revert if the attacker has not entered the map
+    /// @param attacker The account of the attacker
     error AttackerNotInMap(address attacker);
 
     /// @dev Revert if the attacker is currently traveling
+    /// @param attacker The account of the attacker
     error AttackerIsTraveling(address attacker);
 
     /// @dev Revert if the attacker's location is not valid (not embarked)
+    /// @param attacker The account of the attacker
     error AttackerNotEmbarked(address attacker);
 
     /// @dev Revert if the target has not entered the map
+    /// @param target The account of the target
     error TargetNotInMap(address target);
 
     /// @dev Revert if the target's location is not valid (not embarked)
+    /// @param target The account of the target
     error TargetNotEmbarked(address target);
 
     /// @dev Revert if the target is idle (when not traveling)
+    /// @param target The account of the target
     error TargetIsIdle(address target);
 
     /// @dev Revert if the target is a pirate
+    /// @param target The account of the target
     error TargetIsPirate(address target);
 
     /// @dev Revert if the target is not reachable from the attacker's location
-    error TargetNotReachable(address attacker, address target);
+    /// @param target The account of the target
+    /// @param attacker The account of the attacker
+    error TargetNotReachable(address target, address attacker);
 
     /// @dev Revert if target is already intercepted
     /// @param target The account of the target
@@ -218,7 +224,6 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
 
 
     /// @dev Constructor
-    /// @param _treasury The address of the treasury
     /// @param _playerRegisterContract The address of the player register
     /// @param _assetRegisterContract The address of the asset register
     /// @param _mapsContract The address of the maps contract
@@ -226,7 +231,6 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
     /// @param _fuelContact The address of the fuel contract
     /// @param _intentoriesContract The address of the inventories contract
     function initialize(
-        address _treasury,
         address _playerRegisterContract,
         address _assetRegisterContract,
         address _mapsContract,
@@ -238,7 +242,6 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
     {
         __Nonces_init();
         __PseudoRandomness_init();
-        treasury = _treasury;
         playerRegisterContract = _playerRegisterContract;
         assetRegisterContract = _assetRegisterContract;
         mapsContract = _mapsContract;
@@ -398,7 +401,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
                 // Check route
                 if (!IMaps(mapsContract).tileIsAlongRoute(attackerTileIndex, targetRoute, indexInRoute, targetTileIndex, targetArrival, RoutePosition.Current)) 
                 {
-                    revert TargetNotReachable(msg.sender, target);
+                    revert TargetNotReachable(target, msg.sender);
                 }
 
                 uint shipTokenId = IPlayerRegister(playerRegisterContract).getEquippedShip(msg.sender);
@@ -417,7 +420,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
                 // Check location
                 if (!IMaps(mapsContract).tileIsAdjacentTo(attackerTileIndex, targetTileIndex)) 
                 {
-                    revert TargetNotReachable(msg.sender, target);
+                    revert TargetNotReachable(target, msg.sender);
                 }
             }
         } 
@@ -447,7 +450,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
         IPlayerFreezeControl(intentoriesContract).__freeze(target, confrontation.expiration);
 
         // Emit event
-        emit PirateConfrontationStart(msg.sender, target, attackerTileIndex, confrontation.deadline, confrontation.expiration);
+        emit PirateConfrontationStart(target, msg.sender, attackerTileIndex, confrontation.deadline, confrontation.expiration);
     }
 
 
@@ -467,7 +470,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
         // Ensure that the confrontation has not ended
         if (confrontation.expiration < block.timestamp) 
         {
-            revert ConfrontationNotFound(msg.sender, target);
+            revert ConfrontationNotFound(target, msg.sender);
         }
 
         // Ensure that the response time has not expired
@@ -546,8 +549,8 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
         IPlayerFreezeControl(intentoriesContract).__unfreeze(target);
 
         // Emit
-        emit NegotiationSuccess(msg.sender, target, confrontation.location);
-        emit PirateConfrontationEnd(msg.sender, target, confrontation.location);
+        emit NegotiationSuccess(target, msg.sender, confrontation.location);
+        emit PirateConfrontationEnd(target, msg.sender, confrontation.location);
     }
 
 
@@ -568,7 +571,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
         // Ensure that the confrontation has not ended
         if (confrontation.expiration < block.timestamp) 
         {
-            revert ConfrontationNotFound(address(0), msg.sender);
+            revert ConfrontationNotFound(msg.sender, address(0));
         }
 
         // Ensure that the response time has not expired
@@ -591,7 +594,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
             IPlayerRegister(playerRegisterContract)
                 .getEquippedShips(msg.sender, attacker));
 
-        // Player data
+        // Player data; value1 = target luck, value2 = attacker luck
         Uint24Box2 memory luckData = IPlayerRegister(playerRegisterContract)
             .getLuck(msg.sender, attacker);
 
@@ -677,8 +680,8 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
             IPlayerFreezeControl(intentoriesContract).__unfreeze(msg.sender);
 
             // Emit
-            emit EscapeSuccess(attacker, msg.sender, confrontation.location);
-            emit PirateConfrontationEnd(attacker, msg.sender, confrontation.location);
+            emit EscapeSuccess(msg.sender, attacker, confrontation.location);
+            emit PirateConfrontationEnd(msg.sender, attacker, confrontation.location);
         }
 
         // Failed escape
@@ -688,7 +691,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
             confrontation.escapeAttempted = true;
 
             // Emit 
-            emit EscapeFail(attacker, msg.sender, confrontation.location);
+            emit EscapeFail(msg.sender, attacker, confrontation.location);
         }
     }
 
@@ -703,7 +706,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
         Confrontation storage confrontation = confrontations[msg.sender];
         if (confrontation.expiration < block.timestamp) 
         {
-            revert ConfrontationNotFound(address(0), msg.sender);
+            revert ConfrontationNotFound(msg.sender, address(0));
         }
 
         // Ensure that the response time has not expired (target)
@@ -728,7 +731,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
         // Ensure that the confrontation has not ended
         if (confrontation.expiration < block.timestamp) 
         {
-            revert ConfrontationNotFound(msg.sender, address(0));
+            revert ConfrontationNotFound(address(0), msg.sender);
         }
 
         // Ensure that the response time has not expired (target)
@@ -757,6 +760,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
     function _resolveQuickBattle(address target, address attacker)
         internal 
     {
+        // Ships; value1 = target ship, value2 = attacker ship
         TokenPair memory ships = IPlayerRegister(playerRegisterContract)
             .getEquippedShips(target, attacker);
 
@@ -767,7 +771,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
             
         ) = IShips(shipContract).getShipBattleData(ships);
 
-        // Player data
+        // Player data; value1 = target luck, value2 = attacker luck
         Uint24Box2 memory luckData = IPlayerRegister(playerRegisterContract)
             .getLuck(target, attacker);
 
@@ -832,9 +836,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
         battleData.attackerTurnsUntilWin = (battleData.attackerEffectiveAttack - 1 + MAX_DAMAGE - targetBattleData.damage) /battleData.attackerEffectiveAttack;
 
         // Emit
-        emit NavalBattleStart(
-            attacker, ships.tokenId2, // Attacker
-            target, ships.tokenId1); // Target 
+        emit NavalBattleStart(target, ships.tokenId1, attacker, ships.tokenId2);
 
         // Attacker wins
         if (battleData.attackerTurnsUntilWin < battleData.targetTurnsUntilWin || 
@@ -865,9 +867,9 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
 
             // Emit
             emit NavalBattleEnd(
-                attacker, ships.tokenId2, damage.value2, // Attacker 
                 target, ships.tokenId1, damage.value1, // Target 
-                true); // Pirate wins 
+                attacker, ships.tokenId2, damage.value2, // Attacker 
+                true); // Attacker wins 
         }
 
         // Target wins
@@ -904,6 +906,6 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
         confrontations[target].expiration = 0;
 
         // Emit
-        emit PirateConfrontationEnd(attacker, target, confrontations[target].location);
+        emit PirateConfrontationEnd(target, attacker, confrontations[target].location);
     }
 }

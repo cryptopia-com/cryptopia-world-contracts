@@ -6,7 +6,7 @@ import { getParamFromEvent, containsEvent } from '../scripts/helpers/events';
 import { getTransferProposalSignature } from "../scripts/helpers/meta";
 import { TransferProposal } from "../scripts/types/meta";
 import { ZERO_ADDRESS } from "./settings/constants";
-import { REVERT_MODE, MapConfig, PlayerConfig, ShipConfig, PirateMechanicsConfig } from "./settings/config";
+import { REVERT_MODE, MapConfig, ShipConfig, PirateMechanicsConfig } from "./settings/config";
 import { SYSTEM_ROLE } from "./settings/roles";   
 import { Resource, Terrain, Biome, Inventory } from '../scripts/types/enums';
 import { Asset, Map } from "../scripts/types/input";
@@ -18,6 +18,7 @@ import {
     CryptopiaTitleDeedToken,
     CryptopiaPlayerRegister,
     CryptopiaInventories,
+    CryptopiaNavalBattleMechanics,
     CryptopiaPirateMechanics,
 } from "../typechain-types";
 
@@ -27,6 +28,7 @@ import {
  * Test cases:
  * - Intercept
  * - Negotiate
+ * - Bribe
  * - Escape
  * - Quick battle
  * - Turn based battle
@@ -48,6 +50,7 @@ describe("PirateMechanics Contract", function () {
     let titleDeedTokenInstance: CryptopiaTitleDeedToken;
     let playerRegisterInstance: CryptopiaPlayerRegister;
     let inventoriesInstance: CryptopiaInventories;
+    let navalBattleMechanicsInstance: CryptopiaNavalBattleMechanics;
     let pirateMechanicsInstance: CryptopiaPirateMechanics;
 
     // Mock Data
@@ -152,6 +155,7 @@ describe("PirateMechanics Contract", function () {
         const MapsFactory = await ethers.getContractFactory("CryptopiaMaps");
         const InventoriesFactory = await ethers.getContractFactory("CryptopiaInventories");
         const CraftingFactory = await ethers.getContractFactory("CryptopiaCrafting");
+        const NavalBattleMechanicsFactory = await ethers.getContractFactory("CryptopiaNavalBattleMechanics");
         const PirateMechanicsFactory = await ethers.getContractFactory("CryptopiaPirateMechanics");
         
         // Deploy Inventories
@@ -320,11 +324,31 @@ describe("PirateMechanics Contract", function () {
                 .setFungibleAsset(asset.contractAddress, asset.weight);
         }
 
+
+        // Deploy Battle Mechanics
+        const navalBattleMechanicsProxy = await (
+            await upgrades.deployProxy(
+                NavalBattleMechanicsFactory, 
+                [
+                    playerRegisterAddress,
+                    mapsAddress,
+                    shipTokenAddress
+                ])
+        ).waitForDeployment();
+
+        const navalBattleMechanicsAddress = await navalBattleMechanicsProxy.getAddress();
+        navalBattleMechanicsInstance = await ethers.getContractAt("CryptopiaNavalBattleMechanics", navalBattleMechanicsAddress);
+
+        // Grant roles
+        await shipTokenInstance.grantRole(SYSTEM_ROLE, navalBattleMechanicsAddress);
+
+
         // Deploy Pirate Mechanics
         const pirateMechanicsProxy = await (
             await upgrades.deployProxy(
                 PirateMechanicsFactory, 
                 [
+                    navalBattleMechanicsAddress,
                     playerRegisterAddress,
                     assetRegisterAddress,
                     mapsAddress,
@@ -339,6 +363,7 @@ describe("PirateMechanics Contract", function () {
         pirateMechanicsInstance = await ethers.getContractAt("CryptopiaPirateMechanics", pirateMechanicsAddress);
 
         // Grant roles
+        await navalBattleMechanicsInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
         await playerRegisterInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
         await inventoriesInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
         await shipTokenInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
@@ -2278,10 +2303,10 @@ describe("PirateMechanics Contract", function () {
                     .submitTransaction(pirateMechanicsAddress, 0, quickBattleCalldata);
                     const receipt = await transaction.wait();
 
-                const attackerWins = getParamFromEvent(
-                    pirateMechanicsInstance, receipt, "attackerWins", "NavalBattleEnd");
+                const victor = getParamFromEvent(
+                    navalBattleMechanicsInstance, receipt, "victor", "NavalBattleEnd");
 
-                if (attackerWins)
+                if (victor == pirateAccountAddress)
                 {
                     if (i === PirateMechanicsConfig.MAX_QUICK_BATTLE_ATTEMPTS - 1)
                     {
@@ -2293,7 +2318,7 @@ describe("PirateMechanics Contract", function () {
     
                 // Assert
                 await expect(transaction).to
-                    .emit(pirateMechanicsInstance, "NavalBattleEnd");
+                    .emit(navalBattleMechanicsInstance, "NavalBattleEnd");
 
                 await expect(transaction).to
                     .emit(pirateMechanicsInstance, "PirateConfrontationEnd")
@@ -2444,10 +2469,10 @@ describe("PirateMechanics Contract", function () {
                     .submitTransaction(pirateMechanicsAddress, 0, quickBattleCalldata);
                 const receipt = await transaction.wait();
 
-                const attackerWins = getParamFromEvent(
-                    pirateMechanicsInstance, receipt, "attackerWins", "NavalBattleEnd");
+                const victor = getParamFromEvent(
+                    navalBattleMechanicsInstance, receipt, "victor", "NavalBattleEnd");
 
-                if (!attackerWins)
+                if (victor == targetAccountAddress)
                 {
                     if (i === PirateMechanicsConfig.MAX_QUICK_BATTLE_ATTEMPTS - 1)
                     {
@@ -2459,7 +2484,7 @@ describe("PirateMechanics Contract", function () {
     
                 // Assert
                 await expect(transaction).to
-                    .emit(pirateMechanicsInstance, "NavalBattleEnd");
+                    .emit(navalBattleMechanicsInstance, "NavalBattleEnd");
 
                 await expect(transaction).to
                     .emit(pirateMechanicsInstance, "PirateConfrontationEnd")

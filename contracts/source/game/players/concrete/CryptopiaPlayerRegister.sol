@@ -6,9 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-import "../../../types/boxes/Uint24Box2.sol";
 import "../../../accounts/IAccountRegister.sol";
-import "../../../accounts/types/AccountEnums.sol";
 import "../../../accounts/errors/AccountErrors.sol";
 import "../../../tokens/ERC721/ships/IShips.sol";
 import "../../../tokens/ERC721/ships/types/ShipDataTypes.sol";
@@ -363,6 +361,30 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     }
 
 
+    /// @dev Returns the player's sub faction {None, Pirate, BountyHunter}
+    /// @param player CryptopiaAccount address (registered as a player)
+    /// @return subFaction The player's sub faction
+    function getSubFaction(address player) 
+        public virtual override view 
+        returns (SubFaction)
+    {
+        return playerDatas[player].subFaction;
+    }
+
+    
+    /// @dev Returns the player's sub faction {None, Pirate, BountyHunter}
+    /// @param player1 CryptopiaAccount address (registered as a player)
+    /// @param player2 CryptopiaAccount address (registered as a player)
+    function getSubFactions(address player1, address player2) 
+        public virtual override view 
+        returns (SubFactionBox2 memory)
+    {
+        return SubFactionBox2(
+            playerDatas[player1].subFaction, 
+            playerDatas[player2].subFaction);
+    }
+
+
     /// @dev Returns `player` level
     /// @param player CryptopiaAccount address (registered as a player)
     /// @return level Current level (zero signals not initialized)
@@ -476,7 +498,7 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
             .__setPlayerShip(player, ship, shipData.inventory);
 
         // Pirate?
-        if (shipData.subFaction == SubFaction.Pirate && playerDatas[player].subFaction != SubFaction.Pirate)
+        if (shipData.subFaction == SubFaction.Pirate && !_isPirate(player))
         {
             // Mark as pirate (for life)
             _turnPirate(player);
@@ -562,7 +584,7 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
         playerDatas[player].xp += xp;
         if (0 != karma)
         {
-            if (KARMA_MIN != playerDatas[player].karma) // Cannot come back from KARMA_MIN karma (once a pirate, always a pirate)
+            if (!_isPirate(player)) // Cannot come back from KARMA_MIN karma (once a pirate, always a pirate)
             {
                 if (playerDatas[player].karma + karma > KARMA_MAX)
                 {
@@ -680,6 +702,10 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
         playerDatas[player].karma = KARMA_MIN;
         playerDatas[player].subFaction = SubFaction.Pirate;
 
+        // Update ship to pirate version
+        IShips(shipTokenContract).__turnPirate(
+            playerDatas[player].ship);
+            
         // Emit 
         emit PlayerTurnPirate(player);
     }

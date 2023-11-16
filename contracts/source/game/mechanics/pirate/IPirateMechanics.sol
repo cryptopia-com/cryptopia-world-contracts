@@ -22,6 +22,7 @@ interface IPirateMechanics {
             uint64 deadline,
             uint64 expiration
         );
+        
 
     /// @dev Intercepts the target at the specified location
     /// @param target The account of the defender

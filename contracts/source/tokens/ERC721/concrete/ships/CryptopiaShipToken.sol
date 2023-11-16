@@ -8,6 +8,8 @@ import "../../ships/IShips.sol";
 import "../../ships/errors/ShipErrors.sol";  
 import "../CryptopiaERC721.sol";
 
+import "hardhat/console.sol";
+
 /// @title Cryptopia Ship Token
 /// @dev Non-fungible token (ERC721)
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
@@ -51,6 +53,9 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
 
         /// @dev Base fuel consumption (before modules)
         uint base_fuelConsumption;
+
+        /// @dev The pirate version of this ship (if any)
+        bytes32 pirateVersion;
     }
 
     /// @dev Ship instance (equiptable by player)
@@ -119,6 +124,9 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @dev tokenId => ShipInstance
     mapping (uint => ShipInstance) private shipInstances;
 
+    /// @dev Faction => ship name
+    mapping (Faction => bytes32) private starterShips;
+
 
     /**
      * Events
@@ -126,7 +134,11 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @dev Emitted when the ship with `tokenId` took `damage`
     /// @param tokenId The id of the ship that took damage
     /// @param damage The amount of damage that was taken
-    event ApplyDamage(uint indexed tokenId, uint8 damage);
+    event ShipDamage(uint indexed tokenId, uint8 damage);
+
+    /// @dev Update `ship` to it's pirate version
+    /// @param ship The id of the ship to turn into a pirate
+    event ShipTurnedPirate(uint indexed ship);
 
 
     /**
@@ -168,8 +180,8 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         // Grant admin role
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
 
-        // Add starter ships
-        _setShip("Whitewake", false, Faction.Eco, SubFaction.None, Rarity.Common, ShipStatValues({
+        // Add Eco starter ships
+        ShipStatValues memory stats = ShipStatValues({
             modules: 1,
             co2: 0,
             speed: 25,
@@ -177,9 +189,13 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             defence: 100,
             inventory: 12_000_000_000_000_000_000_000,
             fuelConsumption: 1_000_000_000_000_000_000
-        }));
+        });
 
-        _setShip("Polaris", false, Faction.Tech, SubFaction.None, Rarity.Common, ShipStatValues({
+        _setShip("Raptor", false, Faction.Eco, SubFaction.Pirate, Rarity.Common, stats, bytes32(0));
+        _setShip("Whitewake", false, Faction.Eco, SubFaction.None, Rarity.Common, stats, bytes32("Raptor"));
+
+        // Add Tech starter ships
+        stats = ShipStatValues({
             modules: 1,
             co2: 25,
             speed: 25,
@@ -187,9 +203,13 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             defence: 100,
             inventory: 12_000_000_000_000_000_000_000,
             fuelConsumption: 1_000_000_000_000_000_000
-        }));
+        });
 
-        _setShip("Kingfisher", false, Faction.Industrial, SubFaction.None, Rarity.Common, ShipStatValues({
+        _setShip("Hammerhead", false, Faction.Tech, SubFaction.Pirate, Rarity.Common, stats, bytes32(0));
+        _setShip("Polaris", false, Faction.Tech, SubFaction.None, Rarity.Common, stats, bytes32("Hammerhead"));
+        
+        // Add Industrial starter ships
+        stats = ShipStatValues({
             modules: 1,
             co2: 50,
             speed: 25,
@@ -197,9 +217,13 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             defence: 100,
             inventory: 12_000_000_000_000_000_000_000,
             fuelConsumption: 1_000_000_000_000_000_000
-        }));
+        });
 
-        _setShip("Socrates", false, Faction.Traditional, SubFaction.None, Rarity.Common, ShipStatValues({
+        _setShip("Orca", false, Faction.Industrial, SubFaction.Pirate, Rarity.Common, stats, bytes32(0));
+        _setShip("Kingfisher", false, Faction.Industrial, SubFaction.None, Rarity.Common, stats, bytes32("Orca"));
+
+        // Add Traditional starter ships
+        stats = ShipStatValues({
             modules: 1,
             co2: 25,
             speed: 25,
@@ -207,7 +231,16 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             defence: 100,
             inventory: 12_000_000_000_000_000_000_000,
             fuelConsumption: 1_000_000_000_000_000_000
-        }));
+        });
+
+        _setShip("Yangfang", false, Faction.Traditional, SubFaction.Pirate, Rarity.Common, stats, bytes32(0));
+        _setShip("Socrates", false, Faction.Traditional, SubFaction.None, Rarity.Common, stats, bytes32("Yangfang"));
+
+        // Set starter ships
+        starterShips[Faction.Eco] = "Whitewake";
+        starterShips[Faction.Tech] = "Polaris";
+        starterShips[Faction.Industrial] = "Kingfisher";
+        starterShips[Faction.Traditional] = "Socrates";
     }
 
 
@@ -331,6 +364,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @param faction {Faction} (can only be equipted by this faction)
     /// @param subFaction {SubFaction} (pirate/bountyhunter)
     /// @param stats modules, arbitrary, base_speed, base_attack, base_defence, base_inventory
+    /// @param pirateVersion The pirate version of this ship (if any)
     function setShips(
         bytes32[] memory name, 
         bool[] memory generic, 
@@ -338,7 +372,8 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         faction, SubFaction[] 
         memory subFaction, 
         Rarity[] memory rarity, 
-        ShipStatValues[] memory stats) 
+        ShipStatValues[] memory stats,
+        bytes32[] memory pirateVersion) 
         public virtual  
         onlyRole(DEFAULT_ADMIN_ROLE) 
     {
@@ -350,7 +385,8 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
                 faction[i], 
                 subFaction[i],
                 rarity[i],
-                stats[i]);
+                stats[i],
+                pirateVersion[i]);
         }
     }
 
@@ -553,7 +589,8 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         battleData = ShipBattleData({
             damage: shipInstances[tokenId].damage,
             attack: ships[shipInstances[tokenId].name].base_attack + shipInstances[tokenId].attack,
-            defence: ships[shipInstances[tokenId].name].base_defence + shipInstances[tokenId].defence
+            defence: ships[shipInstances[tokenId].name].base_defence + shipInstances[tokenId].defence,
+            tileSafetyInverse: ships[shipInstances[tokenId].name].subFaction == SubFaction.Pirate
         });
     }
 
@@ -572,13 +609,15 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         battleData1 = ShipBattleData({
             damage: shipInstances[tokenIds.tokenId1].damage,
             attack: ships[shipInstances[tokenIds.tokenId1].name].base_attack + shipInstances[tokenIds.tokenId1].attack,
-            defence: ships[shipInstances[tokenIds.tokenId1].name].base_defence + shipInstances[tokenIds.tokenId1].defence
+            defence: ships[shipInstances[tokenIds.tokenId1].name].base_defence + shipInstances[tokenIds.tokenId1].defence,
+            tileSafetyInverse: ships[shipInstances[tokenIds.tokenId1].name].subFaction == SubFaction.Pirate
         });
 
         battleData2 = ShipBattleData({
             damage: shipInstances[tokenIds.tokenId2].damage,
             attack: ships[shipInstances[tokenIds.tokenId2].name].base_attack + shipInstances[tokenIds.tokenId2].attack,
-            defence: ships[shipInstances[tokenIds.tokenId2].name].base_defence + shipInstances[tokenIds.tokenId2].defence
+            defence: ships[shipInstances[tokenIds.tokenId2].name].base_defence + shipInstances[tokenIds.tokenId2].defence,
+            tileSafetyInverse: ships[shipInstances[tokenIds.tokenId2].name].subFaction == SubFaction.Pirate
         });
     }
 
@@ -603,7 +642,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         tokenId = _getNextTokenId();
         _mint(player, tokenId);
         _incrementTokenId();
-        shipInstances[tokenId].name = shipsIndex[uint(faction)];
+        shipInstances[tokenId].name = starterShips[faction];
         shipInstances[tokenId].locked = locked;
         inventory = ships[shipInstances[tokenId].name].base_inventory;
     }
@@ -641,15 +680,33 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @param damage1 The amount of damage to apply to ship 1
     /// @param damage2 The amount of damage to apply to ship 2
     function __applyDamage(TokenPair memory ships_, uint8 damage1, uint8 damage2)
-       public virtual override 
+        public virtual override 
         onlyRole(SYSTEM_ROLE)
     {
         shipInstances[ships_.tokenId1].damage += damage1;
         shipInstances[ships_.tokenId2].damage += damage2;
 
         // Emit 
-        emit ApplyDamage(ships_.tokenId1, damage1);
-        emit ApplyDamage(ships_.tokenId2, damage2);
+        emit ShipDamage(ships_.tokenId1, damage1);
+        emit ShipDamage(ships_.tokenId2, damage2);
+    }
+
+
+    /// @dev Update `ship` to it's pirate version
+    /// @param ship The id of the ship to turn into a pirate
+    function __turnPirate(uint ship)
+        public virtual override 
+        onlyRole(SYSTEM_ROLE)
+    {
+        if (!_exists(ships[shipInstances[ship].name].pirateVersion)) 
+        {
+            revert ShipNotFound(shipInstances[ship].name);
+        }
+
+        shipInstances[ship].name = ships[shipInstances[ship].name].pirateVersion;
+
+        // Emit
+        emit ShipTurnedPirate(ship);
     }
 
 
@@ -684,9 +741,16 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @param subFaction {SubFaction} (pirate/bountyhunter)
     /// @param rarity Ship rarity {Rarity}
     /// @param stats modules, c02, base_speed, base_attack, base_defence, base_inventory
-    function _setShip(bytes32 name, bool generic, Faction faction, SubFaction subFaction, Rarity rarity, ShipStatValues memory stats) 
+    /// @param pirateVersion The pirate version of this ship (if any)
+    function _setShip(bytes32 name, bool generic, Faction faction, SubFaction subFaction, Rarity rarity, ShipStatValues memory stats, bytes32 pirateVersion) 
         internal 
     {
+        assert(
+            (subFaction == SubFaction.None && pirateVersion != bytes32(0)) || // Requires pirate version
+            (subFaction == SubFaction.Pirate && pirateVersion == bytes32(0)) || // Is already pirate version
+            (subFaction == SubFaction.BountyHunter && pirateVersion == bytes32(0)) // Can never turn pirate
+        );
+
         // Add ship
         if (!_exists(name))
         {
@@ -706,6 +770,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         ship.base_defence = stats.defence;
         ship.base_inventory = stats.inventory;
         ship.base_fuelConsumption = stats.fuelConsumption;
+        ship.pirateVersion = pirateVersion;
     }
 
 

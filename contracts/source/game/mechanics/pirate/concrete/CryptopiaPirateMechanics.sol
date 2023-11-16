@@ -4,9 +4,8 @@ pragma solidity ^0.8.20 < 0.9.0;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/NoncesUpgradeable.sol";
 
-import "hardhat/console.sol";
-
 import "../IPirateMechanics.sol";
+import "../../battle/IBattleMechanics.sol";
 import "../../../maps/IMaps.sol";
 import "../../../maps/types/MapEnums.sol";
 import "../../../players/IPlayerRegister.sol";
@@ -15,7 +14,7 @@ import "../../../players/control/IPlayerFreezeControl.sol";
 import "../../../inventories/IInventories.sol";
 import "../../../meta/MetaTransactions.sol";
 import "../../../utils/random/PseudoRandomness.sol";
-import "../../../../types/boxes/Uint8Box2.sol";
+import "../../../../types/boxes/uint24/Uint24Box2.sol";
 import "../../../../tokens/ERC721/ships/IShips.sol";
 import "../../../../errors/ArgumentErrors.sol";
 import "../../../../game/errors/TimingErrors.sol";
@@ -58,16 +57,6 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
         bytes32 assets;
     }
 
-    // Naval battle data; used to prevent stack too deep errors
-    struct BattleData 
-    {    
-        uint targetEffectiveAttack;
-        uint attackerEffectiveAttack;
-        uint targetTurnsUntilWin;
-        uint attackerTurnsUntilWin;
-    }
-
-
     /**
      * Storage
      */
@@ -89,15 +78,6 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
     // Randomness
     uint constant private BASE_ESCAPE_THRESHOLD = 5_000; // 50%
     
-    // Battle
-    uint8 constant private MAX_DAMAGE = 250;
-    uint constant private DEFENCE_PRECISION = 100; // Denominator
-    uint constant private TILE_SAFETY_PRECISION = 100; // Denominator
-    uint constant private ATTACK_EFFECTIVENESS_MARGIN_MIN = 90; // Min 90% attack effectiveness margin
-    uint constant private ATTACK_EFFECTIVENESS_MARGIN_MAX = 110; // Max 110% attack effectiveness margin
-    uint constant private ATTACK_EFFECTIVENESS_MARGIN_SPREAD = ATTACK_EFFECTIVENESS_MARGIN_MAX - ATTACK_EFFECTIVENESS_MARGIN_MIN; // Spread
-    uint constant private ATTACK_EFFECTIVENESS_MARGIN_PRECISION = 100; // Denominator
-    
     /// @dev attacker => target
     mapping(address => address) public targets;
 
@@ -107,7 +87,8 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
     /// @dev target => Plunder
     mapping(address => Plunder) public plunders;
 
-    /// @dev Refs
+    // Refs
+    address public navalBattleMechanicsContract;
     address public playerRegisterContract;
     address public assetRegisterContract;
     address public mapsContract;
@@ -150,23 +131,6 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
     /// @param attacker The account of the attacker
     /// @param location The location at which the confrontation took place
     event EscapeFail(address indexed target, address indexed attacker, uint16 indexed location);
-
-    /// @dev Emits when a battle starts
-    /// @param target The account of the target
-    /// @param targetShip The id of the target's ship
-    /// @param attacker The account of the attacker
-    /// @param attackerShip The id of the attacker's ship
-    event NavalBattleStart(address indexed target, uint targetShip, address indexed attacker, uint attackerShip);
-
-    /// @dev Emits when a battle ends
-    /// @param target The account of the target
-    /// @param targetShip The id of the target's ship
-    /// @param targetDamage The damage that the target has taken during the battle
-    /// @param attacker The account of the attacker
-    /// @param attackerShip The id of the attacker's ship
-    /// @param attackerDamage The damage that the attacker has taken during the battle
-    /// @param attackerWins True if the pirate wins
-    event NavalBattleEnd(address indexed target, uint targetShip, uint8 targetDamage, address indexed attacker, uint attackerShip, uint8 attackerDamage, bool attackerWins);
 
 
     /**
@@ -224,6 +188,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
 
 
     /// @dev Constructor
+    /// @param _navalBattleMechanicsContract The address of the naval battle mechanics contract
     /// @param _playerRegisterContract The address of the player register
     /// @param _assetRegisterContract The address of the asset register
     /// @param _mapsContract The address of the maps contract
@@ -231,6 +196,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
     /// @param _fuelContact The address of the fuel contract
     /// @param _intentoriesContract The address of the inventories contract
     function initialize(
+        address _navalBattleMechanicsContract,
         address _playerRegisterContract,
         address _assetRegisterContract,
         address _mapsContract,
@@ -242,6 +208,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
     {
         __Nonces_init();
         __PseudoRandomness_init();
+        navalBattleMechanicsContract = _navalBattleMechanicsContract;
         playerRegisterContract = _playerRegisterContract;
         assetRegisterContract = _assetRegisterContract;
         mapsContract = _mapsContract;
@@ -428,7 +395,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
 
         /**
          * Ensure attacker turns pirate
-         */ 
+         */
         IPlayerRegister(playerRegisterContract)
             .__turnPirate(msg.sender);
 
@@ -715,7 +682,31 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
             revert ResponseTimeExpired(msg.sender, confrontation.deadline);
         }
 
-        _resolveQuickBattle(msg.sender, confrontation.attacker);
+        // Attacker wins
+        if (IBattleMechanics(navalBattleMechanicsContract)
+            .__quickBattle(msg.sender, confrontation.attacker, confrontations[msg.sender].location).victor == confrontation.attacker)
+        {
+            // Allow attacker to plunder
+            plunders[confrontation.attacker].deadline = uint64(block.timestamp) + MAX_RESPONSE_TIME;
+
+            // Extend freeze
+            IPlayerFreezeControl(mapsContract).__freeze(msg.sender, confrontation.attacker, plunders[confrontation.attacker].deadline);
+            IPlayerFreezeControl(intentoriesContract).__freeze(msg.sender, plunders[confrontation.attacker].deadline);
+        }
+
+        // Target wins
+        else 
+        {
+            // Unfreeze players
+            IPlayerFreezeControl(mapsContract).__unfreeze(msg.sender, confrontation.attacker);
+            IPlayerFreezeControl(intentoriesContract).__unfreeze(msg.sender);
+        }
+
+        // Mark confrontation as ended
+        confrontations[msg.sender].expiration = 0;
+
+        // Emit
+        emit PirateConfrontationEnd(msg.sender, confrontation.attacker, confrontations[msg.sender].location);
     }
 
 
@@ -740,7 +731,31 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
             revert ResponseTimeNotExpired(target, confrontation.deadline);
         }
 
-        _resolveQuickBattle(target, msg.sender);
+        // Attacker wins
+        if (IBattleMechanics(navalBattleMechanicsContract).__quickBattle(
+            msg.sender, target, confrontations[target].location).victor == msg.sender) 
+        {
+            // Allow attacker to plunder
+            plunders[msg.sender].deadline = uint64(block.timestamp) + MAX_RESPONSE_TIME;
+
+            // Extend freeze
+            IPlayerFreezeControl(mapsContract).__freeze(target, msg.sender, plunders[msg.sender].deadline);
+            IPlayerFreezeControl(intentoriesContract).__freeze(target, plunders[msg.sender].deadline);
+        }
+
+        // Target wins
+        else 
+        {
+            // Unfreeze players
+            IPlayerFreezeControl(mapsContract).__unfreeze(target, msg.sender);
+            IPlayerFreezeControl(intentoriesContract).__unfreeze(target);
+        }
+
+        // Mark confrontation as ended
+        confrontations[target].expiration = 0;
+
+        // Emit
+        emit PirateConfrontationEnd(target, msg.sender, confrontations[target].location);
     }
 
 
@@ -749,163 +764,4 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
     // {
     //     // TODO in case pirate won the battle they can loot the target within a certain time frame
     // }
-
-
-    /**
-     * Internal functions
-     */
-    /// @dev Resolves the confrontation by starting a quick battle
-    /// @param target The account of the target
-    /// @param attacker The account of the attacker
-    function _resolveQuickBattle(address target, address attacker)
-        internal 
-    {
-        // Ships; value1 = target ship, value2 = attacker ship
-        TokenPair memory ships = IPlayerRegister(playerRegisterContract)
-            .getEquippedShips(target, attacker);
-
-        // Ship data
-        (
-            ShipBattleData memory targetBattleData,
-            ShipBattleData memory attackerBattleData
-            
-        ) = IShips(shipContract).getShipBattleData(ships);
-
-        // Player data; value1 = target luck, value2 = attacker luck
-        Uint24Box2 memory luckData = IPlayerRegister(playerRegisterContract)
-            .getLuck(target, attacker);
-
-        // Tile data
-        uint8 tileSafety = IMaps(mapsContract).getTileSafety(
-            confrontations[target].location);
-
-        // Generate (pseudo) randomness
-        (
-            uint targetRandomness, 
-            uint attackerRandomness
-        ) = _getRandomNumberPairAt(_generateRandomSeed(), 0, 1);
-
-        // Take luck into account
-        if (luckData.value1 != luckData.value2)
-        {
-            // Attacker has more luck
-            if (luckData.value2 > luckData.value1)
-            {
-                attackerRandomness += (luckData.value2 - luckData.value1) * LUCK_SCALING_FACTOR;
-                if (attackerRandomness > RANDOMNESS_PRECISION_FACTOR)
-                {
-                    attackerRandomness = RANDOMNESS_PRECISION_FACTOR;
-                }
-            }
-
-            // Target has more luck
-            else 
-            {
-                targetRandomness += (luckData.value1 - luckData.value2) * LUCK_SCALING_FACTOR;
-                if (targetRandomness > RANDOMNESS_PRECISION_FACTOR)
-                {
-                    targetRandomness = RANDOMNESS_PRECISION_FACTOR;
-                }
-            }
-        }
-
-        /// For clarity:
-        /// safetyMultiplier = (isPirate ? TILE_SAFETY_PRECISION - tileSafety : tileSafety) / TILE_SAFETY_PRECISION;
-        /// attackEffectiveness = ATTACK_EFFECTIVENESS_MARGIN_MIN + (ATTACK_EFFECTIVENESS_MARGIN_SPREAD * targetRandomness / RANDOMNESS_PRECISION_FACTOR);
-        /// attackAfterDefense = (attackerShipAttack * DEFENCE_PRECISION / targetShipDefense) / ATTACK_EFFECTIVENESS_MARGIN_PRECISION;
-        /// attackEffective = safetyMultiplier * attackAfterDefense * attackEffectiveness;
-        BattleData memory battleData; 
-
-        // Effective attack
-        battleData.targetEffectiveAttack = targetBattleData.attack 
-            * tileSafety // Take the tile safety into account
-            * DEFENCE_PRECISION // Take their defense score into account (ourAttack * 100 / theirDefense)
-            * (ATTACK_EFFECTIVENESS_MARGIN_MIN + (ATTACK_EFFECTIVENESS_MARGIN_SPREAD * targetRandomness / RANDOMNESS_PRECISION_FACTOR)) // Random effectiveness
-            / TILE_SAFETY_PRECISION
-            / (attackerBattleData.defence * ATTACK_EFFECTIVENESS_MARGIN_PRECISION);
-
-        battleData.attackerEffectiveAttack = attackerBattleData.attack 
-            * (TILE_SAFETY_PRECISION - tileSafety) // Take the tile safety into account
-            * DEFENCE_PRECISION // Take their defense score into account (ourAttack * 100 / theirDefense)
-            * (ATTACK_EFFECTIVENESS_MARGIN_MIN + (ATTACK_EFFECTIVENESS_MARGIN_SPREAD * attackerRandomness / RANDOMNESS_PRECISION_FACTOR)) // Random effectiveness
-            / TILE_SAFETY_PRECISION
-            / (targetBattleData.defence * ATTACK_EFFECTIVENESS_MARGIN_PRECISION);
-        
-        // Turns until 
-        battleData.targetTurnsUntilWin = (battleData.targetEffectiveAttack - 1 + MAX_DAMAGE - attackerBattleData.damage) / battleData.targetEffectiveAttack;
-        battleData.attackerTurnsUntilWin = (battleData.attackerEffectiveAttack - 1 + MAX_DAMAGE - targetBattleData.damage) /battleData.attackerEffectiveAttack;
-
-        // Emit
-        emit NavalBattleStart(target, ships.tokenId1, attacker, ships.tokenId2);
-
-        // Attacker wins
-        if (battleData.attackerTurnsUntilWin < battleData.targetTurnsUntilWin || 
-           (battleData.attackerTurnsUntilWin == battleData.targetTurnsUntilWin && msg.sender == attacker)) // In case of tie, msg.sender wins
-        {
-            // Calculate damage
-            Uint8Box2 memory damage = Uint8Box2(
-
-                // Target damage (completely damaged)
-                MAX_DAMAGE - targetBattleData.damage, 
-
-                // Attacker damage
-                attackerBattleData.damage + (battleData.attackerTurnsUntilWin * battleData.targetEffectiveAttack) <= MAX_DAMAGE 
-                    ? uint8(battleData.attackerTurnsUntilWin * battleData.targetEffectiveAttack) 
-                    : MAX_DAMAGE - attackerBattleData.damage
-            );
-
-            // Apply damage
-            IShips(shipContract).__applyDamage(
-                ships, damage.value1, damage.value2); 
-
-            // Allow attacker to plunder
-            plunders[attacker].deadline = uint64(block.timestamp) + MAX_RESPONSE_TIME;
-
-            // Extend freeze
-            IPlayerFreezeControl(mapsContract).__freeze(target, attacker, plunders[attacker].deadline);
-            IPlayerFreezeControl(intentoriesContract).__freeze(target, plunders[attacker].deadline);
-
-            // Emit
-            emit NavalBattleEnd(
-                target, ships.tokenId1, damage.value1, // Target 
-                attacker, ships.tokenId2, damage.value2, // Attacker 
-                true); // Attacker wins 
-        }
-
-        // Target wins
-        else 
-        {
-            // Calculate damage
-            Uint8Box2 memory damage = Uint8Box2(
-
-                // Target damage 
-                targetBattleData.damage + (battleData.targetTurnsUntilWin * battleData.attackerEffectiveAttack) <= MAX_DAMAGE 
-                    ? uint8(battleData.targetTurnsUntilWin * battleData.attackerEffectiveAttack) 
-                    : MAX_DAMAGE - targetBattleData.damage,
-
-                // Attacker damage (completely damaged)
-                MAX_DAMAGE - attackerBattleData.damage
-            );
-
-            // Apply damage
-            IShips(shipContract).__applyDamage(
-                ships, damage.value1, damage.value2); 
-
-            // Unfreeze players
-            IPlayerFreezeControl(mapsContract).__unfreeze(target, attacker);
-            IPlayerFreezeControl(intentoriesContract).__unfreeze(target);
-
-            // Emit
-            emit NavalBattleEnd(
-                attacker, ships.tokenId2, damage.value2, // Attacker 
-                target, ships.tokenId1, damage.value1, // Target 
-                false); // Target wins
-        }
-
-        // Mark confrontation as ended
-        confrontations[target].expiration = 0;
-
-        // Emit
-        emit PirateConfrontationEnd(target, attacker, confrontations[target].location);
-    }
 }

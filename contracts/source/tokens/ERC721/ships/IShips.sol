@@ -247,4 +247,10 @@ interface IShips {
     /// @param damage2 The amount of damage to apply to ship 2
     function __applyDamage(TokenPair memory ships_, uint8 damage1, uint8 damage2)
         external;
+
+
+    /// @dev Update `ship` to it's pirate version
+    /// @param ship The id of the ship to turn into a pirate
+    function __turnPirate(uint ship)
+        external;
 }

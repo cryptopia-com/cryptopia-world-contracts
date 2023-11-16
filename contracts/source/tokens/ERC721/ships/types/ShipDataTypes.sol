@@ -46,4 +46,7 @@ struct ShipBattleData {
 
     /// @dev The ship's defence score (after modules)
     uint16 defence;
+
+    /// @dev True if the tile safety is inverted (unsafe tiles become safe and vice versa)
+    bool tileSafetyInverse;
 }

@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: ISC
 pragma solidity ^0.8.20 < 0.9.0;
 
-import "../../types/boxes/Uint24Box2.sol";
+import "../../types/boxes/uint24/Uint24Box2.sol";
 import "../../tokens/ERC721/types/ERC721DataTypes.sol";
 import "../../accounts/types/AccountEnums.sol";
+import "../types/boxes/subfaction/SubFactionBox2.sol";
 import "../types/FactionEnums.sol";
 import "./types/PlayerEnums.sol";
 
@@ -112,6 +113,22 @@ interface IPlayerRegister {
     function isPirate(address player) 
         external view 
         returns (bool);
+
+    
+    /// @dev Returns the player's sub faction {None, Pirate, BountyHunter}
+    /// @param player CryptopiaAccount address (registered as a player)
+    /// @return subFaction The player's sub faction
+    function getSubFaction(address player) 
+        external view 
+        returns (SubFaction);
+
+    
+    /// @dev Returns the player's sub faction {None, Pirate, BountyHunter}
+    /// @param player1 CryptopiaAccount address (registered as a player)
+    /// @param player2 CryptopiaAccount address (registered as a player)
+    function getSubFactions(address player1, address player2) 
+        external view 
+        returns (SubFactionBox2 memory);
 
     
     /// @dev Returns `player` level

@@ -19,7 +19,6 @@ contract CryptopiaNavalBattleMechanics is Initializable, AccessControlUpgradeabl
     /**
      * Storage
      */
-    uint8 constant private MAX_DAMAGE = 250; // Indicates complete damage
     uint constant private DEFENCE_PRECISION = 100; // Denominator
     uint constant private TILE_SAFETY_PRECISION = 100; // Denominator
     uint constant private ATTACK_EFFECTIVENESS_MARGIN_MIN = 90; // Min 90% attack effectiveness margin
@@ -45,13 +44,6 @@ contract CryptopiaNavalBattleMechanics is Initializable, AccessControlUpgradeabl
     /**
      * Events
      */
-    /// @dev Emits when a battle starts
-    /// @param player1 The account of the player1
-    /// @param player1_ship The id of the player1's ship
-    /// @param player2 The account of the player2
-    /// @param player2_ship The id of the player2's ship
-    event NavalBattleStart(address indexed player1, uint player1_ship, address indexed player2, uint player2_ship);
-
     /// @dev Emits when a battle ends
     /// @param player1 The account of the player1
     /// @param player1_ship The id of the player1's ship
@@ -60,7 +52,7 @@ contract CryptopiaNavalBattleMechanics is Initializable, AccessControlUpgradeabl
     /// @param player2_ship The id of the player2's ship
     /// @param player2_damage The damage that the attacker has taken during the battle
     /// @param victor The account of the victor
-    event NavalBattleEnd(address indexed player1, uint player1_ship, uint8 player1_damage, address indexed player2, uint player2_ship, uint8 player2_damage, address victor);
+    event QuickNavalBattle(address indexed player1, uint player1_ship, uint16 player1_damage, address indexed player2, uint player2_ship, uint16 player2_damage, address victor);
 
 
     /// @dev Constructor
@@ -166,20 +158,17 @@ contract CryptopiaNavalBattleMechanics is Initializable, AccessControlUpgradeabl
             / (player1BattleData.defence * TILE_SAFETY_PRECISION * ATTACK_EFFECTIVENESS_MARGIN_PRECISION);
         
         // Turns until 
-        battleData.player1_turnsUntilWin = (battleData.player1_effectiveAttack - 1 + MAX_DAMAGE - player2BattleData.damage) / battleData.player1_effectiveAttack;
-        battleData.player2_turnsUntilWin = (battleData.player2_effectiveAttack - 1 + MAX_DAMAGE - player1BattleData.damage) / battleData.player2_effectiveAttack;
-
-        // Emit
-        emit NavalBattleStart(player1, ships.tokenId1, player2, ships.tokenId2);
+        battleData.player1_turnsUntilWin = (battleData.player1_effectiveAttack - 1 + player2BattleData.health - player2BattleData.damage) / battleData.player1_effectiveAttack;
+        battleData.player2_turnsUntilWin = (battleData.player2_effectiveAttack - 1 + player1BattleData.health - player1BattleData.damage) / battleData.player2_effectiveAttack;
 
         // Player2 wins
         if (battleData.player2_turnsUntilWin < battleData.player1_turnsUntilWin) // In case of tie player1 wins (msg.sender)
         {
             // Calculate damage
-            battleData.player1_damageTaken = MAX_DAMAGE - player1BattleData.damage; // Completely damaged
-            battleData.player2_damageTaken = player2BattleData.damage + (battleData.player2_turnsUntilWin * battleData.player1_effectiveAttack) <= MAX_DAMAGE 
-                ? uint8(battleData.player2_turnsUntilWin * battleData.player1_effectiveAttack) 
-                : MAX_DAMAGE - player2BattleData.damage;
+            battleData.player1_damageTaken = player1BattleData.health - player1BattleData.damage; // Completely damaged
+            battleData.player2_damageTaken = player2BattleData.damage + (battleData.player2_turnsUntilWin * battleData.player1_effectiveAttack) <= player2BattleData.health 
+                ? uint16(battleData.player2_turnsUntilWin * battleData.player1_effectiveAttack) 
+                : player2BattleData.health - player2BattleData.damage;
 
             battleData.victor = player2;
         }
@@ -188,10 +177,10 @@ contract CryptopiaNavalBattleMechanics is Initializable, AccessControlUpgradeabl
         else 
         {
             // Calculate damage
-            battleData.player2_damageTaken = MAX_DAMAGE - player2BattleData.damage; // Completely damaged
-            battleData.player1_damageTaken = player1BattleData.damage + (battleData.player1_turnsUntilWin * battleData.player2_effectiveAttack) <= MAX_DAMAGE 
-                ? uint8(battleData.player1_turnsUntilWin * battleData.player2_effectiveAttack) 
-                : MAX_DAMAGE - player1BattleData.damage;
+            battleData.player2_damageTaken = player2BattleData.health - player2BattleData.damage; // Completely damaged
+            battleData.player1_damageTaken = player1BattleData.damage + (battleData.player1_turnsUntilWin * battleData.player2_effectiveAttack) <= player1BattleData.health 
+                ? uint16(battleData.player1_turnsUntilWin * battleData.player2_effectiveAttack) 
+                : player1BattleData.health - player1BattleData.damage;
             
             battleData.victor = player1;
         }
@@ -201,7 +190,7 @@ contract CryptopiaNavalBattleMechanics is Initializable, AccessControlUpgradeabl
             ships, battleData.player1_damageTaken, battleData.player2_damageTaken); 
 
         // Emit
-        emit NavalBattleEnd(
+        emit QuickNavalBattle(
             player1, ships.tokenId1, battleData.player1_damageTaken, // Player 1 
             player2, ships.tokenId2, battleData.player2_damageTaken, // Player 2
             battleData.victor);

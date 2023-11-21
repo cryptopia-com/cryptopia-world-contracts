@@ -27,65 +27,42 @@ import "../../../../accounts/multisig/errors/MultisigErrors.sol";
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRandomness, IPirateMechanics {
 
-    struct Confrontation 
-    {
-        // Pirate
-        address attacker;
-
-        // Location intercept took place
-        uint16 location;
-
-        // Arrival timestamp of the target (used to prevent multiple interceptions)
-        uint64 arrival;
-
-        // Deadline for the target to respond
-        uint64 deadline;
-
-        // Timestamp after which the confrontation expires (can be extended by the target)
-        uint64 expiration;
-
-        // Escape attempt (can only be attempted once)
-        bool escapeAttempted;
-    }
-
-    struct Plunder  
-    {
-        // Deadline for the pirate to loot
-        uint64 deadline;
-
-        // Assets that the pirate has looted
-        bytes32 assets;
-    }
-
     /**
      * Storage
      */
-    uint constant private MAX_CHARISMA = 100; // Denominator
-    
     // Settings
     uint64 constant private MAX_RESPONSE_TIME = 600; // 10 minutes
+    uint constant private BASE_XP_REWARD = 100; // 100 XP
 
     // Scaling factors
+    uint constant private MAX_LUCK = 100; // Denominator
+    uint constant private MAX_CHARISMA = 100; // Denominator
+
     uint16 constant private SPEED_SCALING_FACTOR = 50; // Capped at 30% influence (speed is unknown)
     uint16 constant private LUCK_SCALING_FACTOR = 20; // Max 20% influence (luck is 0-100) 
 
     uint constant private SPEED_INFLUENCE_CAP = 3_000; // Max 30% influence (speed is unknown)
 
-    // Other factors
+    // Negociation factors
     uint constant private BASE_NEGOCIATION_DEDUCTION_FACTOR = 50; // 50%
     uint constant private BASE_NEGOCIATION_DEDUCTION_FACTOR_PRECISION = 100; // Denominator
 
+    // Plunder factors
+    uint constant private BASE_PLUNDER_DEDUCTION_FACTOR = 50; // 50%
+    uint constant private BASE_PLUNDER_DEDUCTION_FACTOR_PRECISION = 100; // Denominator
+
     // Randomness
     uint constant private BASE_ESCAPE_THRESHOLD = 5_000; // 50%
+    uint constant private BASE_PLUNDER_THRESHOLD = 5_000; // 50%
     
-    /// @dev attacker => target
+    /// @dev pirate => target
     mapping(address => address) public targets;
 
     /// @dev target => Confrontation
     mapping(address => Confrontation) public confrontations;
 
-    /// @dev target => Plunder
-    mapping(address => Plunder) public plunders;
+    /// @dev pirate => target => Plunder
+    mapping(address => mapping(address => Plunder)) public plunders;
 
     // Refs
     address public navalBattleMechanicsContract;
@@ -131,6 +108,14 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
     /// @param attacker The account of the attacker
     /// @param location The location at which the confrontation took place
     event EscapeFail(address indexed target, address indexed attacker, uint16 indexed location);
+
+    /// @dev Emits when a plunder attempt succeeds
+    /// @param target The account of the target
+    /// @param attacker The account of the attacker
+    /// @param assets The assets that the pirate is looting
+    /// @param amounts The amounts of the assets that the pirate is looting (in case of fungible assets)
+    /// @param tokenIds The ids of the assets that the pirate is looting (in case of non-fungible assets)
+    event PiratePlunderSuccess(address indexed target, address indexed attacker, address[] assets, uint[] amounts, uint[] tokenIds);
 
 
     /**
@@ -186,6 +171,10 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
     /// @param target The account of the target
     error TargetAlreadyAttemptedEscape(address target);
 
+    /// @dev Revert if the target was already plundered
+    /// @param target The account of the target
+    error TargetAlreadyPlundered(address target);   
+
 
     /// @dev Constructor
     /// @param _navalBattleMechanicsContract The address of the naval battle mechanics contract
@@ -223,24 +212,24 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
      */
     /// @dev Get confrontation data
     /// @param target The account of the defender
-    /// @return attacker The account of the pirate
-    /// @return location The location at which the confrontation took place
-    /// @return deadline The deadline for the target to respond
-    /// @return expiration The timestamp after which the confrontation expires (can be extended by the target)
+    /// @return Confrontation data
     function getConfrontation(address target)
         public override virtual view 
-        returns (
-            address attacker,
-            uint16 location,
-            uint64 deadline,
-            uint64 expiration
-        )
+        returns (Confrontation memory)
     {
-        Confrontation storage confrontation = confrontations[target];
-        attacker = confrontation.attacker;
-        location = confrontation.location;
-        deadline = confrontation.deadline;
-        expiration = confrontation.expiration;
+        return confrontations[target];
+    }
+
+
+    /// @dev Get plunder data
+    /// @param attacker The account of the pirate
+    /// @param target The account of the defender
+    /// @return Plunder data
+    function getPlunder(address attacker, address target)
+        public override virtual view 
+        returns (Plunder memory)
+    {
+        return plunders[attacker][target];
     }
 
     
@@ -352,6 +341,12 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
         else if (confrontation.arrival == targetArrival) 
         {
             revert TargetAlreadyIntercepted(target);
+        }
+
+        // Ensure that the attacker is not already plundering the target
+        if (plunders[msg.sender][target].deadline > block.timestamp) 
+        {
+            revert TargetAlreadyPlundered(target);
         }
 
         // Ensure that the target is not a pirate
@@ -682,16 +677,23 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
             revert ResponseTimeExpired(msg.sender, confrontation.deadline);
         }
 
+        // Do battle
+        BattleData memory battleOutcome = IBattleMechanics(navalBattleMechanicsContract)
+            .__quickBattle(msg.sender, confrontation.attacker, confrontation.location);
+
         // Attacker wins
-        if (IBattleMechanics(navalBattleMechanicsContract)
-            .__quickBattle(msg.sender, confrontation.attacker, confrontations[msg.sender].location).victor == confrontation.attacker)
+        if (battleOutcome.victor == confrontation.attacker)
         {
-            // Allow attacker to plunder
-            plunders[confrontation.attacker].deadline = uint64(block.timestamp) + MAX_RESPONSE_TIME;
+            // Allow pirate to plunder
+            plunders[confrontation.attacker][msg.sender].deadline = uint64(block.timestamp) + MAX_RESPONSE_TIME;
 
             // Extend freeze
-            IPlayerFreezeControl(mapsContract).__freeze(msg.sender, confrontation.attacker, plunders[confrontation.attacker].deadline);
-            IPlayerFreezeControl(intentoriesContract).__freeze(msg.sender, plunders[confrontation.attacker].deadline);
+            IPlayerFreezeControl(mapsContract).__freeze(msg.sender, confrontation.attacker, plunders[confrontation.attacker][msg.sender].deadline);
+            IPlayerFreezeControl(intentoriesContract).__freeze(msg.sender, plunders[confrontation.attacker][msg.sender].deadline); 
+
+            // Award XP
+            IPlayerRegister(playerRegisterContract)
+                .__award(confrontation.attacker, battleOutcome.player1_damageTaken, 0);
         }
 
         // Target wins
@@ -700,6 +702,10 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
             // Unfreeze players
             IPlayerFreezeControl(mapsContract).__unfreeze(msg.sender, confrontation.attacker);
             IPlayerFreezeControl(intentoriesContract).__unfreeze(msg.sender);
+
+            // Award XP
+            IPlayerRegister(playerRegisterContract)
+                .__award(msg.sender, battleOutcome.player2_damageTaken, 0); 
         }
 
         // Mark confrontation as ended
@@ -731,16 +737,23 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
             revert ResponseTimeNotExpired(target, confrontation.deadline);
         }
 
+        // Do battle
+        BattleData memory battleOutcome = IBattleMechanics(navalBattleMechanicsContract)
+            .__quickBattle(msg.sender, target, confrontation.location);
+
         // Attacker wins
-        if (IBattleMechanics(navalBattleMechanicsContract).__quickBattle(
-            msg.sender, target, confrontations[target].location).victor == msg.sender) 
+        if (battleOutcome.victor == msg.sender) 
         {
             // Allow attacker to plunder
-            plunders[msg.sender].deadline = uint64(block.timestamp) + MAX_RESPONSE_TIME;
+            plunders[msg.sender][target].deadline = uint64(block.timestamp) + MAX_RESPONSE_TIME;
 
             // Extend freeze
-            IPlayerFreezeControl(mapsContract).__freeze(target, msg.sender, plunders[msg.sender].deadline);
-            IPlayerFreezeControl(intentoriesContract).__freeze(target, plunders[msg.sender].deadline);
+            IPlayerFreezeControl(mapsContract).__freeze(target, msg.sender, plunders[msg.sender][target].deadline);
+            IPlayerFreezeControl(intentoriesContract).__freeze(target, plunders[msg.sender][target].deadline);
+
+            // Award XP
+            IPlayerRegister(playerRegisterContract)
+                .__award(msg.sender, battleOutcome.player2_damageTaken, 0);
         }
 
         // Target wins
@@ -749,6 +762,10 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
             // Unfreeze players
             IPlayerFreezeControl(mapsContract).__unfreeze(target, msg.sender);
             IPlayerFreezeControl(intentoriesContract).__unfreeze(target);
+
+            // Award XP
+            IPlayerRegister(playerRegisterContract)
+                .__award(target, battleOutcome.player1_damageTaken, 0);
         }
 
         // Mark confrontation as ended
@@ -759,9 +776,117 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
     }
 
 
-    // function loot(Inventory[] memory inventory, address[] memory asset, uint[] memory amount, uint[] memory tokenId)
-    //     public virtual override
-    // {
-    //     // TODO in case pirate won the battle they can loot the target within a certain time frame
-    // }
+    /// @dev Allows the pirate to loot the target after winning a battle
+    /// @param target The account of the target to plunder
+    /// @param inventories_from The inventories in which the assets are located
+    /// @param inventories_to The inventories to which the assets will be moved
+    /// @param assets The assets that the pirate is looting
+    /// @param amounts The amounts of the assets that the pirate is looting (in case of fungible assets)
+    /// @param tokenIds The ids of the assets that the pirate is looting (in case of non-fungible assets)
+    function plunder(address target, Inventory[] memory inventories_from, Inventory[] memory inventories_to, address[] memory assets, uint[] memory amounts, uint[] memory tokenIds)
+        public override 
+    {
+        Plunder storage plunder_ = plunders[msg.sender][target]; 
+
+        // Ensure that the response time has not expired
+        if (block.timestamp > plunder_.deadline) 
+        {
+            revert ResponseTimeExpired(target, plunder_.deadline); 
+        }
+
+        // Ensure that the target was not already plundered
+        if (plunder_.loot_hot > block.timestamp) 
+        {
+            revert TargetAlreadyPlundered(target);
+        }
+
+        // Generate randomness
+        bytes32 randomness = _generateRandomSeed();
+
+        // Luck plays a factor in the plunder
+        uint luck = IPlayerRegister(playerRegisterContract)
+            .getLuck(msg.sender);
+
+        // Determine what to deduct from the plunder (drops in the ocean)
+        uint score;
+        for (uint i = 0; i < assets.length; i++) 
+        {
+            score = _getRandomNumberAt(randomness, i) + luck * LUCK_SCALING_FACTOR;
+            if (score >= RANDOMNESS_PRECISION_FACTOR)
+            {
+                continue; // Nothing drops in the ocean
+            }
+
+            // Non-fungible asset
+            if (0 != tokenIds[i]) 
+            {
+                if (score < BASE_PLUNDER_THRESHOLD)
+                {
+                    // Send to treasury
+                    IInventories(intentoriesContract)
+                        .__deductNonFungibleTokenUnchecked(
+                            target, 
+                            inventories_from[i], 
+                            assets[i], 
+                            tokenIds[i]); 
+
+                    // Deduct from plunder
+                    tokenIds[i] = 0;
+                }
+            }
+
+            // Fungible asset
+            else 
+            {
+                // Deduct from plunder based on score
+                uint deduct = amounts[i] 
+                    * BASE_PLUNDER_DEDUCTION_FACTOR 
+                    * (RANDOMNESS_PRECISION_FACTOR - score) 
+                    / (BASE_PLUNDER_DEDUCTION_FACTOR_PRECISION * RANDOMNESS_PRECISION_FACTOR);
+
+                if (deduct > 0) 
+                {
+                    // Deduct from plunder
+                    amounts[i] -= deduct;
+
+                    // Send to treasury
+                    IInventories(intentoriesContract)
+                        .__deductFungibleTokenUnchecked(
+                            target, 
+                            inventories_from[i], 
+                            assets[i], 
+                            deduct);
+                }
+            }
+        }
+
+        // Create a hash of the loot mark the target as plundered
+        plunder_.loot_hash = keccak256(abi.encode(
+            keccak256(abi.encodePacked(assets)),
+            keccak256(abi.encodePacked(amounts)),
+            keccak256(abi.encodePacked(tokenIds))
+        ));
+
+        // Allows target to place a bounty on the pirate
+        plunder_.deadline = uint64(block.timestamp) + MAX_RESPONSE_TIME;
+        plunder_.loot_hot = plunder_.deadline; 
+
+        // Transfer assets to attacker
+        IInventories(intentoriesContract)
+            .__transferUnchecked(
+                target, 
+                msg.sender, 
+                inventories_from, 
+                inventories_to,
+                assets, 
+                amounts,
+                tokenIds); 
+
+        // Unfreeze players
+        IPlayerFreezeControl(mapsContract).__unfreeze(target, msg.sender);
+        IPlayerFreezeControl(intentoriesContract).__unfreeze(target);
+
+        // Emit
+        emit PiratePlunderSuccess(target, msg.sender, assets, amounts, tokenIds);
+    }
 }

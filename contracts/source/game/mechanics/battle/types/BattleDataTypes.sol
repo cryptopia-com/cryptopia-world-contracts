@@ -17,10 +17,10 @@ struct BattleData
     uint player2_turnsUntilWin;
 
     // The amount of damage that the player1 has taken
-    uint8 player1_damageTaken;
+    uint16 player1_damageTaken;
 
     // The amount of damage that the player2 has taken
-    uint8 player2_damageTaken;
+    uint16 player2_damageTaken;
 
     /// The player that won the battle
     address victor;

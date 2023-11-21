@@ -7,7 +7,7 @@ enum EdgeType
     Flat,
     Slope,
     Cliff
-} 
+}
 
 /// @dev Terrain of a tile
 enum Terrain
@@ -22,7 +22,7 @@ enum Terrain
 /// @dev Biome of a tile
 enum Biome 
 {
-    None, // Seastead only
+    None, 
     Plains,
     Grassland,
     Forest, // Allows minting of wood

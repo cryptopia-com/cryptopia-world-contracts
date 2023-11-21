@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20 < 0.9.0;
 
 import "../../inventories/types/InventoryEnums.sol";
+import "./types/PirateDataTypes.sol";
 
 /// @title Cryptopia pirate game mechanics
 /// @dev Provides the mechanics for the pirate gameplay
@@ -10,18 +11,19 @@ interface IPirateMechanics {
 
     /// @dev Get confrontation data
     /// @param target The account of the defender
-    /// @return attacker The account of the pirate
-    /// @return location The location at which the confrontation took place
-    /// @return deadline The deadline for the target to respond
-    /// @return expiration The timestamp after which the confrontation expires (can be extended by the target)
+    /// @return Confrontation data
     function getConfrontation(address target)
+        external view  
+        returns (Confrontation memory);
+
+    
+    /// @dev Get plunder data
+    /// @param attacker The account of the pirate
+    /// @param target The account of the defender
+    /// @return Plunder data
+    function getPlunder(address attacker, address target)
         external view 
-        returns (
-            address attacker,
-            uint16 location,
-            uint64 deadline,
-            uint64 expiration
-        );
+        returns (Plunder memory);
         
 
     /// @dev Intercepts the target at the specified location
@@ -78,6 +80,13 @@ interface IPirateMechanics {
        external;
 
 
-    // function startTurnBasedBattle() 
-    //     external;
+    /// @dev Allows the pirate to loot the target after winning a battle
+    /// @param target The account of the target to plunder
+    /// @param inventories_from The inventories in which the assets are located
+    /// @param inventories_to The inventories to which the assets will be moved
+    /// @param assets The assets that the pirate is looting
+    /// @param amounts The amounts of the assets that the pirate is looting (in case of fungible assets)
+    /// @param tokenIds The ids of the assets that the pirate is looting (in case of non-fungible assets)
+    function plunder(address target, Inventory[] memory inventories_from, Inventory[] memory inventories_to, address[] memory assets, uint[] memory amounts, uint[] memory tokenIds)
+        external; 
 }

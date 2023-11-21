@@ -257,6 +257,33 @@ interface IInventories {
         external;
 
 
+    /// @dev Deducts `tokenId` from `asset` from the `inventory` of `player`
+    /// SYSTEM caller is trusted so checks can be omitted
+    /// - Assumes inventory exists
+    /// - Assumes asset exists
+    /// - Assumes tokenId of asset is allocated to player
+    /// - Checks if the players inventory is frozen
+    /// @param player The inventory owner to deduct the asset from
+    /// @param inventory The inventory type to deduct the asset from {BackPack | Ship}
+    /// @param asset The asset contract address
+    /// @param tokenId The token id from asset to deduct
+    function __deductNonFungibleToken(address player, Inventory inventory, address asset, uint tokenId)
+        external;
+
+    
+    /// @dev Deducts `tokenId` from `asset` from the `inventory` of `player`
+    /// SYSTEM caller is trusted so checks can be omitted
+    /// - Assumes inventory exists
+    /// - Assumes asset exists
+    /// - Assumes tokenId of asset is allocated to player
+    /// @param player The inventory owner to deduct the asset from
+    /// @param inventory The inventory type to deduct the asset from {BackPack | Ship}
+    /// @param asset The asset contract address
+    /// @param tokenId The token id from asset to deduct
+    function __deductNonFungibleTokenUnchecked(address player, Inventory inventory, address asset, uint tokenId)
+        external;
+
+
     /// @dev Deducts fungible and non-fungible tokens in a single transaction
     /// SYSTEM caller is trusted so checks can be omitted
     /// - Assumes inventory exists

@@ -29,15 +29,6 @@ export const MapConfig = {
 }
 
 /**
- * Ship settings
- */
-export const ShipConfig = {
-    
-    // Base values
-    MAX_DAMAGE: 250,
-}
-
-/**
  * Player settings
  */
 export const PlayerConfig = {

@@ -740,6 +740,42 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     }
 
 
+    /// @dev Deducts `tokenId` from `asset` from the `inventory` of `player`
+    /// SYSTEM caller is trusted so checks can be omitted
+    /// - Assumes inventory exists
+    /// - Assumes asset exists
+    /// - Assumes tokenId of asset is allocated to player
+    /// - Checks if the players inventory is frozen
+    /// @param player The inventory owner to deduct the asset from
+    /// @param inventory The inventory type to deduct the asset from {BackPack | Ship}
+    /// @param asset The asset contract address
+    /// @param tokenId The token id from asset to deduct
+    function __deductNonFungibleToken(address player, Inventory inventory, address asset, uint tokenId)
+        public virtual override 
+        notFrozen(player)
+        onlyRole(SYSTEM_ROLE)
+    {
+        _deductNonFungibleToken(player, inventory, asset, tokenId);
+    }
+
+    
+    /// @dev Deducts `tokenId` from `asset` from the `inventory` of `player`
+    /// SYSTEM caller is trusted so checks can be omitted
+    /// - Assumes inventory exists
+    /// - Assumes asset exists
+    /// - Assumes tokenId of asset is allocated to player
+    /// @param player The inventory owner to deduct the asset from
+    /// @param inventory The inventory type to deduct the asset from {BackPack | Ship}
+    /// @param asset The asset contract address
+    /// @param tokenId The token id from asset to deduct
+    function __deductNonFungibleTokenUnchecked(address player, Inventory inventory, address asset, uint tokenId)
+        public virtual override 
+        onlyRole(SYSTEM_ROLE)
+    {
+        _deductNonFungibleToken(player, inventory, asset, tokenId);
+    }
+
+
     /// @dev Deducts fungible and non-fungible tokens in a single transaction
     /// SYSTEM caller is trusted so checks can be omitted
     /// - Assumes inventory exists
@@ -829,6 +865,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// - Assumes inventory exists
     /// - Assumes asset exists
     /// - Assumes amount of asset is allocated to player
+    /// - Assumes missing amount and tokenId indicates skipping
     /// @param player_from The sending player
     /// @param player_to The receiving player
     /// @param inventory_from Origin {Inventories}
@@ -853,11 +890,6 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
                 // Fungible
                 _transferFungible(
                     player_from, player_to, inventory_from[i], inventory_to[i], asset[i], amount[i]);
-            }
-            else 
-            {
-                // Amount and token id zero
-                revert ArgumentInvalid();
             }
         }
     }
@@ -1225,6 +1257,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         emit InventoryAssign(player, inventory, asset, 1, tokenId);
     }
 
+
     /// @dev Deduct `amount` of `asset` from the `inventory` of `player`
     /// SYSTEM caller is trusted so checks can be omitted
     /// - Assumes inventory exists
@@ -1276,5 +1309,83 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
 
         // Emit
         emit InventoryDeduct(player, inventory, asset, amount, 0);
+    }
+
+
+    /// @dev Deduct `tokenId` from `asset` from the `inventory` of `player`
+    /// SYSTEM caller is trusted so checks can be omitted
+    /// - Assumes inventory exists
+    /// - Assumes asset exists
+    /// @param player The inventory owner to deduct the asset from
+    /// @param inventory The inventory type to deduct the asset from {BackPack | Ship}
+    /// @param asset The asset contract address
+    /// @param tokenId The token id from asset to deduct
+    function _deductNonFungibleToken(address player, Inventory inventory, address asset, uint tokenId)
+        internal 
+    {
+        // SYSTEM caller > Assume inventory exists
+        if (inventory == Inventory.Ship) 
+        {
+            InventorySpace storage inventorySpace = shipInventories[playerToShip[player]];
+            NonFungibleTokenData storage nonFungibleTokenData = nonFungibleTokenDatas[asset][tokenId];
+            NonFungibleTokenInventory storage nonFungibleInventory = inventorySpace.nonFungible[asset];
+
+            // Check if token is owned by player
+            if (nonFungibleTokenData.owner != player)
+            {
+                revert TokenNotOwnedByAccount(
+                    player, asset, tokenId);
+            }
+
+            // Check if token is in ship
+            if (nonFungibleTokenData.inventory != Inventory.Ship)
+            {
+                revert InventoryItemNotFound(
+                    player, inventory, asset, tokenId);
+            }
+
+            // Deduct from ship
+            inventorySpace.weight -= INVENTORY_SLOT_SIZE;
+            nonFungibleTokenData.owner = address(0);
+            nonFungibleInventory.tokensIndex[nonFungibleInventory.tokens[tokenId]] = nonFungibleInventory.tokensIndex[nonFungibleInventory.tokensIndex.length - 1];
+            nonFungibleInventory.tokensIndex.pop();
+        }
+        else 
+        {
+            InventorySpace storage inventorySpace = playerInventories[player];
+            NonFungibleTokenData storage nonFungibleTokenData = nonFungibleTokenDatas[asset][tokenId];
+            NonFungibleTokenInventory storage nonFungibleInventory = inventorySpace.nonFungible[asset];
+
+            // Check if token is owned by player
+            if (nonFungibleTokenData.owner != player)
+            {
+                revert TokenNotOwnedByAccount(
+                    player, asset, tokenId);
+            }
+
+            // Check if token is in backpack
+            if (nonFungibleTokenData.inventory != Inventory.Backpack)
+            {
+                revert InventoryItemNotFound(
+                    player, inventory, asset, tokenId);
+            }
+
+            // Deduct from backpack
+            inventorySpace.weight -= INVENTORY_SLOT_SIZE;
+            nonFungibleTokenData.owner = address(0);
+            nonFungibleInventory.tokensIndex[nonFungibleInventory.tokens[tokenId]] = nonFungibleInventory.tokensIndex[nonFungibleInventory.tokensIndex.length - 1];
+            nonFungibleInventory.tokensIndex.pop();
+        }
+
+        // Send to treasury
+        try IERC721(asset).transferFrom(address(this), treasury, tokenId) {}
+        catch 
+        {
+            revert InventoryWithdrawFailed(
+                treasury, inventory, asset, 1, tokenId);
+        }
+
+        // Emit
+        emit InventoryDeduct(player, inventory, asset, 1, tokenId);
     }
 }

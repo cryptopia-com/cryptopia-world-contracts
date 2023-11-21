@@ -21,129 +21,37 @@ interface IShips {
         returns (uint);
 
 
+    /// @dev Retreive a ships by name
+    /// @param name Ship name (unique)
+    /// @return Ship a single ship template
+    function getShip(bytes32 name) 
+        external view 
+        returns (Ship memory);
+
+
     /// @dev Retreive a rance of ships
     /// @param skip Starting index
     /// @param take Amount of items
-    /// @return name Ship name (unique)
-    /// @return generic if true faction and subfaction are disregarded (any player can equipt)
-    /// @return faction {Faction} (can only be equipted by this faction)
-    /// @return subFaction {SubFaction} (pirate/bountyhunter)
-    /// @return rarity Ship rarity {Rarity}
-    /// @return modules the amount of module slots
-    /// @return base_speed Ship starting speed (before modules)
-    /// @return base_attack Ship starting attack (before modules)
-    /// @return base_defence Ship starting defence (before modules)
-    /// @return base_inventory Ship starting storage (before modules)
-    /// @return base_fuelConsumption Ship starting fuel consumption (before modules)
+    /// @return Ship[] range of ship templates
     function getShips(uint skip, uint take) 
         external view 
-        returns (
-            bytes32[] memory name,
-            bool[] memory generic,
-            Faction[] memory faction,
-            SubFaction[] memory subFaction,
-            Rarity[] memory rarity,
-            uint8[] memory modules, 
-            uint16[] memory base_speed,
-            uint16[] memory base_attack,
-            uint16[] memory base_defence,
-            uint[] memory base_inventory,
-            uint[] memory base_fuelConsumption
-        );
-
-
-    /// @dev Retreive a ships by name
-    /// @param name Ship name (unique)
-    /// @return generic True if faction and subfaction are disregarded (any player can equipt)
-    /// @return faction {Faction} (can only be equipted by this faction)
-    /// @return subFaction {SubFaction} (pirate/bountyhunter)
-    /// @return rarity Ship rarity {Rarity}
-    /// @return modules Amount of module slots
-    /// @return base_speed Ship starting speed (before modules)
-    /// @return base_attack Ship starting attack (before modules)
-    /// @return base_defence Ship starting defence (before modules)
-    /// @return base_inventory Ship starting storage (before modules)
-    /// @return base_fuelConsumption Ship starting fuel consumption (before modules)
-    function getShip(bytes32 name) 
-        external view 
-        returns (
-            bool generic,
-            Faction faction,
-            SubFaction subFaction,
-            Rarity rarity,
-            uint8 modules, 
-            uint16 base_speed,
-            uint16 base_attack,
-            uint16 base_defence,
-            uint base_inventory,
-            uint base_fuelConsumption
-        );
+        returns (Ship[] memory);
 
 
     /// @dev Retreive a ships by token id
     /// @param tokenId The id of the ship to retreive
-    /// @return name Ship name (unique)
-    /// @return locked True if the ship cannot be transferred
-    /// @return generic True if faction and subfaction are disregarded (any player can equipt)
-    /// @return faction {Faction} (can only be equipted by this faction)
-    /// @return subFaction {SubFaction} (pirate/bountyhunter)
-    /// @return rarity Ship rarity {Rarity}
-    /// @return modules Amount of module slots
-    /// @return damage Ship damage (0 - 250)
-    /// @return speed Ship speed (after modules)
-    /// @return attack Ship attack (after modules)
-    /// @return defence Ship defence (after modules)
-    /// @return inventory Ship storage (after modules)
-    /// @return fuelConsumption Ship fuel consumption (after modules)
+    /// @return ShipInstance a single ship instance
     function getShipInstance(uint tokenId) 
         external view 
-        returns (
-            bytes32 name,
-            bool locked,
-            bool generic,
-            Faction faction,
-            SubFaction subFaction,
-            Rarity rarity,
-            uint8 modules,
-            uint8 damage,
-            uint16 speed,
-            uint16 attack,
-            uint16 defence,
-            uint inventory,
-            uint fuelConsumption
-        );
+        returns (ShipInstance memory);
 
     
     /// @dev Retreive ships by token ids
     /// @param tokenIds The id of the ship to retreive
-    /// @return name Ship name (unique)
-    /// @return locked True if the ship cannot be transferred
-    /// @return generic True if faction and subfaction are disregarded (any player can equipt)
-    /// @return faction {Faction} (can only be equipted by this faction)
-    /// @return subFaction {SubFaction} (pirate/bountyhunter)
-    /// @return rarity Ship rarity {Rarity}
-    /// @return modules Amount of module slots
-    /// @return damage Ship damage (0 - 250)
-    /// @return speed Ship speed (after modules)
-    /// @return attack Ship attack (after modules)
-    /// @return defence Ship defence (after modules)
-    /// @return inventory Ship storage (after modules) 
+    /// @return ShipInstance[] a range of ship instances
     function getShipInstances(uint[] memory tokenIds) 
         external view 
-        returns (
-            bytes32[] memory name,
-            bool[] memory locked,
-            bool[] memory generic,
-            Faction[] memory faction,
-            SubFaction[] memory subFaction,
-            Rarity[] memory rarity,
-            uint8[] memory modules,
-            uint8[] memory damage,
-            uint16[] memory speed,
-            uint16[] memory attack,
-            uint16[] memory defence,
-            uint[] memory inventory
-        );
+        returns (ShipInstance[] memory);
 
 
     /// @dev Retrieve equipt data for a ship instance
@@ -245,7 +153,7 @@ interface IShips {
     /// @param ships_ The ids of the ships to apply damage to
     /// @param damage1 The amount of damage to apply to ship 1
     /// @param damage2 The amount of damage to apply to ship 2
-    function __applyDamage(TokenPair memory ships_, uint8 damage1, uint8 damage2)
+    function __applyDamage(TokenPair memory ships_, uint16 damage1, uint16 damage2)
         external;
 
 

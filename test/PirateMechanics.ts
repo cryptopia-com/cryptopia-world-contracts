@@ -2,11 +2,12 @@ import "../scripts/helpers/converters";
 import { expect } from "chai";
 import { ethers, upgrades } from "hardhat";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
+import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { getParamFromEvent, containsEvent } from '../scripts/helpers/events';
 import { getTransferProposalSignature } from "../scripts/helpers/meta";
 import { TransferProposal } from "../scripts/types/meta";
 import { ZERO_ADDRESS } from "./settings/constants";
-import { REVERT_MODE, MapConfig, ShipConfig, PirateMechanicsConfig } from "./settings/config";
+import { REVERT_MODE, MapConfig, PirateMechanicsConfig } from "./settings/config";
 import { SYSTEM_ROLE } from "./settings/roles";   
 import { Resource, Terrain, Biome, Inventory } from '../scripts/types/enums';
 import { Asset, Map } from "../scripts/types/input";
@@ -2158,17 +2159,17 @@ describe("PirateMechanics Contract", function () {
         /**
          * Deploy players
          */
-        let testAccountCounter = 0;
-        const setupTestAccounts = (async () => {
+        let testEnvironmentCounter = 0;
+        const setupTestEnvironment = (async () => {
 
             // Create pirate account
-            const createPirateAccountTransaction = await playerRegisterInstance.create([account1], 1, 0, `${testAccountCounter}_QuickBattle_Pirate`.toBytes32(), 0, 0);
+            const createPirateAccountTransaction = await playerRegisterInstance.create([account1], 1, 0, `${testEnvironmentCounter}_QuickBattle_Pirate`.toBytes32(), 0, 0);
             const createPirateAccountReceipt = await createPirateAccountTransaction.wait();
             const pirateAccountAddress = getParamFromEvent(playerRegisterInstance, createPirateAccountReceipt, "account", "RegisterPlayer");
             pirateAccountInstance = await ethers.getContractAt("CryptopiaAccount", pirateAccountAddress);
 
             // Create target account
-            const createTargetAccountTransaction = await playerRegisterInstance.create([account2], 1, 0, `${testAccountCounter}_QuickBattle_Target`.toBytes32(), 0, 0);
+            const createTargetAccountTransaction = await playerRegisterInstance.create([account2], 1, 0, `${testEnvironmentCounter}_QuickBattle_Target`.toBytes32(), 0, 0);
             const createTargetAccountReceipt = await createTargetAccountTransaction.wait();
             const targetAccountAddress = getParamFromEvent(playerRegisterInstance, createTargetAccountReceipt, "account", "RegisterPlayer");
             targetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAccountAddress);
@@ -2192,13 +2193,13 @@ describe("PirateMechanics Contract", function () {
                 .connect(await ethers.provider.getSigner(account1))
                 .submitTransaction(await pirateMechanicsInstance.getAddress(), 0, interceptCalldata);
 
-            testAccountCounter++;
+            testEnvironmentCounter++;
         });
 
         it ("Should not allow a target to start a quick battle after the target's response time expired", async function () {
 
             // Setup
-            await setupTestAccounts();
+            await setupTestEnvironment();
             const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
             const targetAccountSigner = await ethers.provider.getSigner(account2);
             const targetAccountAddress = await targetAccountInstance.getAddress();
@@ -2233,7 +2234,7 @@ describe("PirateMechanics Contract", function () {
         it ("Should allow a target to start a quick battle before the target's response time expires", async function () {
 
             // Setup
-            await setupTestAccounts();
+            await setupTestEnvironment();
             const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
             const targetAccountSigner = await ethers.provider.getSigner(account2);
             const targetAccountAddress = await targetAccountInstance.getAddress();
@@ -2289,7 +2290,7 @@ describe("PirateMechanics Contract", function () {
 
             for (let i = 0; i < PirateMechanicsConfig.MAX_QUICK_BATTLE_ATTEMPTS; i++)
             {
-                await setupTestAccounts();
+                await setupTestEnvironment();
                 const targetAccountSigner = await ethers.provider.getSigner(account2);
                 const targetAccountAddress = await targetAccountInstance.getAddress();
                 const pirateAccountAddress = await pirateAccountInstance.getAddress();
@@ -2304,7 +2305,7 @@ describe("PirateMechanics Contract", function () {
                     const receipt = await transaction.wait();
 
                 const victor = getParamFromEvent(
-                    navalBattleMechanicsInstance, receipt, "victor", "NavalBattleEnd");
+                    navalBattleMechanicsInstance, receipt, "victor", "QuickNavalBattle");
 
                 if (victor == pirateAccountAddress)
                 {
@@ -2318,7 +2319,7 @@ describe("PirateMechanics Contract", function () {
     
                 // Assert
                 await expect(transaction).to
-                    .emit(navalBattleMechanicsInstance, "NavalBattleEnd");
+                    .emit(navalBattleMechanicsInstance, "QuickNavalBattle");
 
                 await expect(transaction).to
                     .emit(pirateMechanicsInstance, "PirateConfrontationEnd")
@@ -2338,7 +2339,7 @@ describe("PirateMechanics Contract", function () {
             const targetShipBattleData = await shipTokenInstance["getShipBattleData(uint256)"].call(shipTokenInstance, targetShip);
 
             // Assert
-            expect(targetShipBattleData.damage).to.be.lessThanOrEqual(ShipConfig.MAX_DAMAGE);
+            expect(targetShipBattleData.damage).to.be.lessThanOrEqual(targetShipBattleData.health);
         });
 
         it ("Should apply max damage to the pirate ship when the target wins", async function () {
@@ -2351,13 +2352,13 @@ describe("PirateMechanics Contract", function () {
             const pirateShipBattleData = await shipTokenInstance["getShipBattleData(uint256)"].call(shipTokenInstance, pirateShip);
 
             // Assert
-            expect(pirateShipBattleData.damage).to.be.eq(ShipConfig.MAX_DAMAGE);
+            expect(pirateShipBattleData.damage).to.be.eq(pirateShipBattleData.health);
         });
 
         it ("Should not allow a pirate to start a quick battle before the target's response time expired", async function () {
 
             // Setup
-            await setupTestAccounts();
+            await setupTestEnvironment();
             const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
             const pirateAccountSigner = await ethers.provider.getSigner(account1);
             const targetAccountAddress = await targetAccountInstance.getAddress();
@@ -2450,7 +2451,7 @@ describe("PirateMechanics Contract", function () {
 
             for (let i = 0; i < PirateMechanicsConfig.MAX_QUICK_BATTLE_ATTEMPTS; i++)
             {
-                await setupTestAccounts();
+                await setupTestEnvironment();
                 const pirateAccountSigner = await ethers.provider.getSigner(account1);
                 const targetAccountAddress = await targetAccountInstance.getAddress();
                 const pirateAccountAddress = await pirateAccountInstance.getAddress();
@@ -2470,7 +2471,7 @@ describe("PirateMechanics Contract", function () {
                 const receipt = await transaction.wait();
 
                 const victor = getParamFromEvent(
-                    navalBattleMechanicsInstance, receipt, "victor", "NavalBattleEnd");
+                    navalBattleMechanicsInstance, receipt, "victor", "QuickNavalBattle");
 
                 if (victor == targetAccountAddress)
                 {
@@ -2484,7 +2485,7 @@ describe("PirateMechanics Contract", function () {
     
                 // Assert
                 await expect(transaction).to
-                    .emit(navalBattleMechanicsInstance, "NavalBattleEnd");
+                    .emit(navalBattleMechanicsInstance, "QuickNavalBattle");
 
                 await expect(transaction).to
                     .emit(pirateMechanicsInstance, "PirateConfrontationEnd")
@@ -2504,7 +2505,7 @@ describe("PirateMechanics Contract", function () {
             const pirateShipBattleData = await shipTokenInstance["getShipBattleData(uint256)"].call(shipTokenInstance, pirateShip);
 
             // Assert
-            expect(pirateShipBattleData.damage).to.be.lessThanOrEqual(ShipConfig.MAX_DAMAGE);
+            expect(pirateShipBattleData.damage).to.be.lessThanOrEqual(pirateShipBattleData.health);
         });
 
         it ("Should apply max damage to the target ship when the pirate wins", async function () {
@@ -2517,7 +2518,392 @@ describe("PirateMechanics Contract", function () {
             const targetShipBattleData = await shipTokenInstance["getShipBattleData(uint256)"].call(shipTokenInstance, targetShip);
 
             // Assert
-            expect(targetShipBattleData.damage).to.be.eq(ShipConfig.MAX_DAMAGE);
+            expect(targetShipBattleData.damage).to.be.eq(targetShipBattleData.health);
+        });
+    });
+
+    /**
+     * Test plundering a target 
+     */
+    describe("Plunder", function () { 
+
+        // Proposal type
+        type Loot = {
+            assets: string[],
+            tokenIds: number[],
+            amounts: string[],
+            inventories: number[]
+        };
+
+        // Players
+        let pirateAccountInstance: CryptopiaAccount;
+        let targetAccountInstance: CryptopiaAccount;
+
+        /**
+         * Deploy players
+         */
+        let testEnvironmentCounter = 0;
+        const setupTestEnvironment = (async (pirateWins: boolean) => {
+
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+
+            // Battle until win condition is met
+            for (let i = 0; i < PirateMechanicsConfig.MAX_QUICK_BATTLE_ATTEMPTS; i++)
+            {
+                // Create pirate account
+                const createPirateAccountTransaction = await playerRegisterInstance.create([account1], 1, 0, `${testEnvironmentCounter}_${i}_Plunder_Pirate`.toBytes32(), 0, 0);
+                const createPirateAccountReceipt = await createPirateAccountTransaction.wait();
+                const pirateAccountAddress = getParamFromEvent(playerRegisterInstance, createPirateAccountReceipt, "account", "RegisterPlayer");
+                pirateAccountInstance = await ethers.getContractAt("CryptopiaAccount", pirateAccountAddress);
+
+                // Create target account
+                const createTargetAccountTransaction = await playerRegisterInstance.create([account2], 1, 0, `${testEnvironmentCounter}_${i}_Plunder_Target`.toBytes32(), 0, 0);
+                const createTargetAccountReceipt = await createTargetAccountTransaction.wait();
+                const targetAccountAddress = getParamFromEvent(playerRegisterInstance, createTargetAccountReceipt, "account", "RegisterPlayer");
+                targetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAccountAddress);
+
+                const pirateAccountSigner = await ethers.provider.getSigner(account1);
+                const targetAccountSigner = await ethers.provider.getSigner(account2);
+                
+                // Add pirate and target to the map
+                const playerEnterCalldata = mapInstance.interface
+                    .encodeFunctionData("playerEnter");
+
+                await pirateAccountInstance
+                    .connect(pirateAccountSigner)
+                    .submitTransaction(await mapInstance.getAddress(), 0, playerEnterCalldata);
+
+                await targetAccountInstance
+                    .connect(targetAccountSigner)
+                    .submitTransaction(await mapInstance.getAddress(), 0, playerEnterCalldata);
+
+                const interceptCalldata = pirateMechanicsInstance.interface
+                    .encodeFunctionData("intercept", [targetAccountAddress, 0]);
+
+                await pirateAccountInstance
+                    .connect(pirateAccountSigner)
+                    .submitTransaction(await pirateMechanicsInstance.getAddress(), 0, interceptCalldata);
+
+                const confrontation = await pirateMechanicsInstance
+                    .getConfrontation(targetAccountAddress);
+
+                let victor; 
+                if (pirateWins)
+                {
+                    await time.increaseTo(confrontation.deadline + BigInt(1));
+
+                    const quickBattleCalldata = pirateMechanicsInstance.interface
+                        .encodeFunctionData("startQuickBattleAsAttacker");
+
+                    const transaction = await pirateAccountInstance
+                        .connect(pirateAccountSigner)
+                        .submitTransaction(pirateMechanicsAddress, 0, quickBattleCalldata);
+                    const receipt = await transaction.wait();
+
+                    victor = getParamFromEvent(
+                        navalBattleMechanicsInstance, receipt, "victor", "QuickNavalBattle");
+                }
+                else 
+                {
+                    const quickBattleCalldata = pirateMechanicsInstance.interface
+                        .encodeFunctionData("startQuickBattleAsTarget");
+
+                    const transaction = await targetAccountInstance
+                        .connect(targetAccountSigner)
+                        .submitTransaction(pirateMechanicsAddress, 0, quickBattleCalldata);
+                    const receipt = await transaction.wait();
+
+                    victor = getParamFromEvent(
+                        navalBattleMechanicsInstance, receipt, "victor", "QuickNavalBattle");
+                }
+
+                if ((pirateWins && victor == targetAccountAddress) || (!pirateWins && victor == pirateAccountAddress))
+                {
+                    if (i === PirateMechanicsConfig.MAX_QUICK_BATTLE_ATTEMPTS - 1)
+                    {
+                        throw new Error(`Failed to win a quick battle after ${PirateMechanicsConfig.MAX_QUICK_BATTLE_ATTEMPTS} attempts`);
+                    }
+
+                    continue;
+                }
+                
+                // Win condition met
+                break;
+            }
+
+            testEnvironmentCounter++;
+        });
+
+        it ("Should not allow pirate to loot after losing a battle", async function () {
+
+            // Setup
+            await setupTestEnvironment(false);
+            const ironAsset = getAssetByResource(Resource.Iron);
+            const goldAsset = getAssetByResource(Resource.Gold);
+            const inventoriesAddress = await inventoriesInstance.getAddress();
+            const systemSigner = await ethers.provider.getSigner(system);
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const pirateAccountSigner = await ethers.provider.getSigner(account1);
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+
+            // Create loot
+            const loot: Loot = {
+                inventories: [Inventory.Ship, Inventory.Backpack],
+                assets: [ironAsset.contractAddress, goldAsset.contractAddress],
+                amounts: ["20".toWei(), "10".toWei()],
+                tokenIds: [0, 0]
+            }
+
+            // Ensure target has enough assets
+            for (let i = 0; i < loot.assets.length; i++)
+            {
+                await getAssetByContractAddress(loot.assets[i]).contractInstance
+                    ?.connect(systemSigner)
+                    .__mintTo(inventoriesAddress, loot.amounts[i]);
+            }
+
+            await inventoriesInstance
+                .connect(systemSigner)
+                .__assign(
+                    targetAccountAddress, 
+                    loot.inventories, 
+                    loot.assets,
+                    loot.amounts,
+                    loot.tokenIds);
+
+            // Act
+            const lootCalldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("plunder", [
+                    targetAccountAddress,
+                    loot.inventories, 
+                    [Inventory.Ship, Inventory.Ship], 
+                    loot.assets, 
+                    loot.amounts, 
+                    loot.tokenIds]);
+
+            const operation = pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, lootCalldata);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(pirateMechanicsInstance, "ResponseTimeExpired")
+                    .withArgs(targetAccountAddress, 0);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(pirateAccountInstance, "ExecutionFailure");
+            }
+        });
+
+        it ("Should allow pirate to loot after winning a battle", async function () {
+
+            // Setup
+            await setupTestEnvironment(true);
+            const ironAsset = getAssetByResource(Resource.Iron);
+            const goldAsset = getAssetByResource(Resource.Gold);
+            const inventoriesAddress = await inventoriesInstance.getAddress();
+            const systemSigner = await ethers.provider.getSigner(system);
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const pirateAccountSigner = await ethers.provider.getSigner(account1);
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+
+            // Create loot
+            const loot: Loot = {
+                inventories: [Inventory.Ship, Inventory.Backpack],
+                assets: [ironAsset.contractAddress, goldAsset.contractAddress],
+                amounts: ["20".toWei(), "10".toWei()],
+                tokenIds: [0, 0]
+            }
+
+            // Ensure target has enough assets
+            for (let i = 0; i < loot.assets.length; i++)
+            {
+                await getAssetByContractAddress(loot.assets[i]).contractInstance
+                    ?.connect(systemSigner)
+                    .__mintTo(inventoriesAddress, loot.amounts[i]);
+            }
+
+            await inventoriesInstance
+                .connect(systemSigner)
+                .__assign(
+                    targetAccountAddress, 
+                    loot.inventories, 
+                    loot.assets,
+                    loot.amounts,
+                    loot.tokenIds);
+
+            // Act
+            const lootCalldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("plunder", [
+                    targetAccountAddress,
+                    loot.inventories, 
+                    [Inventory.Ship, Inventory.Ship], 
+                    loot.assets, 
+                    loot.amounts, 
+                    loot.tokenIds]);
+
+            const operation = pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, lootCalldata);
+
+            // Assert
+            await expect(operation).to
+                .emit(pirateMechanicsInstance, "PiratePlunderSuccess")
+                .withArgs(targetAccountAddress, pirateAccountAddress, anyValue, anyValue, anyValue);
+        });
+
+        it ("Should have marked the loot as hot after plundering", async function () {
+
+            // Setup
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+            const expected = await time.latest() + PirateMechanicsConfig.MAX_RESPONSE_TIME;
+
+            // Act
+            const plunder = await pirateMechanicsInstance
+                .getPlunder(pirateAccountAddress, targetAccountAddress);
+
+            // Assert
+            expect(plunder.loot_hot).to.be.eq(expected);
+        });
+
+        it ("Should not allow pirate to loot twice after winning a battle while loot is hot", async function () {
+
+            // Setup
+            const ironAsset = getAssetByResource(Resource.Iron);
+            const goldAsset = getAssetByResource(Resource.Gold);
+            const inventoriesAddress = await inventoriesInstance.getAddress();
+            const systemSigner = await ethers.provider.getSigner(system);
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const pirateAccountSigner = await ethers.provider.getSigner(account1);
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+
+            // Create loot
+            const loot: Loot = {
+                inventories: [Inventory.Ship, Inventory.Backpack],
+                assets: [ironAsset.contractAddress, goldAsset.contractAddress],
+                amounts: ["20".toWei(), "10".toWei()],
+                tokenIds: [0, 0]
+            }
+
+            // Ensure target has enough assets
+            for (let i = 0; i < loot.assets.length; i++)
+            {
+                await getAssetByContractAddress(loot.assets[i]).contractInstance
+                    ?.connect(systemSigner)
+                    .__mintTo(inventoriesAddress, loot.amounts[i]);
+            }
+
+            await inventoriesInstance
+                .connect(systemSigner)
+                .__assign(
+                    targetAccountAddress, 
+                    loot.inventories, 
+                    loot.assets,
+                    loot.amounts,
+                    loot.tokenIds);
+
+            // Act
+            const lootCalldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("plunder", [
+                    targetAccountAddress,
+                    loot.inventories, 
+                    [Inventory.Ship, Inventory.Ship], 
+                    loot.assets, 
+                    loot.amounts, 
+                    loot.tokenIds]);
+
+            const operation = pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, lootCalldata);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(pirateMechanicsInstance, "TargetAlreadyPlundered")
+                    .withArgs(targetAccountAddress);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(pirateAccountInstance, "ExecutionFailure");
+            }
+        });
+
+        it ("Should not allow pirate to loot twice after winning a battle and after loot is not hot anyore", async function () {
+
+            // Setup
+            const ironAsset = getAssetByResource(Resource.Iron);
+            const goldAsset = getAssetByResource(Resource.Gold);
+            const inventoriesAddress = await inventoriesInstance.getAddress();
+            const systemSigner = await ethers.provider.getSigner(system);
+            const pirateMechanicsAddress = await pirateMechanicsInstance.getAddress();
+            const pirateAccountSigner = await ethers.provider.getSigner(account1);
+            const pirateAccountAddress = await pirateAccountInstance.getAddress();
+            const targetAccountAddress = await targetAccountInstance.getAddress();
+
+            // Create loot
+            const loot: Loot = {
+                inventories: [Inventory.Ship, Inventory.Backpack],
+                assets: [ironAsset.contractAddress, goldAsset.contractAddress],
+                amounts: ["20".toWei(), "10".toWei()],
+                tokenIds: [0, 0]
+            }
+
+            // Ensure target has enough assets
+            for (let i = 0; i < loot.assets.length; i++)
+            {
+                await getAssetByContractAddress(loot.assets[i]).contractInstance
+                    ?.connect(systemSigner)
+                    .__mintTo(inventoriesAddress, loot.amounts[i]);
+            }
+
+            await inventoriesInstance
+                .connect(systemSigner)
+                .__assign(
+                    targetAccountAddress, 
+                    loot.inventories, 
+                    loot.assets,
+                    loot.amounts,
+                    loot.tokenIds);
+
+            // Act
+            const lootCalldata = pirateMechanicsInstance.interface
+                .encodeFunctionData("plunder", [
+                    targetAccountAddress,
+                    loot.inventories, 
+                    [Inventory.Ship, Inventory.Ship], 
+                    loot.assets, 
+                    loot.amounts, 
+                    loot.tokenIds]);
+
+            const plunder = await pirateMechanicsInstance
+                .getPlunder(pirateAccountAddress, targetAccountAddress);
+
+            await time.increaseTo(plunder.loot_hot + BigInt(1));
+                
+            const operation = pirateAccountInstance
+                .connect(pirateAccountSigner)
+                .submitTransaction(pirateMechanicsAddress, 0, lootCalldata);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(pirateMechanicsInstance, "ResponseTimeExpired")
+                    .withArgs(targetAccountAddress, plunder.loot_hot);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(pirateAccountInstance, "ExecutionFailure");
+            }
         });
     });
 
@@ -2531,6 +2917,18 @@ describe("PirateMechanics Contract", function () {
         if (!asset)
         {
             throw new Error(`No asset found for resource ${resource}`);
+        }
+            
+        return asset;
+    };
+
+    const getAssetByContractAddress = (contractAddress: string) : Asset => {
+        const asset =  assets.find(
+            asset => asset.contractAddress === contractAddress);
+
+        if (!asset)
+        {
+            throw new Error(`No asset found for resource ${contractAddress}`);
         }
             
         return asset;

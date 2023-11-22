@@ -40,7 +40,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         uint finished;        
     }
 
-    struct PlayerData 
+    struct PlayerCraftingData 
     {
         // Slots
         uint slotCount; // Zero indicates not initiated
@@ -67,8 +67,8 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     mapping (address => mapping (bytes32 => Recipe)) public recipes;
     mapping (address => bytes32[]) private recipesIndex;
 
-    /// @dev player => PlayerData
-    mapping (address => PlayerData) private playerData;
+    /// @dev player => PlayerCraftingData
+    mapping (address => PlayerCraftingData) private playerData;
 
     /// Refs
     address public inventoriesContract;

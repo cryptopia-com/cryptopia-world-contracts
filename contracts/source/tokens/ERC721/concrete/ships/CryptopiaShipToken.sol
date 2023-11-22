@@ -149,47 +149,8 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
 
 
     /**
-     * Public functions
+     * Admin functions
      */
-    /// @dev Returns the amount of different ships
-    /// @return count The amount of different ships
-    function getShipCount() 
-        public virtual override view 
-        returns (uint)
-    {
-        return shipsIndex.length;
-    }
-
-
-    /// @dev Retreive a ships by name
-    /// @param name Ship name (unique)
-    /// @return Ship a single ship template
-    function getShip(bytes32 name) 
-        public virtual override view 
-        returns (Ship memory)
-    {
-        return ships[name];
-    }
-
-
-    /// @dev Retreive a rance of ships
-    /// @param skip Starting index
-    /// @param take Amount of items
-    /// @return Ship[] range of ship templates
-    function getShips(uint skip, uint take) 
-        public virtual override view 
-        returns (Ship[] memory)
-    {
-        Ship[] memory result = new Ship[](take);
-        uint index = skip;
-        for (uint i = 0; i < take; i++)
-        {
-            result[i] = ships[shipsIndex[index]];
-            index++;
-        }
-        return result;
-    }
-
     /// @dev Add or update ships
     /// @param name Ship name (unique)
     /// @param data Ship data
@@ -206,31 +167,81 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     }
 
 
+    /**
+     * Public functions
+     */
+    /// @dev Returns the amount of different ships
+    /// @return count The amount of different ships
+    function getShipCount() 
+        public virtual override view 
+        returns (uint)
+    {
+        return shipsIndex.length;
+    }
+
+
+    /// @dev Retreive a ships by name
+    /// @param name Ship name (unique)
+    /// @return data a single ship 
+    function getShip(bytes32 name) 
+        public virtual override view 
+        returns (Ship memory data)
+    {
+        data = ships[name];
+    }
+
+
+    /// @dev Retreive a rance of ships
+    /// @param skip Starting index
+    /// @param take Amount of items
+    /// @return names Ship names
+    /// @return data range of ship templates
+    function getShips(uint skip, uint take)
+        public virtual override view 
+        returns (
+            bytes32[] memory names, 
+            Ship[] memory data
+        )
+    {
+        uint length = take;
+        if (length > shipsIndex.length - skip) {
+            length = shipsIndex.length - skip;
+        }
+
+        names = new bytes32[](length);
+        data = new Ship[](length);
+        for (uint i = 0; i < length; i++)
+        {
+            names[i] = shipsIndex[skip + i];
+            data[i] = ships[names[i]];
+        }
+    }
+
+
     /// @dev Retreive a ships by token id
     /// @param tokenId The id of the ship to retreive
-    /// @return ShipInstance a single ship instance
+    /// @return instance a single ship instance
     function getShipInstance(uint tokenId) 
         public virtual override view 
-        returns (ShipInstance memory)
+        returns (ShipInstance memory instance)
     {
-        return shipInstances[tokenId];
+        instance = shipInstances[tokenId];
     }
 
 
     /// @dev Retreive ships by token ids
-    /// @param tokenIds The id of the ship to retreive
-    /// @return ShipInstance[] a range of ship instances
+    /// @param tokenIds The ids of the ships to retreive
+    /// @return instances a range of ship instances
     function getShipInstances(uint[] memory tokenIds) 
         public virtual override view 
-        returns (ShipInstance[] memory)
+        returns (ShipInstance[] memory instances)
     {
-        ShipInstance[] memory result = new ShipInstance[](tokenIds.length);
+        instances = new ShipInstance[](tokenIds.length);
         for (uint i = 0; i < tokenIds.length; i++)
         {
-            result[i] = shipInstances[tokenIds[i]];
+            instances[i] = shipInstances[tokenIds[i]];
 
         }
-        return result;
     }
 
 
@@ -239,10 +250,10 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @return equipData Ship equip data
     function getShipEquipData(uint tokenId)
         public virtual override view  
-        returns (ShipEquipData memory)
+        returns (ShipEquipData memory equipData)
     {
         Ship storage ship = ships[shipInstances[tokenId].name];
-        return ShipEquipData({
+        equipData = ShipEquipData({
             locked: shipInstances[tokenId].locked,
             generic: ship.generic,
             faction: ship.faction,

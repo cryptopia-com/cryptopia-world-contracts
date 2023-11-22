@@ -60,7 +60,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         Inventory inventory;
     }
 
-    struct PlayerData 
+    struct PlayerInventoryData 
     {
         // Frozen until
         uint64 frozenUntil;
@@ -99,8 +99,8 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     // Player => Starter ship | Backpack => InventorySpace
     mapping (address => InventorySpace) playerInventories;
 
-    // Player => PlayerData
-    mapping (address => PlayerData) playerData;
+    // Player => PlayerInventoryData
+    mapping (address => PlayerInventoryData) playerData;
 
     // Refs
     address public treasury;

@@ -35,61 +35,15 @@ contract CryptopiaMapsExtensions is Initializable {
     /// @dev Retrieve a range of tiles
     /// @param skip Starting index
     /// @param take Amount of tiles
-    /// @return group The index of the landmass that the tile belongs to
-    /// @return biome The type of biome {None, Plains, Grassland, Forest, RainForest, Desert, Tundra, Swamp, Reef}
-    /// @return terrain The type of terrain {Flat, Hills, Mountains, Water, Seastead}
-    /// @return elevation The elevation of the terrain (seafloor in case of sea tile)
-    /// @return waterLevel The water level of the tile
-    /// @return vegitationLevel The level of vegitation that the tile contains
-    /// @return rockLevel The size of rocks that the tile contains
-    /// @return wildlifeLevel The amount of wildlife that the tile contains
-    /// @return riverFlags Flags that indicate the presence of a river on the tile's hex edges
-    /// @return hasRoad Indicates the presence of a road on the tile
-    /// @return hasLake Indicates the presence of a lake on the tile
+    /// @return tiles The tiles
     function getTiles(uint16 skip, uint16 take) 
         public virtual view  
-        returns (
-            uint16[] memory group,
-            Biome[] memory biome,
-            Terrain[] memory terrain,
-            uint8[] memory elevation,
-            uint8[] memory waterLevel,
-            uint8[] memory vegitationLevel,
-            uint8[] memory rockLevel,
-            uint8[] memory wildlifeLevel,
-            uint8[] memory riverFlags,
-            bool[] memory hasRoad,
-            bool[] memory hasLake
-        )
-    {
-        group = new uint16[](take);
-        biome = new Biome[](take);
-        terrain = new Terrain[](take);
-        elevation = new uint8[](take);
-        waterLevel = new uint8[](take);
-        vegitationLevel = new uint8[](take);
-        rockLevel = new uint8[](take);
-        wildlifeLevel = new uint8[](take);
-        riverFlags = new uint8[](take);
-        hasRoad = new bool[](take);
-        hasLake = new bool[](take);
-
-        uint16 index = skip;
+        returns (Tile[] memory tiles)
+    { 
+        tiles = new Tile[](take);
         for (uint16 i = 0; i < take; i++)
         {
-            Tile memory tile = IMaps(mapsContract).getTile(index);
-            group[i] = tile.group;
-            biome[i] = tile.biome;
-            terrain[i] = tile.terrain;
-            elevation[i] = tile.elevation;
-            waterLevel[i] = tile.waterLevel;
-            vegitationLevel[i] = tile.vegitationLevel;
-            rockLevel[i] = tile.rockLevel;
-            wildlifeLevel[i] = tile.wildlifeLevel;
-            riverFlags[i] = tile.riverFlags;
-            hasRoad[i] = tile.hasRoad;
-            hasLake[i] = tile.hasLake;
-            index++;
+            tiles[i] = IMaps(mapsContract).getTile(skip + i);
         }
     }
 
@@ -229,7 +183,7 @@ contract CryptopiaMapsExtensions is Initializable {
 
         for (uint i = 0; i < length; i++)
         {
-            PlayerData memory playerData = IMaps(mapsContract)
+            PlayerNavigationData memory playerData = IMaps(mapsContract)
                 .getPlayerData(accounts[i]);
 
             movement[i] = playerData.movement;

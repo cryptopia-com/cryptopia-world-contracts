@@ -23,22 +23,6 @@ import "../IPlayerRegister.sol";
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPlayerRegister {
 
-    struct PlayerData
-    {
-        Faction faction; // Faction to which the player belongs
-        SubFaction subFaction; // Sub Faction none/pirate/bounty hunter 
-        uint8 level; // Current level (zero signals not initialized)
-        int16 karma; // Current karma (KARMA_MIN signals piracy)
-        uint24 xp; // Experience points towards next level; XP_BASE + (uint(level - 1) * XP_FACTOR)**XP_EXPONENT
-        uint24 luck; // STATS_BASE_LUCK + (0 - MAX_LEVEL player choice when leveling up)
-        uint24 charisma; // STATS_CHARISMA_BASE + (0 - MAX_LEVEL player choice when leveling up)
-        uint24 intelligence;  // STATS_INTELLIGENCE_BASE + (0 - MAX_LEVEL player choice when leveling up)
-        uint24 strength; // STATS_STRENGTH_BASE + (0 - MAX_LEVEL player choice when leveling up)
-        uint24 speed; // STATS_SPEED_BASE + (0 - MAX_LEVEL player choice when leveling up)
-        uint ship; // Equipped ship
-    }
-
-
     /**
      * Roles
      */
@@ -244,108 +228,37 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     /// @dev Returns player data for `player`
     /// @param player CryptopiaAccount address (registered as a player)
     /// @return username Player username (fetched from account)
-    /// @return faction Faction to which the player belongs
-    /// @return subFaction Sub Faction none/pirate/bounty hunter 
-    /// @return level Current level (zero signals not initialized)
-    /// @return karma Current karma (zero signals piracy)
-    /// @return xp experience points towards next level; XP_BASE * ((XP_DENOMINATOR + XP_FACTOR) / XP_DENOMINATOR)**(level - 1)
-    /// @return luck STATS_BASE_LUCK + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return charisma STATS_CHARISMA_BASE + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return intelligence STATS_INTELLIGENCE_BASE + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return strength STATS_STRENGTH_BASE + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return speed STATS_SPEED_BASE + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return ship The equipped ship
+    /// @return data Player data
     function getPlayerData(address payable player) 
         public virtual override view 
         returns (
             bytes32 username,
-            Faction faction,
-            SubFaction subFaction, 
-            uint8 level,
-            int16 karma,
-            uint24 xp,
-            uint24 luck,
-            uint24 charisma,
-            uint24 intelligence,
-            uint24 strength,
-            uint24 speed,
-            uint ship
+            PlayerData memory data
         )
     {
         (username,) = IAccountRegister(accountRegisterContract)
             .getAccountData(player);
-        faction = playerDatas[player].faction;
-        subFaction = playerDatas[player].subFaction;
-        level = playerDatas[player].level;
-        karma = playerDatas[player].karma;
-        xp = playerDatas[player].xp;
-        luck = playerDatas[player].luck;
-        charisma = playerDatas[player].charisma;
-        intelligence = playerDatas[player].intelligence;
-        strength = playerDatas[player].strength;
-        speed = playerDatas[player].speed;
-        ship = playerDatas[player].ship;
+        data = playerDatas[player];
     }
 
 
     /// @dev Returns player datas for `players`
     /// @param players CryptopiaAccount addresses (registered as a players)
-    /// @return username Player usernames (fetched from account)
-    /// @return faction Faction to which the player belongs
-    /// @return subFaction Sub Faction none/pirate/bounty hunter 
-    /// @return level Current level (zero signals not initialized)
-    /// @return karma Current karma (zero signals piracy)
-    /// @return xp experience points towards next level; XP_BASE * ((XP_DENOMINATOR + XP_FACTOR) / XP_DENOMINATOR)**(level - 1)
-    /// @return luck STATS_BASE_LUCK + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return charisma STATS_CHARISMA_BASE + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return intelligence STATS_INTELLIGENCE_BASE + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return strength STATS_STRENGTH_BASE + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return speed STATS_SPEED_BASE + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return ship The equipped ship
+    /// @return usernames Player usernames (fetched from account)
+    /// @return data Player datas
     function getPlayerDatas(address payable[] memory players) 
         public virtual override view 
         returns (
-            bytes32[] memory username,
-            Faction[] memory faction,
-            SubFaction[] memory subFaction,
-            uint8[] memory level,
-            int16[] memory karma,
-            uint24[] memory xp,
-            uint24[] memory luck,
-            uint24[] memory charisma,
-            uint24[] memory intelligence,
-            uint24[] memory strength,
-            uint24[] memory speed,
-            uint[] memory ship
+            bytes32[] memory usernames,
+            PlayerData[] memory data
         )
     {
-        (username,) = IAccountRegister(accountRegisterContract)
-            .getAccountDatas(players);
-        faction = new Faction[](players.length);
-        subFaction = new SubFaction[](players.length);
-        level = new uint8[](players.length);
-        karma = new int16[](players.length);
-        xp = new uint24[](players.length);
-        luck = new uint24[](players.length);
-        charisma = new uint24[](players.length);
-        intelligence = new uint24[](players.length);
-        strength = new uint24[](players.length);
-        speed = new uint24[](players.length);
-        ship = new uint[](players.length);
+        usernames = new bytes32[](players.length);
+        data = new PlayerData[](players.length);
 
         for (uint i = 0; i < players.length; i++)
         {
-            faction[i] = playerDatas[players[i]].faction;
-            subFaction[i] = playerDatas[players[i]].subFaction;
-            level[i] = playerDatas[players[i]].level;
-            karma[i] = playerDatas[players[i]].karma;
-            xp[i] = playerDatas[players[i]].xp;
-            luck[i] = playerDatas[players[i]].luck;
-            charisma[i] = playerDatas[players[i]].charisma;
-            intelligence[i] = playerDatas[players[i]].intelligence;
-            strength[i] = playerDatas[players[i]].strength;
-            speed[i] = playerDatas[players[i]].speed;
-            ship[i] = playerDatas[players[i]].ship;
+            (usernames[i], data[i]) = getPlayerData(players[i]);
         }
     }
 

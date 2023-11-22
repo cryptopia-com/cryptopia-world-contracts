@@ -85,8 +85,8 @@ struct TileResourceData
 }
 
 
-/// @dev Player data
-struct PlayerData {
+/// @dev Player navigation data
+struct PlayerNavigationData {
 
     /// @dev Ordered iterating - Account that entered the tile after us (above us in the list)
     address chain_next;

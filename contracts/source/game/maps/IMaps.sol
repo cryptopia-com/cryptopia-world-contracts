@@ -62,7 +62,7 @@ interface IMaps {
     /// @return PlayerData data
     function getPlayerData(address account)
         external view 
-        returns (PlayerData memory); 
+        returns (PlayerNavigationData memory); 
 
     
     /// @dev Retrieve data that's attached to player

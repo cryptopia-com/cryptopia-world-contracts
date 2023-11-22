@@ -14,27 +14,6 @@ import "../CryptopiaERC721.sol";
 /// @dev Non-fungible token (ERC721)
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable {
-    
-    struct Tool
-    {
-        Rarity rarity;
-        uint8 level;
-        uint24 damage;
-        uint24 durability;
-        uint24 multiplier_cooldown;
-        uint24 multiplier_xp;
-        uint24 multiplier_effectiveness;
-        uint24 value1;
-        uint24 value2;
-        uint24 value3;
-    }
-
-    struct ToolInstance
-    {
-        bytes32 name;
-        uint24 damage;
-    }
-
 
     /**
      * Storage
@@ -160,7 +139,7 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable {
         uint24[7][] memory stats,
         ResourceType[][] memory minting_resources,
         uint[][] memory minting_amounts) 
-        public virtual override 
+        public virtual  
         onlyRole(DEFAULT_ADMIN_ROLE) 
     {
         for (uint i = 0; i < name.length; i++)
@@ -195,128 +174,66 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable {
 
     /// @dev Retreive a tools by name
     /// @param name Tool name (unique)
-    /// @return rarity Tool rarity {Rarity}
-    /// @return level Tool level (determins where the tool can be used and by who)
-    /// @return durability The higher the durability the less damage is taken each time the tool is used
-    /// @return multiplier_cooldown The lower the multiplier_cooldown the faster an action can be repeated
-    /// @return multiplier_xp The base amount of XP is multiplied by this value every time the tool is used
-    /// @return multiplier_effectiveness The effect that the tool has is multiplied by this value. Eg. a value of 2 while fishing at a depth of 3 will give the user 6 fish
-    /// @return value1 Tool specific value 
-    /// @return value2 Tool specific value 
+    /// @return data Tool data
     function getTool(bytes32 name) 
         public virtual override view 
-        returns (
-            Rarity rarity,
-            uint8 level, 
-            uint24 durability,
-            uint24 multiplier_cooldown,
-            uint24 multiplier_xp,
-            uint24 multiplier_effectiveness,
-            uint24 value1,
-            uint24 value2
-        )
+        returns (Tool memory data)
     {
-        rarity = tools[name].rarity;
-        level = tools[name].level;
-        durability = tools[name].durability;
-        multiplier_cooldown = tools[name].multiplier_cooldown;
-        multiplier_xp = tools[name].multiplier_xp;
-        multiplier_effectiveness = tools[name].multiplier_effectiveness;
-        value1 = tools[name].value1;
-        value2 = tools[name].value2;
+        data = tools[name];
     }
 
 
     /// @dev Retreive a rance of tools
     /// @param skip Starting index
     /// @param take Amount of items
-    /// @return name Tool name (unique)
-    /// @return rarity Tool rarity {Rarity}
-    /// @return level Tool level (determins where the tool can be used and by who)
-    /// @return durability The higher the durability the less damage is taken each time the tool is used
-    /// @return multiplier_cooldown The lower the multiplier_cooldown the faster an action can be repeated
-    /// @return multiplier_xp The base amount of XP is multiplied by this value every time the tool is used
-    /// @return multiplier_effectiveness The effect that the tool has is multiplied by this value. Eg. a value of 2 while fishing at a depth of 3 will give the user 6 fish
-    /// @return value1 Tool specific value 
-    /// @return value2 Tool specific value
+    /// @return names Tool names (unique)
+    /// @return data range of tool templates
     function getTools(uint skip, uint take) 
         public override view 
         returns (
-            bytes32[] memory name,
-            Rarity[] memory rarity,
-            uint8[] memory level, 
-            uint24[] memory durability,
-            uint24[] memory multiplier_cooldown,
-            uint24[] memory multiplier_xp,
-            uint24[] memory multiplier_effectiveness,
-            uint24[] memory value1,
-            uint24[] memory value2
+            bytes32[] memory names, 
+            Tool[] memory data
         )
     {
-        name = new bytes32[](take);
-        rarity = new Rarity[](take);
-        level = new uint8[](take);
-        durability = new uint24[](take);
-        multiplier_cooldown = new uint24[](take);
-        multiplier_xp = new uint24[](take);
-        multiplier_effectiveness = new uint24[](take);
-        value1 = new uint24[](take);
-        value2 = new uint24[](take);
-
-        uint index = skip;
-        for (uint i = 0; i < take; i++)
-        {
-            name[i] = toolsIndex[index];
-            rarity[i] = tools[name[i]].rarity;
-            level[i] = tools[name[i]].level;
-            durability[i] = tools[name[i]].durability;
-            multiplier_cooldown[i] = tools[name[i]].multiplier_cooldown;
-            multiplier_xp[i] = tools[name[i]].multiplier_xp;
-            multiplier_effectiveness[i] = tools[name[i]].multiplier_effectiveness;
-            value1[i] = tools[name[i]].value1;
-            value2[i] = tools[name[i]].value2;
-            index++;
+        uint length = take;
+        if (length > toolsIndex.length - skip) {
+            length = toolsIndex.length - skip;
         }
+
+        names = new bytes32[](length);
+        data = new Tool[](length);
+        for (uint i = 0; i < length; i++)
+        {
+            names[i] = toolsIndex[skip + i];
+            data[i] = tools[names[i]];
+        }
+
     }
 
 
     /// @dev Retreive a tools by token id
     /// @param tokenId The id of the tool to retreive
-    /// @return name Tool name (unique)
-    /// @return rarity Tool rarity {Rarity}
-    /// @return level Tool level (determins where the tool can be used and by who)
-    /// @return damage The amount of damage the tool has taken (100_00 renders the tool unusable)
-    /// @return durability The higher the durability the less damage is taken each time the tool is used
-    /// @return multiplier_cooldown The lower the multiplier_cooldown the faster an action can be repeated
-    /// @return multiplier_xp The base amount of XP is multiplied by this value every time the tool is used
-    /// @return multiplier_effectiveness The effect that the tool has is multiplied by this value. Eg. a value of 2 while fishing at a depth of 3 will give the user 6 fish
-    /// @return value1 Tool specific value 
-    /// @return value2 Tool specific value 
+    /// @return instance a single tool instance
     function getToolInstance(uint tokenId) 
         public virtual override view 
-        returns (
-            bytes32 name,
-            Rarity rarity,
-            uint8 level, 
-            uint24 damage,
-            uint24 durability,
-            uint24 multiplier_cooldown,
-            uint24 multiplier_xp,
-            uint24 multiplier_effectiveness,
-            uint24 value1,
-            uint24 value2
-        )
+        returns (ToolInstance memory instance)
     {
-        name = toolInstances[tokenId].name;
-        rarity = tools[name].rarity;
-        level = tools[name].level;
-        damage = toolInstances[tokenId].damage;
-        durability = tools[name].durability;
-        multiplier_cooldown = tools[name].multiplier_cooldown;
-        multiplier_xp = tools[name].multiplier_xp;
-        multiplier_effectiveness = tools[name].multiplier_effectiveness;
-        value1 = tools[name].value1;
-        value2 = tools[name].value2;
+        instance = toolInstances[tokenId];
+    }
+
+
+    /// @dev Retreive a tools by token id
+    /// @param tokenIds The ids of the tools to retreive
+    /// @return instances a range of tool instances
+    function getToolInstances(uint[] memory tokenIds) 
+        public virtual override view 
+        returns (ToolInstance[] memory instances)
+    {
+        instances = new ToolInstance[](tokenIds.length);
+        for (uint i = 0; i < tokenIds.length; i++)
+        {
+            instances[i] = toolInstances[tokenIds[i]];
+        }
     }
 
 

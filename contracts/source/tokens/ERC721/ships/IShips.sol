@@ -23,35 +23,39 @@ interface IShips {
 
     /// @dev Retreive a ships by name
     /// @param name Ship name (unique)
-    /// @return Ship a single ship template
+    /// @return data a single ship 
     function getShip(bytes32 name) 
         external view 
-        returns (Ship memory);
+        returns (Ship memory data);
 
 
     /// @dev Retreive a rance of ships
     /// @param skip Starting index
     /// @param take Amount of items
-    /// @return Ship[] range of ship templates
+    /// @return names Ship names
+    /// @return data range of ship templates
     function getShips(uint skip, uint take) 
         external view 
-        returns (Ship[] memory);
+        returns (
+            bytes32[] memory names, 
+            Ship[] memory data
+        );
 
 
     /// @dev Retreive a ships by token id
     /// @param tokenId The id of the ship to retreive
-    /// @return ShipInstance a single ship instance
+    /// @return instance a single ship instance
     function getShipInstance(uint tokenId) 
         external view 
-        returns (ShipInstance memory);
+        returns (ShipInstance memory instance);
 
     
     /// @dev Retreive ships by token ids
-    /// @param tokenIds The id of the ship to retreive
-    /// @return ShipInstance[] a range of ship instances
+    /// @param tokenIds The ids of the ships to retreive
+    /// @return instances a range of ship instances
     function getShipInstances(uint[] memory tokenIds) 
         external view 
-        returns (ShipInstance[] memory);
+        returns (ShipInstance[] memory instances);
 
 
     /// @dev Retrieve equipt data for a ship instance
@@ -59,7 +63,7 @@ interface IShips {
     /// @return equipData Ship equip data
     function getShipEquipData(uint tokenId)
         external view 
-        returns (ShipEquipData memory);
+        returns (ShipEquipData memory equipData);
 
     
     /// @dev Retrieve the speed of a ship instance (after modules)

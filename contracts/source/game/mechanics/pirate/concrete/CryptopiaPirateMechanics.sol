@@ -21,7 +21,6 @@ import "../../../../game/errors/TimingErrors.sol";
 import "../../../../accounts/multisig/IMultiSigWallet.sol";
 import "../../../../accounts/multisig/errors/MultisigErrors.sol";
 
-
 /// @title Cryptopia pirate game mechanics
 /// @dev Provides the mechanics for the pirate gameplay
 /// @author Frank Bonnet - <frankbonnet@outlook.com>

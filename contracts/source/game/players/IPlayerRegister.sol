@@ -6,6 +6,7 @@ import "../../tokens/ERC721/types/ERC721DataTypes.sol";
 import "../../accounts/types/AccountEnums.sol";
 import "../types/boxes/subfaction/SubFactionBox2.sol";
 import "../types/FactionEnums.sol";
+import "./types/PlayerDataTypes.sol";
 import "./types/PlayerEnums.sol";
 
 /// @title Cryptopia Players
@@ -46,64 +47,24 @@ interface IPlayerRegister {
     /// @dev Returns player data for `player`
     /// @param player CryptopiaAccount address (registered as a player)
     /// @return username Player username (fetched from account)
-    /// @return faction Faction to which the player belongs
-    /// @return subFaction Sub Faction none/pirate/bounty hunter 
-    /// @return level Current level (zero signals not initialized)
-    /// @return karma Current karma (-100 signals piracy)
-    /// @return xp Experience points towards next level; XP_BASE * ((100 + XP_FACTOR) / XP_DENOMINATOR)**(level - 1)
-    /// @return luck STATS_BASE_LUCK + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return charisma STATS_CHARISMA_BASE + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return intelligence STATS_INTELLIGENCE_BASE + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return strength STATS_STRENGTH_BASE + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return speed STATS_SPEED_BASE + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return ship The equipted ship (token ID)
+    /// @return data Player data
     function getPlayerData(address payable player) 
         external view 
         returns (
             bytes32 username,
-            Faction faction,
-            SubFaction subFaction, 
-            uint8 level,
-            int16 karma,
-            uint24 xp,
-            uint24 luck,
-            uint24 charisma,
-            uint24 intelligence,
-            uint24 strength,
-            uint24 speed,
-            uint ship
+            PlayerData memory data
         );
 
 
     /// @dev Returns player datas for `players`
     /// @param players CryptopiaAccount addresses (registered as a players)
-    /// @return username Player usernames (fetched from account)
-    /// @return faction Faction to which the player belongs
-    /// @return subFaction Sub Faction none/pirate/bounty hunter 
-    /// @return level Current level (zero signals not initialized)
-    /// @return karma Current karma (zero signals piracy)
-    /// @return xp experience points towards next level; XP_BASE * ((100 + XP_FACTOR) / XP_DENOMINATOR)**(level - 1)
-    /// @return luck STATS_BASE_LUCK + (0 - MAX_LEVEL player choice when leveling up)  
-    /// @return charisma STATS_CHARISMA_BASE + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return intelligence STATS_INTELLIGENCE_BASE + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return strength STATS_STRENGTH_BASE + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return speed STATS_SPEED_BASE + (0 - MAX_LEVEL player choice when leveling up)
-    /// @return ship The equipted ship
+    /// @return usernames Player usernames (fetched from account)
+    /// @return data Player datas
     function getPlayerDatas(address payable[] memory players) 
         external view 
         returns (
-            bytes32[] memory username,
-            Faction[] memory faction,
-            SubFaction[] memory subFaction,
-            uint8[] memory level,
-            int16[] memory karma,
-            uint24[] memory xp,
-            uint24[] memory luck,
-            uint24[] memory charisma,
-            uint24[] memory intelligence,
-            uint24[] memory strength,
-            uint24[] memory speed,
-            uint[] memory ship
+            bytes32[] memory usernames,
+            PlayerData[] memory data
         );
 
     

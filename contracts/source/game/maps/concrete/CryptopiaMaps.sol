@@ -85,8 +85,8 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     mapping(uint16 => TileData) public tileData; 
     uint public initializedTileCount;
 
-    /// @dev player => PlayerData
-    mapping(address => PlayerData) public playerData;
+    /// @dev player => PlayerNavigationData
+    mapping(address => PlayerNavigationData) public playerData;
   
     /// @dev a | (b << 16) => movementCost
     mapping (uint32 => uint) public pathCache;
@@ -555,7 +555,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     /// @return PlayerData data
     function getPlayerData(address account)
         public virtual override view 
-        returns (PlayerData memory)
+        returns (PlayerNavigationData memory)
     {
         return playerData[account];
     }
@@ -1170,7 +1170,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     function _playerMove(address account, uint16[] memory path)
         internal 
     {
-        PlayerData storage data = playerData[account];
+        PlayerNavigationData storage data = playerData[account];
 
         // Enforce player not frozen
         if (data.frozenUntil > block.timestamp)

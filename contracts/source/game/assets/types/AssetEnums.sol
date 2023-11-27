@@ -1,19 +1,18 @@
 // SPDX-License-Identifier: ISC
 pragma solidity ^0.8.20 < 0.9.0;
 
-enum ResourceType
-{
+enum Resource {
     Fish,
     Meat,
     Fruit,
     Wood,
     Stone,
     Sand,
-    IronOre,
+    Uranium,
     Iron,
-    CopperOre,
+    Diamond,
     Copper,
-    GoldOre,
+    Silver,
     Gold,
     Carbon,
     Oil,

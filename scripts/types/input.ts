@@ -1,16 +1,19 @@
 import { CryptopiaAssetToken } from "../../typechain-types";
-import { Resource, Terrain, Biome } from "./enums";
+import { Resource, Terrain, Biome, Faction, SubFaction } from "./enums";
 import { BigNumberish } from 'ethers';
 
 export type Asset = {
     symbol: string;
     name: string;
-    resource: number;
+    resource: Resource;
     weight: number;
     contractAddress: string;
     contractInstance: CryptopiaAssetToken | null; 
 };
 
+/** 
+ * Maps
+ */
 export interface Map {
     name: string;
     sizeX: number;
@@ -37,4 +40,4 @@ export interface Tile {
     resource2_amount: string;
     resource3_type: Resource;
     resource3_amount: string;
-  }
+}

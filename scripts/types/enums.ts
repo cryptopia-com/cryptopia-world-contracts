@@ -1,3 +1,25 @@
+/**
+ * Global
+ */
+export enum Faction
+{
+    Eco,
+    Tech,
+    Industrial,
+    Traditional
+}
+
+export enum SubFaction 
+{
+    None,
+    Pirate,
+    BountyHunter
+}
+
+
+/**
+ * Maps
+ */
 /// Direction of a tile in relation to another tile
 export enum HexDirection 
 {
@@ -46,11 +68,11 @@ export enum Resource {
     Wood,
     Stone,
     Sand,
-    IronOre,
+    Uranium,
     Iron,
-    CopperOre,
+    Diamond,
     Copper,
-    GoldOre,
+    Silver,
     Gold,
     Carbon,
     Oil,
@@ -67,6 +89,10 @@ export enum RoutePosition {
     Passed      // The traveler has already passed the tile
 }
 
+
+/**
+ * Invnetories
+ */
 export enum Inventory
 {
     Wallet,

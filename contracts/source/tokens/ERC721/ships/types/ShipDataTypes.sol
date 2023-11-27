@@ -56,6 +56,9 @@ struct ShipInstance
     /// @dev If true the ship cannot be transferred
     bool locked;
 
+    /// @dev The ID of the ship's skin
+    uint16 skin;
+
     /// @dev Speed (after modules)
     uint16 speed;
 

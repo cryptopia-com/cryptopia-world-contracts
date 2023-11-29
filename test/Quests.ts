@@ -488,6 +488,8 @@ describe("Quests Contract", function () {
                 maxRecurrences: 1,
                 hasCooldownConstraint: false,
                 cooldown: 0,
+                hasTimeConstraint: false,
+                maxDuration: 0,
                 steps: [
                     {
                         name: "Find Scientist".toBytes32(),

@@ -36,7 +36,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
     address public toolTokenContract;
 
     // Player => resource => cooldown
-    mapping (address => mapping (ResourceType => uint)) playerCooldown;
+    mapping (address => mapping (Resource => uint)) playerCooldown;
 
 
     /**
@@ -45,7 +45,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
     /// @dev Thrown when a player attempts to mint a resource, but the resource is not available at the player's location
     /// @param resource The resource that is not available at the player's location
     /// @param player The player that attempted to mint the resource
-    error ResourceUnavailableAtLocation(ResourceType resource, address player);
+    error ResourceUnavailableAtLocation(Resource resource, address player);
 
 
     /** 
@@ -79,7 +79,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
     /// @param player the account to retrieve the cooldown timestamp for
     /// @param resource the resource to retrieve the cooldown timestamp for
     /// @return uint cooldown timestamp at which `player` can mint `resource` again
-    function getCooldown(address player, ResourceType resource) 
+    function getCooldown(address player, Resource resource) 
         public virtual override view 
         returns (uint) 
     {
@@ -91,7 +91,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
     /// @param resource The {AssetEnums} to mint 
     /// @param tool The token ID of the tool used to mint the resource (0 means no tool)
     /// @param limit The maximum amount of tokens to mint (limit to prevent full backpack)
-    function mint(ResourceType resource, uint tool, uint limit) 
+    function mint(Resource resource, uint tool, uint limit) 
         public virtual override 
     {
         address player = _msgSender();
@@ -168,7 +168,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
     /// @param account Player to retrieve data for
     /// @param resource Type of resource to test for
     /// @return uint the amount of `resource` that can be minted
-    function _getResourceAmount(address account, ResourceType resource) 
+    function _getResourceAmount(address account, Resource resource) 
         internal view 
         returns (uint)
     {
@@ -186,7 +186,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
         }
 
         // Fish
-        if (resource == ResourceType.Fish)
+        if (resource == Resource.Fish)
         {
             // On the sea
             if (tile.waterLevel > tile.elevation)
@@ -205,7 +205,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
         }
 
         // Meat
-        if (resource == ResourceType.Meat)
+        if (resource == Resource.Meat)
         {
             if (tile.waterLevel > tile.elevation)
             {
@@ -216,7 +216,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
         }
 
         // Fruit || Wood
-        if (resource == ResourceType.Fruit || resource == ResourceType.Wood)
+        if (resource == Resource.Fruit || resource == Resource.Wood)
         {
             if (tile.waterLevel > tile.elevation)
             {
@@ -227,7 +227,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
         }
         
         // Stone
-        if (resource == ResourceType.Stone)
+        if (resource == Resource.Stone)
         {
             if (tile.waterLevel > tile.elevation)
             {
@@ -238,7 +238,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
         }
 
         // Sand
-        if (resource == ResourceType.Sand)
+        if (resource == Resource.Sand)
         {
             if (tile.waterLevel > tile.elevation)
             {
@@ -256,12 +256,12 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
      * Internal functions
      */
     /// @dev Returns true if the minting of `resource` requires the use of a tool
-    /// @param resource {ResourceType} the resource to mint
+    /// @param resource {Resource} the resource to mint
     /// @return bool True if `resource` requires a tool to mint
-    function _requiresTool(ResourceType resource)
+    function _requiresTool(Resource resource)
         internal pure 
         returns (bool)
     {
-        return resource != ResourceType.Fruit;
+        return resource != Resource.Fruit;
     }
 }

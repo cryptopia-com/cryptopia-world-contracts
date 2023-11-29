@@ -73,9 +73,9 @@ interface IAssetRegister {
 
         
     /// @dev Getter for resources
-    /// @param resource {ResourceType}
+    /// @param resource {Resource}
     /// @return address The resource asset contract address 
-    function getAssetByResrouce(ResourceType resource) 
+    function getAssetByResrouce(Resource resource) 
         external view   
         returns (address);
 
@@ -86,7 +86,7 @@ interface IAssetRegister {
     /// @dev Register an asset
     /// @param asset Contact address
     /// @param isResource true if `asset` is a resource
-    /// @param resource {ResourceType}
-    function __registerAsset(address asset, bool isResource, ResourceType resource) 
+    /// @param resource {Resource}
+    function __registerAsset(address asset, bool isResource, Resource resource) 
         external;
 }

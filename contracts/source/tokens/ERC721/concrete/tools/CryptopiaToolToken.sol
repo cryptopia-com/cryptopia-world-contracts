@@ -32,7 +32,7 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable {
     mapping (uint => ToolInstance) public toolInstances;
 
     /// @dev tool => Resource => max amount
-    mapping (bytes32 => mapping (ResourceType => uint)) public minting;
+    mapping (bytes32 => mapping (Resource => uint)) public minting;
 
     // Refs
     address public playerRegisterContract;
@@ -58,14 +58,14 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable {
     /// @dev Emitted when the specified tool is not valid for minting the provided resource
     /// @param toolId The unique ID of the tool in question
     /// @param resource The resource attempted to be minted with the tool
-    error ToolInvalidForMinting(uint toolId, ResourceType resource);
+    error ToolInvalidForMinting(uint toolId, Resource resource);
 
     /// @dev Emitted when an attempt is made to mint an amount that surpasses the tool's limit
     /// @param toolId The unique ID of the tool in question
     /// @param resource The resource attempted to be minted with the tool
     /// @param attemptedAmount The amount the user tried to mint
     /// @param allowedAmount The maximum amount the tool allows to be minted
-    error ToolMintLimitExceeded(uint toolId, ResourceType resource, uint attemptedAmount, uint allowedAmount);
+    error ToolMintLimitExceeded(uint toolId, Resource resource, uint attemptedAmount, uint allowedAmount);
 
 
     /**
@@ -113,12 +113,12 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable {
         _setTool("Fishing rod", Rarity.Common, 1, stats);
         _setTool("Shovel", Rarity.Common, 1, stats);
 
-        minting["Axe"][ResourceType.Wood] = 1_000_000_000_000_000_000;
-        minting["Axe"][ResourceType.Meat] = 1_000_000_000_000_000_000;
-        minting["Pickaxe"][ResourceType.Stone] = 1_000_000_000_000_000_000;
-        minting["Pickaxe"][ResourceType.Meat] = 1_000_000_000_000_000_000;
-        minting["Fishing rod"][ResourceType.Fish] = 1_000_000_000_000_000_000;
-        minting["Shovel"][ResourceType.Sand] = 1_000_000_000_000_000_000;
+        minting["Axe"][Resource.Wood] = 1_000_000_000_000_000_000;
+        minting["Axe"][Resource.Meat] = 1_000_000_000_000_000_000;
+        minting["Pickaxe"][Resource.Stone] = 1_000_000_000_000_000_000;
+        minting["Pickaxe"][Resource.Meat] = 1_000_000_000_000_000_000;
+        minting["Fishing rod"][Resource.Fish] = 1_000_000_000_000_000_000;
+        minting["Shovel"][Resource.Sand] = 1_000_000_000_000_000_000;
     }
 
 
@@ -130,14 +130,14 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable {
     /// @param rarity Tool rarity {Rarity}
     /// @param level Tool level (determins where the tool can be used and by who)
     /// @param stats durability, multiplier_cooldown, multiplier_xp, multiplier_effectiveness
-    /// @param minting_resources The resources {ResourceType} that can be minted with the tool
+    /// @param minting_resources The resources {Resource} that can be minted with the tool
     /// @param minting_amounts The max amounts of resources that can be minted with the tool
     function setTools(
         bytes32[] memory name, 
         Rarity[] memory rarity, 
         uint8[] memory level,
         uint24[7][] memory stats,
-        ResourceType[][] memory minting_resources,
+        Resource[][] memory minting_resources,
         uint[][] memory minting_amounts) 
         public virtual  
         onlyRole(DEFAULT_ADMIN_ROLE) 
@@ -243,9 +243,9 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable {
     /// @dev Applies tool effects to the `cooldown` period and the `amount` of `resource` that's being minted by `player`
     /// @param player The account that's using the tool for minting
     /// @param toolId The token ID of the tool being used to mint 
-    /// @param resource The resource {ResourceType} that's being minted
+    /// @param resource The resource {Resource} that's being minted
     /// @param amount The amount of tokens to be minted
-    function __useForMinting(address player, uint toolId, ResourceType resource, uint amount) 
+    function __useForMinting(address player, uint toolId, Resource resource, uint amount) 
         public virtual override 
         onlyRole(SYSTEM_ROLE) 
         returns (

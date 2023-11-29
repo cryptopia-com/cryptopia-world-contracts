@@ -59,6 +59,10 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     address public craftingContract;
     address public shipTokenContract;
 
+    // Global stats
+    uint public totalPlayerCount;
+    uint public totalPlayerProgression;
+
     // Player => PlayerData
     mapping (address => PlayerData) private playerDatas;
 
@@ -274,6 +278,30 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     }
 
 
+    /// @dev Returns the player's faction 
+    /// @param player CryptopiaAccount address (registered as a player)
+    /// @return subFaction The player's faction
+    function getFaction(address player) 
+        external view 
+        returns (Faction)
+    {
+        return playerDatas[player].faction;
+    }
+
+    
+    /// @dev Returns the player's faction
+    /// @param player1 CryptopiaAccount address (registered as a player)
+    /// @param player2 CryptopiaAccount address (registered as a player)
+    function getFactions(address player1, address player2) 
+        external view 
+        returns (FactionBox2 memory)
+    {
+        return FactionBox2(
+            playerDatas[player1].faction, 
+            playerDatas[player2].faction);
+    }
+
+
     /// @dev Returns the player's sub faction {None, Pirate, BountyHunter}
     /// @param player CryptopiaAccount address (registered as a player)
     /// @return subFaction The player's sub faction
@@ -477,6 +505,9 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
             revert PlayerInvalidStat(stat);
         }
 
+        // Add to global stats
+        totalPlayerProgression++;
+
         // Emit
         emit PlayerLevelUp(msg.sender, playerData.level, stat);
     }
@@ -589,6 +620,9 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
         // Setup crafting
         ICrafting(craftingContract)
             .__setCraftingSlots(account, CRAFTING_SLOTS_BASE);
+
+        // Add to global stats
+        totalPlayerCount++;
 
         // Emit
         emit RegisterPlayer(tx.origin, account, username, faction, sex);

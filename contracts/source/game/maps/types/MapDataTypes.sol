@@ -75,7 +75,7 @@ struct TileData
 struct TileResourceData 
 {
     /// @dev The type of resource
-    ResourceType type_;
+    Resource type_;
 
     /// @dev The amount of `asset` that if left
     uint amount;

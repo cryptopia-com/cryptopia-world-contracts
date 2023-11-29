@@ -293,9 +293,9 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     function setTiles(
         uint16[] memory indices, 
         Tile[] memory values, 
-        ResourceType[] memory resource1_types, 
-        ResourceType[] memory resource2_types, 
-        ResourceType[] memory resource3_types, 
+        Resource[] memory resource1_types, 
+        Resource[] memory resource2_types, 
+        Resource[] memory resource3_types, 
         uint[] memory resource1_amounts, 
         uint[] memory resource2_amounts, 
         uint[] memory resource3_amounts) 
@@ -878,9 +878,9 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     function _setTile(
         uint16 index, 
         Tile memory values, 
-        ResourceType resource1_type, 
-        ResourceType resource2_type, 
-        ResourceType resource3_type, 
+        Resource resource1_type, 
+        Resource resource2_type, 
+        Resource resource3_type, 
         uint resource1_amount, 
         uint resource2_amount, 
         uint resource3_amount) 

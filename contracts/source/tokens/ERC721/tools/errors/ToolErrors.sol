@@ -8,4 +8,4 @@ import "../../../../game/assets/types/AssetEnums.sol";
  */
 /// @dev Emitted when the specified tool is required for minting the provided resource
 /// @param resource The resource attempted to be minted with the tool
-error ToolRequiredForMinting(ResourceType resource);
+error ToolRequiredForMinting(Resource resource);

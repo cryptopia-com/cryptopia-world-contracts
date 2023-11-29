@@ -31,7 +31,7 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
     bytes32[] private assetsIndex;
 
     /// @dev Resources
-    mapping (ResourceType => address) public resources;
+    mapping (Resource => address) public resources;
 
 
     /**
@@ -42,7 +42,7 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
     /// @param symbol Symbol of the asset registered
     /// @param isResource Indicates whether the asset is marked as a resource
     /// @param resource Resource type if it is a resource; undefined otherwise
-    event RegisterAsset(address indexed asset, string indexed symbol, bool indexed isResource, ResourceType resource);
+    event RegisterAsset(address indexed asset, string indexed symbol, bool indexed isResource, Resource resource);
 
 
     /**
@@ -54,7 +54,7 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
 
     /// @dev Emitted when `resource` is already registered as a resource
     /// @param resource The resource that is already registered
-    error ResourceAlreadyRegistered(ResourceType resource);
+    error ResourceAlreadyRegistered(Resource resource);
 
 
     /// @dev Constructor
@@ -186,9 +186,9 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
 
 
     /// @dev Getter for resources
-    /// @param resource {ResourceType}
+    /// @param resource {Resource}
     /// @return address The resource asset contract address 
-    function getAssetByResrouce(ResourceType resource) 
+    function getAssetByResrouce(Resource resource) 
         public virtual override view 
         returns (address)
     {
@@ -202,8 +202,8 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
     /// @dev Register an asset
     /// @param asset Contact address
     /// @param isResource true if `asset` is a resource
-    /// @param resource {ResourceType}
-    function __registerAsset(address asset, bool isResource, ResourceType resource) 
+    /// @param resource {Resource}
+    function __registerAsset(address asset, bool isResource, Resource resource) 
         public virtual override 
         onlyRole(SYSTEM_ROLE) 
     {

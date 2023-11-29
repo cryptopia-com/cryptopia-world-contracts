@@ -11,7 +11,7 @@ interface IResourceGathering {
     /// @param player The account to retrieve the cooldown timestamp for
     /// @param resource The resource to retrieve the cooldown timestamp for
     /// @return uint Cooldown timestamp at which `player` can mint `resource` again
-    function getCooldown(address player, ResourceType resource) 
+    function getCooldown(address player, Resource resource) 
         external view 
         returns (uint);
  
@@ -20,6 +20,6 @@ interface IResourceGathering {
     /// @param resource The {AssetEnums} to mint 
     /// @param tool The token ID of the tool used to mint the resource (0 means no tool)
     /// @param max The maximum amount of tokens to mint (limit to prevent full backpack)
-    function mint(ResourceType resource, uint tool, uint max) 
+    function mint(Resource resource, uint tool, uint max) 
         external; 
 }

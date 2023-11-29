@@ -5,6 +5,10 @@ pragma solidity ^0.8.20 < 0.9.0;
 /// @param account The account that is not a player
 error PlayerNotRegistered(address account);
 
+/// @dev Emitted when `account` cannot interact at this time
+/// @param account The account that cannot interact
+error PlayerCannotInteract(address account);
+
 /// @dev Emitted when `account` is already a player
 /// @param account The account that is already a player
 /// @param arrival The arrival time of the player

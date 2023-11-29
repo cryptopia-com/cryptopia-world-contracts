@@ -119,7 +119,7 @@ contract MockCryptopiaMap is Initializable {
     /// @param account Player to retrieve data for
     /// @param resource Type of resource to test for
     /// @return uint the amount of `resource` that can be minted
-    function getPlayerResourceData(address account, ResourceType resource) 
+    function getPlayerResourceData(address account, Resource resource) 
         public view 
         returns (uint)
     {
@@ -129,7 +129,7 @@ contract MockCryptopiaMap is Initializable {
         }
 
         // Fish
-        if (resource == ResourceType.Fish)
+        if (resource == Resource.Fish)
         {
             uint32 tileIndex = playerData[account].location_tileIndex;
             return _tileIsUnderwater(tileIndex) 
@@ -138,7 +138,7 @@ contract MockCryptopiaMap is Initializable {
         }
 
         // Meat
-        if (resource == ResourceType.Meat)
+        if (resource == Resource.Meat)
         {
             uint32 tileIndex = playerData[account].location_tileIndex;
             if (_tileIsUnderwater(tileIndex))
@@ -150,19 +150,19 @@ contract MockCryptopiaMap is Initializable {
         }
 
         // Fruit || Wood
-        if (resource == ResourceType.Fruit || resource == ResourceType.Wood)
+        if (resource == Resource.Fruit || resource == Resource.Wood)
         {
             return tiles[playerData[account].location_tileIndex].vegitationLevel;
         }
         
         // Stone
-        if (resource == ResourceType.Stone)
+        if (resource == Resource.Stone)
         {
             return tiles[playerData[account].location_tileIndex].rockLevel;
         }
 
         // Sand
-        if (resource == ResourceType.Sand)
+        if (resource == Resource.Sand)
         {
             return 1;
         }

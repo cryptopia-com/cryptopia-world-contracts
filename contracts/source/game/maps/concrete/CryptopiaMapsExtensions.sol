@@ -60,16 +60,16 @@ contract CryptopiaMapsExtensions is Initializable {
     function getTileDataStatic(uint16 skip, uint16 take) 
         public virtual view 
         returns (
-            ResourceType[] memory resource1_type,
-            ResourceType[] memory resource2_type,
-            ResourceType[] memory resource3_type,
+            Resource[] memory resource1_type,
+            Resource[] memory resource2_type,
+            Resource[] memory resource3_type,
             uint[] memory resource1_initialAmount,
             uint[] memory resource2_initialAmount,
             uint[] memory resource3_initialAmount)
     {
-        resource1_type = new ResourceType[](take);
-        resource2_type = new ResourceType[](take);
-        resource3_type = new ResourceType[](take);
+        resource1_type = new Resource[](take);
+        resource2_type = new Resource[](take);
+        resource3_type = new Resource[](take);
         resource1_initialAmount = new uint[](take);
         resource2_initialAmount = new uint[](take);
         resource3_initialAmount = new uint[](take);

@@ -8,5 +8,8 @@ import "../types/FactionEnums.sol";
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface IQuests {
 
-    
+    /** 
+     * Public functions
+     */
+    function complete(uint questId, uint step) external;
 }

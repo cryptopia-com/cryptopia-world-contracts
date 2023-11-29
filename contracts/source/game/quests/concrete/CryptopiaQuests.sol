@@ -4,14 +4,16 @@ pragma solidity ^0.8.20 < 0.9.0;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-import "../../../tokens/types/TransactionDataTypes.sol";
 import "../../../errors/ArgumentErrors.sol";
 import "../../errors/FactionErrors.sol";
 import "../../players/IPlayerRegister.sol";
 import "../../players/errors/PlayerErrors.sol";
+import "../../inventories/types/InventoryDataTypes.sol";
 import "../../inventories/IInventories.sol";
 import "../../maps/errors/MapErrors.sol";
 import "../../maps/IMaps.sol";
+import "../IFungibleQuestReward.sol";
+import "../INonFungibleQuestReward.sol";
 import "../IQuests.sol";
 
 contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
@@ -74,16 +76,16 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         uint16 tile;
 
         /// @dev Fungible tokens that are taken from the inventory
-        FungibleTransaction[] takeFungible;
+        FungibleTransactionData[] takeFungible;
 
         /// @dev Non-fungible tokens that are taken from the inventory
-        NonFungibleTransaction[] takeNonFungible;
+        NonFungibleTransactionData[] takeNonFungible;
 
         /// @dev Fungible tokens that are given to the inventory
-        FungibleTransaction[] giveFungible;
+        FungibleTransactionData[] giveFungible;
 
         /// @dev Non-fungible tokens that are given to the inventory
-        NonFungibleTransaction[] giveNonFungible;
+        NonFungibleTransactionData[] giveNonFungible;
     }
 
     /// @dev Quest reward
@@ -94,17 +96,17 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         /// @dev Reward name
         bytes32 name;
 
-        /// @dev The amount of xp rewarded
-        uint xp;
+         /// @dev The amount of karma rewarded (negative values are allowed)
+        int16 karma;
 
-        /// @dev The amount of karma rewarded (negative values are allowed)
-        int karma;
+        /// @dev The amount of xp rewarded
+        uint24 xp;
         
         /// @dev Fungible rewards
-        FungibleTransaction[] fungible;
+        FungibleTransactionData[] fungible;
 
         /// @dev Non-fungible rewards
-        NonFungibleTransaction[] nonFungible;
+        NonFungibleTransactionData[] nonFungible;
     }
 
     /// @dev Quest data per player
@@ -122,6 +124,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         /// @dev Timestamps
         uint64 timestampStarted;
         uint64 timestampCompleted;
+        uint64 timestampClaimed;
     }
 
 
@@ -185,6 +188,11 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
     /// @param questId The quest id that was already started
     error QuestAlreadyStarted(address player, uint questId);
 
+    /// @dev Emitted when `player` did not complete `questId` yet
+    /// @param player The player that did not complete the quest
+    /// @param questId The quest id that was not completed
+    error QuestNotCompleted(address player, uint questId);
+
     /// @dev Emitted when `player` tries to start a quest more than `maxRecurrences` times
     /// @param player The player that exceeded the max recurrences
     /// @param questId The quest id that was exceeded
@@ -213,6 +221,16 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
     /// @param questId The quest id that was already completed
     /// @param index The step index that was already completed
     error QuestStepAlreadyCompleted(address player, uint questId, uint index);
+
+    /// @dev Emitted when `player` tries to claim a reward that does not exist
+    /// @param questId The quest id that was not found
+    /// @param index The reward index that was not found
+    error QuestRewardNotFound(uint questId, uint index);
+
+    /// @dev Emitted when `player` tries to claim a reward that was already claimed
+    /// @param player The player that already claimed the reward
+    /// @param questId The quest id that was already claimed
+    error QuestRewardAlreadyClaimed(address player, uint questId);
 
 
     /**
@@ -320,6 +338,168 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
     function startQuest(uint questId, uint8[] memory stepIndices)
         public 
     {
+        _startQuest(questId);
+
+        // Complete steps in the same transaction (if any)
+        for (uint i = 0; i < stepIndices.length; i++) 
+        {
+            _completeStep(questId, stepIndices[i]);
+        }
+    }
+
+
+    /// @dev Complete step `index` of quest `questId`
+    /// @param questId Quest id to which the step belongs
+    /// @param index Step index to complete
+    function completeStep(uint questId, uint8 index) 
+        public 
+    {
+        // Check quest started
+        PlayerQuestData storage playerData = playerQuestData[msg.sender][questId];
+        if (playerData.timestampStarted <= playerData.timestampCompleted)
+        {
+            revert QuestNotStarted(msg.sender, questId);
+        }
+
+        _completeStep(questId, index);
+    }
+
+
+    /// @dev Complete multiple steps `indices` of quest `questId`
+    /// @param questId Quest id to which the steps belong
+    /// @param indices Step indices to complete
+    function completeSteps(uint questId, uint8[] memory indices) 
+        public 
+    {
+        // Check quest started
+        PlayerQuestData storage playerData = playerQuestData[msg.sender][questId];
+        if (playerData.timestampStarted <= playerData.timestampCompleted)
+        {
+            revert QuestNotStarted(msg.sender, questId);
+        }
+
+        for (uint i = 0; i < indices.length; i++) 
+        {
+            _completeStep(questId, indices[i]);
+        }
+    }
+
+
+    /// @dev Complete step `index` of quest `questId`  and claim reward `rewardIndex` to `inventory`
+    /// @param questId Quest id to which the step belongs
+    /// @param stepIndex Step index to complete
+    /// @param rewardIndex Reward index to claim
+    /// @param rewardInventory Inventory to which the reward is assigned
+    function completeStepAndClaimReward(uint questId, uint8 stepIndex, uint8 rewardIndex, Inventory rewardInventory) 
+        public 
+    {
+        // Check quest started
+        PlayerQuestData storage playerData = playerQuestData[msg.sender][questId];
+        if (playerData.timestampStarted <= playerData.timestampCompleted)
+        {
+            revert QuestNotStarted(msg.sender, questId);
+        }
+
+        _completeStep(questId, stepIndex); 
+
+        // Check quest completed
+        if (playerData.stepsCompletedCount != quests[questId].steps.length) 
+        {
+            revert QuestNotCompleted(msg.sender, questId);
+        }
+
+        _claimReward(questId, rewardIndex, rewardInventory);
+    }
+
+
+    /// @dev Complete multiple steps `indices` of quest `questId` and claim reward `rewardIndex` to `inventory`
+    /// @param questId Quest id to which the steps belong
+    /// @param stepIndices Step indices to complete
+    /// @param rewardIndex Reward index to claim
+    /// @param rewardInventory Inventory to which the reward is assigned
+    function completeStepsAndClaimReward(uint questId, uint8[] memory stepIndices, uint8 rewardIndex, Inventory rewardInventory) 
+        public 
+    {
+        // Check quest started
+        PlayerQuestData storage playerData = playerQuestData[msg.sender][questId];
+        if (playerData.timestampStarted <= playerData.timestampCompleted)
+        {
+            revert QuestNotStarted(msg.sender, questId);
+        }
+
+        for (uint i = 0; i < stepIndices.length; i++) 
+        {
+            _completeStep(questId, stepIndices[i]);
+        }
+
+        // Check quest completed
+        if (playerData.stepsCompletedCount != quests[questId].steps.length) 
+        {
+            revert QuestNotCompleted(msg.sender, questId);
+        }
+
+        _claimReward(questId, rewardIndex, rewardInventory);
+    }
+
+
+    /// @dev Claim reward `rewardIndex` of quest `questId` to `inventory`
+    /// @param questId Quest id to which the reward belongs
+    /// @param rewardIndex Reward index to claim
+    /// @param inventory Inventory to which the reward is assigned
+    function claimReward(uint questId, uint rewardIndex, Inventory inventory) 
+        public 
+    {
+        // Check quest started
+        PlayerQuestData storage playerData = playerQuestData[msg.sender][questId];
+        if (playerData.timestampStarted <= playerData.timestampCompleted)
+        {
+            revert QuestNotStarted(msg.sender, questId);
+        }
+
+        // Check quest completed
+        if (playerData.stepsCompletedCount < quests[questId].steps.length)
+        {
+            revert QuestNotCompleted(msg.sender, questId);
+        }
+
+        // Check reward not claimed
+        if (playerData.timestampClaimed >= playerData.timestampCompleted)
+        {
+            revert QuestRewardAlreadyClaimed(msg.sender, questId);
+        }
+
+        // Claim reward
+        _claimReward(questId, rewardIndex, inventory);
+    }
+
+
+    /// @dev Start quest with `questId`, directly complete all steps and claim `rewardIndex` 
+    /// @param questId Quest id to start
+    /// @param rewardIndex Reward to claim in the same transaction
+    /// @param rewardInventory Inventory to which the reward is assigned
+    function completeQuest(uint questId, uint8 rewardIndex, Inventory rewardInventory)
+        public 
+    {
+        _startQuest(questId);
+
+        // Complete steps 
+        for (uint8 i = 0; i < quests[questId].steps.length; i++) 
+        {
+            _completeStep(questId, i);
+        }
+
+        _claimReward(questId, rewardIndex, rewardInventory);
+    }
+
+    
+    /**
+     * Internal functions
+     */
+    /// @dev Start quest with `questId` and directly complete `stepIndices` if any
+    /// @param questId Quest id to start
+    function _startQuest(uint questId)
+        internal 
+    {
          // Get quest
         Quest storage quest = quests[questId];
         PlayerQuestData storage playerData = playerQuestData[msg.sender][questId];
@@ -415,56 +595,9 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
 
         // Emit event
         emit QuestStart(msg.sender, questId);
-
-
-        // Complete steps if any
-        for (uint i = 0; i < stepIndices.length; i++) 
-        {
-            _completeStep(questId, stepIndices[i]);
-        }
     }
 
 
-    /// @dev Complete step `index` of quest `questId`
-    /// @param questId Quest id to which the step belongs
-    /// @param index Step index to complete
-    function completeStep(uint questId, uint8 index) 
-        public
-    {
-        // Check quest started
-        PlayerQuestData storage playerData = playerQuestData[msg.sender][questId];
-        if (playerData.timestampStarted <= playerData.timestampCompleted)
-        {
-            revert QuestNotStarted(msg.sender, questId);
-        }
-
-        _completeStep(questId, index);
-    }
-
-
-    /// @dev Complete multiple steps `indices` of quest `questId`
-    /// @param questId Quest id to which the steps belong
-    /// @param indices Step indices to complete
-    function completeSteps(uint questId, uint8[] memory indices) 
-        public
-    {
-        // Check quest started
-        PlayerQuestData storage playerData = playerQuestData[msg.sender][questId];
-        if (playerData.timestampStarted <= playerData.timestampCompleted)
-        {
-            revert QuestNotStarted(msg.sender, questId);
-        }
-
-        for (uint i = 0; i < indices.length; i++) 
-        {
-            _completeStep(questId, indices[i]);
-        }
-    }
-
-    
-    /**
-     * Internal functions
-     */
     /// @dev Complete step `index` of quest `questId`
     /// @param questId Quest id to which the step belongs
     /// @param index Step index to complete
@@ -529,7 +662,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
 
 
         // Give
-        
+
 
         // Take
 
@@ -544,5 +677,100 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
             // Emit event
             emit QuestComplete(msg.sender, questId);
         }
+    }
+
+
+    /// @dev Claim reward `rewardIndex` of quest `questId` to `inventory`
+    /// @param questId Quest id to which the reward belongs
+    /// @param rewardIndex Reward index to claim
+    /// @param inventory Inventory to which the reward is assigned
+    function _claimReward(uint questId, uint rewardIndex, Inventory inventory) 
+        internal 
+    {
+        // Get quest
+        Quest storage quest = quests[questId];
+        PlayerQuestData storage playerData = playerQuestData[msg.sender][questId];
+
+        // Check reward index
+        if (rewardIndex >= quest.rewards.length) 
+        {
+            revert QuestRewardNotFound(questId, rewardIndex);
+        }
+
+        // Mark reward claimed
+        playerData.timestampClaimed = uint64(block.timestamp);
+
+        // Fungible rewards
+        for (uint i = 0; i < quest.rewards[rewardIndex].fungible.length; i++) 
+        {   
+            FungibleTransactionData memory reward = quest.rewards[rewardIndex].fungible[i];
+
+            // Wallet
+            if (inventory == Inventory.Wallet)
+            {
+                if (!reward.allowWallet)
+                {
+                    revert ArgumentInvalid();
+                }
+
+                // Send reward directly to wallet
+                IFungibleQuestReward(reward.asset)
+                    .__reward(msg.sender, reward.amount);
+            }
+
+            // Inventory
+            else 
+            {
+                // Send reward to inventory
+                IFungibleQuestReward(reward.asset)
+                    .__reward(intentoriesContract, reward.amount);
+
+                // Assign to player
+                IInventories(intentoriesContract)
+                    .__assignFungibleToken(
+                        msg.sender, 
+                        inventory, 
+                        reward.asset, 
+                        reward.amount); 
+            }
+        }
+
+        // Non-fungible rewards
+        for (uint i = 0; i < quest.rewards[rewardIndex].nonFungible.length; i++) 
+        {   
+            NonFungibleTransactionData memory reward = quest.rewards[rewardIndex].nonFungible[i];
+
+            // Wallet
+            if (inventory == Inventory.Wallet)
+            {
+                if (!reward.allowWallet)
+                {
+                    revert ArgumentInvalid();
+                }
+
+                // Send reward directly to wallet
+                INonFungibleQuestReward(reward.asset)
+                    .__reward(msg.sender, reward.item);
+            }
+
+            // Inventory
+            else 
+            {
+                // Send reward to inventory
+                IInventories(intentoriesContract) 
+                    .__assignNonFungibleToken(
+                        msg.sender, 
+                        inventory, 
+                        reward.asset,
+                        INonFungibleQuestReward(reward.asset)
+                            .__reward(intentoriesContract, reward.item));
+            }
+        }
+
+        // Award xp and karma
+        IPlayerRegister(playerRegisterContract)
+            .__award(msg.sender, 
+                quest.rewards[rewardIndex].xp, 
+                quest.rewards[rewardIndex].karma);
     }
 }

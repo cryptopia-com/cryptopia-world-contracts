@@ -8,5 +8,8 @@ interface INonFungibleQuestReward {
     /// @dev Reward `to` with `item`
     /// @param to Address to reward 
     /// @param item Item to reward
-    function __reward(address to, bytes32 item) external;
+    /// @return tokenId The token id of the reward
+    function __reward(address to, bytes32 item)
+        external
+        returns (uint tokenId);
 }

@@ -5,8 +5,9 @@ pragma solidity ^0.8.20 < 0.9.0;
 /// @notice A quest reward can be claimed by a player when a quest is completed
 interface IFungibleQuestReward {
 
-    /// @dev Reward `to` with `amount`
-    /// @param to Address to reward
-    /// @param amount Amount to reward
-    function __reward(address to, uint amount) external;
+    /// @dev Rewards the player for completing the quest
+    /// @param to The address that is being rewarded
+    /// @param amount The amount that is being rewarded
+    function __reward(address to, uint amount) 
+        external;
 }

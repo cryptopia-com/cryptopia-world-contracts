@@ -35,8 +35,13 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
 
     struct CraftingSlot
     {
+        /// @dev The asset (ERC721) that is being crafted
         address asset;
+
+        /// @dev The recipe (name) that is being crafted
         bytes32 recipe;
+
+        /// @dev The timestamp after which the crafted item can be claimed
         uint finished;        
     }
 

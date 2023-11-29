@@ -11,5 +11,5 @@ interface IQuests {
     /** 
      * Public functions
      */
-    function complete(uint questId, uint step) external;
+    
 }

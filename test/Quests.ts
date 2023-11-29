@@ -368,7 +368,12 @@ describe("Quests Contract", function () {
         // Deploy Quests
         const questsProxy = await (
             await upgrades.deployProxy(
-                QuestsFactory, [])
+                QuestsFactory, 
+                [
+                    playerRegisterAddress,
+                    inventoriesAddress,
+                    mapsAddress
+                ])
         ).waitForDeployment();
 
         const questsAddress = await questsProxy.getAddress();
@@ -512,7 +517,8 @@ describe("Quests Contract", function () {
                         nonFungible: [
                             {
                                 asset: toolTokenAddress, 
-                                item: "Stone Axe".toBytes32()
+                                item: "Stone Axe".toBytes32(),
+                                allowWallet: false
                             }
                         ]
                     },
@@ -523,13 +529,15 @@ describe("Quests Contract", function () {
                         fungible: [
                             {
                                 asset: getAssetByResource(Resource.Wood).contractAddress,
-                                amount: "5".toWei()
+                                amount: "5".toWei(),
+                                allowWallet: false
                             }
                         ],
                         nonFungible: [
                             {
                                 asset: toolTokenAddress, 
-                                item: "Stone Axe".toBytes32()
+                                item: "Stone Axe".toBytes32(),
+                                allowWallet: false
                             }
                         ]
                     }
@@ -538,6 +546,8 @@ describe("Quests Contract", function () {
 
             // Act
             await questsInstance.addQuest(quest);
+
+            
 
             // Assert
             const questCount = await questsInstance.getQuestCount(); 

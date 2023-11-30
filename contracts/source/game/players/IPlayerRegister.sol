@@ -47,26 +47,10 @@ interface IPlayerRegister {
 
     /// @dev Returns player data for `player`
     /// @param player CryptopiaAccount address (registered as a player)
-    /// @return username Player username (fetched from account)
     /// @return data Player data
-    function getPlayerData(address payable player) 
+    function getPlayerData(address player) 
         external view 
-        returns (
-            bytes32 username,
-            PlayerData memory data
-        );
-
-
-    /// @dev Returns player datas for `players`
-    /// @param players CryptopiaAccount addresses (registered as a players)
-    /// @return usernames Player usernames (fetched from account)
-    /// @return data Player datas
-    function getPlayerDatas(address payable[] memory players) 
-        external view 
-        returns (
-            bytes32[] memory usernames,
-            PlayerData[] memory data
-        );
+        returns (PlayerData memory);
 
     
     /// @dev Returns true if `player` is a pirate

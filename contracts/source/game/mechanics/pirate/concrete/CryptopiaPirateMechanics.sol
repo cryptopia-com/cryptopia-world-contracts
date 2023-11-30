@@ -374,7 +374,8 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
                         msg.sender, 
                         Inventory.Ship, 
                         fuelContact, 
-                        fuelConsumption);
+                        fuelConsumption,
+                        true);
             }
             else 
             {
@@ -487,7 +488,8 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
                         target, 
                         inventories_from[i], 
                         assets[i], 
-                        deduct);
+                        deduct,
+                        true);
             }
         }
 
@@ -565,7 +567,8 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
                 msg.sender, 
                 Inventory.Ship, 
                 fuelContact, 
-                targetShipTravelData.fuelConsumption);
+                targetShipTravelData.fuelConsumption, 
+                true);
 
         // Generate randomness
         uint score = _getRandomNumberAt(_generateRandomSeed(), 0);
@@ -827,7 +830,8 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
                             target, 
                             inventories_from[i], 
                             assets[i], 
-                            tokenIds[i]); 
+                            tokenIds[i],
+                            true); 
 
                     // Deduct from plunder
                     tokenIds[i] = 0;
@@ -854,7 +858,8 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
                             target, 
                             inventories_from[i], 
                             assets[i], 
-                            deduct);
+                            deduct, 
+                            true);
                 }
             }
         }

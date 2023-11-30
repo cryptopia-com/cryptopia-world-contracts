@@ -635,7 +635,8 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
                     msg.sender, 
                     inventory, 
                     recipes[asset][recipe].ingredientsIndex[i], 
-                    recipes[asset][recipe].ingredients[recipes[asset][recipe].ingredientsIndex[i]]);
+                    recipes[asset][recipe].ingredients[recipes[asset][recipe].ingredientsIndex[i]],
+                    true);
         }
 
         // Add to slot

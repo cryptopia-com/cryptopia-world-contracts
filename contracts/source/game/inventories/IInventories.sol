@@ -240,7 +240,8 @@ interface IInventories {
     /// @param inventory The inventory type to deduct the asset from {BackPack | Ship}
     /// @param asset The asset contract address 
     /// @param amount The amount of asset to deduct
-    function __deductFungibleToken(address player, Inventory inventory, address asset, uint amount)
+    /// @param sendToTreasury If true the deducted assets will be sent to the treasury
+    function __deductFungibleToken(address player, Inventory inventory, address asset, uint amount, bool sendToTreasury)
         external;
 
     
@@ -253,7 +254,8 @@ interface IInventories {
     /// @param inventory The inventory type to deduct the asset from {BackPack | Ship}
     /// @param asset The asset contract address 
     /// @param amount The amount of asset to deduct
-    function __deductFungibleTokenUnchecked(address player, Inventory inventory, address asset, uint amount)
+    /// @param sendToTreasury If true the deducted assets will be sent to the treasury
+    function __deductFungibleTokenUnchecked(address player, Inventory inventory, address asset, uint amount, bool sendToTreasury)
         external;
 
 
@@ -267,7 +269,8 @@ interface IInventories {
     /// @param inventory The inventory type to deduct the asset from {BackPack | Ship}
     /// @param asset The asset contract address
     /// @param tokenId The token id from asset to deduct
-    function __deductNonFungibleToken(address player, Inventory inventory, address asset, uint tokenId)
+    /// @param sendToTreasury If true the deducted assets will be sent to the treasury
+    function __deductNonFungibleToken(address player, Inventory inventory, address asset, uint tokenId, bool sendToTreasury)
         external;
 
     
@@ -280,7 +283,8 @@ interface IInventories {
     /// @param inventory The inventory type to deduct the asset from {BackPack | Ship}
     /// @param asset The asset contract address
     /// @param tokenId The token id from asset to deduct
-    function __deductNonFungibleTokenUnchecked(address player, Inventory inventory, address asset, uint tokenId)
+    /// @param sendToTreasury If true the deducted assets will be sent to the treasury
+    function __deductNonFungibleTokenUnchecked(address player, Inventory inventory, address asset, uint tokenId, bool sendToTreasury)
         external;
 
 
@@ -294,7 +298,8 @@ interface IInventories {
     /// @param inventory The inventory type to deduct the assets from {BackPack | Ship}
     /// @param asset The asset contract addresses 
     /// @param amount The amounts of assets to deduct
-    function __deduct(address player, Inventory inventory, address[] memory asset, uint[] memory amount)
+    /// @param sendToTreasury If true the deducted assets will be sent to the treasury
+    function __deduct(address player, Inventory inventory, address[] memory asset, uint[] memory amount, bool sendToTreasury)
         external;
 
 
@@ -307,7 +312,8 @@ interface IInventories {
     /// @param inventory The inventory type to deduct the assets from {BackPack | Ship}
     /// @param asset The asset contract addresses 
     /// @param amount The amounts of assets to deduct
-    function __deductUnchecked(address player, Inventory inventory, address[] memory asset, uint[] memory amount)
+    /// @param sendToTreasury If true the deducted assets will be sent to the treasury
+    function __deductUnchecked(address player, Inventory inventory, address[] memory asset, uint[] memory amount, bool sendToTreasury)
         external;
 
 

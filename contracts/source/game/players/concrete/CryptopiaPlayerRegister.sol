@@ -231,10 +231,21 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
 
     /// @dev Returns player data for `player`
     /// @param player CryptopiaAccount address (registered as a player)
+    /// @return data Player data
+    function getPlayerData(address player) 
+        public virtual override view 
+        returns (PlayerData memory)
+    {
+        return playerDatas[player];
+    }
+
+
+    /// @dev Returns player data for `player`
+    /// @param player CryptopiaAccount address (registered as a player)
     /// @return username Player username (fetched from account)
     /// @return data Player data
-    function getPlayerData(address payable player) 
-        public virtual override view 
+    function getPlayerDataAndUsername(address payable player) 
+        public virtual view 
         returns (
             bytes32 username,
             PlayerData memory data
@@ -250,8 +261,8 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     /// @param players CryptopiaAccount addresses (registered as a players)
     /// @return usernames Player usernames (fetched from account)
     /// @return data Player datas
-    function getPlayerDatas(address payable[] memory players) 
-        public virtual override view 
+    function getPlayerDatasAndUsernames(address payable[] memory players) 
+        public virtual view 
         returns (
             bytes32[] memory usernames,
             PlayerData[] memory data
@@ -262,7 +273,7 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
 
         for (uint i = 0; i < players.length; i++)
         {
-            (usernames[i], data[i]) = getPlayerData(players[i]);
+            (usernames[i], data[i]) = getPlayerDataAndUsername(players[i]);
         }
     }
 

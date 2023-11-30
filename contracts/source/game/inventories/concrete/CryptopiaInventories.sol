@@ -714,12 +714,13 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @param inventory The inventory type to deduct the asset from {BackPack | Ship}
     /// @param asset The asset contract address 
     /// @param amount The amount of asset to deduct
-    function __deductFungibleToken(address player, Inventory inventory, address asset, uint amount)
+    /// @param sendToTreasury If true the deducted assets will be sent to the treasury
+    function __deductFungibleToken(address player, Inventory inventory, address asset, uint amount, bool sendToTreasury)
         public virtual override 
         notFrozen(player)
         onlyRole(SYSTEM_ROLE)
     {
-        _deductFungibleToken(player, inventory, asset, amount);
+        _deductFungibleToken(player, inventory, asset, amount, sendToTreasury);
     }
 
 
@@ -732,11 +733,12 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @param inventory The inventory type to deduct the asset from {BackPack | Ship}
     /// @param asset The asset contract address 
     /// @param amount The amount of asset to deduct
-    function __deductFungibleTokenUnchecked(address player, Inventory inventory, address asset, uint amount)
+    /// @param sendToTreasury If true the deducted assets will be sent to the treasury
+    function __deductFungibleTokenUnchecked(address player, Inventory inventory, address asset, uint amount, bool sendToTreasury)
         public virtual override 
         onlyRole(SYSTEM_ROLE)
     {
-        _deductFungibleToken(player, inventory, asset, amount);
+        _deductFungibleToken(player, inventory, asset, amount, sendToTreasury);
     }
 
 
@@ -750,12 +752,13 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @param inventory The inventory type to deduct the asset from {BackPack | Ship}
     /// @param asset The asset contract address
     /// @param tokenId The token id from asset to deduct
-    function __deductNonFungibleToken(address player, Inventory inventory, address asset, uint tokenId)
+    /// @param sendToTreasury If true the deducted assets will be sent to the treasury
+    function __deductNonFungibleToken(address player, Inventory inventory, address asset, uint tokenId, bool sendToTreasury)
         public virtual override 
         notFrozen(player)
         onlyRole(SYSTEM_ROLE)
     {
-        _deductNonFungibleToken(player, inventory, asset, tokenId);
+        _deductNonFungibleToken(player, inventory, asset, tokenId, sendToTreasury);
     }
 
     
@@ -768,11 +771,12 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @param inventory The inventory type to deduct the asset from {BackPack | Ship}
     /// @param asset The asset contract address
     /// @param tokenId The token id from asset to deduct
-    function __deductNonFungibleTokenUnchecked(address player, Inventory inventory, address asset, uint tokenId)
+    /// @param sendToTreasury If true the deducted assets will be sent to the treasury
+    function __deductNonFungibleTokenUnchecked(address player, Inventory inventory, address asset, uint tokenId, bool sendToTreasury)
         public virtual override 
         onlyRole(SYSTEM_ROLE)
     {
-        _deductNonFungibleToken(player, inventory, asset, tokenId);
+        _deductNonFungibleToken(player, inventory, asset, tokenId, sendToTreasury);
     }
 
 
@@ -786,14 +790,15 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @param inventory The inventory type to deduct the assets from {BackPack | Ship}
     /// @param asset The asset contract addresses 
     /// @param amount The amounts of assets to deduct
-    function __deduct(address player, Inventory inventory, address[] memory asset, uint[] memory amount)
+    /// @param sendToTreasury If true the deducted assets will be sent to the treasury
+    function __deduct(address player, Inventory inventory, address[] memory asset, uint[] memory amount, bool sendToTreasury)
         public virtual override 
         notFrozen(player)
         onlyRole(SYSTEM_ROLE)
     {
         for (uint i = 0; i < asset.length; i++)
         {
-            _deductFungibleToken(player, inventory, asset[i], amount[i]);
+            _deductFungibleToken(player, inventory, asset[i], amount[i], sendToTreasury);
         }
     }
 
@@ -807,13 +812,14 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @param inventory The inventory type to deduct the assets from {BackPack | Ship}
     /// @param asset The asset contract addresses 
     /// @param amount The amounts of assets to deduct
-    function __deductUnchecked(address player, Inventory inventory, address[] memory asset, uint[] memory amount)
-        public virtual override 
+    /// @param sendToTreasury If true the deducted assets will be sent to the treasury
+    function __deductUnchecked(address player, Inventory inventory, address[] memory asset, uint[] memory amount, bool sendToTreasury)
+        public virtual override  
         onlyRole(SYSTEM_ROLE)
     {
         for (uint i = 0; i < asset.length; i++)
         {
-            _deductFungibleToken(player, inventory, asset[i], amount[i]);
+            _deductFungibleToken(player, inventory, asset[i], amount[i], sendToTreasury);
         }
     }
 
@@ -1266,7 +1272,8 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @param inventory The inventory type to deduct the asset from {BackPack | Ship}
     /// @param asset The asset contract address 
     /// @param amount The amount of asset to deduct
-    function _deductFungibleToken(address player, Inventory inventory, address asset, uint amount)
+    /// @param sendToTreasury If true, sends the asset to the treasury
+    function _deductFungibleToken(address player, Inventory inventory, address asset, uint amount, bool sendToTreasury)
         internal 
     {
         // SYSTEM caller > Assume asset exists
@@ -1301,7 +1308,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         }
 
         // Send to treasury
-        if (!IERC20(asset).transfer(treasury, amount)) 
+        if (sendToTreasury && !IERC20(asset).transfer(treasury, amount)) 
         {
             revert InventoryWithdrawFailed(
                 treasury, inventory, asset, amount, 0);
@@ -1320,7 +1327,8 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @param inventory The inventory type to deduct the asset from {BackPack | Ship}
     /// @param asset The asset contract address
     /// @param tokenId The token id from asset to deduct
-    function _deductNonFungibleToken(address player, Inventory inventory, address asset, uint tokenId)
+    /// @param sendToTreasury If true, sends the asset to the treasury
+    function _deductNonFungibleToken(address player, Inventory inventory, address asset, uint tokenId, bool sendToTreasury)
         internal 
     {
         // SYSTEM caller > Assume inventory exists
@@ -1378,13 +1386,16 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         }
 
         // Send to treasury
-        try IERC721(asset).transferFrom(address(this), treasury, tokenId) {}
-        catch 
+        if (sendToTreasury)
         {
-            revert InventoryWithdrawFailed(
-                treasury, inventory, asset, 1, tokenId);
+            try IERC721(asset).transferFrom(address(this), treasury, tokenId) {}
+            catch 
+            {
+                revert InventoryWithdrawFailed(
+                    treasury, inventory, asset, 1, tokenId);
+            }
         }
-
+        
         // Emit
         emit InventoryDeduct(player, inventory, asset, 1, tokenId);
     }

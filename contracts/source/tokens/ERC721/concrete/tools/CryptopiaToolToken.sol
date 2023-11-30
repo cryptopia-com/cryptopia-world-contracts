@@ -6,6 +6,7 @@ import "../../../../game/players/errors/PlayerErrors.sol";
 import "../../../../game/players/IPlayerRegister.sol";
 import "../../../../game/inventories/IInventories.sol";
 import "../../../../game/crafting/ICraftable.sol";
+import "../../../../game/quests/INonFungibleQuestReward.sol";
 import "../../../../game/assets/types/AssetEnums.sol";
 import "../../tools/ITools.sol";
 import "../CryptopiaERC721.sol";
@@ -13,7 +14,7 @@ import "../CryptopiaERC721.sol";
 /// @title Cryptopia Tool Token
 /// @dev Non-fungible token (ERC721)
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable {
+contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungibleQuestReward {
 
     /**
      * Storage
@@ -319,6 +320,30 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable {
     {
         // Mint
         uint tokenId = _getNextTokenId();
+        _mint(inventoriesContract, tokenId);
+        _incrementTokenId();
+        toolInstances[tokenId].name = tool;
+
+        // Assign
+        IInventories(inventoriesContract)
+            .__assignNonFungibleToken(player, inventory, address(this), tokenId);
+
+        return tokenId;
+    }
+
+
+    /// @dev Mint a quest reward
+    /// @param tool The item to mint
+    /// @param player The player to mint the item to
+    /// @param inventory The inventory to mint the item to
+    function __mintQuestReward(bytes32 tool, address player, Inventory inventory)
+        public virtual override 
+        onlyRole(SYSTEM_ROLE) 
+        onlyExisting(tool) 
+        returns (uint tokenId)
+    {
+        // Mint
+        tokenId = _getNextTokenId();
         _mint(inventoriesContract, tokenId);
         _incrementTokenId();
         toolInstances[tokenId].name = tool;

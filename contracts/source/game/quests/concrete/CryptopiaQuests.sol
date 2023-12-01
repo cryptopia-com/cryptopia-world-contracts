@@ -13,10 +13,10 @@ import "../../inventories/types/InventoryDataTypes.sol";
 import "../../inventories/IInventories.sol";
 import "../../maps/errors/MapErrors.sol";
 import "../../maps/IMaps.sol";
-import "../IFungibleQuestItem.sol";
-import "../INonFungibleQuestItem.sol";
-import "../IFungibleQuestReward.sol";
-import "../INonFungibleQuestReward.sol";
+import "../items/IFungibleQuestItem.sol";
+import "../items/INonFungibleQuestItem.sol";
+import "../rewards/IFungibleQuestReward.sol";
+import "../rewards/INonFungibleQuestReward.sol";
 import "../IQuests.sol";
 
 contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
@@ -69,10 +69,6 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
     {
         /// @dev Step name
         bytes32 name;
-
-        /// @dev Map constraint
-        bool hasMapConstraint;
-        bytes32 map;
 
         /// @dev Tile constraint
         bool hasTileConstraint;
@@ -388,8 +384,8 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         public 
     {
         // Check quest started
-        QuestPlayerData storage playerData = playerQuestData[msg.sender][questId];
-        if (playerData.timestampStarted <= playerData.timestampCompleted)
+        QuestPlayerData storage questPlayerData = playerQuestData[msg.sender][questId];
+        if (questPlayerData.timestampStarted <= questPlayerData.timestampCompleted)
         {
             revert QuestNotStarted(msg.sender, questId);
         }
@@ -418,8 +414,8 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         public 
     {
         // Check quest started
-        QuestPlayerData storage playerData = playerQuestData[msg.sender][questId];
-        if (playerData.timestampStarted <= playerData.timestampCompleted)
+        QuestPlayerData storage questPlayerData = playerQuestData[msg.sender][questId];
+        if (questPlayerData.timestampStarted <= questPlayerData.timestampCompleted)
         {
             revert QuestNotStarted(msg.sender, questId);
         }
@@ -455,8 +451,8 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         public 
     {
         // Check quest started
-        QuestPlayerData storage playerData = playerQuestData[msg.sender][questId];
-        if (playerData.timestampStarted <= playerData.timestampCompleted)
+        QuestPlayerData storage questPlayerData = playerQuestData[msg.sender][questId];
+        if (questPlayerData.timestampStarted <= questPlayerData.timestampCompleted)
         {
             revert QuestNotStarted(msg.sender, questId);
         }
@@ -469,7 +465,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
             takeTokenIds); 
 
         // Check quest completed
-        if (playerData.stepsCompletedCount != quests[questId].steps.length) 
+        if (questPlayerData.stepsCompletedCount != quests[questId].steps.length) 
         {
             revert QuestNotCompleted(msg.sender, questId);
         }
@@ -498,8 +494,8 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         public 
     {
         // Check quest started
-        QuestPlayerData storage playerData = playerQuestData[msg.sender][questId];
-        if (playerData.timestampStarted <= playerData.timestampCompleted)
+        QuestPlayerData storage questPlayerData = playerQuestData[msg.sender][questId];
+        if (questPlayerData.timestampStarted <= questPlayerData.timestampCompleted)
         {
             revert QuestNotStarted(msg.sender, questId);
         }
@@ -515,7 +511,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         }
 
         // Check quest completed
-        if (playerData.stepsCompletedCount != quests[questId].steps.length) 
+        if (questPlayerData.stepsCompletedCount != quests[questId].steps.length) 
         {
             revert QuestNotCompleted(msg.sender, questId);
         }
@@ -533,20 +529,20 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         public 
     {
         // Check quest started
-        QuestPlayerData storage playerData = playerQuestData[msg.sender][questId];
-        if (playerData.timestampStarted <= playerData.timestampCompleted)
+        QuestPlayerData storage questPlayerData = playerQuestData[msg.sender][questId];
+        if (questPlayerData.timestampStarted <= questPlayerData.timestampCompleted)
         {
             revert QuestNotStarted(msg.sender, questId);
         }
 
         // Check quest completed
-        if (playerData.stepsCompletedCount < quests[questId].steps.length)
+        if (questPlayerData.stepsCompletedCount < quests[questId].steps.length)
         {
             revert QuestNotCompleted(msg.sender, questId);
         }
 
         // Check reward not claimed
-        if (playerData.timestampClaimed >= playerData.timestampCompleted)
+        if (questPlayerData.timestampClaimed >= questPlayerData.timestampCompleted)
         {
             revert QuestRewardAlreadyClaimed(msg.sender, questId);
         }
@@ -686,6 +682,8 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
 
 
         // Start quest
+        questPlayerData.stepsCompletedCount = 0;
+        questPlayerData.stepsCompleted = bytes8(0);
         questPlayerData.timestampStarted = uint64(block.timestamp);
 
         // Emit event
@@ -709,8 +707,8 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
     {
         // Get quest
         Quest storage quest = quests[questId];
-        QuestStep storage step = quest.steps[stepIndex];
-        QuestPlayerData storage playerData = playerQuestData[msg.sender][questId];
+        QuestStep storage questStep = quest.steps[stepIndex];
+        QuestPlayerData storage questPlayerData = playerQuestData[msg.sender][questId];
 
         // Check step index
         if (stepIndex >= quest.steps.length) 
@@ -719,7 +717,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         }
 
         // Check step not already completed
-        if (playerData.stepsCompleted & bytes8(uint64(1) << stepIndex) != 0) 
+        if (questPlayerData.stepsCompleted & bytes8(uint64(1) << stepIndex) != 0) 
         {
             revert QuestStepAlreadyCompleted(msg.sender, questId, stepIndex);
         }
@@ -728,7 +726,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         if (quest.hasTimeConstraint) 
         {
             // Check time
-            if (playerData.timestampStarted + quest.maxDuration < block.timestamp) 
+            if (questPlayerData.timestampStarted + quest.maxDuration < block.timestamp) 
             {
                 revert QuestTimeExceeded(msg.sender, questId, quest.maxDuration); // TODO: Allow to cancel quest
             }
@@ -741,11 +739,11 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         ) = IMaps(mapsContract).getPlayerLocationData(msg.sender);
 
         // Check location constraint
-        if (step.hasTileConstraint) 
+        if (questStep.hasTileConstraint) 
         {
-            if (step.tile != playerTile)
+            if (questStep.tile != playerTile)
             {
-                revert UnexpectedTile(step.tile, playerTile);
+                revert UnexpectedTile(questStep.tile, playerTile);
             }
         }
  
@@ -757,14 +755,14 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
 
 
         // Record progress
-        playerData.stepsCompletedCount++;
-        playerData.stepsCompleted |= bytes8(uint64(1) << stepIndex);
+        questPlayerData.stepsCompletedCount++;
+        questPlayerData.stepsCompleted |= bytes8(uint64(1) << stepIndex);
 
 
         // Give fungible quest items
-        for (uint i = 0; i < step.giveFungible.length; i++) 
+        for (uint i = 0; i < questStep.giveFungible.length; i++) 
         {   
-            FungibleTransactionData memory questItem = step.giveFungible[i];
+            FungibleTransactionData memory questItem = questStep.giveFungible[i];
             if (giveInventories[i] == Inventory.Wallet && !questItem.allowWallet)
             {
                 revert ArgumentInvalid();
@@ -776,9 +774,9 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         }
 
         // Give non-fungible quest items
-        for (uint i = 0; i < step.giveNonFungible.length; i++) 
+        for (uint i = 0; i < questStep.giveNonFungible.length; i++) 
         {   
-            NonFungibleTransactionData memory questItem = step.giveNonFungible[i];
+            NonFungibleTransactionData memory questItem = questStep.giveNonFungible[i];
             if (giveInventories[i] == Inventory.Wallet && !questItem.allowWallet)
             {
                 revert ArgumentInvalid();
@@ -791,9 +789,9 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
 
 
         // Take quest items
-        for (uint i = 0; i < step.takeFungible.length; i++) 
+        for (uint i = 0; i < questStep.takeFungible.length; i++) 
         {   
-            FungibleTransactionData memory questItem = step.takeFungible[i];
+            FungibleTransactionData memory questItem = questStep.takeFungible[i];
             if (takeInventories[i] == Inventory.Wallet && !questItem.allowWallet)
             {
                 revert ArgumentInvalid();
@@ -805,9 +803,9 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         }
 
         // Take non-fungible quest items
-        for (uint i = 0; i < step.takeNonFungible.length; i++) 
+        for (uint i = 0; i < questStep.takeNonFungible.length; i++) 
         {   
-            NonFungibleTransactionData memory questItem = step.takeNonFungible[i];
+            NonFungibleTransactionData memory questItem = questStep.takeNonFungible[i];
             if (takeInventories[i] == Inventory.Wallet && !questItem.allowWallet)
             {
                 revert ArgumentInvalid();
@@ -823,11 +821,11 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
 
 
         // Check if quest completed
-        if (playerData.stepsCompletedCount == quest.steps.length) 
+        if (questPlayerData.stepsCompletedCount == quest.steps.length) 
         {
             // Complete quest
-            playerData.timestampCompleted = uint64(block.timestamp);
-            playerData.completedCount++;
+            questPlayerData.timestampCompleted = uint64(block.timestamp);
+            questPlayerData.completedCount++;
 
             // Emit event
             emit QuestComplete(msg.sender, questId);
@@ -844,7 +842,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
     {
         // Get quest
         Quest storage quest = quests[questId];
-        QuestPlayerData storage playerData = playerQuestData[msg.sender][questId];
+        QuestPlayerData storage questPlayerData = playerQuestData[msg.sender][questId];
 
         // Check reward index
         if (rewardIndex >= quest.rewards.length) 
@@ -853,7 +851,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         }
 
         // Mark reward claimed
-        playerData.timestampClaimed = uint64(block.timestamp);
+        questPlayerData.timestampClaimed = uint64(block.timestamp);
 
         // Fungible rewards
         for (uint i = 0; i < quest.rewards[rewardIndex].fungible.length; i++) 

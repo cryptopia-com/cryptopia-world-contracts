@@ -1,6 +1,7 @@
 import "../scripts/helpers/converters";
 import { expect } from "chai";
 import { ethers, upgrades } from "hardhat";
+import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { DEFAULT_ADMIN_ROLE, SYSTEM_ROLE } from "./settings/roles";   
 import { Resource, Terrain, Biome, Inventory, Faction, SubFaction } from "../scripts/types/enums";
 import { Asset, Map } from "../scripts/types/input";
@@ -36,7 +37,7 @@ describe("Quests Contract", function () {
     let treasury: string;
 
     // Instances
-    let mapInstance: CryptopiaMaps;
+    let mapsInstance: CryptopiaMaps;
     let shipTokenInstance: CryptopiaShipToken;
     let titleDeedTokenInstance: CryptopiaTitleDeedToken;
     let accountRegisterInstance: CryptopiaAccountRegister;
@@ -45,16 +46,11 @@ describe("Quests Contract", function () {
     let toolTokenInstance: CryptopiaToolToken;
     let questsInstance: CryptopiaQuests;
 
-    let registeredAccountInstance: CryptopiaAccount;
-    let unregisteredAccountInstance: CryptopiaAccount;
-
     // Addresses
+    let mapsAddress: string;
     let inventoriesAddress: string;
     let toolTokenAddress: string;
     let questsAddress: string;
-
-    let registeredAccountAddress: string;
-    let unregisteredAccountAddress: string;
 
     // Mock Data
     const assets: Asset[] = [
@@ -328,6 +324,7 @@ describe("Quests Contract", function () {
         playerRegisterInstance = await ethers.getContractAt("CryptopiaPlayerRegister", playerRegisterAddress);
 
         // Grant roles
+        await playerRegisterInstance.grantRole(SYSTEM_ROLE, system);    
         await shipTokenInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
         await inventoriesInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
         await craftingInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
@@ -360,8 +357,8 @@ describe("Quests Contract", function () {
                 ])
         ).waitForDeployment();
 
-        const mapsAddress = await mapsProxy.getAddress();
-        mapInstance = await ethers.getContractAt("CryptopiaMaps", mapsAddress);
+        mapsAddress = await mapsProxy.getAddress();
+        mapsInstance = await ethers.getContractAt("CryptopiaMaps", mapsAddress);
 
         // Grant roles
         await titleDeedTokenInstance.grantRole(SYSTEM_ROLE, mapsAddress);
@@ -402,6 +399,7 @@ describe("Quests Contract", function () {
         // Grant roles
         await toolTokenInstance.grantRole(SYSTEM_ROLE, questsAddress);
         await playerRegisterInstance.grantRole(SYSTEM_ROLE, questsAddress);
+
         
         // Deploy assets
         for (let asset of assets)
@@ -411,7 +409,8 @@ describe("Quests Contract", function () {
                     AssetTokenFactory, 
                     [
                         asset.name, 
-                        asset.symbol
+                        asset.symbol,
+                        inventoriesAddress
                     ])
                 ).waitForDeployment();
 
@@ -419,8 +418,9 @@ describe("Quests Contract", function () {
             asset.contractInstance = await ethers
                 .getContractAt("CryptopiaAssetToken", asset.contractAddress);
 
-            await asset.contractInstance
-                .grantRole(SYSTEM_ROLE, system);
+            await asset.contractInstance.grantRole(SYSTEM_ROLE, system);
+            await asset.contractInstance.grantRole(SYSTEM_ROLE, questsAddress);
+            await inventoriesInstance.grantRole(SYSTEM_ROLE, asset.contractAddress);
             
             await assetRegisterInstance
                 .connect(systemSigner)
@@ -454,10 +454,10 @@ describe("Quests Contract", function () {
 
 
         // Create map 
-        await mapInstance.createMap(
+        await mapsInstance.createMap(
             map.name, map.sizeX, map.sizeZ);
 
-        await mapInstance.setTiles(
+        await mapsInstance.setTiles(
             map.tiles.map((_, index) => index), 
             map.tiles.map(tile => ({
                 initialized: true, 
@@ -482,28 +482,7 @@ describe("Quests Contract", function () {
             map.tiles.map(tile => tile.resource2_amount), 
             map.tiles.map(tile => tile.resource3_amount));
         
-        await mapInstance.finalizeMap();
-
-
-        // Create registered account
-        const createRegisteredAccountTransaction = await playerRegisterInstance.create([account1], 1, 0, "Registered_Username".toBytes32(), 0, 0);
-        const createRegisteredAccountReceipt = await createRegisteredAccountTransaction.wait();
-        registeredAccountAddress = getParamFromEvent(playerRegisterInstance, createRegisteredAccountReceipt, "account", "RegisterPlayer");
-        registeredAccountInstance = await ethers.getContractAt("CryptopiaAccount", registeredAccountAddress);
-
-        // Create unregistered account
-        const createUnregisteredAccountTransaction = await accountRegisterInstance.create([other], 1, 0, "Unregistered_Username".toBytes32(), 0);
-        const createUnregisteredAccountReceipt = await createUnregisteredAccountTransaction.wait();
-        unregisteredAccountAddress = getParamFromEvent(accountRegisterInstance, createUnregisteredAccountReceipt, "account", "CreateAccount");
-        unregisteredAccountInstance = await ethers.getContractAt("CryptopiaAccount", unregisteredAccountAddress);
-
-        // Add registered player to the map
-        const playerEnterCalldata = mapInstance.interface
-            .encodeFunctionData("playerEnter");
-
-        await registeredAccountInstance
-            .connect(await ethers.provider.getSigner(account1))
-            .submitTransaction(mapsAddress, 0, playerEnterCalldata);
+        await mapsInstance.finalizeMap();
     });
 
     /**
@@ -535,10 +514,8 @@ describe("Quests Contract", function () {
                 steps: [
                     {
                         name: "Find Scientist".toBytes32(),
-                        hasMapConstraint: false,
-                        map: "".toBytes32(),
                         hasTileConstraint: true,
-                        tile: 6,
+                        tile: 7,
                         takeFungible: [],
                         takeNonFungible: [],
                         giveFungible: [],
@@ -616,6 +593,12 @@ describe("Quests Contract", function () {
 
         let quest: CryptopiaQuests.QuestStruct;
 
+        let registeredAccountInstance: CryptopiaAccount;
+        let unregisteredAccountInstance: CryptopiaAccount;
+
+        let registeredAccountAddress: string;
+        let unregisteredAccountAddress: string;
+
         /**
          * Deploy players
          */
@@ -627,8 +610,8 @@ describe("Quests Contract", function () {
                 level: 0,
                 hasFactionConstraint: false,
                 faction: 0, 
-                hasSubFactionConstraint: false,
-                subFaction: 0, 
+                hasSubFactionConstraint: true,
+                subFaction: SubFaction.None, 
                 hasRecurrenceConstraint: true,
                 maxRecurrences: 1,
                 hasCooldownConstraint: false,
@@ -638,10 +621,8 @@ describe("Quests Contract", function () {
                 steps: [
                     {
                         name: "Find Scientist".toBytes32(),
-                        hasMapConstraint: false,
-                        map: "".toBytes32(),
                         hasTileConstraint: true,
-                        tile: 0,
+                        tile: 7,
                         takeFungible: [],
                         takeNonFungible: [],
                         giveFungible: [],
@@ -687,13 +668,80 @@ describe("Quests Contract", function () {
             await questsInstance.addQuest(quest);
         });
 
-        it ("Should not allow a non-player to do the quest", async function () {
+        /**
+         * Create players
+         */
+        let createPlayersCounter = 0;
+        const createPlayers = async () => {
+
+            // Create registered account
+            const createRegisteredAccountTransaction = await playerRegisterInstance.create([account1], 1, 0, `${createPlayersCounter}_AncientRuins_Registered`.toBytes32(), 0, 0);
+            const createRegisteredAccountReceipt = await createRegisteredAccountTransaction.wait();
+            registeredAccountAddress = getParamFromEvent(playerRegisterInstance, createRegisteredAccountReceipt, "account", "RegisterPlayer");
+            registeredAccountInstance = await ethers.getContractAt("CryptopiaAccount", registeredAccountAddress);
+
+            // Create unregistered account
+            const createUnregisteredAccountTransaction = await accountRegisterInstance.create([other], 1, 0,`${createPlayersCounter}_AncientRuins_Unregistered`.toBytes32(), 0);
+            const createUnregisteredAccountReceipt = await createUnregisteredAccountTransaction.wait();
+            unregisteredAccountAddress = getParamFromEvent(accountRegisterInstance, createUnregisteredAccountReceipt, "account", "CreateAccount");
+            unregisteredAccountInstance = await ethers.getContractAt("CryptopiaAccount", unregisteredAccountAddress);
+
+            // Add registered player to the map
+            const playerEnterCalldata = mapsInstance.interface
+                .encodeFunctionData("playerEnter");
+
+            await registeredAccountInstance
+                .connect(await ethers.provider.getSigner(account1))
+                .submitTransaction(mapsAddress, 0, playerEnterCalldata);
+
+            createPlayersCounter++;
+        };
+
+        /**
+         * Travel to the quest location
+         */
+        const travelToQuestLocation = async () => {
+
+            // Travel to the correct tile
+            const registeredPlayerSigner = await ethers.provider
+                .getSigner(account1);
+
+            const playerMoveCalldata = mapsInstance.interface
+                .encodeFunctionData("playerMove", [[0, 1, 2, 7]]);
+            
+            const playerMoveTransaction = await registeredAccountInstance
+                .connect(registeredPlayerSigner)
+                .submitTransaction(mapsAddress, 0, playerMoveCalldata);
+
+            const playerMoveReceipt = await playerMoveTransaction.wait();
+            const arrival = getParamFromEvent(
+                mapsInstance, playerMoveReceipt, "arrival", "PlayerMove");
+
+            await time.increaseTo(arrival);
+        };
+
+        /**
+         * Turn the player into a pirate
+         */
+        const turnPirate = async () => {
+                
+            // Turn pirate
+            const systemSigner = await ethers.provider.getSigner(system);
+
+            await playerRegisterInstance
+                .connect(systemSigner)
+                .__turnPirate(registeredAccountAddress);
+        };
+
+
+        it ("Should not allow a non-player to start the quest", async function () {
 
             // Setup
+            await createPlayers();
             const questId = 1;
             const rewardIndex = 0;
             const rewardInventory = Inventory.Backpack;
-            const nonRegisteredPlayerSigner = await ethers.provider.getSigner(other);
+            const unregisteredAccountSigner = await ethers.provider.getSigner(other);
 
             // Act
             const callData = questsInstance.interface
@@ -708,7 +756,7 @@ describe("Quests Contract", function () {
                 ]);
 
             const operation = unregisteredAccountInstance
-                .connect(nonRegisteredPlayerSigner)
+                .connect(unregisteredAccountSigner)
                 .submitTransaction(questsAddress, 0, callData);
 
             // Assert
@@ -725,9 +773,89 @@ describe("Quests Contract", function () {
             }
         });
 
-        it ("Should allow a player to do the quest", async function () {
+        it ("Should not allow a pirate to start the quest", async function () {
 
             // Setup
+            await turnPirate();
+            const questId = 1;
+            const rewardIndex = 0;
+            const rewardInventory = Inventory.Backpack;
+            const registeredAccountSigner = await ethers.provider.getSigner(account1);
+
+            // Act
+            const callData = questsInstance.interface
+                .encodeFunctionData("completeQuest", 
+                [
+                    questId,
+                    [[]],
+                    [[]],
+                    [[]],
+                    rewardIndex,
+                    rewardInventory
+                ]);
+
+            const operation = registeredAccountInstance
+                .connect(registeredAccountSigner)
+                .submitTransaction(questsAddress, 0, callData);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(questsInstance, "UnexpectedSubFaction")
+                    .withArgs(SubFaction.None, SubFaction.Pirate);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(registeredAccountInstance, "ExecutionFailure");
+            }
+        });
+
+        it ("Should not allow a player to start the quest from the wrong tile", async function () {
+
+            // Setup
+            await createPlayers();
+            const questId = 1;
+            const rewardIndex = 0;
+            const rewardInventory = Inventory.Backpack;
+            const expectedTile = 7;
+            const registeredPlayerSigner = await ethers.provider.getSigner(account1);
+
+            // Act
+            const callData = questsInstance.interface
+                .encodeFunctionData("completeQuest", 
+                [
+                    questId,
+                    [[]],
+                    [[]],
+                    [[]],
+                    rewardIndex,
+                    rewardInventory
+                ]);
+
+            const operation = registeredAccountInstance
+                .connect(registeredPlayerSigner)
+                .submitTransaction(questsAddress, 0, callData);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(questsInstance, "UnexpectedTile")
+                    .withArgs(expectedTile, 0);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(unregisteredAccountInstance, "ExecutionFailure");
+            }
+        });
+
+        it ("Should allow a player to complete the quest making the right choice", async function () {
+
+            // Setup
+            await travelToQuestLocation();
             const questId = 1;
             const rewardIndex = 0;
             const rewardInventory = Inventory.Backpack;
@@ -767,6 +895,97 @@ describe("Quests Contract", function () {
             expect(transaction).to
                 .emit(questsInstance, "QuestComplete")
                 .withArgs(registeredAccountAddress, questId);
+        });
+
+        it ("Should allow a player to complete the quest making the wrong choice", async function () {
+
+            // Setup
+            await createPlayers();
+            await travelToQuestLocation();
+            const questId = 1;
+            const rewardIndex = 1;
+            const rewardInventory = Inventory.Ship;
+            const reward1_Asset = toolTokenAddress;
+            const reward1_TokenId = 2;
+            const reward2_Asset = getAssetByResource(Resource.Wood).contractAddress;
+            const reward2_amount = "5".toWei();
+            const registeredPlayerSigner = await ethers.provider.getSigner(account1);
+
+            // Act
+            const callData = questsInstance.interface
+                .encodeFunctionData("completeQuest", 
+                [
+                    questId,
+                    [[]],
+                    [[]],
+                    [[]],
+                    rewardIndex,
+                    rewardInventory
+                ]);
+
+            const transaction = await registeredAccountInstance
+                .connect(registeredPlayerSigner)
+                .submitTransaction(questsAddress, 0, callData);
+
+            // Assert
+            expect(transaction).to
+                .emit(questsInstance, "QuestStart")
+                .withArgs(registeredAccountAddress, questId);
+
+            expect(transaction).to
+                .emit(questsInstance, "QuestStepComplete")
+                .withArgs(registeredAccountAddress, questId, 0);
+
+            expect(transaction).to
+                .emit(inventoriesInstance, "InventoryAssign")
+                .withArgs(registeredAccountAddress, rewardInventory, reward1_Asset, 1, reward1_TokenId);
+
+            expect(transaction).to
+                .emit(inventoriesInstance, "InventoryAssign")
+                .withArgs(registeredAccountAddress, rewardInventory, reward2_Asset, reward2_amount, 0);
+
+            expect(transaction).to
+                .emit(questsInstance, "QuestComplete")
+                .withArgs(registeredAccountAddress, questId);
+        });
+
+        it ("Should not allow a player to complete the quest twice", async function () {
+
+            // Setup
+            const questId = 1;
+            const rewardIndex = 0;
+            const rewardInventory = Inventory.Backpack;
+            const questRecrrenceLimit = 1;
+            const registeredPlayerSigner = await ethers.provider.getSigner(account1);
+
+            // Act
+            const callData = questsInstance.interface
+                .encodeFunctionData("completeQuest", 
+                [
+                    questId,
+                    [[]],
+                    [[]],
+                    [[]],
+                    rewardIndex,
+                    rewardInventory
+                ]);
+
+            const operation = registeredAccountInstance
+                .connect(registeredPlayerSigner)
+                .submitTransaction(questsAddress, 0, callData);
+
+            // Assert
+            if (REVERT_MODE)
+            {
+                await expect(operation).to.be
+                    .revertedWithCustomError(questsInstance, "QuestRecurrenceExceeded")
+                    .withArgs(registeredAccountAddress, questId, questRecrrenceLimit);
+            }
+            else
+            {
+                await expect(operation).to
+                    .emit(registeredAccountInstance, "ExecutionFailure");
+            }
         });
     });
 

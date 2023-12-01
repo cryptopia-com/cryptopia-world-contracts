@@ -6,8 +6,8 @@ import "../../../../game/players/errors/PlayerErrors.sol";
 import "../../../../game/players/IPlayerRegister.sol";
 import "../../../../game/inventories/IInventories.sol";
 import "../../../../game/crafting/ICraftable.sol";
-import "../../../../game/quests/INonFungibleQuestReward.sol";
 import "../../../../game/assets/types/AssetEnums.sol";
+import "../../../../game/quests/rewards/INonFungibleQuestReward.sol";
 import "../../tools/ITools.sol";
 import "../CryptopiaERC721.sol";
 

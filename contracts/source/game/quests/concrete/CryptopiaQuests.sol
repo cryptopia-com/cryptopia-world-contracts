@@ -19,6 +19,9 @@ import "../rewards/IFungibleQuestReward.sol";
 import "../rewards/INonFungibleQuestReward.sol";
 import "../IQuests.sol";
 
+/// @title Quests 
+/// @dev Non-fungible token (ERC721) 
+/// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
 {
     /// @dev Quest 
@@ -241,11 +244,6 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
     error QuestRewardAlreadyClaimed(address player, uint questId);
 
 
-    /**
-     * Modifiers
-     */
-
-
     /// @dev Construct
     /// @param _playerRegisterContract Player register contract
     /// @param _intentoriesContract Inventories contract
@@ -272,23 +270,26 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
     /**
      * Admin functions
      */
+    /// @dev Add quest
+    /// @param quest Quest to add
     function addQuest(Quest calldata quest) 
         public
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
-        // Quest name cannot be empty
-        if (quest.name == bytes32(0)) 
-        {
-            revert ArgumentInvalid();
-        }
+        _addQuest(quest);
+    }
 
-        // Steps min 1 max MAX_STEPS_PER_QUEST
-        if (quest.steps.length == 0 || quest.steps.length > MAX_STEPS_PER_QUEST) 
-        {
-            revert ArgumentInvalid();
-        }
 
-        quests.push(quest);
+    /// @dev Add multiple quests
+    /// @param quests_ Quests to add
+    function addQuests(Quest[] calldata quests_) 
+        public
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
+        for (uint i = 0; i < quests_.length; i++) 
+        {
+            _addQuest(quests_[i]);
+        }
     }
 
 
@@ -588,6 +589,27 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
     /**
      * Internal functions
      */
+    /// @dev Add quest
+    /// @param quest Quest to add
+    function _addQuest(Quest calldata quest) 
+        internal
+    {
+        // Quest name cannot be empty
+        if (quest.name == bytes32(0)) 
+        {
+            revert ArgumentInvalid();
+        }
+
+        // Steps min 1 max MAX_STEPS_PER_QUEST
+        if (quest.steps.length == 0 || quest.steps.length > MAX_STEPS_PER_QUEST) 
+        {
+            revert ArgumentInvalid();
+        }
+
+        quests.push(quest);
+    }
+
+    
     /// @dev Start quest with `questId` and directly complete `stepIndices` if any
     /// @param questId Quest id to start
     function _startQuest(uint questId)
@@ -774,19 +796,22 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         }
 
         // Give non-fungible quest items
-        for (uint i = 0; i < questStep.giveNonFungible.length; i++) 
-        {   
-            NonFungibleTransactionData memory questItem = questStep.giveNonFungible[i];
-            if (giveInventories[i] == Inventory.Wallet && !questItem.allowWallet)
-            {
-                revert ArgumentInvalid();
+        if (questStep.giveNonFungible.length > 0)
+        { 
+            for (uint i = 0; i < questStep.giveNonFungible.length; i++) 
+            {   
+                NonFungibleTransactionData memory questItem = questStep.giveNonFungible[i];
+                if (giveInventories[i] == Inventory.Wallet && !questItem.allowWallet)
+                {
+                    revert ArgumentInvalid();
+                }
+
+                // Mint quest item
+                INonFungibleQuestItem(questItem.asset)
+                    .__mintQuestItem(questItem.item, msg.sender, giveInventories[i]);
             }
-
-            // Mint quest item
-            INonFungibleQuestItem(questItem.asset)
-                .__mintQuestItem(questItem.item, msg.sender, giveInventories[i]);
         }
-
+        
 
         // Take quest items
         for (uint i = 0; i < questStep.takeFungible.length; i++) 

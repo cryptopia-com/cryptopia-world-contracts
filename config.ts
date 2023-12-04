@@ -1,3 +1,5 @@
+import { Resource } from "./scripts/types/enums";
+
 const config : AppConfig = {
     networks: {
         development: {
@@ -9,123 +11,31 @@ const config : AppConfig = {
             },
             ERC721: {
                 CryptopiaTitleDeedToken: {
-                    contractURI: 'https://mumbai-api.cryptopia.com/ERC721/TitleDeedToken/',
-                    baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/TitleDeedToken/'
+                    contractURI: 'https://mumbai-api.cryptopia.com/ERC721/TitleDeeds/',
+                    baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/TitleDeeds/'
                 },
                 CryptopiaShipToken: {
-                    contractURI: 'https://mumbai-api.cryptopia.com/ERC721/ShipToken/',
-                    baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/ShipToken/'
+                    contractURI: 'https://mumbai-api.cryptopia.com/ERC721/Ships/',
+                    baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/Ships/'
                 },
                 CryptopiaToolToken: {
-                    contractURI: 'https://mumbai-api.cryptopia.com/ERC721/ToolToken/',
-                    baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/ToolToken/',
-                    tools : [
-                        {
-                            name : "Axe",
-                            rarity: 0, // Common
-                            level: 1,
-                            stats: {
-                                durability: 100, 
-                                multiplier_cooldown: 100, 
-                                multiplier_xp: 100, 
-                                multiplier_effectiveness: 100, 
-                                value1: 0, 
-                                value2: 0, 
-                                value3: 0
-                            },
-                            minting: [
-                                { 1: ['1', 'ether'] }, // Meat
-                                { 3: ['1', 'ether'] } // Wood
-                            ],
-                            recipe: {
-                                level: 1,
-                                learnable: false,
-                                craftingTime: 0, // Seconds
-                                ingredients: []
-                            }
-                        },
-                        {
-                            name : "Pickaxe",
-                            rarity: 0, // Common
-                            level: 1,
-                            stats: {
-                                durability: 100, 
-                                multiplier_cooldown: 100, 
-                                multiplier_xp: 100, 
-                                multiplier_effectiveness: 100, 
-                                value1: 0, 
-                                value2: 0, 
-                                value3: 0
-                            },
-                            minting: [
-                                { 1: ['1', 'ether'] }, // Meat
-                                { 4: ['1', 'ether'] } // Stone
-                            ],
-                            recipe: {
-                                level: 1,
-                                learnable: false,
-                                craftingTime: 0, // Seconds
-                                ingredients: []
-                            }
-                        },
-                        {
-                            name : "Fishing rod",
-                            rarity: 0, // Common
-                            level: 1,
-                            stats: {
-                                durability: 100, 
-                                multiplier_cooldown: 100, 
-                                multiplier_xp: 100, 
-                                multiplier_effectiveness: 100, 
-                                value1: 0, 
-                                value2: 0, 
-                                value3: 0
-                            },
-                            minting: [
-                                { 0: ['1', 'ether'] } // Fish
-                            ],
-                            recipe: {
-                                level: 1,
-                                learnable: false,
-                                craftingTime: 0, // Seconds
-                                ingredients: []
-                            }
-                        },
-                        {
-                            name : "Shovel",
-                            rarity: 0, // Common
-                            level: 1,
-                            stats: {
-                                durability: 100, 
-                                multiplier_cooldown: 100, 
-                                multiplier_xp: 100, 
-                                multiplier_effectiveness: 100, 
-                                value1: 0, 
-                                value2: 0, 
-                                value3: 0
-                            },
-                            minting: [
-                                { 5: ['1', 'ether'] } // Sand
-                            ],
-                            recipe: {
-                                level: 1,
-                                learnable: false,
-                                craftingTime: 0, // Seconds
-                                ingredients: []
-                            }
-                        }
-                    ]
+                    contractURI: 'https://mumbai-api.cryptopia.com/ERC721/Tools/',
+                    baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/Tools/'
+                },
+                CryptopiaQuestToken: {
+                    contractURI: 'https://mumbai-api.cryptopia.com/ERC721/Quests/',
+                    baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/Quests/'
                 }
             },
             ERC20: {
                 CryptopiaAssetToken: {
-                    assets: [
+                    resources: [
                         {
                             symbol: "FISH",
                             name: "Fish",
-                            resource: 0,
+                            resource: Resource.Fish,
                             weight: 50, // 0.5kg
-                            minters: [
+                            system: [
                                 "CryptopiaResourceGathering"
                             ]
                         },
@@ -133,8 +43,8 @@ const config : AppConfig = {
                             symbol: "MEAT",
                             name: "Meat",
                             weight: 50, // 0.5kg
-                            resource: 1,
-                            minters: [
+                            resource: Resource.Meat,
+                            system: [
                                 "CryptopiaResourceGathering"
                             ]
                         },
@@ -142,8 +52,8 @@ const config : AppConfig = {
                             symbol: "FRUIT",
                             name: "Fruit",
                             weight: 50, // 0.5kg
-                            resource: 2,
-                            minters: [
+                            resource: Resource.Fruit,
+                            system: [
                                 "CryptopiaResourceGathering"
                             ]
                         },
@@ -151,8 +61,8 @@ const config : AppConfig = {
                             symbol: "WOOD",
                             name: "Wood",
                             weight: 50, // 0.5kg
-                            resource: 3,
-                            minters: [
+                            resource: Resource.Wood,
+                            system: [
                                 "CryptopiaResourceGathering"
                             ]
                         },
@@ -160,8 +70,8 @@ const config : AppConfig = {
                             symbol: "STONE",
                             name: "Stone",
                             weight: 100, // 1kg
-                            resource: 4,
-                            minters: [
+                            resource: Resource.Stone,
+                            system: [
                                 "CryptopiaResourceGathering"
                             ]
                         },
@@ -169,76 +79,87 @@ const config : AppConfig = {
                             symbol: "SAND",
                             name: "Sand",
                             weight: 50, // 0.5kg
-                            resource: 5,
-                            minters: [
+                            resource: Resource.Sand,
+                            system: [
                                 "CryptopiaResourceGathering"
                             ]
-                        },
-                        {
-                            symbol: "FE26ORE",
-                            name: "IronOre",
-                            resource: 6,
-                            weight: 100, // 1kg
-                        },
+                        },  
                         {
                             symbol: "FE26",
                             name: "Iron",
-                            resource: 7,
+                            resource: Resource.Iron,
                             weight: 100, // 1kg
-                        },
-                        {
-                            symbol: "CU29ORE",
-                            name: "CopperOre",
-                            resource: 8,
-                            weight: 100, // 1kg
+                            system: []
                         },
                         {
                             symbol: "CU29",
                             name: "Copper",
-                            resource: 9,
+                            resource: Resource.Copper,
                             weight: 100, // 1kg
+                            system: []
                         },
                         {
-                            symbol: "AU79ORE",
-                            name: "GoldOre",
-                            resource: 10,
+                            symbol: "AG47",
+                            name: "Silver",
+                            resource: Resource.Silver,
                             weight: 200, // 2kg
+                            system: []
                         },
                         {
                             symbol: "AU79",
                             name: "Gold",
-                            resource: 11,
+                            resource: Resource.Gold,
                             weight: 200, // 2kg
+                            system: []
+                        },
+                        {
+                            symbol: "U92",
+                            name: "Uranium",
+                            resource: Resource.Uranium,
+                            weight: 200, // 2kg
+                            system: []
                         },
                         {
                             symbol: "C6",
                             name: "Carbon",
-                            resource: 12,
+                            resource: Resource.Carbon,
                             weight: 50, // 0.5kg
+                            system: []
+                        },
+                        {
+                            symbol: "DIAMOND",
+                            name: "Diamond",
+                            resource: Resource.Diamond,
+                            weight: 50, // 0.5kg
+                            system: []
                         },
                         {
                             symbol: "OIL",
                             name: "Oil",
-                            resource: 13,
+                            resource: Resource.Oil,
                             weight: 200, // 2kg
+                            system: []
                         },
                         {
                             symbol: "GLASS",
                             name: "Glass",
-                            resource: 14,
+                            resource: Resource.Glass,
                             weight: 100, // 1kg
+                            system: []
                         },
                         {
                             symbol: "STEEL",
                             name: "Steel",
-                            resource: 15,
+                            resource: Resource.Steel,
                             weight: 200, // 2kg
+                            system: []
                         },
                         {
                             symbol: "FUEL",
                             name: "Fuel",
-                            resource: 16,
+                            resource: Resource.Fuel,
                             weight: 200, // 2kg
+                            system: []
                         }
                     ]
                 }
@@ -246,131 +167,38 @@ const config : AppConfig = {
         }, 
         mumbai: {
             CryptopiaTreasury: {
-                account: ""
+                address: ""
             },
             CryptopiaAccount: {
                 outputBytecode: true,
             },
             ERC721: {
                 CryptopiaTitleDeedToken: {
-                    contractURI: 'https://mumbai-api.cryptopia.com/ERC721/TitleDeedToken/',
-                    baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/TitleDeedToken/'
+                    contractURI: 'https://mumbai-api.cryptopia.com/ERC721/TitleDeeds/',
+                    baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/TitleDeeds/'
                 },
                 CryptopiaShipToken: {
-                    contractURI: 'https://mumbai-api.cryptopia.com/ERC721/ShipToken/',
-                    baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/ShipToken/'
+                    contractURI: 'https://mumbai-api.cryptopia.com/ERC721/Ships/',
+                    baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/Ships/'
                 },
                 CryptopiaToolToken: {
-                    contractURI: 'https://mumbai-api.cryptopia.com/ERC721/ToolToken/',
-                    baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/ToolToken/',
-                    beneficiary: '0x6D0855974622aeB3eE1Ce0655B766c0aC99c0C19',
-                    tools : [
-                        {
-                            name : "Axe",
-                            rarity: 0, // Common
-                            level: 1,
-                            stats: {
-                                durability: 100, 
-                                multiplier_cooldown: 100, 
-                                multiplier_xp: 100, 
-                                multiplier_effectiveness: 100, 
-                                value1: 0, 
-                                value2: 0, 
-                                value3: 0
-                            },
-                            minting: [
-                                { 1: ['1', 'ether'] }, // Meat
-                                { 3: ['1', 'ether'] } // Wood
-                            ],
-                            recipe: {
-                                level: 1,
-                                learnable: false,
-                                craftingTime: 0, // Seconds
-                                ingredients: []
-                            }
-                        },
-                        {
-                            name : "Pickaxe",
-                            rarity: 0, // Common
-                            level: 1,
-                            stats: {
-                                durability: 100, 
-                                multiplier_cooldown: 100, 
-                                multiplier_xp: 100, 
-                                multiplier_effectiveness: 100, 
-                                value1: 0, 
-                                value2: 0, 
-                                value3: 0
-                            },
-                            minting: [
-                                { 1: ['1', 'ether'] }, // Meat
-                                { 4: ['1', 'ether'] } // Stone
-                            ],
-                            recipe: {
-                                level: 1,
-                                learnable: false,
-                                craftingTime: 0, // Seconds
-                                ingredients: []
-                            }
-                        },
-                        {
-                            name : "Fishing rod",
-                            rarity: 0, // Common
-                            level: 1,
-                            stats: {
-                                durability: 100, 
-                                multiplier_cooldown: 100, 
-                                multiplier_xp: 100, 
-                                multiplier_effectiveness: 100, 
-                                value1: 0, 
-                                value2: 0, 
-                                value3: 0
-                            },
-                            minting: [
-                                { 0: ['1', 'ether'] } // Fish
-                            ],
-                            recipe: {
-                                level: 1,
-                                learnable: false,
-                                craftingTime: 0, // Seconds
-                                ingredients: []
-                            }
-                        },
-                        {
-                            name : "Shovel",
-                            rarity: 0, // Common
-                            level: 1,
-                            stats: {
-                                durability: 100, 
-                                multiplier_cooldown: 100, 
-                                multiplier_xp: 100, 
-                                multiplier_effectiveness: 100, 
-                                value1: 0, 
-                                value2: 0, 
-                                value3: 0
-                            },
-                            minting: [
-                                { 5: ['1', 'ether'] } // Sand
-                            ],
-                            recipe: {
-                                level: 1,
-                                learnable: false,
-                                craftingTime: 0, // Seconds
-                                ingredients: []
-                            }
-                        }
-                    ]
+                    contractURI: 'https://mumbai-api.cryptopia.com/ERC721/Tools/',
+                    baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/Tools/'
+                },
+                CryptopiaQuestToken: {
+                    contractURI: 'https://mumbai-api.cryptopia.com/ERC721/Quests/',
+                    baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/Quests/'
                 }
             },
             ERC20: {
                 CryptopiaAssetToken: {
-                    assets: [
+                    resources: [
                         {
                             symbol: "FISH",
                             name: "Fish",
-                            resource: 0,
+                            resource: Resource.Fish,
                             weight: 50, // 0.5kg
-                            minters: [
+                            system: [
                                 "CryptopiaResourceGathering"
                             ]
                         },
@@ -378,8 +206,8 @@ const config : AppConfig = {
                             symbol: "MEAT",
                             name: "Meat",
                             weight: 50, // 0.5kg
-                            resource: 1,
-                            minters: [
+                            resource: Resource.Meat,
+                            system: [
                                 "CryptopiaResourceGathering"
                             ]
                         },
@@ -387,8 +215,8 @@ const config : AppConfig = {
                             symbol: "FRUIT",
                             name: "Fruit",
                             weight: 50, // 0.5kg
-                            resource: 2,
-                            minters: [
+                            resource: Resource.Fruit,
+                            system: [
                                 "CryptopiaResourceGathering"
                             ]
                         },
@@ -396,8 +224,8 @@ const config : AppConfig = {
                             symbol: "WOOD",
                             name: "Wood",
                             weight: 50, // 0.5kg
-                            resource: 3,
-                            minters: [
+                            resource: Resource.Wood,
+                            system: [
                                 "CryptopiaResourceGathering"
                             ]
                         },
@@ -405,8 +233,8 @@ const config : AppConfig = {
                             symbol: "STONE",
                             name: "Stone",
                             weight: 100, // 1kg
-                            resource: 4,
-                            minters: [
+                            resource: Resource.Stone,
+                            system: [
                                 "CryptopiaResourceGathering"
                             ]
                         },
@@ -414,76 +242,87 @@ const config : AppConfig = {
                             symbol: "SAND",
                             name: "Sand",
                             weight: 50, // 0.5kg
-                            resource: 5,
-                            minters: [
+                            resource: Resource.Sand,
+                            system: [
                                 "CryptopiaResourceGathering"
                             ]
-                        },
-                        {
-                            symbol: "FE26ORE",
-                            name: "IronOre",
-                            resource: 6,
-                            weight: 100, // 1kg
-                        },
+                        },  
                         {
                             symbol: "FE26",
                             name: "Iron",
-                            resource: 7,
+                            resource: Resource.Iron,
                             weight: 100, // 1kg
-                        },
-                        {
-                            symbol: "CU29ORE",
-                            name: "CopperOre",
-                            resource: 8,
-                            weight: 100, // 1kg
+                            system: []
                         },
                         {
                             symbol: "CU29",
                             name: "Copper",
-                            resource: 9,
+                            resource: Resource.Copper,
                             weight: 100, // 1kg
+                            system: []
                         },
                         {
-                            symbol: "AU79ORE",
-                            name: "GoldOre",
-                            resource: 10,
+                            symbol: "AG47",
+                            name: "Silver",
+                            resource: Resource.Silver,
                             weight: 200, // 2kg
+                            system: []
                         },
                         {
                             symbol: "AU79",
                             name: "Gold",
-                            resource: 11,
+                            resource: Resource.Gold,
                             weight: 200, // 2kg
+                            system: []
+                        },
+                        {
+                            symbol: "U92",
+                            name: "Uranium",
+                            resource: Resource.Uranium,
+                            weight: 200, // 2kg
+                            system: []
                         },
                         {
                             symbol: "C6",
                             name: "Carbon",
-                            resource: 12,
+                            resource: Resource.Carbon,
                             weight: 50, // 0.5kg
+                            system: []
+                        },
+                        {
+                            symbol: "DIAMOND",
+                            name: "Diamond",
+                            resource: Resource.Diamond,
+                            weight: 50, // 0.5kg
+                            system: []
                         },
                         {
                             symbol: "OIL",
                             name: "Oil",
-                            resource: 13,
+                            resource: Resource.Oil,
                             weight: 200, // 2kg
+                            system: []
                         },
                         {
                             symbol: "GLASS",
                             name: "Glass",
-                            resource: 14,
+                            resource: Resource.Glass,
                             weight: 100, // 1kg
+                            system: []
                         },
                         {
                             symbol: "STEEL",
                             name: "Steel",
-                            resource: 15,
+                            resource: Resource.Steel,
                             weight: 200, // 2kg
+                            system: []
                         },
                         {
                             symbol: "FUEL",
                             name: "Fuel",
-                            resource: 16,
+                            resource: Resource.Fuel,
                             weight: 200, // 2kg
+                            system: []
                         }
                     ]
                 }
@@ -494,8 +333,49 @@ const config : AppConfig = {
 
 export default config;
 
+interface CryptopiaTreasury {
+    address: string;
+}
+
+interface CryptopiaAccount {
+    outputBytecode: boolean;
+}
+
+interface ERC721TokenConfig {
+    contractURI: string;
+    baseTokenURI: string;
+}
+
+interface ERC721Config {
+    CryptopiaTitleDeedToken: ERC721TokenConfig;
+    CryptopiaShipToken: ERC721TokenConfig;
+    CryptopiaToolToken: ERC721TokenConfig;
+    CryptopiaQuestToken: ERC721TokenConfig;
+}
+
+interface ResourceConfig {
+    symbol: string;
+    name: string;
+    resource: Resource;
+    weight: number;
+    system: string[];
+}
+
+interface ERC20Config {
+    CryptopiaAssetToken: {
+        resources: ResourceConfig[];
+    };
+}
+
+interface NetworkConfig {
+    CryptopiaTreasury: CryptopiaTreasury;
+    CryptopiaAccount: CryptopiaAccount;
+    ERC721: ERC721Config;
+    ERC20: ERC20Config;
+}
+
 interface AppConfig {
     networks: {
-        [key: string]: any;
+        [key: string]: NetworkConfig;
     };
 }

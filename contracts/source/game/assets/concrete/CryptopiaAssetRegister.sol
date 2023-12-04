@@ -6,6 +6,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
+import "../../../errors/ArgumentErrors.sol";
 import "../types/AssetEnums.sol";
 import "../IAssetRegister.sol";
 
@@ -15,16 +16,10 @@ import "../IAssetRegister.sol";
 contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAssetRegister {
 
     /**
-     * Roles
-     */
-    bytes32 constant private SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
-
-
-    /**
      * Storage
      */ 
     /// @dev Limitation to prevent experimental
-    uint32 constant private MAX_ACCOUNTS_ASSET_INFOS_CALL = 3;
+    uint8 constant private MAX_ACCOUNTS_ASSET_INFOS_CALL = 3;
 
     /// @dev Assets
     mapping(bytes32 => address) public assets;
@@ -69,13 +64,52 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
 
 
     /**
+     * Admin functions
+     */
+    /// @dev Register an asset
+    /// @param asset Contact address
+    /// @param isResource true if `asset` is a resource
+    /// @param resource {Resource}
+    function registerAsset(address asset, bool isResource, Resource resource) 
+        public virtual  
+        onlyRole(DEFAULT_ADMIN_ROLE) 
+    {
+        string memory symbol = ERC20Upgradeable(asset).symbol();
+        bytes32 key = keccak256(bytes(symbol));
+
+        // Check if asset is not already registered
+        if (assets[key] != address(0))
+        {
+            revert AssetAlreadyRegistered(symbol);
+        }
+
+        assets[key] = asset;
+        assetsIndex.push(key);
+
+        if (isResource)
+        {
+            // Check if resource is not already registered
+            if (resources[resource] != address(0))
+            {
+                revert ResourceAlreadyRegistered(resource);
+            }
+
+            resources[resource] = asset;
+        }
+
+        // Emit event
+        emit RegisterAsset(asset, symbol, isResource, resource);
+    }
+
+
+    /**
      * Public functions
      */
     /// @dev Retreives the amount of assets
     /// @return count Number of assets
     function getAssetCount()
         public virtual override view 
-        returns (uint256 count)
+        returns (uint count)
     {
         count = assetsIndex.length;
     }
@@ -84,7 +118,7 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
     /// @dev Retreives the asset at `index`.
     /// @param index Asset index.
     /// @return contractAddress Address of the asset.
-    function getAssetAt(uint256 index)
+    function getAssetAt(uint index)
         public virtual override view  
         returns (address contractAddress)
     {
@@ -92,16 +126,16 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
     }
 
 
-    /// @dev Retreives the assets from `cursor` to `cursor` plus `length`.
-    /// @param cursor Starting index.
-    /// @param length Amount of assets to return.
+    /// @dev Retreives the assets from `skip` to `skip` plus `take`.
+    /// @param skip Starting index.
+    /// @param take Amount of assets to return.
     /// @return contractAddresses Addresses of the assets.
-    function getAssets(uint256 cursor, uint256 length)
+    function getAssets(uint skip, uint take)
         public virtual override view 
         returns (address[] memory contractAddresses)
     {
-        contractAddresses = new address[](length);
-        for (uint256 i = cursor; i < length; i++)
+        contractAddresses = new address[](take);
+        for (uint i = skip; i < take; i++)
         {
             contractAddresses[i] = _getAssetAt(i);
         }
@@ -115,21 +149,21 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
     /// @return name Address of the asset.
     /// @return symbol Address of the asset.
     /// @return balances Ballances of `accounts` the asset.
-    function getAssetInfoAt(uint256 index, address[] memory accounts)
+    function getAssetInfoAt(uint index, address[] memory accounts)
         public virtual override view  
         returns (
             address contractAddress, 
             string memory name, 
             string memory symbol, 
-            uint256[] memory balances)
+            uint[] memory balances)
     {
         (contractAddress, name, symbol, balances) = _getAssetInfoAt(index, accounts);
     }
 
 
-    /// @dev Retreives asset and balance infos for `accounts` from the assets from `cursor` to `cursor` plus `length`. Has limitations to avoid experimental.
-    /// @param cursor Starting index.
-    /// @param length Amount of asset infos to return.
+    /// @dev Retreives asset and balance infos for `accounts` from the assets from `skip` to `skip` plus `take`. Has limitations to avoid experimental.
+    /// @param skip Starting index.
+    /// @param take Amount of asset infos to return.
     /// @param accounts Accounts to retrieve the balances for.
     /// @return contractAddresses Address of the asset.
     /// @return names Address of the asset.
@@ -137,31 +171,35 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
     /// @return balances1 Asset balances of accounts[0].
     /// @return balances2 Asset balances of accounts[1].
     /// @return balances3 Asset balances of accounts[2].
-    function getAssetInfos(uint256 cursor, uint256 length, address[] memory accounts)
+    function getAssetInfos(uint skip, uint take, address[] memory accounts)
         public virtual override view  
         returns (
             address[] memory contractAddresses, 
             bytes32[] memory names, 
             bytes32[] memory symbols, 
-            uint256[] memory balances1, 
-            uint256[] memory balances2, 
-            uint256[] memory balances3)
+            uint[] memory balances1, 
+            uint[] memory balances2, 
+            uint[] memory balances3)
     {
         // We don't want to experiment (TODO: remove this limitation)
-        require(accounts.length <= MAX_ACCOUNTS_ASSET_INFOS_CALL, "CryptopiaAssetRegister: Max accounts exceeded");
+        if (accounts.length > MAX_ACCOUNTS_ASSET_INFOS_CALL)
+        {
+            revert ArgumentInvalid();
+        }
 
-        contractAddresses = new address[](length);
-        names = new bytes32[](length);
-        symbols = new bytes32[](length);
-        balances1 = new uint256[](length);
-        balances2 = new uint256[](length);
-        balances3 = new uint256[](length);
 
-        for (uint256 i = cursor; i < length; i++)
+        contractAddresses = new address[](take);
+        names = new bytes32[](take);
+        symbols = new bytes32[](take);
+        balances1 = new uint[](take);
+        balances2 = new uint[](take);
+        balances3 = new uint[](take);
+
+        for (uint i = skip; i < take; i++)
         {
             string memory name;
             string memory symbol;
-            uint256[] memory balances;
+            uint[] memory balances;
             (contractAddresses[i], name, symbol, balances) = _getAssetInfoAt(i, accounts);
             
             names[i] = bytes32(abi.encodePacked(name));
@@ -196,52 +234,13 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
     }
 
 
-    /**
-     * System functions
-     */
-    /// @dev Register an asset
-    /// @param asset Contact address
-    /// @param isResource true if `asset` is a resource
-    /// @param resource {Resource}
-    function __registerAsset(address asset, bool isResource, Resource resource) 
-        public virtual override 
-        onlyRole(SYSTEM_ROLE) 
-    {
-        string memory symbol = ERC20Upgradeable(asset).symbol();
-        bytes32 key = keccak256(bytes(symbol));
-
-        // Check if asset is not already registered
-        if (assets[key] != address(0))
-        {
-            revert AssetAlreadyRegistered(symbol);
-        }
-
-        assets[key] = asset;
-        assetsIndex.push(key);
-
-        if (isResource)
-        {
-            // Check if resource is not already registered
-            if (resources[resource] != address(0))
-            {
-                revert ResourceAlreadyRegistered(resource);
-            }
-
-            resources[resource] = asset;
-        }
-
-        // Emit event
-        emit RegisterAsset(asset, symbol, isResource, resource);
-    }
-
-
     /*
      * Internal functions
      */
     /// @dev Retreives the asset at `index`.
     /// @param index Asset index.
     /// @return contractAddress Address of the asset.
-    function _getAssetAt(uint256 index)
+    function _getAssetAt(uint index)
         internal view 
         returns (address contractAddress)
     {
@@ -255,16 +254,16 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
     /// @return contractAddress Address of the asset.
     /// @return name Address of the asset.
     /// @return symbol Address of the asset.
-    function _getAssetInfoAt(uint256 index, address[] memory accounts)
+    function _getAssetInfoAt(uint index, address[] memory accounts)
         internal view 
-        returns (address contractAddress, string memory name, string memory symbol, uint256[] memory balances)
+        returns (address contractAddress, string memory name, string memory symbol, uint[] memory balances)
     {
         contractAddress = assets[assetsIndex[index]];
         name = ERC20Upgradeable(contractAddress).name();
         symbol = ERC20Upgradeable(contractAddress).symbol();
 
-        balances = new uint256[](accounts.length);
-        for (uint256 i = 0; i < accounts.length; i++)
+        balances = new uint[](accounts.length); 
+        for (uint i = 0; i < accounts.length; i++) 
         {
             balances[i] = IERC20(contractAddress).balanceOf(accounts[i]);
         }

@@ -318,8 +318,7 @@ describe("PirateMechanics Contract", function () {
                 .grantRole(SYSTEM_ROLE, system);
             
             await assetRegisterInstance
-                .connect(systemSigner)
-                .__registerAsset(asset.contractAddress, true, asset.resource);
+                .registerAsset(asset.contractAddress, true, asset.resource);
 
             await inventoriesInstance
                 .setFungibleAsset(asset.contractAddress, asset.weight);

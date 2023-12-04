@@ -113,7 +113,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     /// @param destination Tile that the player entered
     /// @param route The route that the player traveled
     /// @param arrival The datetime on wich the player arrives at `destinationTile`
-    event PlayerMove(address indexed player, uint16 indexed origin, uint16 indexed destination, bytes32 route, uint arrival);
+    event PlayerMove(address indexed player, uint16 indexed origin, uint16 indexed destination, bytes32 route, uint64 arrival);
 
 
     /**

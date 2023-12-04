@@ -16,6 +16,14 @@ export enum SubFaction
     BountyHunter
 }
 
+export enum Rarity
+{
+    Common,
+    Rare,
+    Legendary,
+    Master
+}
+
 
 /**
  * Maps
@@ -68,11 +76,11 @@ export enum Resource {
     Wood,
     Stone,
     Sand,
-    Uranium,
+    Uranium, 
     Iron,
-    Diamond,
+    Diamond, 
     Copper,
-    Silver,
+    Silver, 
     Gold,
     Carbon,
     Oil,

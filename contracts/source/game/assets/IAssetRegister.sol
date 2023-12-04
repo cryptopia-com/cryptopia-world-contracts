@@ -26,11 +26,11 @@ interface IAssetRegister {
         returns (address contractAddress);
 
 
-    /// @dev Retreives the assets from `cursor` to `cursor` plus `length`.
-    /// @param cursor Starting index.
-    /// @param length Amount of assets to return.
+    /// @dev Retreives the assets from `skip` to `skip` plus `take`.
+    /// @param skip Starting index.
+    /// @param take Amount of assets to return.
     /// @return contractAddresses Addresses of the assets.
-    function getAssets(uint cursor, uint length)
+    function getAssets(uint skip, uint take)
         external view 
         returns (address[] memory contractAddresses);
 
@@ -51,9 +51,9 @@ interface IAssetRegister {
             uint[] memory balances);
 
 
-    /// @dev Retreives asset and balance infos for `accounts` from the assets from `cursor` to `cursor` plus `length`. Has limitations to avoid experimental.
-    /// @param cursor Starting index.
-    /// @param length Amount of asset infos to return.
+    /// @dev Retreives asset and balance infos for `accounts` from the assets from `skip` to `skip` plus `take`. Has limitations to avoid experimental.
+    /// @param skip Starting index.
+    /// @param take Amount of asset infos to return.
     /// @param accounts Accounts to retrieve the balances for.
     /// @return contractAddresses Address of the asset.
     /// @return names Address of the asset.
@@ -61,7 +61,7 @@ interface IAssetRegister {
     /// @return balances1 Asset balances of accounts[0].
     /// @return balances2 Asset balances of accounts[1].
     /// @return balances3 Asset balances of accounts[2].
-    function getAssetInfos(uint cursor, uint length, address[] memory accounts)
+    function getAssetInfos(uint skip, uint take, address[] memory accounts)
         external view 
         returns (
             address[] memory contractAddresses, 
@@ -78,15 +78,4 @@ interface IAssetRegister {
     function getAssetByResrouce(Resource resource) 
         external view   
         returns (address);
-
-
-    /**
-     * System functions
-     */
-    /// @dev Register an asset
-    /// @param asset Contact address
-    /// @param isResource true if `asset` is a resource
-    /// @param resource {Resource}
-    function __registerAsset(address asset, bool isResource, Resource resource) 
-        external;
 }

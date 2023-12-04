@@ -1,5 +1,5 @@
 import { CryptopiaAssetToken } from "../../typechain-types";
-import { Resource, Terrain, Biome, Faction, SubFaction } from "./enums";
+import { Resource, Terrain, Biome } from "./enums";
 import { BigNumberish } from 'ethers';
 
 export type Asset = {

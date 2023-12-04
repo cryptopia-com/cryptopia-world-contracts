@@ -20,7 +20,6 @@ import {
     CryptopiaQuestToken,
     CryptopiaQuests
 } from "../typechain-types";
-import { BigNumberish } from "ethers";
 
 
 /**
@@ -445,8 +444,7 @@ describe("Quests Contract", function () {
             await inventoriesInstance.grantRole(SYSTEM_ROLE, asset.contractAddress);
             
             await assetRegisterInstance
-                .connect(systemSigner)
-                .__registerAsset(asset.contractAddress, true, asset.resource);
+                .registerAsset(asset.contractAddress, true, asset.resource);
 
             await inventoriesInstance
                 .setFungibleAsset(asset.contractAddress, asset.weight);

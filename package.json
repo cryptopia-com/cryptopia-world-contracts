@@ -16,7 +16,8 @@
   "license": "ISC",
   "dependencies": {
     "@openzeppelin/contracts": "^5.0.0",
-    "@openzeppelin/contracts-upgradeable": "^5.0.0"
+    "@openzeppelin/contracts-upgradeable": "^5.0.0",
+    "chalk": "^3.0.0"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.2",

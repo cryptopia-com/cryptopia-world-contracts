@@ -5,7 +5,6 @@ import "@nomicfoundation/hardhat-toolbox";
 import '@openzeppelin/hardhat-upgrades';
 import "@typechain/hardhat"; 
 
-
 const config: HardhatUserConfig = {
   networks: {
     hardhat: {

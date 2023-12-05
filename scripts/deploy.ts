@@ -1,15 +1,88 @@
+import "./helpers/converters.ts";
+import ora from 'ora-classic';
 import hre, { ethers, upgrades } from "hardhat";
 import appConfig from "../config";
+import { Contract } from "ethers";
 import { Resource } from './types/enums';
 import { DeploymentManager } from "./helpers/deployments";
-import "./helpers/converters.ts";
+import { waitForMinimumTime } from "./helpers/timers";
+
+const chalk = require('chalk');
+
+// Settins
+const MIN_TIME = 100;
+
+// Deployment manager
+const deploymentManager = new DeploymentManager(hre.network.name);
+
+// Roles
+const SYSTEM_ROLE = "SYSTEM_ROLE".toKeccak256();
+
+// Internal
+let deploymentCounter = 0;
+
+/**
+ * Deploy contract
+ * 
+ * @param {string} contractName - Name of the contract to deploy.
+ * @param {unknown[]} args - Arguments to pass to the contract constructor
+ * @param {string} deploymentKey - Key to save the deployment
+ */
+async function deployContract(contractName: string, args?: unknown[], deploymentKey?: string) : Promise<Contract> 
+{
+    if (!deploymentKey)
+    {
+        deploymentKey = contractName;
+    }
+
+    console.log(`\n\nDeploying ${chalk.green(contractName)} to ${chalk.yellow(hre.network.name)}`);
+    const transactionLoader = ora(`Creating transaction...`).start();
+    const deploymentLoader = ora(`Waiting for transaction...`).start();
+    const transactionStartTime = Date.now();
+
+    // Create transaction
+    const factory = await ethers.getContractFactory(contractName);
+    const deployProxyOperation = await upgrades.deployProxy(factory, args);
+    
+    await waitForMinimumTime(transactionStartTime, MIN_TIME);
+    transactionLoader.succeed(`Transaction created ${chalk.cyan(deployProxyOperation.deploymentTransaction()?.hash)}`);
+    deploymentLoader.text = `Waiting for confirmations...`;
+    const confirmationLoaderStartTime = Date.now();
+
+    // Wait for confirmation
+    const proxy = await deployProxyOperation.waitForDeployment();
+    const contractAddress = await proxy.getAddress();
+
+    // Save deployment
+    deploymentManager.saveDeployment(deploymentKey, contractName, contractAddress);
+
+    await waitForMinimumTime(confirmationLoaderStartTime, MIN_TIME);
+    deploymentLoader.succeed(`Contract deployed at ${chalk.cyan(contractAddress)} in block ${chalk.cyan(deployProxyOperation.deploymentTransaction()?.blockNumber)}`);
+
+    deploymentCounter++;
+    return proxy;
+}
+
+async function grantSystemRole(granter: string, system: string): Promise<void>
+{
+    const transactionLoader = ora(`Granting ${chalk.blue("SYSTEM")} role..`).start();
+    const transactionStartTime = Date.now();
+
+    const granterDeploymentInfo = deploymentManager.getDeployment(granter);
+    const systemDeploymentInfo = deploymentManager.getDeployment(system);
+
+    const granterInstance = await ethers.getContractAt(granterDeploymentInfo.contractName, granterDeploymentInfo.address);
+    await granterInstance.grantRole(SYSTEM_ROLE, systemDeploymentInfo.address);
+
+    await waitForMinimumTime(transactionStartTime, MIN_TIME);
+    transactionLoader.succeed(`Granted ${chalk.blue("SYSTEM")} role to ${chalk.green(system)} on ${chalk.green(granter)}`);
+} 
+
 
 /**
  * Deploy contracts
  */
 async function main() {
-
-    console.log("Deploying contracts to " + hre.network.name);
 
     // Config
     const isDevEnvironment = hre.network.name == "hardhat" 
@@ -18,297 +91,207 @@ async function main() {
     const config: any = appConfig.networks[
         isDevEnvironment ? "development" : hre.network.name];
 
-    const deploymentManager = new DeploymentManager(hre.network.name);
-
-    // Roles
-    const SYSTEM_ROLE = "SYSTEM_ROLE".toKeccak256();
-
-    // Factories
-    const WhitelistFactory = await ethers.getContractFactory("Whitelist");
-    const AccountFactory = await ethers.getContractFactory("CryptopiaAccount");
-    const AccountRegisterFactory = await ethers.getContractFactory("CryptopiaAccountRegister");
-    const PlayerRegisterFactory = await ethers.getContractFactory("CryptopiaPlayerRegister");
-    const AssetRegisterFactory = await ethers.getContractFactory("CryptopiaAssetRegister");
-    const AssetTokenFactory = await ethers.getContractFactory("CryptopiaAssetToken");
-    const CryptopiaTokenFactory = await ethers.getContractFactory("CryptopiaToken");
-    const ShipTokenFactory = await ethers.getContractFactory("CryptopiaShipToken");
-    const ToolTokenFactory = await ethers.getContractFactory("CryptopiaToolToken");
-    const TitleDeedTokenFactory = await ethers.getContractFactory("CryptopiaTitleDeedToken");
-    const MapsFactory = await ethers.getContractFactory("CryptopiaMaps");
-    const InventoriesFactory = await ethers.getContractFactory("CryptopiaInventories");
-    const ResourceGatheringFactory = await ethers.getContractFactory("CryptopiaResourceGathering");
-    const CraftingFactory = await ethers.getContractFactory("CryptopiaCrafting");
-    const QuestTokenFactory = await ethers.getContractFactory("CryptopiaQuestToken");
-    const QuestsFactory = await ethers.getContractFactory("CryptopiaQuests");
-    const NavalBattleMechanicsFactory = await ethers.getContractFactory("CryptopiaNavalBattleMechanics");
-    const PirateMechanicsFactory = await ethers.getContractFactory("CryptopiaPirateMechanics");
-    
-
     //////////////////////////////////
     /////// Deploy Inventories ///////
     //////////////////////////////////
-    const inventoriesProxy = await (
-    await upgrades.deployProxy(
-        InventoriesFactory, 
+    const inventoriesProxy = await deployContract(
+        "CryptopiaInventories", 
         [
-        config.CryptopiaTreasury.address
-        ])
-    ).waitForDeployment();
+            config.CryptopiaTreasury.address
+        ]);
 
     const inventoriesAddress = await inventoriesProxy.getAddress();
     const inventoriesInstance = await ethers.getContractAt("CryptopiaInventories", inventoriesAddress);
-    deploymentManager.saveDeployment("CryptopiaInventories", inventoriesAddress);
 
 
     //////////////////////////////////
     //////// Deploy Whitelist ////////
     //////////////////////////////////
-    const whitelistProxy = await (
-        await upgrades.deployProxy(
-            WhitelistFactory, 
-            [
-                [
-                    inventoriesAddress
-                ]
-            ])
-    ).waitForDeployment();
+    const whitelistProxy = await deployContract(
+        "Whitelist", 
+        [
+            [inventoriesAddress]
+        ]);
 
     const whitelistAddress = await whitelistProxy.getAddress();
-    deploymentManager.saveDeployment("Whitelist", whitelistAddress);
 
 
-     //////////////////////////////////
-     //////// Deploy CRT Token ////////
-     //////////////////////////////////
-     const cryptopiaTokenProxy = await (
-        await upgrades.deployProxy(
-            CryptopiaTokenFactory, [])
-        ).waitForDeployment();
-
+    //////////////////////////////////
+    //////// Deploy CRT Token ////////
+    //////////////////////////////////
+    const cryptopiaTokenProxy = await deployContract("CryptopiaToken", []);
     const cryptopiaTokenAddress = await cryptopiaTokenProxy.getAddress();
-    deploymentManager.saveDeployment("CryptopiaToken", cryptopiaTokenAddress);
 
 
     //////////////////////////////////
-    ///// Deploy Account Register/////
+    ///// Deploy Account Register ////
     //////////////////////////////////
-    const accountRegisterProxy = await (
-        await upgrades.deployProxy(
-            AccountRegisterFactory, [])
-        ).waitForDeployment();
-
+    const accountRegisterProxy = await deployContract("CryptopiaAccountRegister", []);
     const accountRegisterAddress = await accountRegisterProxy.getAddress();
-    deploymentManager.saveDeployment("CryptopiaAccountRegister", accountRegisterAddress);
 
 
     //////////////////////////////////
-    ////// Deploy Asset Register//////
+    ////// Deploy Asset Register /////
     //////////////////////////////////
-    const assetRegisterProxy = await (
-        await upgrades.deployProxy(
-            AssetRegisterFactory, [])
-        ).waitForDeployment();
-
+    const assetRegisterProxy = await deployContract("CryptopiaAssetRegister", []);
     const assetRegisterAddress = await assetRegisterProxy.getAddress();
     const assetRegisterInstance = await ethers.getContractAt("CryptopiaAssetRegister", assetRegisterAddress);
-    deploymentManager.saveDeployment("CryptopiaAssetRegister", assetRegisterAddress);
 
 
     //////////////////////////////////
     ////////// Deploy Ships //////////
     //////////////////////////////////
-    const shipTokenProxy = await (
-        await upgrades.deployProxy(
-            ShipTokenFactory, 
-            [
-                whitelistAddress, 
-                config.ERC721.CryptopiaShipToken.contractURI, 
-                config.ERC721.CryptopiaShipToken.baseTokenURI
-            ])
-        ).waitForDeployment();
+    const shipTokenProxy = await deployContract(
+        "CryptopiaShipToken", 
+        [
+            whitelistAddress, 
+            config.ERC721.CryptopiaShipToken.contractURI, 
+            config.ERC721.CryptopiaShipToken.baseTokenURI
+        ]);
 
     const shipTokenAddress = await shipTokenProxy.getAddress();
-    const shipTokenInstance = await ethers.getContractAt("CryptopiaShipToken", shipTokenAddress);
-    deploymentManager.saveDeployment("CryptopiaShipToken", shipTokenAddress);
 
 
     //////////////////////////////////
     ///////// Deploy Crafting ////////
     //////////////////////////////////
-    const craftingProxy = await (
-        await upgrades.deployProxy(
-            CraftingFactory, 
-            [
-                inventoriesAddress
-            ])
-        ).waitForDeployment();
-
+    const craftingProxy = await deployContract("CryptopiaCrafting", [inventoriesAddress]);
     const craftingAddress = await craftingProxy.getAddress();
-    const craftingInstance = await ethers.getContractAt("CryptopiaCrafting", craftingAddress);
-    deploymentManager.saveDeployment("CryptopiaCrafting", craftingAddress);
 
     // Grant roles
-    await inventoriesInstance.grantRole(SYSTEM_ROLE, craftingAddress);
+    await grantSystemRole("CryptopiaInventories", "CryptopiaCrafting");
 
 
     //////////////////////////////////
     ///// Deploy Player Register /////
     //////////////////////////////////
-    const playerRegisterProxy = await (
-        await upgrades.deployProxy(
-            PlayerRegisterFactory, 
-            [
-                accountRegisterAddress, 
-                inventoriesAddress, 
-                craftingAddress,
-                shipTokenAddress, 
-                []
-            ])
-        ).waitForDeployment();
+    const playerRegisterProxy = await deployContract(
+        "CryptopiaPlayerRegister", 
+        [
+            accountRegisterAddress, 
+            inventoriesAddress, 
+            craftingAddress,
+            shipTokenAddress, 
+            []
+        ]);
 
     const playerRegisterAddress = await playerRegisterProxy.getAddress();
-    const playerRegisterInstance = await ethers.getContractAt("CryptopiaPlayerRegister", playerRegisterAddress);
-    deploymentManager.saveDeployment("CryptopiaPlayerRegister", playerRegisterAddress);
 
     // Grant roles
-    await inventoriesInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
-    await shipTokenInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
-    await craftingInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
+    await grantSystemRole("CryptopiaInventories", "CryptopiaPlayerRegister");
+    await grantSystemRole("CryptopiaShipToken", "CryptopiaPlayerRegister");
+    await grantSystemRole("CryptopiaCrafting", "CryptopiaPlayerRegister");
 
 
     //////////////////////////////////
     ////////// Deploy Tools //////////
     //////////////////////////////////
-    const toolTokenProxy = await (
-        await upgrades.deployProxy(
-            ToolTokenFactory, 
-            [
-                whitelistAddress, 
-                config.ERC721.CryptopiaToolToken.contractURI, 
-                config.ERC721.CryptopiaToolToken.baseTokenURI,
-                playerRegisterAddress,
-                inventoriesAddress
-            ])
-        ).waitForDeployment();
+    const toolTokenProxy = await deployContract(
+        "CryptopiaToolToken", 
+        [
+            whitelistAddress, 
+            config.ERC721.CryptopiaToolToken.contractURI, 
+            config.ERC721.CryptopiaToolToken.baseTokenURI,
+            playerRegisterAddress,
+            inventoriesAddress
+        ]);
 
     const toolTokenAddress = await toolTokenProxy.getAddress();
-    const toolTokenInstance = await ethers.getContractAt("CryptopiaToolToken", toolTokenAddress);
-    deploymentManager.saveDeployment("CryptopiaToolToken", toolTokenAddress);
 
-    // Register
+    // Register with inventories
+    const registerToolsWithInventoriesTransactionLoader =  ora(`Registering..`).start();
+    const registerToolsWithInventoriesTransactionStartTime = Date.now();
     await inventoriesInstance.setNonFungibleAsset(toolTokenAddress, true);
+    await waitForMinimumTime(registerToolsWithInventoriesTransactionStartTime, MIN_TIME);
+    registerToolsWithInventoriesTransactionLoader.succeed(`Registered with ${chalk.green("CryptopiaInventories")}`);
 
     // Grant tool roles
-    await inventoriesInstance.grantRole(SYSTEM_ROLE, craftingAddress);
-    await toolTokenInstance.grantRole(SYSTEM_ROLE, craftingAddress);
+    await grantSystemRole("CryptopiaInventories", "CryptopiaCrafting");
+    await grantSystemRole("CryptopiaToolToken", "CryptopiaCrafting");
 
 
     //////////////////////////////////
     /////// Deploy Title Deeds ///////
     //////////////////////////////////
-    const titleDeedTokenProxy = await (
-        await upgrades.deployProxy(
-            TitleDeedTokenFactory, 
-            [
-                whitelistAddress, 
-                config.ERC721.CryptopiaTitleDeedToken.contractURI, 
-                config.ERC721.CryptopiaTitleDeedToken.baseTokenURI
-            ])
-        ).waitForDeployment();
+    const titleDeedTokenProxy = await deployContract(
+        "CryptopiaTitleDeedToken", 
+        [
+            whitelistAddress, 
+            config.ERC721.CryptopiaTitleDeedToken.contractURI, 
+            config.ERC721.CryptopiaTitleDeedToken.baseTokenURI
+        ]);
 
     const titleDeedTokenAddress = await titleDeedTokenProxy.getAddress();
-    const titleDeedTokenInstance = await ethers.getContractAt("CryptopiaTitleDeedToken", titleDeedTokenAddress);
-    deploymentManager.saveDeployment("CryptopiaTitleDeedToken", titleDeedTokenAddress);
 
 
     //////////////////////////////////
     /////////// Deploy Maps //////////
     //////////////////////////////////
-    const mapsProxy = await (
-        await upgrades.deployProxy(
-            MapsFactory, 
-            [
-                playerRegisterAddress, 
-                assetRegisterAddress, 
-                titleDeedTokenAddress, 
-                cryptopiaTokenAddress
-            ])
-        ).waitForDeployment();
+    const mapsProxy = await deployContract(
+        "CryptopiaMaps", 
+        [
+            playerRegisterAddress, 
+            assetRegisterAddress, 
+            titleDeedTokenAddress, 
+            cryptopiaTokenAddress
+        ]);
 
     const mapsAddress = await mapsProxy.getAddress();
-    const mapsInstance = await ethers.getContractAt("CryptopiaMaps", mapsAddress);
-    deploymentManager.saveDeployment("CryptopiaMaps", mapsAddress);
 
     // Grant roles
-    await titleDeedTokenInstance.grantRole(SYSTEM_ROLE, mapsAddress);
+    await grantSystemRole("CryptopiaTitleDeedToken", "CryptopiaMaps");
 
 
     //////////////////////////////////
     /////// Deploy Quest Items ///////
     //////////////////////////////////
-    const questTokenProxy = await (
-        await upgrades.deployProxy(
-            QuestTokenFactory, 
-            [
-                whitelistAddress,
-                config.ERC721.CryptopiaQuestToken.contractURI, 
-                config.ERC721.CryptopiaQuestToken.baseTokenURI,
-                inventoriesAddress
-            ])
-    ).waitForDeployment();
-
-    const questTokenAddress = await questTokenProxy.getAddress();
-    const questTokenInstance = await ethers.getContractAt("CryptopiaQuestToken", questTokenAddress);
-    deploymentManager.saveDeployment("CryptopiaQuestToken", questTokenAddress);
+    await deployContract(
+        "CryptopiaQuestToken", 
+        [
+            whitelistAddress, 
+            config.ERC721.CryptopiaQuestToken.contractURI, 
+            config.ERC721.CryptopiaQuestToken.baseTokenURI,
+            inventoriesAddress
+        ]);
 
     // Grant roles
-    await inventoriesInstance.grantRole(SYSTEM_ROLE, questTokenAddress);
+    await grantSystemRole("CryptopiaInventories", "CryptopiaQuestToken");
 
 
     //////////////////////////////////
     ////////// Deploy Quests /////////
     //////////////////////////////////
-    const questsProxy = await (
-        await upgrades.deployProxy(
-            QuestsFactory, 
-            [
-                playerRegisterAddress,
-                inventoriesAddress,
-                mapsAddress
-            ])
-    ).waitForDeployment();
-
-    const questsAddress = await questsProxy.getAddress();
-    deploymentManager.saveDeployment("CryptopiaQuests", questTokenAddress);
+    await deployContract(
+        "CryptopiaQuests", 
+        [
+            playerRegisterAddress,
+            inventoriesAddress,
+            mapsAddress
+        ]);
 
     // Grant roles
-    await toolTokenInstance.grantRole(SYSTEM_ROLE, questsAddress);
-    await playerRegisterInstance.grantRole(SYSTEM_ROLE, questsAddress);
-    await questTokenInstance.grantRole(SYSTEM_ROLE, questsAddress);
+    await grantSystemRole("CryptopiaToolToken", "CryptopiaQuests");
+    await grantSystemRole("CryptopiaPlayerRegister", "CryptopiaQuests");
+    await grantSystemRole("CryptopiaQuestToken", "CryptopiaQuests");
 
 
     //////////////////////////////////
     //// Deploy Resource Gathering ///
     //////////////////////////////////
-    const resourceGatheringProxy = await (
-        await upgrades.deployProxy(
-            ResourceGatheringFactory,
-            [
-                mapsAddress,
-                assetRegisterAddress,
-                playerRegisterAddress,
-                inventoriesAddress,
-                toolTokenAddress
-            ])
-        ).waitForDeployment();
-
-    const resourceGatheringAddress = await resourceGatheringProxy.getAddress();
-    deploymentManager.saveDeployment("CryptopiaResourceGathering", resourceGatheringAddress);
+    await deployContract(
+        "CryptopiaResourceGathering", 
+        [
+            mapsAddress,
+            assetRegisterAddress,
+            playerRegisterAddress,
+            inventoriesAddress,
+            toolTokenAddress
+        ]);
 
     // Grant roles
-    await toolTokenInstance.grantRole(SYSTEM_ROLE, resourceGatheringAddress);
-    await inventoriesInstance.grantRole(SYSTEM_ROLE, resourceGatheringAddress);
-    await playerRegisterInstance.grantRole(SYSTEM_ROLE, resourceGatheringAddress); 
+    await grantSystemRole("CryptopiaToolToken", "CryptopiaResourceGathering");
+    await grantSystemRole("CryptopiaInventories", "CryptopiaResourceGathering");
+    await grantSystemRole("CryptopiaPlayerRegister", "CryptopiaResourceGathering");
 
 
     //////////////////////////////////
@@ -317,31 +300,38 @@ async function main() {
     let fuelTokenAddress = ""; 
     for (let asset of config.ERC20.CryptopiaAssetToken.resources)
     {
-        const assetTokenProxy = await (
-            await upgrades.deployProxy(
-                AssetTokenFactory, 
-                [
-                    asset.name, 
-                    asset.symbol,
-                    inventoriesAddress
-                ])
-            ).waitForDeployment();
+        const assetTokenProxy = await deployContract(
+            "CryptopiaAssetToken", 
+            [
+                asset.name, 
+                asset.symbol,
+                inventoriesAddress
+            ],
+            `CryptopiaAssetToken:${asset.name}`);
 
         const assetTokenAddress = await assetTokenProxy.getAddress();
-        const assetTokenInstance = await ethers.getContractAt("CryptopiaAssetToken", assetTokenAddress);
-        deploymentManager.saveDeployment(`CryptopiaAssetToken:${asset.name}`, resourceGatheringAddress);
 
-        // Register
+        // Register with asset register
+        const registerAssetTransactionLoader = ora(`Registering..`).start();
+        const registerAssetTransactionStartTime = Date.now();
         await assetRegisterInstance.registerAsset(assetTokenAddress, true, asset.resource);
+        await waitForMinimumTime(registerAssetTransactionStartTime, MIN_TIME);
+        registerAssetTransactionLoader.succeed(`Registered with ${chalk.green("CryptopiaAssetRegister")}`);
+
+        // Register with inventories
+        const registerInventoryTransactionLoader =  ora(`Registering..`).start();
+        const registerInventoryTransactionStartTime = Date.now();
         await inventoriesInstance.setFungibleAsset(assetTokenAddress, asset.weight);
+        await waitForMinimumTime(registerInventoryTransactionStartTime, MIN_TIME);
+        registerInventoryTransactionLoader.succeed(`Registered with ${chalk.green("CryptopiaInventories")}`);
 
         // Grant roles
-        await assetTokenInstance.grantRole(SYSTEM_ROLE, questsAddress);
-        await inventoriesInstance.grantRole(SYSTEM_ROLE, assetTokenAddress);
+        await grantSystemRole(`CryptopiaAssetToken:${asset.name}`, "CryptopiaQuests");
+        await grantSystemRole("CryptopiaInventories", `CryptopiaAssetToken:${asset.name}`);
 
         if (asset.system.includes("CryptopiaResourceGathering"))
         {
-            await assetTokenInstance.grantRole(SYSTEM_ROLE, resourceGatheringAddress);
+            await grantSystemRole(`CryptopiaAssetToken:${asset.name}`, "CryptopiaResourceGathering");
         }
 
         if (asset.resource == Resource.Fuel)
@@ -354,64 +344,59 @@ async function main() {
     //////////////////////////////////
     ///// Deploy Battle Mechanics ////
     //////////////////////////////////
-    const navalBattleMechanicsProxy = await (
-        await upgrades.deployProxy(
-            NavalBattleMechanicsFactory, 
-            [
-                playerRegisterAddress,
-                mapsAddress,
-                shipTokenAddress
-            ])
-    ).waitForDeployment();
+    const navalBattleMechanicsProxy = await deployContract(
+        "CryptopiaNavalBattleMechanics", 
+        [
+            playerRegisterAddress,
+            mapsAddress,
+            shipTokenAddress
+        ]);
 
     const navalBattleMechanicsAddress = await navalBattleMechanicsProxy.getAddress();
-    const navalBattleMechanicsInstance = await ethers.getContractAt("CryptopiaNavalBattleMechanics", navalBattleMechanicsAddress);
-    deploymentManager.saveDeployment("CryptopiaNavalBattleMechanics", navalBattleMechanicsAddress);
 
     // Grant roles
-    await shipTokenInstance.grantRole(SYSTEM_ROLE, navalBattleMechanicsAddress);
+    await grantSystemRole("CryptopiaShipToken", "CryptopiaNavalBattleMechanics");
 
 
     //////////////////////////////////
     ///// Deploy Pirate Mechanics ////
     //////////////////////////////////
-    const pirateMechanicsProxy = await (
-        await upgrades.deployProxy(
-            PirateMechanicsFactory, 
-            [
-                navalBattleMechanicsAddress,
-                playerRegisterAddress,
-                assetRegisterAddress,
-                mapsAddress,
-                shipTokenAddress,
-                fuelTokenAddress,
-                inventoriesAddress
-            ])
-    ).waitForDeployment();
-
-    const pirateMechanicsAddress = await pirateMechanicsProxy.getAddress();
-    deploymentManager.saveDeployment("CryptopiaPirateMechanics", pirateMechanicsAddress);
+    await deployContract(
+        "CryptopiaPirateMechanics", 
+        [
+            navalBattleMechanicsAddress,
+            playerRegisterAddress,
+            assetRegisterAddress,
+            mapsAddress,
+            shipTokenAddress,
+            fuelTokenAddress,
+            inventoriesAddress
+        ]);
 
     // Grant roles
-    await navalBattleMechanicsInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
-    await playerRegisterInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
-    await inventoriesInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
-    await shipTokenInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
-    await mapsInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
+    await grantSystemRole("CryptopiaNavalBattleMechanics", "CryptopiaPirateMechanics");
+    await grantSystemRole("CryptopiaPlayerRegister", "CryptopiaPirateMechanics");
+    await grantSystemRole("CryptopiaInventories", "CryptopiaPirateMechanics");
+    await grantSystemRole("CryptopiaShipToken", "CryptopiaPirateMechanics");
+    await grantSystemRole("CryptopiaMaps", "CryptopiaPirateMechanics");
 
 
     // Output bytecode
     if (config.CryptopiaAccount.outputBytecode)
     {
+        const AccountFactory = await ethers.getContractFactory("CryptopiaAccount");
         const bytecodeHash = "" + ethers.keccak256(AccountFactory.bytecode);
         console.log("------ UPDATE BELOW BYTECODE OF CryptopiaAccount IN THE GAME CLIENT -----");
         console.log("bytecodeHash1: " + bytecodeHash);
         console.log((AccountFactory as any).bytecode);
     }
+
+    console.log(`\n\nDeployed ${chalk.bold(deploymentCounter.toString())} contracts on ${chalk.yellow(hre.network.name)}!`);
 }
 
 // Deploy
-main().catch((error) => {
+main().catch((error) => 
+{
   console.error(error);
   process.exitCode = 1;
 });

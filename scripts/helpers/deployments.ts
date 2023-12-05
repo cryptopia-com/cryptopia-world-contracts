@@ -5,7 +5,8 @@ import path from 'path';
  * Interface for deployment information.
  */
 interface DeploymentInfo {
-    address: string; // The address at which the contract is deployed.
+    address: string; // The address at which the contract is deployed
+    contractName: string; // The name of the contract
 }
 
 /**
@@ -55,28 +56,32 @@ export class DeploymentManager
 
     /**
      * Saves a deployment to the deployment file.
+     * @param deploymentKey - The key to use for the deployment.
      * @param contractName - The name of the contract.
      * @param contractAddress - The address where the contract is deployed.
      */
-    public saveDeployment(contractName: string, contractAddress: string): void 
+    public saveDeployment(deploymentKey: string, contractName: string, contractAddress: string): void 
     {
         const deployments = this.readDeployments();
-        deployments[contractName] = { address: contractAddress };
+        deployments[deploymentKey] = { 
+            address: contractAddress,
+            contractName: contractName
+        };
         this.writeDeployments(deployments);
     }
 
     /**
      * Retrieves a specific deployment's information.
-     * @param contractName - The name of the contract to retrieve.
+     * @param deploymentKey - The key to use for the deployment.
      * @returns DeploymentInfo if the contract is found, null otherwise.
      */
-    public getDeployment(contractName: string): DeploymentInfo 
+    public getDeployment(deploymentKey: string): DeploymentInfo 
     {
         const deployments = this.readDeployments();
-        if (deployments[contractName]) {
-            return deployments[contractName];
+        if (deployments[deploymentKey]) {
+            return deployments[deploymentKey];
         }
         
-        throw `No deployment found for ${contractName} on ${this.networkName}`;
+        throw `No deployment found for ${deploymentKey} on ${this.networkName}`;
     }
 }

@@ -1,101 +1,134 @@
 {
   "CryptopiaInventories": {
-    "address": "0x4f42528B7bF8Da96516bECb22c1c6f53a8Ac7312"
+    "address": "0x159c01E09A23B6065748B2CAeB76f9dfB34A74Ae",
+    "contractName": "CryptopiaInventories"
   },
   "Whitelist": {
-    "address": "0x8f119cd256a0FfFeed643E830ADCD9767a1d517F"
+    "address": "0xBD5DaF70AB4aE609Fd01772aa3E53a073040D119",
+    "contractName": "Whitelist"
   },
   "CryptopiaToken": {
-    "address": "0xe14058B1c3def306e2cb37535647A04De03Db092"
+    "address": "0x12AcE0b4176f9a97Fa8FAb9a859bdA62f440449f",
+    "contractName": "CryptopiaToken"
   },
   "CryptopiaAccountRegister": {
-    "address": "0x74ef2B06A1D2035C33244A4a263FF00B84504865"
+    "address": "0x6C8Ce2B62DB1fc444CeA525296735f94304E02D9",
+    "contractName": "CryptopiaAccountRegister"
   },
   "CryptopiaAssetRegister": {
-    "address": "0xF5b81Fe0B6F378f9E6A3fb6A6cD1921FCeA11799"
+    "address": "0xec331aCEeEDe208948379540d82114f209B154b5",
+    "contractName": "CryptopiaAssetRegister"
   },
   "CryptopiaShipToken": {
-    "address": "0x67baFF31318638F497f4c4894Cd73918563942c8"
+    "address": "0x474cDb25b733Fa9B045255448955662CfA44300c",
+    "contractName": "CryptopiaShipToken"
   },
   "CryptopiaCrafting": {
-    "address": "0x6533158b042775e2FdFeF3cA1a782EFDbB8EB9b1"
+    "address": "0xA92a00D083D9De8cD18B08fC2DDE27298633e422",
+    "contractName": "CryptopiaCrafting"
   },
   "CryptopiaPlayerRegister": {
-    "address": "0xD2D5e508C82EFc205cAFA4Ad969a4395Babce026"
+    "address": "0xA004df2beeF4EF4a58333B814A16c677c1DF4E64",
+    "contractName": "CryptopiaPlayerRegister"
   },
   "CryptopiaToolToken": {
-    "address": "0x7bdd3b028C4796eF0EAf07d11394d0d9d8c24139"
+    "address": "0xe5AF54AA3f81E0cc23d7EBEe959570bdbF8eD598",
+    "contractName": "CryptopiaToolToken"
   },
   "CryptopiaTitleDeedToken": {
-    "address": "0x773330693cb7d5D233348E25809770A32483A940"
+    "address": "0x97df52b63a4E506fB5d7E2bb231aF552c02b5fa1",
+    "contractName": "CryptopiaTitleDeedToken"
   },
   "CryptopiaMaps": {
-    "address": "0x52173b6ac069619c206b9A0e75609fC92860AB2A"
+    "address": "0xD8d69B943eD9bA56A433375703C0cCa3f53C8678",
+    "contractName": "CryptopiaMaps"
   },
   "CryptopiaQuestToken": {
-    "address": "0x532802f2F9E0e3EE9d5Ba70C35E1F43C0498772D"
+    "address": "0x1360963C6c5E707CAFA724078d26034FB8554c7A",
+    "contractName": "CryptopiaQuestToken"
   },
   "CryptopiaQuests": {
-    "address": "0x532802f2F9E0e3EE9d5Ba70C35E1F43C0498772D"
+    "address": "0xBAd33687bF083AcC7D5114406fa2Ea77c1363385",
+    "contractName": "CryptopiaQuests"
   },
   "CryptopiaResourceGathering": {
-    "address": "0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75"
+    "address": "0x1825B4c62A70f5E53323F1b3fEAAA22F451E033b",
+    "contractName": "CryptopiaResourceGathering"
   },
   "CryptopiaAssetToken:Fish": {
-    "address": "0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75"
+    "address": "0x2c043A87f6FC960a035b0465bcb9BBAcd9f38589",
+    "contractName": "CryptopiaAssetToken"
   },
   "CryptopiaAssetToken:Meat": {
-    "address": "0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75"
+    "address": "0xA56446745B69393E7b3D87F06C35f3e1450ef2dE",
+    "contractName": "CryptopiaAssetToken"
   },
   "CryptopiaAssetToken:Fruit": {
-    "address": "0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75"
+    "address": "0xe256cC09C5b20e90f753384CfD3D34f4774711C6",
+    "contractName": "CryptopiaAssetToken"
   },
   "CryptopiaAssetToken:Wood": {
-    "address": "0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75"
+    "address": "0xe6570e5A8499326Ce15E3F5641fD2B1FadE90A77",
+    "contractName": "CryptopiaAssetToken"
   },
   "CryptopiaAssetToken:Stone": {
-    "address": "0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75"
+    "address": "0xd15cF95D0DC31C7a01Ac5F73ccca6B572ADc8C05",
+    "contractName": "CryptopiaAssetToken"
   },
   "CryptopiaAssetToken:Sand": {
-    "address": "0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75"
+    "address": "0xE943d2c6210265DeF5C06580482187Ef56f2bd18",
+    "contractName": "CryptopiaAssetToken"
   },
   "CryptopiaAssetToken:Iron": {
-    "address": "0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75"
+    "address": "0x956d3A0B3161f79E6809cc1313E8F32B0de73B70",
+    "contractName": "CryptopiaAssetToken"
   },
   "CryptopiaAssetToken:Copper": {
-    "address": "0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75"
+    "address": "0x3ED9e934a0F2ee125EDE4ad5B04D027E6658F2B7",
+    "contractName": "CryptopiaAssetToken"
   },
   "CryptopiaAssetToken:Silver": {
-    "address": "0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75"
+    "address": "0xc325d32CCc1ADf49d602a013B702Eeb9Fa02bF1d",
+    "contractName": "CryptopiaAssetToken"
   },
   "CryptopiaAssetToken:Gold": {
-    "address": "0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75"
+    "address": "0x0373771b0a8A53dEA04b8A7F33763fc73663440A",
+    "contractName": "CryptopiaAssetToken"
   },
   "CryptopiaAssetToken:Uranium": {
-    "address": "0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75"
+    "address": "0xD9cA22646bDbB0772ff1B15CC139e229f0AA7b64",
+    "contractName": "CryptopiaAssetToken"
   },
   "CryptopiaAssetToken:Carbon": {
-    "address": "0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75"
+    "address": "0xCC4699e54c5D98b82702305e63835B50e6B5Bfb5",
+    "contractName": "CryptopiaAssetToken"
   },
   "CryptopiaAssetToken:Diamond": {
-    "address": "0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75"
+    "address": "0x57d6167a7c204DEAa4B2a0004Bf1f4A197437500",
+    "contractName": "CryptopiaAssetToken"
   },
   "CryptopiaAssetToken:Oil": {
-    "address": "0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75"
+    "address": "0xA5FADc335E030bee0f3A9Cb2e01F18a2855F332d",
+    "contractName": "CryptopiaAssetToken"
   },
   "CryptopiaAssetToken:Glass": {
-    "address": "0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75"
+    "address": "0x2F1448a525117262408e4b6c24C3161037067D5d",
+    "contractName": "CryptopiaAssetToken"
   },
   "CryptopiaAssetToken:Steel": {
-    "address": "0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75"
+    "address": "0x1f9f7A61d5d8A2CbcAe46ce67ADb5b11D244B24F",
+    "contractName": "CryptopiaAssetToken"
   },
   "CryptopiaAssetToken:Fuel": {
-    "address": "0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75"
+    "address": "0xB049183063EA129b321022e7F664e91849BD41Ae",
+    "contractName": "CryptopiaAssetToken"
   },
   "CryptopiaNavalBattleMechanics": {
-    "address": "0x7Ce73F8f636C6bD3357A0A8a59e0ab6462C955B0"
+    "address": "0x28E2E3a25de36e4Cd542D0c87aC1FC42dC5db8C4",
+    "contractName": "CryptopiaNavalBattleMechanics"
   },
   "CryptopiaPirateMechanics": {
-    "address": "0x746a48E39dC57Ff14B872B8979E20efE5E5100B1"
+    "address": "0x160184369287eb19935898D979478B8b42E61CD2",
+    "contractName": "CryptopiaPirateMechanics"
   }
 }

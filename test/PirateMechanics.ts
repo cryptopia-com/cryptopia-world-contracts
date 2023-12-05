@@ -306,7 +306,8 @@ describe("PirateMechanics Contract", function () {
                     AssetTokenFactory, 
                     [
                         asset.name, 
-                        asset.symbol
+                        asset.symbol,
+                        inventoriesAddress
                     ])
                 ).waitForDeployment();
 

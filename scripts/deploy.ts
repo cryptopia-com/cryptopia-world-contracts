@@ -21,63 +21,6 @@ const SYSTEM_ROLE = "SYSTEM_ROLE".toKeccak256();
 // Internal
 let deploymentCounter = 0;
 
-/**
- * Deploy contract
- * 
- * @param {string} contractName - Name of the contract to deploy.
- * @param {unknown[]} args - Arguments to pass to the contract constructor
- * @param {string} deploymentKey - Key to save the deployment
- */
-async function deployContract(contractName: string, args?: unknown[], deploymentKey?: string) : Promise<Contract> 
-{
-    if (!deploymentKey)
-    {
-        deploymentKey = contractName;
-    }
-
-    console.log(`\n\nDeploying ${chalk.green(contractName)} to ${chalk.yellow(hre.network.name)}`);
-    const transactionLoader = ora(`Creating transaction...`).start();
-    const deploymentLoader = ora(`Waiting for transaction...`).start();
-    const transactionStartTime = Date.now();
-
-    // Create transaction
-    const factory = await ethers.getContractFactory(contractName);
-    const deployProxyOperation = await upgrades.deployProxy(factory, args);
-    
-    await waitForMinimumTime(transactionStartTime, MIN_TIME);
-    transactionLoader.succeed(`Transaction created ${chalk.cyan(deployProxyOperation.deploymentTransaction()?.hash)}`);
-    deploymentLoader.text = `Waiting for confirmations...`;
-    const confirmationLoaderStartTime = Date.now();
-
-    // Wait for confirmation
-    const proxy = await deployProxyOperation.waitForDeployment();
-    const contractAddress = await proxy.getAddress();
-
-    // Save deployment
-    deploymentManager.saveDeployment(deploymentKey, contractName, contractAddress);
-
-    await waitForMinimumTime(confirmationLoaderStartTime, MIN_TIME);
-    deploymentLoader.succeed(`Contract deployed at ${chalk.cyan(contractAddress)} in block ${chalk.cyan(deployProxyOperation.deploymentTransaction()?.blockNumber)}`);
-
-    deploymentCounter++;
-    return proxy;
-}
-
-async function grantSystemRole(granter: string, system: string): Promise<void>
-{
-    const transactionLoader = ora(`Granting ${chalk.blue("SYSTEM")} role..`).start();
-    const transactionStartTime = Date.now();
-
-    const granterDeploymentInfo = deploymentManager.getDeployment(granter);
-    const systemDeploymentInfo = deploymentManager.getDeployment(system);
-
-    const granterInstance = await ethers.getContractAt(granterDeploymentInfo.contractName, granterDeploymentInfo.address);
-    await granterInstance.grantRole(SYSTEM_ROLE, systemDeploymentInfo.address);
-
-    await waitForMinimumTime(transactionStartTime, MIN_TIME);
-    transactionLoader.succeed(`Granted ${chalk.blue("SYSTEM")} role to ${chalk.green(system)} on ${chalk.green(granter)}`);
-} 
-
 
 /**
  * Deploy contracts
@@ -391,8 +334,71 @@ async function main() {
         console.log((AccountFactory as any).bytecode);
     }
 
-    console.log(`\n\nDeployed ${chalk.bold(deploymentCounter.toString())} contracts on ${chalk.yellow(hre.network.name)}!`);
+    console.log(`\n\nDeployed ${chalk.bold(deploymentCounter.toString())} contracts on ${chalk.yellow(hre.network.name)}!\n\n`);
 }
+
+/**
+ * Deploy contract
+ * 
+ * @param {string} contractName - Name of the contract to deploy.
+ * @param {unknown[]} args - Arguments to pass to the contract constructor
+ * @param {string} deploymentKey - Key to save the deployment
+ */
+async function deployContract(contractName: string, args?: unknown[], deploymentKey?: string) : Promise<Contract> 
+{
+    if (!deploymentKey)
+    {
+        deploymentKey = contractName;
+    }
+
+    console.log(`\n\nDeploying ${chalk.green(contractName)} to ${chalk.yellow(hre.network.name)}`);
+    const transactionLoader = ora(`Creating transaction...`).start();
+    const deploymentLoader = ora(`Waiting for transaction...`).start();
+    const transactionStartTime = Date.now();
+
+    // Create transaction
+    const factory = await ethers.getContractFactory(contractName);
+    const deployProxyOperation = await upgrades.deployProxy(factory, args);
+    
+    await waitForMinimumTime(transactionStartTime, MIN_TIME);
+    transactionLoader.succeed(`Transaction created ${chalk.cyan(deployProxyOperation.deploymentTransaction()?.hash)}`);
+    deploymentLoader.text = `Waiting for confirmations...`;
+    const confirmationLoaderStartTime = Date.now();
+
+    // Wait for confirmation
+    const proxy = await deployProxyOperation.waitForDeployment();
+    const contractAddress = await proxy.getAddress();
+
+    // Save deployment
+    deploymentManager.saveDeployment(deploymentKey, contractName, contractAddress);
+
+    await waitForMinimumTime(confirmationLoaderStartTime, MIN_TIME);
+    deploymentLoader.succeed(`Contract deployed at ${chalk.cyan(contractAddress)} in block ${chalk.cyan(deployProxyOperation.deploymentTransaction()?.blockNumber)}`);
+
+    deploymentCounter++;
+    return proxy;
+}
+
+/**
+ * Grant system role
+ * 
+ * @param {string} granter - Name of the contract that grants the role.
+ * @param {string} system - Name of the contract that receives the role.
+ */
+async function grantSystemRole(granter: string, system: string): Promise<void>
+{
+    const transactionLoader = ora(`Granting ${chalk.blue("SYSTEM")} role..`).start();
+    const transactionStartTime = Date.now();
+
+    const granterDeploymentInfo = deploymentManager.getDeployment(granter);
+    const systemDeploymentInfo = deploymentManager.getDeployment(system);
+
+    const granterInstance = await ethers.getContractAt(granterDeploymentInfo.contractName, granterDeploymentInfo.address);
+    await granterInstance.grantRole(SYSTEM_ROLE, systemDeploymentInfo.address);
+
+    await waitForMinimumTime(transactionStartTime, MIN_TIME);
+    transactionLoader.succeed(`Granted ${chalk.blue("SYSTEM")} role to ${chalk.green(system)} on ${chalk.green(granter)}`);
+} 
 
 // Deploy
 main().catch((error) => 

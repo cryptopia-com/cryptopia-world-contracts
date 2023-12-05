@@ -82,6 +82,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
 
         // Shared base 
         Ship memory data = Ship({
+            name: bytes32("Raptor"),
             generic: false,
             rarity: Rarity.Common,
             faction: Faction.Eco,
@@ -99,45 +100,53 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
 
 
         // Add Eco starter ships
-        _setShip("Raptor", data);
+        _setShip(data);
+
+        data.name = bytes32("Whitewake");
         data.subFaction = SubFaction.None;
         data.pirateVersion = bytes32("Raptor");
-        _setShip("Whitewake", data);
+        _setShip(data);
 
 
         // Add Tech starter ships
+        data.name = bytes32("Hammerhead");
         data.co2 = 25;
         data.faction = Faction.Tech;
         data.subFaction = SubFaction.Pirate;
         data.pirateVersion = bytes32(0);
-        _setShip("Hammerhead", data);
+        _setShip(data);
 
+        data.name = bytes32("Polaris");
         data.subFaction = SubFaction.None;
         data.pirateVersion = bytes32("Hammerhead");
-        _setShip("Polaris", data);
+        _setShip(data);
 
 
         // Add Traditional starter ships
+        data.name = bytes32("Yangfang");
         data.faction = Faction.Traditional;
         data.subFaction = SubFaction.Pirate;
         data.pirateVersion = bytes32(0);
-        _setShip("Yangfang", data);
+        _setShip(data);
 
+        data.name = bytes32("Socrates");
         data.subFaction = SubFaction.None;
         data.pirateVersion = bytes32("Yangfang");
-        _setShip("Socrates", data);
+        _setShip(data);
 
 
         // Add Industrial starter ships
+        data.name = bytes32("Orca");
         data.co2 = 50;
         data.faction = Faction.Industrial;
         data.subFaction = SubFaction.Pirate;
         data.pirateVersion = bytes32(0);
-        _setShip("Orca", data);
+        _setShip(data);
 
+        data.name = bytes32("Kingfisher");
         data.subFaction = SubFaction.None;
         data.pirateVersion = bytes32("Orca");
-        _setShip("Kingfisher", data);
+        _setShip(data); 
 
 
         // Set starter ships
@@ -152,17 +161,14 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
      * Admin functions
      */
     /// @dev Add or update ships
-    /// @param name Ship name (unique)
     /// @param data Ship data
-    function setShips(
-        bytes32[] memory name, 
-        Ship[] memory data) 
+    function setShips(Ship[] memory data) 
         public virtual  
         onlyRole(DEFAULT_ADMIN_ROLE) 
     {
-        for (uint i = 0; i < name.length; i++)
+        for (uint i = 0; i < data.length; i++)
         {
-            _setShip(name[i], data[i]);
+            _setShip(data[i]);
         }
     }
 
@@ -194,26 +200,20 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @dev Retreive a rance of ships
     /// @param skip Starting index
     /// @param take Amount of items
-    /// @return names Ship names
-    /// @return data range of ship templates
+    /// @return data Ship[] range of ship templates
     function getShips(uint skip, uint take)
         public virtual override view 
-        returns (
-            bytes32[] memory names, 
-            Ship[] memory data
-        )
+        returns (Ship[] memory data)
     {
         uint length = take;
         if (length > shipsIndex.length - skip) {
             length = shipsIndex.length - skip;
         }
 
-        names = new bytes32[](length);
         data = new Ship[](length);
         for (uint i = 0; i < length; i++)
         {
-            names[i] = shipsIndex[skip + i];
-            data[i] = ships[names[i]];
+            data[i] = ships[shipsIndex[i]];
         }
     }
 
@@ -481,9 +481,8 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
 
 
     /// @dev Add or update ships
-    /// @param name Ship name (unique)
     /// @param data Ship data
-    function _setShip(bytes32 name, Ship memory data) 
+    function _setShip(Ship memory data) 
         internal 
     {
         assert(
@@ -493,13 +492,13 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         );
 
         // Add ship
-        if (!_exists(name))
+        if (!_exists(data.name))
         {
-            shipsIndex.push(name);
+            shipsIndex.push(data.name);
         }
 
         // Set ship
-        ships[name] = data;
+        ships[data.name] = data;
     }
 
 

@@ -1,0 +1,62 @@
+[
+    {
+        "name": "Investigate the Ancient Ruins",
+        "hasLevelConstraint": false,
+        "level": 0,
+        "hasFactionConstraint": false,
+        "faction": "",
+        "hasSubFactionConstraint": true,
+        "subFaction": "None",
+        "hasRecurrenceConstraint": true,
+        "maxRecurrences": 1,
+        "hasCooldownConstraint": false,
+        "cooldown": 0,
+        "hasTimeConstraint": false,
+        "maxDuration": 0,
+        "steps": [
+            {
+                "name": "Find Scientist",
+                "hasTileConstraint": true,
+                "tile": 7,
+                "takeFungible": [],
+                "takeNonFungible": [],
+                "giveFungible": [],
+                "giveNonFungible": []
+            }
+        ],
+        "rewards": [
+            {
+                "name": "Rescue",
+                "xp": 100,
+                "karma": 5,
+                "fungible": [],
+                "nonFungible": [
+                    {
+                        "asset": "CryptopiaToolToken",
+                        "item": "Stone Axe",
+                        "allowWallet": false
+                    }
+                ]
+            },
+            {
+                "name": "Steal",
+                "xp": 100,
+                "karma": -5,
+                "fungible": [
+                    {
+                        "asset": "CryptopiaAssetToken:Wood",
+                        "amount": "5",
+                        "allowWallet": false
+                    }
+                ],
+                "nonFungible": [
+                    {
+                        "asset": "CryptopiaToolToken",
+                        "item": "Stone Axe",
+                        "allowWallet": false
+                    }
+                ]
+            }
+        ]
+    }
+]

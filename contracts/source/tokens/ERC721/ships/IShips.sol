@@ -32,14 +32,10 @@ interface IShips {
     /// @dev Retreive a rance of ships
     /// @param skip Starting index
     /// @param take Amount of items
-    /// @return names Ship names
-    /// @return data range of ship templates
+    /// @return Ship[] range of ships
     function getShips(uint skip, uint take) 
         external view 
-        returns (
-            bytes32[] memory names, 
-            Ship[] memory data
-        );
+        returns (Ship[] memory);
 
 
     /// @dev Retreive a ships by token id

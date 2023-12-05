@@ -9,9 +9,12 @@ import { Tool } from './types/tools/input';
 
 const chalk = require('chalk');
 
+// Settins
+const MIN_TIME = 1000;
+
 // Default values
-const DEFAULT_TOOLS_BASE_PATH = './data/game/tools/';
-const DEFAULT_TOOLS_FILE = 'basic';
+const DEFAULT_BASE_PATH = './data/game/quests/';
+const DEFAULT_FILE = 'basic';
 const DEFAULT_BATCH_SIZE = 20;
 
 /**
@@ -45,7 +48,7 @@ async function main(toolsFilePath: string, batchSize: number)
     const toolTokenAddress = deploymentManager.getDeployment("CryptopiaToolToken")?.address;
 
     console.log(`\nFound ${chalk.bold(tools.length.toString())} tools to deploy on ${chalk.yellow(hre.network.name)}`);
-    console.log(`Found ${chalk.magenta("CryptopiaToolToken")} at ${chalk.cyan(toolTokenAddress)}\n`);
+    console.log(`Found ${chalk.green("CryptopiaToolToken")} at ${chalk.cyan(toolTokenAddress)}\n`);
 
     const toolTokenInstance = await ethers.getContractAt("CryptopiaToolToken", toolTokenAddress);
 
@@ -83,8 +86,8 @@ async function main(toolsFilePath: string, batchSize: number)
             batch.map((tool) => tool.minting.map((item) => item.amount.toWei()))
         );
 
-        await waitForMinimumTime(transactionLoaderStartTime, 1000);
-        transactionLoader.succeed(`Transaction created with hash ${chalk.cyan(transaction.hash)}`);
+        await waitForMinimumTime(transactionLoaderStartTime, MIN_TIME);
+        transactionLoader.succeed(`Transaction created ${chalk.cyan(transaction.hash)}`);
 
         const confirmationLoader = ora(`Waiting for confirmation...`).start();
         const confirmationLoaderStartTime = Date.now();
@@ -92,19 +95,19 @@ async function main(toolsFilePath: string, batchSize: number)
         // Wait for confirmation
         const receipt = await transaction.wait();
 
-        await waitForMinimumTime(confirmationLoaderStartTime, 1000);
-        confirmationLoader.succeed(`Transaction ${chalk.green("confirmed")} in block ${chalk.green(receipt?.blockNumber)}\n`);
+        await waitForMinimumTime(confirmationLoaderStartTime, MIN_TIME);
+        confirmationLoader.succeed(`Transaction ${chalk.green("confirmed")} in block ${chalk.cyan(receipt?.blockNumber)}\n`);
     }
 
-    console.log(`All tools have been successfully deployed!\n`);
+    console.log(`\nDeployed ${chalk.bold(tools.length.toString())} tools on ${chalk.yellow(hre.network.name)}!\n\n`);
 };
 
-const toolsBasePath = path.resolve(DEFAULT_TOOLS_BASE_PATH);
+const basePath = path.resolve(DEFAULT_BASE_PATH);
 const batchSize = DEFAULT_BATCH_SIZE;
-const toolsFile = DEFAULT_TOOLS_FILE;
-const toolsFilePath = path.resolve(toolsBasePath, `${toolsFile}.json`);
+const fileName = DEFAULT_FILE;
+const filePath = path.resolve(basePath, `${fileName}.json`);
 
-main(toolsFilePath, batchSize).catch((error) => 
+main(filePath, batchSize).catch((error) => 
 {
     console.error(`\n${chalk.redBright('Error during deployment:')} ${chalk.white(error.message)}\n`);
     process.exitCode = 1;

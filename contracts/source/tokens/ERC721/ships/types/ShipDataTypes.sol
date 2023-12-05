@@ -7,6 +7,9 @@ import "../../../../game/types/FactionEnums.sol";
 /// @dev Ship template
 struct Ship
 {
+    /// @dev Ship name (unique)
+    bytes32 name;
+
     /// @dev if true faction and subfaction are disregarded (any player can equipt)
     bool generic;
 

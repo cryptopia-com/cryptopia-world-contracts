@@ -4,7 +4,7 @@ import { ethers, upgrades } from "hardhat";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { REVERT_MODE } from "./settings/config";
 import { DEFAULT_ADMIN_ROLE, SYSTEM_ROLE } from "./settings/roles";   
-import { Resource, Terrain, Biome, Inventory, Faction, SubFaction } from "../scripts/types/enums";
+import { Resource, Terrain, Biome, Inventory, SubFaction } from "../scripts/types/enums";
 import { Asset, Map } from "../scripts/types/input";
 import { getParamFromEvent} from '../scripts/helpers/events';
 
@@ -587,7 +587,7 @@ describe("Quests Contract", function () {
             // Act
             const operation = questsInstance
                 .connect(nonSystemSigner)
-                .addQuest(quest);
+                .setQuest(quest);
 
             // Assert
             await expect(operation).to.be
@@ -598,7 +598,7 @@ describe("Quests Contract", function () {
         it ("Should allow admin to add a quest", async function () {
 
             // Act
-            await questsInstance.addQuest(quest);
+            await questsInstance.setQuest(quest);
 
             // Assert
             const questCount = await questsInstance.getQuestCount(); 
@@ -685,7 +685,7 @@ describe("Quests Contract", function () {
                 ],
             };
 
-            await questsInstance.addQuest(quest);
+            await questsInstance.setQuest(quest);
         });
 
         /**
@@ -758,7 +758,7 @@ describe("Quests Contract", function () {
 
             // Setup
             await createPlayers();
-            const questId = 1;
+            const questName = "Investigate the Ancient Ruins".toBytes32()
             const rewardIndex = 0;
             const rewardInventory = Inventory.Backpack;
             const unregisteredAccountSigner = await ethers.provider.getSigner(other);
@@ -767,7 +767,7 @@ describe("Quests Contract", function () {
             const callData = questsInstance.interface
                 .encodeFunctionData("completeQuest", 
                 [
-                    questId,
+                    questName,
                     [[]],
                     [[]],
                     [[]],
@@ -797,7 +797,7 @@ describe("Quests Contract", function () {
 
             // Setup
             await turnPirate();
-            const questId = 1;
+            const questName = "Investigate the Ancient Ruins".toBytes32()
             const rewardIndex = 0;
             const rewardInventory = Inventory.Backpack;
             const registeredAccountSigner = await ethers.provider.getSigner(account1);
@@ -806,7 +806,7 @@ describe("Quests Contract", function () {
             const callData = questsInstance.interface
                 .encodeFunctionData("completeQuest", 
                 [
-                    questId,
+                    questName,
                     [[]],
                     [[]],
                     [[]],
@@ -836,7 +836,7 @@ describe("Quests Contract", function () {
 
             // Setup
             await createPlayers();
-            const questId = 1;
+            const questName = "Investigate the Ancient Ruins".toBytes32()
             const rewardIndex = 0;
             const rewardInventory = Inventory.Backpack;
             const expectedTile = 7;
@@ -846,7 +846,7 @@ describe("Quests Contract", function () {
             const callData = questsInstance.interface
                 .encodeFunctionData("completeQuest", 
                 [
-                    questId,
+                    questName,
                     [[]],
                     [[]],
                     [[]],
@@ -876,7 +876,7 @@ describe("Quests Contract", function () {
 
             // Setup
             await travelToQuestLocation();
-            const questId = 1;
+            const questName = "Investigate the Ancient Ruins".toBytes32()
             const rewardIndex = 0;
             const rewardInventory = Inventory.Backpack;
             const rewardAsset = toolTokenAddress;
@@ -887,7 +887,7 @@ describe("Quests Contract", function () {
             const callData = questsInstance.interface
                 .encodeFunctionData("completeQuest", 
                 [
-                    questId,
+                    questName,
                     [[]],
                     [[]],
                     [[]],
@@ -902,11 +902,11 @@ describe("Quests Contract", function () {
             // Assert
             await expect(transaction).to
                 .emit(questsInstance, "QuestStart")
-                .withArgs(registeredAccountAddress, questId);
+                .withArgs(registeredAccountAddress, questName);
 
             await expect(transaction).to
                 .emit(questsInstance, "QuestStepComplete")
-                .withArgs(registeredAccountAddress, questId, 0);
+                .withArgs(registeredAccountAddress, questName, 0);
 
             await expect(transaction).to
                 .emit(inventoriesInstance, "InventoryAssign")
@@ -914,7 +914,7 @@ describe("Quests Contract", function () {
 
             await expect(transaction).to
                 .emit(questsInstance, "QuestComplete")
-                .withArgs(registeredAccountAddress, questId);
+                .withArgs(registeredAccountAddress, questName);
         });
 
         it ("Should allow a player to complete the quest making the wrong choice", async function () {
@@ -922,7 +922,7 @@ describe("Quests Contract", function () {
             // Setup
             await createPlayers();
             await travelToQuestLocation();
-            const questId = 1;
+            const questName = "Investigate the Ancient Ruins".toBytes32()
             const rewardIndex = 1;
             const rewardInventory = Inventory.Ship;
             const reward1_Asset = toolTokenAddress;
@@ -935,7 +935,7 @@ describe("Quests Contract", function () {
             const callData = questsInstance.interface
                 .encodeFunctionData("completeQuest", 
                 [
-                    questId,
+                    questName,
                     [[]],
                     [[]],
                     [[]],
@@ -950,11 +950,11 @@ describe("Quests Contract", function () {
             // Assert
             expect(transaction).to
                 .emit(questsInstance, "QuestStart")
-                .withArgs(registeredAccountAddress, questId);
+                .withArgs(registeredAccountAddress, questName);
 
             expect(transaction).to
                 .emit(questsInstance, "QuestStepComplete")
-                .withArgs(registeredAccountAddress, questId, 0);
+                .withArgs(registeredAccountAddress, questName, 0);
 
             expect(transaction).to
                 .emit(inventoriesInstance, "InventoryAssign")
@@ -966,13 +966,13 @@ describe("Quests Contract", function () {
 
             expect(transaction).to
                 .emit(questsInstance, "QuestComplete")
-                .withArgs(registeredAccountAddress, questId);
+                .withArgs(registeredAccountAddress, questName);
         });
 
         it ("Should not allow a player to complete the quest twice", async function () {
 
             // Setup
-            const questId = 1;
+            const questName = "Investigate the Ancient Ruins".toBytes32()
             const rewardIndex = 0;
             const rewardInventory = Inventory.Backpack;
             const questRecrrenceLimit = 1;
@@ -982,7 +982,7 @@ describe("Quests Contract", function () {
             const callData = questsInstance.interface
                 .encodeFunctionData("completeQuest", 
                 [
-                    questId,
+                    questName,
                     [[]],
                     [[]],
                     [[]],
@@ -999,7 +999,7 @@ describe("Quests Contract", function () {
             {
                 await expect(operation).to.be
                     .revertedWithCustomError(questsInstance, "QuestRecurrenceExceeded")
-                    .withArgs(registeredAccountAddress, questId, questRecrrenceLimit);
+                    .withArgs(registeredAccountAddress, questName, questRecrrenceLimit);
             }
             else
             {
@@ -1136,7 +1136,7 @@ describe("Quests Contract", function () {
             ]);
 
             // Add quest
-            await questsInstance.addQuest(quest);
+            await questsInstance.setQuest(quest);
         });
 
         /**
@@ -1209,7 +1209,7 @@ describe("Quests Contract", function () {
 
             // Setup
             await createPlayers();
-            const questId = 2;
+            const questName = "Pirate Quest".toBytes32();
             const rewardIndex = 0;
             const rewardInventory = Inventory.Backpack;
             const rewardAsset = toolTokenAddress;
@@ -1222,7 +1222,7 @@ describe("Quests Contract", function () {
             // Start quest and complete step 0
             const startQuestCallData = questsInstance.interface
                 .encodeFunctionData("startQuest", [
-                    questId,
+                    questName,
                     [0],
                     [[Inventory.Backpack]],
                     [[]],
@@ -1241,7 +1241,7 @@ describe("Quests Contract", function () {
             await travelToLocation([0, 1, 2, 7]);
             const completeStepCallData = questsInstance.interface
                 .encodeFunctionData("completeStep", [
-                   questId,
+                   questName,
                     1,
                     [Inventory.Ship],
                     [],
@@ -1260,7 +1260,7 @@ describe("Quests Contract", function () {
             await travelToLocation([7, 8]);
             const completeStepAndClaimRewardCallData = questsInstance.interface
                 .encodeFunctionData("completeStepAndClaimReward", [
-                    questId,
+                    questName,
                     2,
                     [],
                     [Inventory.Backpack, Inventory.Ship],
@@ -1277,15 +1277,15 @@ describe("Quests Contract", function () {
             // Assert
             await expect(startQuestTransaction).to
                 .emit(questsInstance, "QuestStart")
-                .withArgs(registeredAccountAddress, questId);
+                .withArgs(registeredAccountAddress, questName);
 
             await expect(startQuestTransaction).to
                 .emit(questsInstance, "QuestStepComplete")
-                .withArgs(registeredAccountAddress, questId, 0);
+                .withArgs(registeredAccountAddress, questName, 0);
 
             await expect(completeStepTransaction).to
                 .emit(questsInstance, "QuestStepComplete")
-                .withArgs(registeredAccountAddress, questId, 1);
+                .withArgs(registeredAccountAddress, questName, 1);
 
             await expect(completeStepAndClaimRewardTransaction).to
                 .emit(inventoriesInstance, "InventoryAssign")
@@ -1293,7 +1293,7 @@ describe("Quests Contract", function () {
 
             await expect(completeStepAndClaimRewardTransaction).to
                 .emit(questsInstance, "QuestComplete")
-                .withArgs(registeredAccountAddress, questId);
+                .withArgs(registeredAccountAddress, questName);
         });
     });
 

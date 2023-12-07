@@ -222,8 +222,8 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         fungible[asset].weight = weight;
         if (0 == fungibleIndex.length || fungibleIndex[fungible[asset].index] != asset)
         {
+            fungible[asset].index = fungibleIndex.length;
             fungibleIndex.push(asset);
-            fungible[asset].index = fungibleIndex.length - 1;
         }
     }
 
@@ -238,8 +238,8 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         nonFungible[asset].weight = accepted ? INVENTORY_SLOT_SIZE : 0;
         if (0 == nonFungibleIndex.length || nonFungibleIndex[nonFungible[asset].index] != asset)
         {
+            nonFungible[asset].index = nonFungibleIndex.length;
             nonFungibleIndex.push(asset);
-            nonFungible[asset].index = nonFungibleIndex.length - 1;
         }
     }
 
@@ -1155,8 +1155,8 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
             inventory.weight += INVENTORY_SLOT_SIZE;
             nonFungibleTokenData.owner = player_to;
             nonFungibleTokenData.inventory = Inventory.Ship;
+            nonFungibleInventory.tokens[tokenId] = nonFungibleInventory.tokensIndex.length;
             nonFungibleInventory.tokensIndex.push(tokenId);
-            nonFungibleInventory.tokens[tokenId] = nonFungibleInventory.tokensIndex.length - 1;
         }
         else 
         {
@@ -1239,8 +1239,8 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
 
             // Add to ship
             shipInventory.weight += INVENTORY_SLOT_SIZE;
+            shipInventory.nonFungible[asset].tokens[tokenId] = shipInventory.nonFungible[asset].tokensIndex.length;
             shipInventory.nonFungible[asset].tokensIndex.push(tokenId);
-            shipInventory.nonFungible[asset].tokens[tokenId] = shipInventory.nonFungible[asset].tokensIndex.length - 1;
         }
         else 
         {
@@ -1252,8 +1252,8 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
 
             // Add to backpack
             backpackInventory.weight += INVENTORY_SLOT_SIZE;
+            backpackInventory.nonFungible[asset].tokens[tokenId] = backpackInventory.nonFungible[asset].tokensIndex.length;
             backpackInventory.nonFungible[asset].tokensIndex.push(tokenId);
-            backpackInventory.nonFungible[asset].tokens[tokenId] = backpackInventory.nonFungible[asset].tokensIndex.length - 1;
         }
 
         nonFungibleTokenDatas[asset][tokenId].owner = player;

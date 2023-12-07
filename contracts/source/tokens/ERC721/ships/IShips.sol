@@ -23,19 +23,19 @@ interface IShips {
 
     /// @dev Retreive a ships by name
     /// @param name Ship name (unique)
-    /// @return data a single ship 
+    /// @return ship a single ship 
     function getShip(bytes32 name) 
         external view 
-        returns (Ship memory data);
+        returns (Ship memory ship);
 
 
     /// @dev Retreive a rance of ships
     /// @param skip Starting index
     /// @param take Amount of items
-    /// @return Ship[] range of ships
+    /// @return ships range of ships
     function getShips(uint skip, uint take) 
         external view 
-        returns (Ship[] memory);
+        returns (Ship[] memory ships);
 
 
     /// @dev Retreive a ships by token id

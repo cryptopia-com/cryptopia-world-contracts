@@ -22,27 +22,19 @@ interface ITools {
 
     /// @dev Retreive a tools by name
     /// @param name Tool name (unique)
-    /// @return toolData Tool data
-    /// @return mintingData Tool minting data 
+    /// @return tool The tool data
     function getTool(bytes32 name) 
         external view 
-        returns (
-            Tool memory toolData,
-            ToolMintingData[] memory mintingData
-        );
+        returns (Tool memory tool);
 
 
     /// @dev Retreive a rance of tools
     /// @param skip Starting index
     /// @param take Amount of items
-    /// @return toolDatas Range of tools
-    /// @return mintingDatas Range of tool minting data 
+    /// @return tools The tool datas
     function getTools(uint skip, uint take) 
         external view 
-        returns (
-            Tool[] memory toolDatas,
-            ToolMintingData[][] memory mintingDatas
-        );
+        returns (Tool[] memory tools);
 
 
     /// @dev Retreive a tools by token id

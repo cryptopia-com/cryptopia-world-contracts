@@ -1,14 +1,14 @@
-import "./helpers/converters.ts";
+import "../helpers/converters.ts";
 import ora from 'ora-classic';
 import path from 'path';
 import fs from 'fs';
 import hre, { ethers } from "hardhat";
-import { DeploymentManager } from "./helpers/deployments";
-import { waitForMinimumTime } from "./helpers/timers";
-import { resolveEnum } from "./helpers/enums";
-import { Rarity, Resource } from './types/enums';
-import { JsonData } from './types/tools/input';
-import { ToolStruct, ToolMintingDataStruct } from "../typechain-types/contracts/source/tokens/ERC721/tools/ITools.js";
+import { DeploymentManager } from "../helpers/deployments";
+import { waitForMinimumTime } from "../helpers/timers";
+import { resolveEnum } from "../helpers/enums";
+import { Rarity, Resource } from '../types/enums';
+import { JsonData } from '../types/tools/input';
+import { ToolStruct, ToolMintingDataStruct } from "../../typechain-types/contracts/source/tokens/ERC721/tools/ITools.js";
 
 const chalk = require('chalk');
 
@@ -36,9 +36,8 @@ async function main(toolsFilePath: string, batchSize: number)
     }
 
     let tools: ToolStruct[];
-    let toolMintingData: ToolMintingDataStruct[][]; 
     try {
-        [tools, toolMintingData] = resolve(require(toolsFilePath));
+        tools = resolve(require(toolsFilePath));
     } catch (error) {
         if (error instanceof Error) {
             // Now 'error' is typed as 'Error'
@@ -61,8 +60,7 @@ async function main(toolsFilePath: string, batchSize: number)
     // Deploy tools in batches
     for (let i = 0; i < tools.length; i += batchSize) 
     {
-        const toolBatch = tools.slice(i, i + batchSize);
-        const toolMintingDataBatch = toolMintingData.slice(i, i + batchSize);
+        const batch = tools.slice(i, i + batchSize);
         if (i + batchSize >= tools.length) 
         {
             console.log(`Deploying batch ${`${Math.floor(i / batchSize) + 1}`}/${Math.ceil(tools.length / batchSize)}`);
@@ -77,8 +75,7 @@ async function main(toolsFilePath: string, batchSize: number)
         const transactionLoaderStartTime = Date.now();
 
         // Create the transaction
-        const transaction = await toolTokenInstance.setTools(
-            toolBatch, toolMintingDataBatch);
+        const transaction = await toolTokenInstance.setTools(batch);
 
         await waitForMinimumTime(transactionLoaderStartTime, MIN_TIME);
         transactionLoader.succeed(`Transaction created ${chalk.cyan(transaction.hash)}`);
@@ -100,13 +97,11 @@ async function main(toolsFilePath: string, batchSize: number)
  * Resolves the data from the JSON file.
  *
  * @param {JsonData[]} data - Data from the JSON file.
- * @returns {[ToolStruct[], ToolMintingDataStruct[][]]} The resolved data.
+ * @returns {ToolStruct[]} The resolved data.
  */
-function resolve(data: JsonData[]): [ToolStruct[], ToolMintingDataStruct[][]] 
+function resolve(data: JsonData[]): ToolStruct[]
 {
     const resolvedTools: ToolStruct[] = [];
-    const resolvedMintingData: ToolMintingDataStruct[][] = [];
-
     data.forEach((toolData, i) => {
         resolvedTools.push({
             name: toolData.name.toBytes32(),
@@ -118,19 +113,17 @@ function resolve(data: JsonData[]): [ToolStruct[], ToolMintingDataStruct[][]]
             multiplier_effectiveness: toolData.multiplier_effectiveness,
             value1: toolData.value1,
             value2: toolData.value2,
-            value3: toolData.value3
-        });
-
-        resolvedMintingData[i] = [];
-        toolData.minting.forEach((mintingItem) => {
-            resolvedMintingData[i].push({
-                resource: resolveEnum(Resource, mintingItem.resource),
-                amount: mintingItem.amount.toWei()
-            });
+            value3: toolData.value3,
+            minting: toolData.minting.map((minting: any) => {
+                return {
+                    resource: resolveEnum(Resource, minting.resource),
+                    amount: minting.amount.toWei()
+                };
+            })
         });
     });
 
-    return [resolvedTools, resolvedMintingData];
+    return resolvedTools;
 }
 
 const basePath = path.resolve(DEFAULT_BASE_PATH);

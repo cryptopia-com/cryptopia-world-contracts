@@ -18,9 +18,6 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
     /**
      * Storage
      */ 
-    /// @dev Limitation to prevent experimental
-    uint8 constant private MAX_ACCOUNTS_ASSET_INFOS_CALL = 3;
-
     /// @dev Assets
     mapping(bytes32 => address) public assets;
     bytes32[] private assetsIndex;
@@ -142,83 +139,37 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
     }
 
 
-    /// @dev Retreives asset and balance info for `account` from the asset at `index`.
-    /// @param index Asset index.
-    /// @param accounts Accounts to retrieve the balances for.
-    /// @return contractAddress Address of the asset.
-    /// @return name Address of the asset.
-    /// @return symbol Address of the asset.
-    /// @return balances Ballances of `accounts` the asset.
+    /// @dev Retreives asset and balance info for `account` from the asset at `index`
+    /// @param index Asset index
+    /// @param accounts Accounts to retrieve the balances for
+    /// @return assetInfo Asset info
     function getAssetInfoAt(uint index, address[] memory accounts)
-        public virtual override view  
-        returns (
-            address contractAddress, 
-            string memory name, 
-            string memory symbol, 
-            uint[] memory balances)
+        external view 
+        returns (AssetInfo memory assetInfo)
     {
-        (contractAddress, name, symbol, balances) = _getAssetInfoAt(index, accounts);
+        assetInfo = _getAssetInfoAt(index, accounts);
     }
 
 
-    /// @dev Retreives asset and balance infos for `accounts` from the assets from `skip` to `skip` plus `take`. Has limitations to avoid experimental.
-    /// @param skip Starting index.
-    /// @param take Amount of asset infos to return.
-    /// @param accounts Accounts to retrieve the balances for.
-    /// @return contractAddresses Address of the asset.
-    /// @return names Address of the asset.
-    /// @return symbols Address of the asset.
-    /// @return balances1 Asset balances of accounts[0].
-    /// @return balances2 Asset balances of accounts[1].
-    /// @return balances3 Asset balances of accounts[2].
+    /// @dev Retreives asset and balance infos for `accounts` from the assets from `skip` to `skip` plus `take`. 
+    /// @param skip Starting index
+    /// @param take Amount of asset infos to return
+    /// @param accounts Accounts to retrieve the balances for
+    /// @return assetInfos Asset infos
     function getAssetInfos(uint skip, uint take, address[] memory accounts)
-        public virtual override view  
-        returns (
-            address[] memory contractAddresses, 
-            bytes32[] memory names, 
-            bytes32[] memory symbols, 
-            uint[] memory balances1, 
-            uint[] memory balances2, 
-            uint[] memory balances3)
+        external view 
+        returns (AssetInfo[] memory assetInfos)
     {
-        // We don't want to experiment (TODO: remove this limitation)
-        if (accounts.length > MAX_ACCOUNTS_ASSET_INFOS_CALL)
+        uint length = take;
+        if (assetsIndex.length < skip + take)
         {
-            revert ArgumentInvalid();
+            length = assetsIndex.length - skip;
         }
 
-
-        contractAddresses = new address[](take);
-        names = new bytes32[](take);
-        symbols = new bytes32[](take);
-        balances1 = new uint[](take);
-        balances2 = new uint[](take);
-        balances3 = new uint[](take);
-
-        for (uint i = skip; i < take; i++)
+        assetInfos = new AssetInfo[](length);
+        for (uint i = 0; i < length; i++)
         {
-            string memory name;
-            string memory symbol;
-            uint[] memory balances;
-            (contractAddresses[i], name, symbol, balances) = _getAssetInfoAt(i, accounts);
-            
-            names[i] = bytes32(abi.encodePacked(name));
-            symbols[i] = bytes32(abi.encodePacked(symbol));
-            
-            if (accounts.length > 0)
-            {
-               balances1[i] = balances[0];
-            }
-
-            if (accounts.length > 1)
-            {
-               balances2[i] = balances[1];
-            }
-
-            if (accounts.length > 2)
-            {
-               balances3[i] = balances[2];
-            }
+            assetInfos[i] = _getAssetInfoAt(skip + i, accounts);
         }
     }
 
@@ -248,24 +199,23 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
     }
 
 
-    /// @dev Retreives asset and balance info for `account` from the asset at `index`.
-    /// @param index Asset index.
-    /// @param accounts Accounts to retrieve the balances for.
-    /// @return contractAddress Address of the asset.
-    /// @return name Address of the asset.
-    /// @return symbol Address of the asset.
+    /// @dev Retreives asset and balance info for `account` from the asset at `index`
+    /// @param index Asset index
+    /// @param accounts Accounts to retrieve the balances for
+    /// @return assetInfo Asset info
     function _getAssetInfoAt(uint index, address[] memory accounts)
         internal view 
-        returns (address contractAddress, string memory name, string memory symbol, uint[] memory balances)
+        returns (AssetInfo memory assetInfo)
     {
-        contractAddress = assets[assetsIndex[index]];
-        name = ERC20Upgradeable(contractAddress).name();
-        symbol = ERC20Upgradeable(contractAddress).symbol();
+        assetInfo.contractAddress = assets[assetsIndex[index]];
+        assetInfo.name = ERC20Upgradeable(assetInfo.contractAddress).name();
+        assetInfo.symbol = ERC20Upgradeable(assetInfo.contractAddress).symbol();
 
-        balances = new uint[](accounts.length); 
+        assetInfo.balances = new uint[](accounts.length); 
         for (uint i = 0; i < accounts.length; i++) 
         {
-            balances[i] = IERC20(contractAddress).balanceOf(accounts[i]);
+            assetInfo.balances[i] = IERC20(assetInfo.contractAddress)
+                .balanceOf(accounts[i]);
         }
     }
 }

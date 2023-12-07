@@ -20,37 +20,28 @@ import "../ICrafting.sol";
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting {
 
-    struct Recipe 
+    /// @dev Crafting recipe data
+    struct CraftingRecipeData 
     {
+        uint index; 
         uint8 level; // Level zero indicated not initialized
         bool learnable;
 
         // Crafting
-        uint240 craftingTime;
+        uint64 craftingTime;
 
         // Ingredients
         mapping (address => uint) ingredients;
         address[] ingredientsIndex;
     }
 
-    struct CraftingSlot
-    {
-        /// @dev The asset (ERC721) that is being crafted
-        address asset;
-
-        /// @dev The recipe (name) that is being crafted
-        bytes32 recipe;
-
-        /// @dev The timestamp after which the crafted item can be claimed
-        uint finished;        
-    }
-
-    struct PlayerCraftingData 
+    /// @dev Crafting data for player
+    struct CraftingPlayerData 
     {
         // Slots
         uint slotCount; // Zero indicates not initiated
 
-        /// @dev index => CraftingSlot
+        /// @dev index => CraftingSlot 
         mapping (uint => CraftingSlot) slots;
 
         /// @dev asset (ERC721) => recipe name => learned
@@ -68,12 +59,12 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     /**
      * Storage
      */
-    /// @dev asset (ERC721) => name => Recipe
-    mapping (address => mapping (bytes32 => Recipe)) public recipes;
+    /// @dev asset (ERC721) => recipe name => CraftingRecipe
+    mapping (address => mapping (bytes32 => CraftingRecipeData)) public recipes;
     mapping (address => bytes32[]) private recipesIndex;
 
     /// @dev player => PlayerCraftingData
-    mapping (address => PlayerCraftingData) private playerData;
+    mapping (address => CraftingPlayerData) private playerData;
 
     /// Refs
     address public inventoriesContract;
@@ -197,58 +188,14 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
      * Admin functions
      */
     /// @dev Batch operation to set recepes
-    /// @param asset The contract address of the asset to which the recipe applies
-    /// @param name The name of the asset recipe
-    /// @param level Recipe can be crafted and/or learned by players from this level
-    /// @param learnable True indicates that the recipe has to be learned before it can be used
-    /// @param craftingTime The time it takes to craft an item
-    /// @param ingredients_asset Resource contracts (ERC20) needed for crafting
-    /// @param ingredients_amount Resource amounts needed for crafting
-    function setRecipes(
-        address[] memory asset,
-        bytes32[] memory name,
-        uint8[] memory level,
-        bool[] memory learnable,
-        uint240[] memory craftingTime,
-        address[][] memory ingredients_asset,
-        uint[][] memory ingredients_amount) 
+    /// @param recipes_ The recipes to set
+    function setRecipes(CraftingRecipe[] memory recipes_) 
         onlyRole(DEFAULT_ADMIN_ROLE) 
         public virtual 
     {
-        for (uint i = 0; i < asset.length; i++)
+        for (uint i = 0; i < recipes_.length; i++)
         {
-            if (!_recipeExists(asset[i], name[i]))
-            {
-                // Add index
-                recipesIndex[asset[i]].push(name[i]);
-            }
-
-            // Set values
-            Recipe storage recipe = recipes[asset[i]][name[i]];
-            recipe.level = level[i];
-            recipe.learnable = learnable[i];
-            recipe.craftingTime = craftingTime[i];
-            
-            // Reset ingredients
-            if (recipe.ingredientsIndex.length > 0)
-            {
-                for (uint j = 0; j < recipe.ingredientsIndex.length; j++)
-                {
-                    recipe.ingredients[recipe.ingredientsIndex[j]] = 0;
-                }
-
-                delete recipe.ingredientsIndex;
-            }
-
-            // Set ingredients
-            for (uint j = 0; j < ingredients_asset[i].length; j++)
-            {
-                recipe.ingredientsIndex.push(ingredients_asset[i][j]);
-                recipe.ingredients[ingredients_asset[i][j]] = ingredients_amount[i][j];
-            }
-
-            // Emit
-            emit CraftingRecipeMutation(asset[i], name[i]);
+            _setRecipe(recipes_[i]);
         }
     }
 
@@ -256,125 +203,38 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     /** 
      * Public functions
      */
-    /// @dev Returns the amount of different `asset` recipes
+    // @dev Returns the amount of different `asset` recipes
     /// @param asset The contract address of the asset to which the recipes apply
     /// @return count The amount of different recipes
-    function getRecipeCount(address asset) public view returns (uint256) 
-    {
-        return recipesIndex[asset].length;
-    }
-
-
-    /// @dev Returns a single `asset` recipe at `index`
-    /// @param asset The contract address of the asset to which the recipe applies
-    /// @param index The index of the asset recipe
-    /// @return level Recipe can be crafted and/or learned by players from this level
-    /// @return learnable True indicates that the recipe has to be learned before it can be used
-    /// @return craftingTime The time it takes to craft an item
-    /// @return ingredients_asset Resource contracts (ERC20) needed for crafting
-    /// @return ingredients_amount Resource amounts needed for crafting
-    function getRecipeAt(address asset, uint index)
+    function getRecipeCount(address asset) 
         public virtual override view 
-        returns (
-            uint8 level,
-            bool learnable,
-            uint240 craftingTime,
-            address[] memory ingredients_asset,
-            uint[] memory ingredients_amount
-        )
+        returns (uint count)
     {
-        Recipe storage recipe = recipes[asset][recipesIndex[asset][index]];
-        level = recipe.level;
-        learnable = recipe.learnable;
-        craftingTime = recipe.craftingTime;
-        ingredients_asset = new address[](recipe.ingredientsIndex.length);
-        ingredients_amount = new uint[](recipe.ingredientsIndex.length);
-
-        for (uint i = 0; i < recipe.ingredientsIndex.length; i++)
-        {
-            ingredients_asset[i] = recipe.ingredientsIndex[i];
-            ingredients_amount[i] = recipe.ingredients[recipe.ingredientsIndex[i]];
-        }
+        count = recipesIndex[asset].length;
     }
 
 
-    /// @dev Returns a single `asset` recipe at `index`
-    /// @param asset The contract address of the asset to which the recipe applies
-    /// @param index The index of the asset recipe
-    /// @return assets Resource contracts (ERC20) needed for crafting
-    /// @return amounts Resource amounts needed for crafting
-    function getRecipeIngredientsAt(address asset, uint index)
-        public virtual override view 
-        returns (
-            address[] memory assets,
-            uint[] memory amounts
-        )
-    {
-        Recipe storage recipe = recipes[asset][recipesIndex[asset][index]];
-        assets = new address[](recipe.ingredientsIndex.length);
-        amounts = new uint[](recipe.ingredientsIndex.length); 
-
-        for (uint i = 0; i < recipe.ingredientsIndex.length; i++)
-        {
-            assets[i] = recipe.ingredientsIndex[i];
-            amounts[i] = recipe.ingredients[recipe.ingredientsIndex[i]];
-        }
-    }
-
-
-    /// @dev Returns a single `asset` recipe by `name`
+    /// @dev Returns a single `asset` recipe by `name` 
     /// @param asset The contract address of the asset to which the recipe applies
     /// @param name The name of the asset recipe
-    /// @return level Recipe can be crafted and/or learned by players from this level
-    /// @return learnable True indicates that the recipe has to be learned before it can be used
-    /// @return craftingTime The time it takes to craft an item
-    /// @return ingredients_asset Resource contracts (ERC20) needed for crafting
-    /// @return ingredients_amount Resource amounts needed for crafting
+    /// @return recipe The recipe
     function getRecipe(address asset, bytes32 name)
         public virtual override view 
-        returns (
-            uint8 level,
-            bool learnable,
-            uint240 craftingTime,
-            address[] memory ingredients_asset,
-            uint[] memory ingredients_amount
-        )
+        returns (CraftingRecipe memory recipe)
     {
-        Recipe storage recipe = recipes[asset][name];
-        level = recipe.level;
-        learnable = recipe.learnable;
-        craftingTime = recipe.craftingTime;
-        ingredients_asset = new address[](recipe.ingredientsIndex.length);
-        ingredients_amount = new uint[](recipe.ingredientsIndex.length);
-
-        for (uint i = 0; i < recipe.ingredientsIndex.length; i++)
-        {
-            ingredients_asset[i] = recipe.ingredientsIndex[i];
-            ingredients_amount[i] = recipe.ingredients[recipe.ingredientsIndex[i]];
-        }
-    }
+        recipe = _getRecipe(asset, name);
+    }   
 
 
-    /// @dev Returns a single `asset` recipe by `name`
+    /// @dev Returns a single `asset` recipe at `index`
     /// @param asset The contract address of the asset to which the recipe applies
-    /// @param name The name of the asset recipe
-    /// @return assets Resource contracts (ERC20) needed for crafting
-    /// @return amounts Resource amounts needed for crafting
-    function getRecipeIngredients(address asset, bytes32 name)
+    /// @param index The index of the asset recipe
+    /// @return recipe The recipe
+    function getRecipeAt(address asset, uint index)
         public virtual override view 
-        returns (
-            address[] memory assets,
-            uint[] memory amounts
-        )
+        returns (CraftingRecipe memory recipe)
     {
-        Recipe storage recipe = recipes[asset][name];
-        assets = recipe.ingredientsIndex;
-
-        amounts = new uint[](recipe.ingredientsIndex.length);
-        for (uint i = 0; i < recipe.ingredientsIndex.length; i++)
-        {
-            amounts[i] = recipe.ingredients[recipe.ingredientsIndex[i]];
-        }
+        recipe = _getRecipe(asset, recipesIndex[asset][index]);
     }
 
 
@@ -382,128 +242,84 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     /// @param asset The contract address of the asset to which the recipes apply
     /// @param skip Starting index
     /// @param take Amount of recipes
-    /// @return name Recipe name
-    /// @return level Recipe can be crafted and/or learned by players from this level
-    /// @return learnable True indicates that the recipe has to be learned before it can be used
-    /// @return craftingTime The time it takes to craft an item
-    /// @return ingredient_count The number of different ingredients needed to craft this item
+    /// @return recipes_ The recipes
     function getRecipes(address asset, uint skip, uint take)
         public virtual override view 
-        returns (
-            bytes32[] memory name,
-            uint8[] memory level,
-            bool[] memory learnable,
-            uint240[] memory craftingTime,
-            uint[] memory ingredient_count
-        )
+        returns (CraftingRecipe[] memory recipes_)
     {
-        name = new bytes32[](take);
-        level = new uint8[](take);
-        learnable = new bool[](take);
-        craftingTime = new uint240[](take);
-        ingredient_count = new uint[](take);
+        uint length = take;
+        if (skip + take > recipesIndex[asset].length)
+        {
+            length = recipesIndex[asset].length - skip;
+        }
 
-        uint index = skip;
-        for (uint32 i = 0; i < take; i++)
-        {   
-            name[i] = recipesIndex[asset][index];
-            level[i] = recipes[asset][name[i]].level;
-            learnable[i] = recipes[asset][name[i]].learnable;
-            craftingTime[i] = recipes[asset][name[i]].craftingTime;
-            ingredient_count[i] = recipes[asset][name[i]].ingredientsIndex.length;
-            index++;
+        recipes_ = new CraftingRecipe[](length);
+        for (uint i = skip; i < length; i++)
+        {
+            recipes_[i] = _getRecipe(
+                asset, recipesIndex[asset][skip + i]);
         }
     }
 
 
-    /// @dev Retrieve a range of `asset` recipes
-    /// @param asset The contract address of the asset to which the recipes apply
-    /// @param skip Starting index
-    /// @param take Amount of recipes
-    /// @return asset1 Resource contracts (ERC20) needed for crafting
-    /// @return asset2 Resource contracts (ERC20) needed for crafting
-    /// @return asset3 Resource contracts (ERC20) needed for crafting
-    /// @return asset4 Resource contracts (ERC20) needed for crafting
-    /// @return amount1 Resource amounts needed for crafting
-    /// @return amount2 Resource amounts needed for crafting
-    /// @return amount3 Resource amounts needed for crafting
-    /// @return amount4 Resource amounts needed for crafting
-    function getRecipesIngredients(address asset, uint skip, uint take)
+    /// @dev Returns a single `asset` recipe at `index`
+    /// @param asset The contract address of the asset to which the recipe applies
+    /// @param index The index of the asset recipe
+    /// @return ingredient The recipe ingredient
+    function getRecipeIngredientAt(address asset, bytes32 recipe, uint index)
+         public virtual override view 
+        returns (CraftingRecipeIngredient memory ingredient)
+    {
+        CraftingRecipeData storage recipe_ = recipes[asset][recipe];
+        ingredient = CraftingRecipeIngredient(
+            recipe_.ingredientsIndex[index], 
+            recipe_.ingredients[recipe_.ingredientsIndex[index]]);
+    }
+
+
+    /// @dev Returns a single `asset` recipe at `index`
+    /// @param asset The contract address of the asset to which the recipe applies
+    /// @param recipe The name of recipe to retrieve the ingredients for
+    /// @return ingredients The recipe ingredients
+    function getRecipeIngredients(address asset, bytes32 recipe)
         public virtual override view 
-        returns (
-            address[] memory asset1,
-            address[] memory asset2,
-            address[] memory asset3,
-            address[] memory asset4,
-            uint[] memory amount1,
-            uint[] memory amount2,
-            uint[] memory amount3,
-            uint[] memory amount4
-        )
+        returns (CraftingRecipeIngredient[] memory ingredients)
     {
-        asset1 = new address[](take);
-        asset2 = new address[](take);
-        asset3 = new address[](take);
-        asset4 = new address[](take);
-        amount1 = new uint[](take);
-        amount2 = new uint[](take);
-        amount3 = new uint[](take);
-        amount4 = new uint[](take);
+        CraftingRecipeData storage recipe_ = recipes[asset][recipe];
+        ingredients = new CraftingRecipeIngredient[](recipe_.ingredientsIndex.length);
 
-        for (uint32 i = 0; i < take; i++)
-        {   
-            bytes32 name = recipesIndex[asset][skip];
-
-            if (recipes[asset][name].ingredientsIndex.length > 0)
-            {
-                asset1[i] = recipes[asset][name].ingredientsIndex[0];
-                amount1[i] = recipes[asset][name].ingredients[asset1[i]];
-            }
-
-            if (recipes[asset][name[i]].ingredientsIndex.length > 1)
-            {
-                asset2[i] = recipes[asset][name].ingredientsIndex[1];
-                amount2[i] = recipes[asset][name].ingredients[asset2[i]];
-            }
-
-            if (recipes[asset][name[i]].ingredientsIndex.length > 2)
-            {
-                asset3[i] = recipes[asset][name].ingredientsIndex[2];
-                amount3[i] = recipes[asset][name].ingredients[asset3[i]];
-            }
-
-            if (recipes[asset][name[i]].ingredientsIndex.length > 3)
-            {
-                asset4[i] = recipes[asset][name].ingredientsIndex[3];
-                amount4[i] = recipes[asset][name].ingredients[asset4[i]];
-            }
-
-            skip++;
+        for (uint i = 0; i < recipe_.ingredientsIndex.length; i++)
+        {
+            ingredients[i] = CraftingRecipeIngredient(
+                recipe_.ingredientsIndex[i], 
+                recipe_.ingredients[recipe_.ingredientsIndex[i]]);
         }
+
+        return ingredients;
     }
 
-    
+
     /// @dev Returns the number of `asset` recipes that `player` has learned
     /// @param player The player to retrieve the learned recipe count for
     /// @param asset The contract address of the asset to which the recipes apply
-    /// @return uint The number of `asset` recipes learned
+    /// @return count The number of `asset` recipes learned
     function getLearnedRecipeCount(address player, address asset) 
         public virtual override view 
-        returns (uint)
+        returns (uint count)
     {
-        return playerData[player].learnedIndex[asset].length;
+        count = playerData[player].learnedIndex[asset].length;
     }
 
 
     /// @dev Returns the `asset` recipe at `index` for `player`
     /// @param player The player to retrieve the learned recipe for
     /// @param asset The contract address of the asset to which the recipe applies
-    /// @return bytes32 The recipe name
+    /// @return recipe The recipe name
     function getLearnedRecipeAt(address player, address asset, uint index) 
         public virtual override view 
-        returns (bytes32)
+        returns (bytes32 recipe)
     {
-        return playerData[player].learnedIndex[asset][index];
+        recipe = playerData[player].learnedIndex[asset][index];
     }
 
 
@@ -512,92 +328,68 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     /// @param asset The contract address of the asset to which the recipe applies
     /// @param skip Starting index
     /// @param take Amount of recipes
-    /// @return bytes32[] The recipe names
+    /// @return recipes_ The recipe names
     function getLearnedRecipes(address player, address asset, uint skip, uint take) 
         public virtual override view 
-        returns (bytes32[] memory)
+        returns (bytes32[] memory recipes_)
     {
-        bytes32[] memory response = new bytes32[](take);
+        recipes_ = new bytes32[](take);
 
         uint index = skip;
         for (uint i = 0; i < playerData[player].learnedIndex[asset].length; i++)
         {
-            response[i] = playerData[player].learnedIndex[asset][index];
+            recipes_[i] = playerData[player].learnedIndex[asset][index];
             index++;
         }
-
-        return response;
     }
 
 
-    /// @dev Returns the total number of crafting slots for `player`
+    /// @dev Returns the total number of crafting slots for `player` 
     /// @param player The player to retrieve the slot count for
-    /// @return uint The total number of slots
+    /// @return count The total number of slots
     function getSlotCount(address player) 
         public virtual override view 
-        returns (uint)
+        returns (uint count)
     {
-        return playerData[player].slotCount;
+        count = playerData[player].slotCount;
     }
 
 
     /// @dev Returns a single crafting slot for `player` by `slot` index (non-zero based)
     /// @param player The player to retrieve the slot data for
-    /// @param slot The slot index (non-zero based)
-    /// @param asset The contract address of the asset to which the recipe applies
-    /// @param recipe The name of the recipe that is being crafted 
-    /// @param finished The timestamp after which the crafted item can be claimed
-    function getSlot(address player, uint slot)
+    /// @param slotId The slot index (non-zero based)
+    /// @return slot The slot data
+    function getSlot(address player, uint slotId)
         public virtual override view 
-        returns (
-            address asset,
-            bytes32 recipe,
-            uint finished
-        )
+        returns (CraftingSlot memory slot)
     {
-        asset = playerData[player].slots[slot].asset;
-        recipe = playerData[player].slots[slot].recipe;
-        finished = playerData[player].slots[slot].finished;
+        slot = playerData[player].slots[slotId];
     }
 
 
     /// @dev Returns a range of crafting slot for `player`
     /// @param player The player to retrieve the slot data for
-    /// @param slot The slot index (non-zero based)
-    /// @param asset The contract address of the asset to which the recipe applies
-    /// @param recipe The name of the recipe that is being crafted 
-    /// @param finished The timestamp after which the crafted item can be claimed
+    /// @return slots The slot datas
     function getSlots(address player) 
-        public virtual override view 
-        returns (
-            uint[] memory slot,
-            address[] memory asset,
-            bytes32[] memory recipe,
-            uint[] memory finished
-        )
+        external view 
+        returns (CraftingSlot[] memory slots)
     {
-        uint slotCount = playerData[player].slotCount;
-        slot = new uint[](slotCount);
-        asset = new address[](slotCount);
-        recipe = new bytes32[](slotCount);
-        finished = new uint[](slotCount);
-
-        for (uint i = 0; i < slotCount; i++)
+        slots = new CraftingSlot[](playerData[player].slotCount);
+        for (uint i = 0; i < playerData[player].slotCount; i++)
         {
-            slot[i] = i + 1;
-            asset[i] = playerData[player].slots[slot[i]].asset;
-            recipe[i] = playerData[player].slots[slot[i]].recipe;
-            finished[i] = playerData[player].slots[slot[i]].finished;
+            slots[i] = playerData[player].slots[i];
         }
+
+        return slots;
     }
 
 
     /// @dev Start the crafting process (completed by calling claim(..) after the crafting time has passed) of an item (ERC721)
     /// @param asset The contract address of the asset to which the recipes apply
     /// @param recipe The name of the recipe to craft
-    /// @param slot The index (non-zero based) of the crafting slot to use
+    /// @param slotId The index (non-zero based) of the crafting slot to use
     /// @param inventory The inventory space to deduct ingredients from ({Ship|Backpack})
-    function craft(address asset, bytes32 recipe, uint slot, Inventory inventory) 
+    function craft(address asset, bytes32 recipe, uint slotId, Inventory inventory) 
         validPlayer(msg.sender) 
         validInventory(inventory) 
         public virtual override  
@@ -616,15 +408,15 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         }
 
         // Require a valid slot
-        if (slot == 0 || slot > playerData[msg.sender].slotCount)
+        if (slotId == 0 || slotId > playerData[msg.sender].slotCount)
         {
-            revert CraftingSlotInvalid(msg.sender, slot);
+            revert CraftingSlotInvalid(msg.sender, slotId);
         }
 
         // Require free slot
-        if (playerData[msg.sender].slots[slot].finished > 0)
+        if (playerData[msg.sender].slots[slotId].finished > 0)
         {
-            revert CraftingSlotOccupied(msg.sender, slot);
+            revert CraftingSlotOccupied(msg.sender, slotId);
         }
 
         // Deduct resources (send to treasury) 
@@ -640,39 +432,39 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         }
 
         // Add to slot
-        playerData[msg.sender].slots[slot].asset = asset;
-        playerData[msg.sender].slots[slot].recipe = recipe;
-        playerData[msg.sender].slots[slot].finished = block.timestamp + recipes[asset][recipe].craftingTime;
+        playerData[msg.sender].slots[slotId].asset = asset;
+        playerData[msg.sender].slots[slotId].recipe = recipe;
+        playerData[msg.sender].slots[slotId].finished = block.timestamp + recipes[asset][recipe].craftingTime;
 
         // Emit
-        emit CraftingStart(msg.sender, asset, recipe, slot, playerData[msg.sender].slots[slot].finished);
+        emit CraftingStart(msg.sender, asset, recipe, slotId, playerData[msg.sender].slots[slotId].finished);
     }
 
 
     /// @dev Claims (mints) the previously crafted item (ERC721) in `slot` after sufficient crafting time has passed (started by calling craft(..)) 
-    /// @param slot The number (non-zero based) of the slot to claim
+    /// @param slotId The number (non-zero based) of the slot to claim
     /// @param inventory The inventory space to mint the crafted item into ({Ship|Backpack}) 
-    function claim(uint slot, Inventory inventory)
+    function claim(uint slotId, Inventory inventory)
         validInventory(inventory)
         public virtual override 
     {
         // Require slot occupied
-        if (playerData[msg.sender].slots[slot].finished == 0)
+        if (playerData[msg.sender].slots[slotId].finished == 0)
         {
-            revert CraftingSlotIsEmpty(msg.sender, slot);
+            revert CraftingSlotIsEmpty(msg.sender, slotId);
         }
 
         // Require slot ready
-        if (playerData[msg.sender].slots[slot].finished > block.timestamp)
+        if (playerData[msg.sender].slots[slotId].finished > block.timestamp)
         {
-            revert CraftingSlotNotReady(msg.sender, slot);
+            revert CraftingSlotNotReady(msg.sender, slotId);
         }
 
-        address asset = playerData[msg.sender].slots[slot].asset;
-        bytes32 item = playerData[msg.sender].slots[slot].recipe;
+        address asset = playerData[msg.sender].slots[slotId].asset;
+        bytes32 item = playerData[msg.sender].slots[slotId].recipe;
 
         // Reset slot
-        _resetSlot(msg.sender, slot);
+        _resetSlot(msg.sender, slotId);
 
         // Mint item
         uint tokenId = ICraftable(asset)
@@ -682,16 +474,16 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         assert(tokenId > 0); 
 
         // Emit
-        emit CraftingClaim(msg.sender, asset, item, slot, tokenId);
+        emit CraftingClaim(msg.sender, asset, item, slotId, tokenId);
     }
 
 
     /// @dev Empties a slot without claiming the crafted item (without refunding ingredients, if any)
-    /// @param slot The number (non-zero based) of the slot to empty
-    function empty(uint slot) 
+    /// @param slotId The number (non-zero based) of the slot to empty
+    function empty(uint slotId) 
         public virtual override 
     {
-        _resetSlot(msg.sender, slot);
+        _resetSlot(msg.sender, slotId);
     }
 
 
@@ -744,14 +536,82 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     }
 
 
+    /// @dev Returns a single `asset` recipe by `name` 
+    /// @param asset The contract address of the asset to which the recipe applies
+    /// @param name The name of the asset recipe
+    /// @return recipe The recipe
+    function _getRecipe(address asset, bytes32 name)
+        internal view 
+        returns (CraftingRecipe memory recipe)
+    {
+        CraftingRecipeData storage data = recipes[asset][name];
+        recipe = CraftingRecipe(
+            name,
+            data.level,
+            data.learnable,
+            asset,
+            data.craftingTime,
+            new CraftingRecipeIngredient[](data.ingredientsIndex.length));
+
+        for (uint i = 0; i < data.ingredientsIndex.length; i++)
+        {
+            recipe.ingredients[i] = CraftingRecipeIngredient(
+                data.ingredientsIndex[i], 
+                data.ingredients[data.ingredientsIndex[i]]);
+        }
+    }
+
+
+    /// @dev Set a single recipe
+    /// @param recipe_ The recipe to set
+    function _setRecipe(CraftingRecipe memory recipe_) 
+        onlyRole(DEFAULT_ADMIN_ROLE) 
+        public virtual 
+    {
+        if (!_recipeExists(recipe_.asset, recipe_.name))
+        {
+            // Add index
+            recipes[recipe_.asset][recipe_.name].index = recipesIndex[recipe_.asset].length;
+            recipesIndex[recipe_.asset].push(recipe_.name);
+        }
+
+        // Set values
+        CraftingRecipeData storage recipe = recipes[recipe_.asset][recipe_.name];
+        recipe.level = recipe_.level;
+        recipe.learnable = recipe_.learnable;
+        recipe.craftingTime = recipe_.craftingTime;
+        
+        // Reset ingredients
+        if (recipe.ingredientsIndex.length > 0)
+        {
+            for (uint i = 0; i < recipe.ingredientsIndex.length; i++)
+            {
+                delete recipe.ingredients[recipe.ingredientsIndex[i]];
+            }
+
+            delete recipe.ingredientsIndex;
+        }
+
+        // Set ingredients
+        for (uint i = 0; i < recipe_.ingredients.length; i++)
+        {
+            recipe.ingredientsIndex.push(recipe_.ingredients[i].asset);
+            recipe.ingredients[recipe_.ingredients[i].asset] = recipe_.ingredients[i].amount;
+        }
+
+        // Emit
+        emit CraftingRecipeMutation(recipe_.asset, recipe_.name);
+    }
+
+
     /// @dev Resets a crafting `slot` for `player` by setting it's values to their defaults
     /// @param player The owner of the crafting slot
-    /// @param slot The index (non zero based) of the slot to reset
-    function _resetSlot(address player, uint slot)
+    /// @param slotId The index (non zero based) of the slot to reset
+    function _resetSlot(address player, uint slotId)
         internal 
     {
-        playerData[player].slots[slot].asset = address(0);
-        playerData[player].slots[slot].recipe = bytes32(0);
-        playerData[player].slots[slot].finished = 0;
+        playerData[player].slots[slotId].asset = address(0);
+        playerData[player].slots[slotId].recipe = bytes32(0);
+        playerData[player].slots[slotId].finished = 0;
     }
 }

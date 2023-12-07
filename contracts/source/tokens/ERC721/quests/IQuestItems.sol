@@ -23,16 +23,16 @@ interface IQuestItems {
     /// @return item The item
     function getItemAt(uint index) 
         external view 
-        returns (QuestItem memory);
+        returns (QuestItem memory item);
 
 
     /// @dev Retreive a rance of items
     /// @param skip Starting index
     /// @param take Amount of items
-    /// @return names Tool names (unique)
+    /// @return items The items
     function getItems(uint skip, uint take) 
         external view 
-        returns (QuestItem[] memory);
+        returns (QuestItem[] memory items);
 
 
     /// @dev Returns the item with the given id
@@ -40,13 +40,13 @@ interface IQuestItems {
     /// @return item The item
     function getItemByTokenId(uint tokenId) 
         external view 
-        returns (QuestItem memory);
+        returns (QuestItem memory item);
 
 
     /// @dev Returns the item with the given name
     /// @param tokenIds The token ids of the items
     /// @return items The items
-    function getItemsIdByTokenId(uint[] memory tokenIds)
+    function getItemsIdByTokenIds(uint[] memory tokenIds)
         external view 
-        returns (QuestItem[] memory);
+        returns (QuestItem[] memory items);
 }

@@ -16,11 +16,23 @@ import "../CryptopiaERC721.sol";
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungibleQuestReward {
 
-    /// @dev Tool minting data
-    struct ToolMintingDataEntry
+    /// @dev Tool data
+    struct ToolData 
     {
         uint index;
-        uint amount;
+        Rarity rarity;
+        uint8 level;
+        uint24 durability;
+        uint24 multiplier_cooldown;
+        uint24 multiplier_xp;
+        uint24 multiplier_effectiveness;
+        uint24 value1;
+        uint24 value2;
+        uint24 value3;
+
+        /// @dev Resource => minting data
+        mapping (Resource => uint) minting;
+        Resource[] mintingIndex;
     }
 
     /**
@@ -32,16 +44,12 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
     // Auto token id 
     uint private _currentTokenId; 
 
-    /// @dev name => Tool
-    mapping (bytes32 => Tool) public tools;
+    /// @dev name => ToolData
+    mapping (bytes32 => ToolData) public tools;
     bytes32[] private toolsIndex;
 
     /// @dev tokenId => ToolInstance
     mapping (uint => ToolInstance) public toolInstances;
-
-    /// @dev tool => Resource => data
-    mapping (bytes32 => mapping (Resource => ToolMintingDataEntry)) public minting;
-    mapping (bytes32 => Resource[]) public mintingIndex;
 
     // Refs
     address public playerRegisterContract;
@@ -121,17 +129,15 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
      * Admin functions
      */
     /// @dev Add or update tools
-    /// @param toolData Tool data
-    /// @param toolMintingData Tool minting data
+    /// @param tools_ Tool datas to add or update
     function setTools(
-        Tool[] memory toolData,
-        ToolMintingData[][] memory toolMintingData) 
+        Tool[] memory tools_) 
         public virtual  
         onlyRole(DEFAULT_ADMIN_ROLE) 
     {
-        for (uint i = 0; i < toolData.length; i++)
+        for (uint i = 0; i < tools_.length; i++)
         {
-            _setTool(toolData[0], toolMintingData[0]);
+            _setTool(tools_[i]);
         }
     }
 
@@ -151,58 +157,33 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
 
     /// @dev Retreive a tools by name
     /// @param name Tool name (unique)
-    /// @return toolData Tool data
-    /// @return mintingData Tool minting data 
+    /// @return tool The tool data
     function getTool(bytes32 name) 
         public virtual override view 
-        returns (
-            Tool memory toolData,
-            ToolMintingData[] memory mintingData
-        )
+        returns (Tool memory tool)
     {
-        toolData = tools[name];
-        mintingData = new ToolMintingData[](mintingIndex[name].length);
-        for (uint i = 0; i < mintingIndex[name].length; i++)
-        {
-            mintingData[i] = ToolMintingData({
-                resource: mintingIndex[name][i],
-                amount: minting[name][mintingIndex[name][i]].amount
-            });
-        }
+        return _getTool(name);
     }
 
 
     /// @dev Retreive a rance of tools
     /// @param skip Starting index
     /// @param take Amount of items
-    /// @return toolDatas Range of tools
-    /// @return mintingDatas Range of tool minting data 
-    function getTools(uint skip, uint take) 
-        public override view 
-        returns (
-            Tool[] memory toolDatas,
-            ToolMintingData[][] memory mintingDatas
-        )
+    /// @return tools_ The tool datas  
+    function getTools(uint skip, uint take)  
+        public virtual override view 
+        returns (Tool[] memory tools_)
     {
         uint length = take;
-        if (length > toolsIndex.length - skip) 
+        if (toolsIndex.length < skip + take) 
         {
             length = toolsIndex.length - skip;
         }
 
-        toolDatas = new Tool[](length);
-        mintingDatas = new ToolMintingData[][](length);
+        tools_ = new Tool[](length);
         for (uint i = 0; i < length; i++)
         {
-            toolDatas[i] = tools[toolsIndex[skip + i]];
-            mintingDatas[i] = new ToolMintingData[](mintingIndex[toolDatas[i].name].length);
-            for (uint j = 0; j < mintingIndex[toolDatas[i].name].length; j++)
-            {
-                mintingDatas[i][j] = ToolMintingData({
-                    resource: mintingIndex[toolDatas[i].name][j],
-                    amount: minting[toolDatas[i].name][mintingIndex[toolDatas[i].name][j]].amount
-                });
-            }
+            tools_[i] = _getTool(toolsIndex[skip + i]);
         }
     }
 
@@ -250,36 +231,36 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
             uint24 multiplier_effectiveness
         )
     {
-        bytes32 tool = toolInstances[toolId].name; 
+        bytes32 toolName = toolInstances[toolId].name; 
 
         // Check if tool can be used for minting resource
-        if (minting[tool][resource].amount == 0)
+        if (tools[toolName].minting[resource] == 0) 
         {
             revert ToolInvalidForMinting(toolId, resource);
         }
 
         // Check if amount is within minting limits
-        if (amount > minting[tool][resource].amount)
+        if (amount > tools[toolName].minting[resource]) 
         {
-            revert ToolMintLimitExceeded(toolId, resource, amount, minting[tool][resource].amount);
+            revert ToolMintLimitExceeded(toolId, resource, amount, tools[toolName].minting[resource]); 
         }
         
         // Check if player has the required level
         uint8 playerLevel = IPlayerRegister(playerRegisterContract).getLevel(player);
-        if (playerLevel < tools[tool].level)
+        if (playerLevel < tools[toolName].level)
         {
-            revert PlayerLevelInsufficient(player, playerLevel, tools[tool].level);
+            revert PlayerLevelInsufficient(player, playerLevel, tools[toolName].level);
         }
 
         // Apply effects
-        multiplier_cooldown = tools[tool].multiplier_cooldown;
+        multiplier_cooldown = tools[toolName].multiplier_cooldown;
         multiplier_xp = MAX_DAMAGE == toolInstances[toolId].damage 
-            ? 0 : tools[tool].multiplier_xp * (MAX_DAMAGE - toolInstances[toolId].damage) / MAX_DAMAGE;
+            ? 0 : tools[toolName].multiplier_xp * (MAX_DAMAGE - toolInstances[toolId].damage) / MAX_DAMAGE;
         multiplier_effectiveness = MAX_DAMAGE == toolInstances[toolId].damage 
-            ? 0 : tools[tool].multiplier_effectiveness * (MAX_DAMAGE - toolInstances[toolId].damage) / MAX_DAMAGE;
+            ? 0 : tools[toolName].multiplier_effectiveness * (MAX_DAMAGE - toolInstances[toolId].damage) / MAX_DAMAGE;
 
         // Apply damage
-        uint24 damage = MAX_DURABILITY - tools[tool].durability;
+        uint24 damage = MAX_DURABILITY - tools[toolName].durability;
         if (damage > 0)
         {
             if (toolInstances[toolId].damage + damage < MAX_DAMAGE)
@@ -379,7 +360,7 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
         internal view 
         returns (bool) 
     {
-        return tools[tool].multiplier_effectiveness != 0;
+        return tools[tool].multiplier_effectiveness > 0;
     }
 
 
@@ -391,63 +372,82 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
         internal view 
         returns (bool) 
     {
-        return mintingIndex[tool].length > 0 && mintingIndex[tool][minting[tool][resource].index] == resource;
+        return tools[tool].minting[resource] > 0;
+    }
+
+
+    /// @dev Retreive a tools by name
+    /// @param name Tool name (unique)
+    /// @return tool The tool data
+    function _getTool(bytes32 name) 
+        internal view  
+        returns (Tool memory tool)
+    {
+        ToolData storage data = tools[name];
+        tool = Tool({
+            name: name,
+            rarity: data.rarity,
+            level: data.level,
+            durability: data.durability,
+            multiplier_cooldown: data.multiplier_cooldown,
+            multiplier_xp: data.multiplier_xp,
+            multiplier_effectiveness: data.multiplier_effectiveness,
+            value1: data.value1,
+            value2: data.value2,
+            value3: data.value3,
+            minting: new ToolMinting[](data.mintingIndex.length)
+        });
+
+        for (uint i = 0; i < data.mintingIndex.length; i++)
+        {
+            tool.minting[i] = ToolMinting({
+                resource: data.mintingIndex[i],
+                amount: data.minting[data.mintingIndex[i]] 
+            });
+        }
     }
 
 
     /// @dev Add or update tool
-    /// @param tool Tool data
-    /// @param mintingData Tool minting data
-    function _setTool(
-        Tool memory tool, 
-        ToolMintingData[] memory mintingData
-    ) 
+    /// @param tool_ Tool data
+    function _setTool(Tool memory tool_) 
         internal 
     {
         // Add tool
-        if (!_exists(tool.name))
+        if (!_exists(tool_.name))
         {
-            toolsIndex.push(tool.name);
+            tools[tool_.name].index = toolsIndex.length;
+            toolsIndex.push(tool_.name);
         }
 
         // Set tool
-        tools[tool.name] = tool;
+        ToolData storage tool = tools[tool_.name];
+        tool.rarity = tool_.rarity;
+        tool.level = tool_.level;
+        tool.durability = tool_.durability;
+        tool.multiplier_cooldown = tool_.multiplier_cooldown;
+        tool.multiplier_xp = tool_.multiplier_xp;
+        tool.multiplier_effectiveness = tool_.multiplier_effectiveness;
+        tool.value1 = tool_.value1;
+        tool.value2 = tool_.value2;
+        tool.value3 = tool_.value3;
 
-        // Set minting data
-        for (uint i = 0; i < mintingData.length; i++)
+        // Reset minting data
+        if (tool.mintingIndex.length > 0)
         {
-            if (mintingData[i].amount > 0)
+            for (uint i = 0; i < tool.mintingIndex.length; i++)
             {
-                // Add
-                if (!_exists(tool.name, mintingData[i].resource))
-                {
-                    mintingIndex[tool.name].push(mintingData[i].resource);
-
-                    minting[tool.name][mintingData[i].resource] = ToolMintingDataEntry({
-                        index: mintingIndex[tool.name].length - 1,
-                        amount: mintingData[i].amount
-                    });
-                }
-
-                // Update
-                else 
-                {
-                    
-                    minting[tool.name][mintingData[i].resource].amount = mintingData[i].amount;
-                }
+                delete tool.minting[tool.mintingIndex[i]];
             }
 
-            // Remove
-            else if (_exists(tool.name, mintingData[i].resource))
-            {
-                // Remove from index
-                uint index = minting[tool.name][mintingData[i].resource].index;
-                mintingIndex[tool.name][index] = mintingIndex[tool.name][mintingIndex[tool.name].length - 1];
-                mintingIndex[tool.name].pop();
+            delete tool.mintingIndex;
+        }
 
-                // Remove from mapping
-                delete minting[tool.name][mintingData[i].resource];
-            }
+        // Add minting data
+        for (uint i = 0; i < tool_.minting.length; i++)
+        {
+            tool.mintingIndex.push(tool_.minting[i].resource);
+            tool.minting[tool_.minting[i].resource] = tool_.minting[i].amount; 
         }
     }
 }

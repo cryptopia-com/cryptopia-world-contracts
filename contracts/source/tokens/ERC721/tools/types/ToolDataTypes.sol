@@ -17,6 +17,16 @@ struct Tool
     uint24 value1;
     uint24 value2;
     uint24 value3;
+
+    // Minting data
+    ToolMinting[] minting;
+}
+
+/// @dev Tool minting 
+struct ToolMinting
+{
+    Resource resource;
+    uint amount;
 }
 
 /// @dev Tool instance
@@ -24,11 +34,4 @@ struct ToolInstance
 {
     bytes32 name;
     uint24 damage;
-}
-
-/// @dev Tool minting data
-struct ToolMintingData
-{
-    Resource resource;
-    uint amount;
 }

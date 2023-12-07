@@ -128,20 +128,21 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @dev Retreive a rance of ships
     /// @param skip Starting index
     /// @param take Amount of items
-    /// @return data Ship[] range of ship templates
+    /// @return ships_ Ship[] range of ships
     function getShips(uint skip, uint take)
         public virtual override view 
-        returns (Ship[] memory data)
+        returns (Ship[] memory ships_)
     {
         uint length = take;
-        if (length > shipsIndex.length - skip) {
+        if (shipsIndex.length < skip + take) 
+        {
             length = shipsIndex.length - skip;
         }
 
-        data = new Ship[](length);
+        ships_ = new Ship[](length);
         for (uint i = 0; i < length; i++)
         {
-            data[i] = ships[shipsIndex[i]];
+            ships_[i] = ships[shipsIndex[i]];
         }
     }
 

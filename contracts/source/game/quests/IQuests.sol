@@ -12,16 +12,25 @@ interface IQuests {
      * Public functions
      */
     /// @dev Get quest count
-    /// @return Quest count
+    /// @return count number of quests
     function getQuestCount() 
         external view 
-        returns (uint);
+        returns (uint count);
 
 
     /// @dev Get quest at index
     /// @param index Quest index
-    /// @return Quest at index
+    /// @return quest at index
     function getQuestAt(uint index) 
         external view 
-        returns (Quest memory);
+        returns (Quest memory quest);
+
+    
+    /// @dev Get quests with pagination
+    /// @param skip Number of quests to skip
+    /// @param take Number of quests to take
+    /// @return quests range of quests
+    function getQuests(uint skip, uint take) 
+        external view 
+        returns (Quest[] memory quests);
 }

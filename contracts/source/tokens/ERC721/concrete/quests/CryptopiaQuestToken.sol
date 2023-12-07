@@ -123,27 +123,33 @@ contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestIt
     /// @return item The item
     function getItemAt(uint index) 
         public override view 
-        returns (QuestItem memory)
+        returns (QuestItem memory item)
     {
-        return QuestItem(items[itemsIndex[index]].name);
+        item = QuestItem(items[itemsIndex[index]].name);
     }
 
 
     /// @dev Retreive a rance of items
     /// @param skip Starting index
     /// @param take Amount of items
-    /// @return names Tool names (unique)
+    /// @return items_ The items
     function getItems(uint skip, uint take) 
         public override view 
-        returns (QuestItem[] memory)
+        returns (QuestItem[] memory items_)
     {
-        QuestItem[] memory result = new QuestItem[](take);
-        for (uint i = 0; i < take; i++) 
+        uint length = take;
+        if (itemsIndex.length < skip + take) 
         {
-            result[i] = QuestItem(items[itemsIndex[skip + i]].name);
+            length = itemsIndex.length - skip;
         }
 
-        return result;
+        items_ = new QuestItem[](length);
+        for (uint i = 0; i < length; i++) 
+        {
+            items_[i] = QuestItem(items[itemsIndex[skip + i]].name);
+        }
+
+        return items_;
     }
 
 
@@ -152,26 +158,26 @@ contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestIt
     /// @return item The item
     function getItemByTokenId(uint tokenId) 
         public override view 
-        returns (QuestItem memory)
+        returns (QuestItem memory item)
     {
-        return QuestItem(items[itemInstances[tokenId]].name);
+        item = QuestItem(items[itemInstances[tokenId]].name);
     }
 
 
     /// @dev Returns the item with the given name
     /// @param tokenIds The token ids of the items
-    /// @return items The items
-    function getItemsIdByTokenId(uint[] memory tokenIds)
+    /// @return items_ The items
+    function getItemsIdByTokenIds(uint[] memory tokenIds)
         public override view 
-        returns (QuestItem[] memory)
+        returns (QuestItem[] memory items_)
     {
-        QuestItem[] memory result = new QuestItem[](tokenIds.length);
+        items_ = new QuestItem[](tokenIds.length);
         for (uint i = 0; i < tokenIds.length; i++) 
         {
-            result[i] = QuestItem(items[itemInstances[tokenIds[i]]].name);
+            items_[i] = QuestItem(items[itemInstances[tokenIds[i]]].name);
         }
 
-        return result;
+        return items_;
     }
 
 
@@ -267,9 +273,9 @@ contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestIt
         // Add item
         if (!_exists(item.name)) 
         {
-            itemsIndex.push(item.name);
             items[item.name] = QuestItemDataEntry(
                 itemsIndex.length, item.name);
+            itemsIndex.push(item.name);
         }
     }
 }

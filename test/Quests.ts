@@ -7,6 +7,7 @@ import { DEFAULT_ADMIN_ROLE, SYSTEM_ROLE } from "./settings/roles";
 import { Resource, Terrain, Biome, Inventory, SubFaction } from "../scripts/types/enums";
 import { Asset, Map } from "../scripts/types/input";
 import { getParamFromEvent} from '../scripts/helpers/events';
+import { resolveEnum } from "../scripts/helpers/enums";
 
 import { 
     CryptopiaAccount,
@@ -20,6 +21,10 @@ import {
     CryptopiaQuestToken,
     CryptopiaQuests
 } from "../typechain-types";
+
+import { 
+    QuestStruct 
+} from "../typechain-types/contracts/source/game/quests/IQuests";
 
 
 /**
@@ -109,23 +114,21 @@ describe("Quests Contract", function () {
             name: "Stone Axe",
             rarity: 1,
             level: 1,
-            stats: {
-                durability: 90, 
-                multiplier_cooldown: 100, 
-                multiplier_xp: 100, 
-                multiplier_effectiveness: 100, 
-                value1: 10, 
-                value2: 20, 
-                value3: 30
-            },
+            durability: 90, 
+            multiplier_cooldown: 100, 
+            multiplier_xp: 100, 
+            multiplier_effectiveness: 100, 
+            value1: 10, 
+            value2: 20, 
+            value3: 30,
             minting: [
                 { 
-                    resource: Resource.Meat,
-                    amount: ["1.0", "ether"] 
+                    resource: "MEAT",
+                    amount: "1"
                 }, 
                 { 
-                    resource: Resource.Wood,
-                    amount: ["1.0", "ether"] 
+                    resource: "WOOD",
+                    amount: "1"
                 }
             ],
             recipe: {
@@ -134,12 +137,12 @@ describe("Quests Contract", function () {
                 craftingTime: 300, // 5 min
                 ingredients: [
                     {
-                        resource: Resource.Wood,
-                        amount:["2.0", "ether"]
+                        asset: "WOOD",
+                        amount: "2"
                     },
                     {
-                        resource: Resource.Stone,
-                        amount: ["1.0", "ether"]
+                        asset: "STONE",
+                        amount: "1"
                     }
                 ]
             }
@@ -457,21 +460,26 @@ describe("Quests Contract", function () {
 
         // Add tools
         await toolTokenInstance.setTools(
-            tools.map((tool: any) => tool.name.toBytes32()),
-            tools.map((tool: any) => tool.rarity),
-            tools.map((tool: any) => tool.level),
-            tools.map((tool: any) => [
-                tool.stats.durability, 
-                tool.stats.multiplier_cooldown, 
-                tool.stats.multiplier_xp, 
-                tool.stats.multiplier_effectiveness, 
-                tool.stats.value1, 
-                tool.stats.value2, 
-                tool.stats.value3
-            ]),
-            tools.map((tool: any) => tool.minting.map((item: any) => item.resource)),
-            tools.map((tool: any) => tool.minting.map((item: any) => ethers.parseUnits(item.amount[0], item.amount[1]))));
-
+            tools.map((tool: any) => {
+                return {
+                    name: tool.name.toBytes32(),
+                    rarity: tool.rarity,
+                    level: tool.level,
+                    durability: tool.durability,
+                    multiplier_cooldown: tool.multiplier_cooldown,
+                    multiplier_xp: tool.multiplier_xp,
+                    multiplier_effectiveness: tool.multiplier_effectiveness,
+                    value1: tool.value1,
+                    value2: tool.value2,
+                    value3: tool.value3,
+                    minting: tool.minting.map((minting: any) => {
+                        return {
+                            resource: resolveEnum(Resource, minting.resource),
+                            amount: minting.amount.toWei()
+                        };
+                    })
+                };
+            }));
 
         // Create map 
         await mapsInstance.createMap(
@@ -510,7 +518,7 @@ describe("Quests Contract", function () {
      */
     describe("Admin", function () {
 
-        let quest: CryptopiaQuests.QuestStruct;
+        let quest: QuestStruct;
 
         /**
          * Deploy players
@@ -611,7 +619,7 @@ describe("Quests Contract", function () {
      */
     describe("Quest: Ancient Ruins", function () {
 
-        let quest: CryptopiaQuests.QuestStruct;
+        let quest: QuestStruct;
 
         let registeredAccountInstance: CryptopiaAccount;
         let unregisteredAccountInstance: CryptopiaAccount;
@@ -1014,7 +1022,7 @@ describe("Quests Contract", function () {
      */
     describe("Quest: Pirate", function () {
 
-        let quest: CryptopiaQuests.QuestStruct;
+        let quest: QuestStruct;
 
         let registeredAccountInstance: CryptopiaAccount;
         let unregisteredAccountInstance: CryptopiaAccount;
@@ -1131,8 +1139,8 @@ describe("Quests Contract", function () {
 
             // Add quest items
             await questTokenInstance.setItems([
-                "Item 1".toBytes32(), 
-                "Item 2".toBytes32()
+                {name: "Item 1".toBytes32()}, 
+                {name: "Item 2".toBytes32()}
             ]);
 
             // Add quest

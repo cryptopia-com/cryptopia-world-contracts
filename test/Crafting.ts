@@ -1,8 +1,10 @@
-import "../scripts/helpers/converters.ts";
+import "../scripts/helpers/converters.ts"; 
 import { expect } from "chai";
 import { ethers, upgrades} from "hardhat";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { getParamFromEvent} from '../scripts/helpers/events';
+import { resolveEnum } from "../scripts/helpers/enums";
+import { Resource } from '../scripts/types/enums';
 import { REVERT_MODE } from "./settings/config";
 import { SYSTEM_ROLE } from "./settings/roles";   
 
@@ -15,6 +17,7 @@ import {
     CryptopiaToolToken,
     CryptopiaCrafting
 } from "../typechain-types";
+
 
 /**
  * Crafting tests
@@ -93,23 +96,21 @@ describe("Crafting Contract", function () {
             name: "Stone Axe",
             rarity: 1,
             level: 1,
-            stats: {
-                durability: 90, 
-                multiplier_cooldown: 100, 
-                multiplier_xp: 100, 
-                multiplier_effectiveness: 100, 
-                value1: 10, 
-                value2: 20, 
-                value3: 30
-            },
+            durability: 90, 
+            multiplier_cooldown: 100, 
+            multiplier_xp: 100, 
+            multiplier_effectiveness: 100, 
+            value1: 10, 
+            value2: 20, 
+            value3: 30,
             minting: [
                 { 
-                    asset: "MEAT",
-                    amount: ['1.0', 'ether'] 
+                    resource: "MEAT",
+                    amount: "1"
                 }, 
                 { 
-                    asset: "WOOD",
-                    amount: ['1.0', 'ether'] 
+                    resource: "WOOD",
+                    amount: "1"
                 }
             ],
             recipe: {
@@ -119,11 +120,11 @@ describe("Crafting Contract", function () {
                 ingredients: [
                     {
                         asset: "WOOD",
-                        amount:['2.0', 'ether']
+                        amount: "2"
                     },
                     {
                         asset: "STONE",
-                        amount: ['1.0', 'ether']
+                        amount: "1"
                     }
                 ]
             }
@@ -132,23 +133,21 @@ describe("Crafting Contract", function () {
             name: "Iron Axe",
             rarity: 1,
             level: 1,
-            stats: {
-                durability: 95, 
-                multiplier_cooldown: 110, 
-                multiplier_xp: 110, 
-                multiplier_effectiveness: 110, 
-                value1: 11, 
-                value2: 22, 
-                value3: 33
-            },
+            durability: 95, 
+            multiplier_cooldown: 110, 
+            multiplier_xp: 110, 
+            multiplier_effectiveness: 110, 
+            value1: 11, 
+            value2: 22, 
+            value3: 33,
             minting: [
                 { 
-                    asset: "MEAT",
-                    amount: ['1.0', 'ether'] 
+                    resource: "MEAT",
+                    amount: "1"
                 }, 
                 { 
-                    asset: "WOOD",
-                    amount: ['1.0', 'ether'] 
+                    resource: "WOOD",
+                    amount: "1"
                 }
             ],
             recipe: {
@@ -158,16 +157,17 @@ describe("Crafting Contract", function () {
                 ingredients: [
                     {
                         asset: "WOOD",
-                        amount: ['2.0', 'ether']
+                        amount: "2"
                     },
                     {
                         asset: "FE26",
-                        amount: ['1.0', 'ether']
+                        amount: "1"
                     }
                 ]
             }
         }
     ];
+
 
     /**
      * Deploy Crafting Contracts
@@ -334,30 +334,44 @@ describe("Crafting Contract", function () {
 
         // Add tools
         await toolTokenInstance.setTools(
-            tools.map((tool: any) => tool.name.toBytes32()),
-            tools.map((tool: any) => tool.rarity),
-            tools.map((tool: any) => tool.level),
-            tools.map((tool: any) => [
-                tool.stats.durability, 
-                tool.stats.multiplier_cooldown, 
-                tool.stats.multiplier_xp, 
-                tool.stats.multiplier_effectiveness, 
-                tool.stats.value1, 
-                tool.stats.value2, 
-                tool.stats.value3
-            ]),
-            tools.map((tool: any) => tool.minting.map((item: any) => getAssetBySymbol(item.asset).resource)),
-            tools.map((tool: any) => tool.minting.map((item: any) => ethers.parseUnits(item.amount[0], item.amount[1]))));
-    
+            tools.map((tool: any) => {
+                return {
+                    name: tool.name.toBytes32(),
+                    rarity: tool.rarity,
+                    level: tool.level,
+                    durability: tool.durability,
+                    multiplier_cooldown: tool.multiplier_cooldown,
+                    multiplier_xp: tool.multiplier_xp,
+                    multiplier_effectiveness: tool.multiplier_effectiveness,
+                    value1: tool.value1,
+                    value2: tool.value2,
+                    value3: tool.value3,
+                    minting: tool.minting.map((minting: any) => {
+                        return {
+                            resource: resolveEnum(Resource, minting.resource),
+                            amount: minting.amount.toWei()
+                        };
+                    })
+                };
+            }));
+
         // Add tool recipes
         await craftingInstance.setRecipes(
-            tools.map(() => toolTokenAddress),
-            tools.map((tool: any) => tool.name.toBytes32()),
-            tools.map((tool: any) => tool.recipe.level),
-            tools.map((tool: any) => tool.recipe.learnable),
-            tools.map((tool: any) => tool.recipe.craftingTime),
-            tools.map((tool: any) => tool.recipe.ingredients.map((ingredient: any) => getAssetBySymbol(ingredient.asset).contractAddress)),
-            tools.map((tool: any) => tool.recipe.ingredients.map((ingredient: any) => ethers.parseUnits(ingredient.amount[0], ingredient.amount[1]))));
+            tools.map((tool: any) => {
+                return {
+                    name: tool.name.toBytes32(),
+                    level: tool.recipe.level,
+                    learnable: tool.recipe.learnable,
+                    asset: toolTokenAddress,
+                    craftingTime: tool.recipe.craftingTime,
+                    ingredients: tool.recipe.ingredients.map((ingredient: any) => {
+                        return {
+                            asset: getAssetBySymbol(ingredient.asset).contractAddress,
+                            amount: ingredient.amount.toWei()
+                        };
+                    })
+                };
+            }));
 
         // Create registered account
         const createRegisteredAccountTransaction = await playerRegisterInstance.create([account1], 1, 0, "Registered_Username".toBytes32(), 0, 0);

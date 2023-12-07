@@ -192,47 +192,47 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
      * Public functions
      */
     /// @dev Get quest count
-    /// @return Quest count
+    /// @return count number of quests
     function getQuestCount() 
-        public override view returns (uint) 
+        public override view 
+        returns (uint count) 
     {
-        return questsIndex.length;
+        count = questsIndex.length;
     }
 
 
     /// @dev Get quest at index
     /// @param index Quest index
-    /// @return Quest at index
+    /// @return quest at index
     function getQuestAt(uint index) 
         public override view 
-        returns (Quest memory) 
+        returns (Quest memory quest) 
     {
-        return quests[questsIndex[index]];
+        quest = quests[questsIndex[index]];
     }
 
 
     /// @dev Get quests with pagination
     /// @param skip Number of quests to skip
     /// @param take Number of quests to take
-    /// @return Quest range
+    /// @return quests_ range of quests
     function getQuests(uint skip, uint take) 
         public view 
-        returns (Quest[] memory) 
+        returns (Quest[] memory quests_) 
     {
-        uint length = questsIndex.length;
-        uint size = take;
-        if (size > length - skip) 
+        uint length = take;
+        if (questsIndex.length < skip + take)  
         {
-            size = length - skip;
+            length = questsIndex.length - skip;
         }
 
-        Quest[] memory result = new Quest[](size);
-        for (uint i = 0; i < size; i++) 
+        quests_ = new Quest[](length);
+        for (uint i = 0; i < length; i++) 
         {
-            result[i] = quests[questsIndex[skip + i]];
+            quests_[i] = quests[questsIndex[skip + i]];
         }
 
-        return result;
+        return quests_;
     }
 
 

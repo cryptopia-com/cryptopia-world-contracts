@@ -27,24 +27,24 @@ import "../../../../accounts/multisig/errors/MultisigErrors.sol";
 contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRandomness, IPirateMechanics {
 
     /**
-     * Storage
+     * Storage 
      */
     // Settings
-    uint64 constant private MAX_RESPONSE_TIME = 600; // 10 minutes
-    uint constant private BASE_XP_REWARD = 100; // 100 XP
+    uint64 constant private MAX_RESPONSE_TIME = 600; // 10 minutes 
+    uint constant private BASE_XP_REWARD = 100; // 100 XP  
 
     // Scaling factors
-    uint constant private MAX_LUCK = 100; // Denominator
+    uint constant private MAX_LUCK = 100; // Denominator 
     uint constant private MAX_CHARISMA = 100; // Denominator
 
     uint16 constant private SPEED_SCALING_FACTOR = 50; // Capped at 30% influence (speed is unknown)
     uint16 constant private LUCK_SCALING_FACTOR = 20; // Max 20% influence (luck is 0-100) 
 
-    uint constant private SPEED_INFLUENCE_CAP = 3_000; // Max 30% influence (speed is unknown)
+    uint constant private SPEED_INFLUENCE_CAP = 3_000; // Max 30% influence (speed is unknown) 
 
     // Negociation factors
     uint constant private BASE_NEGOCIATION_DEDUCTION_FACTOR = 50; // 50%
-    uint constant private BASE_NEGOCIATION_DEDUCTION_FACTOR_PRECISION = 100; // Denominator
+    uint constant private BASE_NEGOCIATION_DEDUCTION_FACTOR_PRECISION = 100; // Denominator 
 
     // Plunder factors
     uint constant private BASE_PLUNDER_DEDUCTION_FACTOR = 50; // 50%
@@ -52,7 +52,7 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
 
     // Randomness
     uint constant private BASE_ESCAPE_THRESHOLD = 5_000; // 50%
-    uint constant private BASE_PLUNDER_THRESHOLD = 5_000; // 50%
+    uint constant private BASE_PLUNDER_THRESHOLD = 5_000; // 50% 
     
     /// @dev pirate => target
     mapping(address => address) public targets;
@@ -207,12 +207,12 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
 
 
     /**
-     * Public functions
+     * Public functions 
      */
     /// @dev Get confrontation data
-    /// @param target The account of the defender
+    /// @param target The account of the defender 
     /// @return Confrontation data
-    function getConfrontation(address target)
+    function getConfrontation(address target) 
         public override virtual view 
         returns (Confrontation memory)
     {

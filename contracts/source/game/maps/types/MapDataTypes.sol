@@ -35,14 +35,14 @@ struct Tile
     /// @notice Water level minus elevation equals the depth of the water
     uint8 waterLevel;
 
-    /// @dev The level of vegitation that the tile contains
-    uint8 vegitationLevel;
+    /// @dev The level of vegetation that the tile contains
+    uint32 vegetationLevel;
 
     /// @dev The size of rocks that the tile contains
-    uint8 rockLevel;
+    uint32 rockLevel;
 
     /// @dev The amount of wildlife that the tile contains
-    uint8 wildlifeLevel;
+    uint32 wildlifeLevel;
 
     /// @dev Flags that indicate the presence of a river on the tile's hex edges
     /// @notice 0 = NW, 

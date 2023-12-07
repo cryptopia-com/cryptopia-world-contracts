@@ -80,80 +80,8 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         // Grant admin role
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
 
-        // Shared base 
-        Ship memory data = Ship({
-            name: bytes32("Raptor"),
-            generic: false,
-            rarity: Rarity.Common,
-            faction: Faction.Eco,
-            subFaction: SubFaction.Pirate,
-            co2: 0,
-            modules: 1,
-            base_speed: 25,
-            base_attack: 15,
-            base_health: 250,
-            base_defence: 100,
-            base_inventory: 12_000_000_000_000_000_000_000,
-            base_fuelConsumption: 1_000_000_000_000_000_000,
-            pirateVersion: bytes32(0)
-        }); 
-
-
-        // Add Eco starter ships
-        _setShip(data);
-
-        data.name = bytes32("Whitewake");
-        data.subFaction = SubFaction.None;
-        data.pirateVersion = bytes32("Raptor");
-        _setShip(data);
-
-
-        // Add Tech starter ships
-        data.name = bytes32("Hammerhead");
-        data.co2 = 25;
-        data.faction = Faction.Tech;
-        data.subFaction = SubFaction.Pirate;
-        data.pirateVersion = bytes32(0);
-        _setShip(data);
-
-        data.name = bytes32("Polaris");
-        data.subFaction = SubFaction.None;
-        data.pirateVersion = bytes32("Hammerhead");
-        _setShip(data);
-
-
-        // Add Traditional starter ships
-        data.name = bytes32("Yangfang");
-        data.faction = Faction.Traditional;
-        data.subFaction = SubFaction.Pirate;
-        data.pirateVersion = bytes32(0);
-        _setShip(data);
-
-        data.name = bytes32("Socrates");
-        data.subFaction = SubFaction.None;
-        data.pirateVersion = bytes32("Yangfang");
-        _setShip(data);
-
-
-        // Add Industrial starter ships
-        data.name = bytes32("Orca");
-        data.co2 = 50;
-        data.faction = Faction.Industrial;
-        data.subFaction = SubFaction.Pirate;
-        data.pirateVersion = bytes32(0);
-        _setShip(data);
-
-        data.name = bytes32("Kingfisher");
-        data.subFaction = SubFaction.None;
-        data.pirateVersion = bytes32("Orca");
-        _setShip(data); 
-
-
-        // Set starter ships
-        starterShips[Faction.Eco] = "Whitewake";
-        starterShips[Faction.Tech] = "Polaris";
-        starterShips[Faction.Traditional] = "Socrates";
-        starterShips[Faction.Industrial] = "Kingfisher";
+        // Ensure starter ships are created
+        _createStarterShips();
     }
 
 
@@ -518,5 +446,87 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         }
 
         return super._update(to, tokenId, auth);
+    }
+    
+
+    /// @dev Create starter ships
+    /// @notice Wihtout starter ships the game can't be played
+    function _createStarterShips() 
+        internal 
+    {
+        // Shared base 
+        Ship memory data = Ship({
+            name: bytes32("Raptor"),
+            generic: false,
+            rarity: Rarity.Common,
+            faction: Faction.Eco,
+            subFaction: SubFaction.Pirate,
+            co2: 0,
+            modules: 1,
+            base_speed: 25,
+            base_attack: 15,
+            base_health: 250,
+            base_defence: 100,
+            base_inventory: 12_000_000_000_000_000_000_000,
+            base_fuelConsumption: 1_000_000_000_000_000_000,
+            pirateVersion: bytes32(0)
+        }); 
+
+
+        // Add Eco starter ships
+        _setShip(data);
+
+        data.name = bytes32("Whitewake");
+        data.subFaction = SubFaction.None;
+        data.pirateVersion = bytes32("Raptor");
+        _setShip(data);
+
+
+        // Add Tech starter ships
+        data.name = bytes32("Hammerhead");
+        data.co2 = 25;
+        data.faction = Faction.Tech;
+        data.subFaction = SubFaction.Pirate;
+        data.pirateVersion = bytes32(0);
+        _setShip(data);
+
+        data.name = bytes32("Polaris");
+        data.subFaction = SubFaction.None;
+        data.pirateVersion = bytes32("Hammerhead");
+        _setShip(data);
+
+
+        // Add Traditional starter ships
+        data.name = bytes32("Yangfang");
+        data.faction = Faction.Traditional;
+        data.subFaction = SubFaction.Pirate;
+        data.pirateVersion = bytes32(0);
+        _setShip(data);
+
+        data.name = bytes32("Socrates");
+        data.subFaction = SubFaction.None;
+        data.pirateVersion = bytes32("Yangfang");
+        _setShip(data);
+
+
+        // Add Industrial starter ships
+        data.name = bytes32("Orca");
+        data.co2 = 50;
+        data.faction = Faction.Industrial;
+        data.subFaction = SubFaction.Pirate;
+        data.pirateVersion = bytes32(0);
+        _setShip(data);
+
+        data.name = bytes32("Kingfisher");
+        data.subFaction = SubFaction.None;
+        data.pirateVersion = bytes32("Orca");
+        _setShip(data); 
+
+
+        // Set starter ships
+        starterShips[Faction.Eco] = "Whitewake";
+        starterShips[Faction.Tech] = "Polaris";
+        starterShips[Faction.Traditional] = "Socrates";
+        starterShips[Faction.Industrial] = "Kingfisher";
     }
 }

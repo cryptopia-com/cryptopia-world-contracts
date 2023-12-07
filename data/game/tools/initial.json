@@ -1,0 +1,206 @@
+[
+    {
+        "name": "Stone Axe",
+        "rarity": "Common",
+        "level": 1,
+        "durability": 90,
+        "multiplier_cooldown": 200,
+        "multiplier_xp": 100,
+        "multiplier_effectiveness": 100,
+        "value1": 0,
+        "value2": 0,
+        "value3": 0,
+        "minting": [
+            {
+                "resource": "Meat",
+                "amount": "1"
+            },
+            {
+                "resource": "Wood",
+                "amount": "1"
+            }
+        ]
+    },
+    {
+        "name": "Iron Axe",
+        "rarity": "Common",
+        "level": 1,
+        "durability": 95,
+        "multiplier_cooldown": 100,
+        "multiplier_xp": 100,
+        "multiplier_effectiveness": 100,
+        "value1": 0,
+        "value2": 0,
+        "value3": 0,
+        "minting": [
+            {
+                "resource": "Meat",
+                "amount": "1"
+            },
+            {
+                "resource": "Wood",
+                "amount": "1"
+            }
+        ]
+    },
+    {
+        "name": "Steel Axe",
+        "rarity": "Common",
+        "level": 1,
+        "durability": 99,
+        "multiplier_cooldown": 100,
+        "multiplier_xp": 100,
+        "multiplier_effectiveness": 100,
+        "value1": 0,
+        "value2": 0,
+        "value3": 0,
+        "minting": [
+            {
+                "resource": "Meat",
+                "amount": "1"
+            },
+            {
+                "resource": "Wood",
+                "amount": "1"
+            }
+        ]
+    },
+    {
+        "name": "Stone Pickaxe",
+        "rarity": "Common",
+        "level": 1,
+        "durability": 80,
+        "multiplier_cooldown": 100,
+        "multiplier_xp": 100,
+        "multiplier_effectiveness": 100,
+        "value1": 0,
+        "value2": 0,
+        "value3": 0,
+        "minting": [
+            {
+                "resource": "Meat",
+                "amount": "1"
+            },
+            {
+                "resource": "Wood",
+                "amount": "1"
+            }
+        ]
+    },
+    {
+        "name": "Iron Pickaxe",
+        "rarity": "Common",
+        "level": 1,
+        "durability": 90,
+        "multiplier_cooldown": 100,
+        "multiplier_xp": 100,
+        "multiplier_effectiveness": 100,
+        "value1": 0,
+        "value2": 0,
+        "value3": 0,
+        "minting": [
+            {
+                "resource": "Meat",
+                "amount": "1"
+            },
+            {
+                "resource": "Wood",
+                "amount": "1"
+            }
+        ]
+    },
+    {
+        "name": "Steel Pickaxe",
+        "rarity": "Common",
+        "level": 1,
+        "durability": 95,
+        "multiplier_cooldown": 100,
+        "multiplier_xp": 100,
+        "multiplier_effectiveness": 100,
+        "value1": 0,
+        "value2": 0,
+        "value3": 0,
+        "minting": [
+            {
+                "resource": "Meat",
+                "amount": "1"
+            },
+            {
+                "resource": "Wood",
+                "amount": "1"
+            }
+        ]
+    },
+    {
+        "name": "Wooden Rod",
+        "rarity": "Common",
+        "level": 1,
+        "durability": 80,
+        "multiplier_cooldown": 100,
+        "multiplier_xp": 100,
+        "multiplier_effectiveness": 100,
+        "value1": 0,
+        "value2": 0,
+        "value3": 0,
+        "minting": [
+            {
+                "resource": "Fish",
+                "amount": "1"
+            }
+        ]
+    },
+    {
+        "name": "Wooden Shovel",
+        "rarity": "Common",
+        "level": 1,
+        "durability": 90,
+        "multiplier_cooldown": 100,
+        "multiplier_xp": 100,
+        "multiplier_effectiveness": 100,
+        "value1": 0,
+        "value2": 0,
+        "value3": 0,
+        "minting": [
+            {
+                "resource": "Sand",
+                "amount": "1"
+            }
+        ]
+    },
+    {
+        "name": "Iron Shovel",
+        "rarity": "Common",
+        "level": 1,
+        "durability": 95,
+        "multiplier_cooldown": 100,
+        "multiplier_xp": 100,
+        "multiplier_effectiveness": 100,
+        "value1": 0,
+        "value2": 0,
+        "value3": 0,
+        "minting": [
+            {
+                "resource": "Sand",
+                "amount": "1"
+            }
+        ]
+    },
+    {
+        "name": "Steel Shovel",
+        "rarity": "Common",
+        "level": 1,
+        "durability": 99,
+        "multiplier_cooldown": 100,
+        "multiplier_xp": 100,
+        "multiplier_effectiveness": 100,
+        "value1": 0,
+        "value2": 0,
+        "value3": 0,
+        "minting": [
+            {
+                "resource": "Sand",
+                "amount": "1"
+            }
+        ]
+    }
+]

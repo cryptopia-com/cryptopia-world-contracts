@@ -1,14 +1,14 @@
-import "./helpers/converters.ts";  
+import "../helpers/converters.ts";  
 import ora from 'ora-classic';
 import path from 'path';
 import fs from 'fs';
 import hre, { ethers } from "hardhat";
-import { DeploymentManager } from "./helpers/deployments";
-import { waitForMinimumTime } from "./helpers/timers";
-import { resolveEnum } from "./helpers/enums";
-import { JsonData } from './types/quests/input';
-import { CryptopiaQuests } from "../typechain-types";
-import { Faction, SubFaction } from './types/enums';
+import { DeploymentManager } from "../helpers/deployments";
+import { waitForMinimumTime } from "../helpers/timers";
+import { resolveEnum } from "../helpers/enums";
+import { Faction, SubFaction } from '../types/enums';
+import { JsonData } from '../types/quests/input';
+import { QuestStruct } from "../../typechain-types/contracts/source/game/quests/IQuests.js";
 
 const chalk = require('chalk');
 
@@ -17,7 +17,7 @@ const MIN_TIME = 1000;
 
 // Default values
 const DEFAULT_BASE_PATH = './data/game/quests/';
-const DEFAULT_FILE = 'basic';
+const DEFAULT_FILE = 'initial';
 const DEFAULT_BATCH_SIZE = 20;
 
 const deploymentManager = new DeploymentManager(hre.network.name);
@@ -35,16 +35,16 @@ async function main(questsFilePath: string, batchSize: number)
         return;
     }
 
-    let quests: CryptopiaQuests.QuestStruct[];
+    let quests: QuestStruct[];
     try {
         quests = resolve(require(questsFilePath));
     } catch (error) {
         if (error instanceof Error) {
             // Now 'error' is typed as 'Error'
-            console.error(chalk.red(`Error loading quests data from ${questsFilePath}: ${error.message}`));
+            console.error(chalk.red(`Error loading quest data from ${questsFilePath}: ${error.message}`));
         } else {
             // Handle non-Error objects
-            console.error(chalk.red(`An unexpected error occurred while loading tools data from ${questsFilePath}`));
+            console.error(chalk.red(`An unexpected error occurred while loading quest data from ${questsFilePath}`));
         }
         return;
     }
@@ -74,7 +74,7 @@ async function main(questsFilePath: string, batchSize: number)
         const transactionLoaderStartTime = Date.now();
 
         // Create the transaction
-        const transaction = await questsInstance.addQuests(batch);
+        const transaction = await questsInstance.setQuests(batch);
 
         await waitForMinimumTime(transactionLoaderStartTime, MIN_TIME);
         transactionLoader.succeed(`Transaction created ${chalk.cyan(transaction.hash)}`);
@@ -96,11 +96,11 @@ async function main(questsFilePath: string, batchSize: number)
  * Resolves the data from the JSON file.
  * 
  * @param {JsonData[]} data - Data from the JSON file.
- * @returns {CryptopiaQuests.QuestStruct[]} The resolved data.
+ * @returns {QuestStruct[]} The resolved data.
  */
-function resolve(data: JsonData[]): CryptopiaQuests.QuestStruct[] {
-    const resolvedData: CryptopiaQuests.QuestStruct[] = data.map((jsonData) => {
-        const quest: CryptopiaQuests.QuestStruct = {
+function resolve(data: JsonData[]): QuestStruct[] {
+    const resolvedData: QuestStruct[] = data.map((jsonData) => {
+        const quest: QuestStruct = {
             name: jsonData.name.toBytes32(),
             hasLevelConstraint: jsonData.hasLevelConstraint,
             level: jsonData.level,

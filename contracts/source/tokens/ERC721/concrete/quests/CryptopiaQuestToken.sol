@@ -11,13 +11,20 @@ import "../CryptopiaERC721.sol";
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestItems {
 
+    /// @dev Quest item
+    struct QuestItemDataEntry
+    {
+        uint index;
+        bytes32 name; 
+    }
+
     /**
      * Storage
      */
     uint private _currentTokenId; 
 
     /// @dev name => Item
-    mapping (bytes32 => QuestItem) public items;
+    mapping (bytes32 => QuestItemDataEntry) public items;
     bytes32[] private itemsIndex;
 
     /// @dev tokenId => item name
@@ -76,24 +83,24 @@ contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestIt
      * Admin functions
      */
     /// @dev Sets a range of quest items
-    /// @param name The names of the items
-    function setItem(bytes32 name)
+    /// @param item The Item to set
+    function setItem(QuestItem memory item)
         public virtual
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
-        _setItem(name);
+        _setItem(item);
     }
 
 
-    /// @dev Sets a range of quest items
-    /// @param names The names of the items
-    function setItems(bytes32[] memory names)
+    /// @dev Sets a range of quest items 
+    /// @param items_ The Items to set
+    function setItems(QuestItem[] memory items_) 
         public virtual
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
-        for (uint i = 0; i < names.length; i++) 
+        for (uint i = 0; i < items_.length; i++) 
         {
-            _setItem(names[i]);
+            _setItem(items_[i]);
         }
     }
 
@@ -118,7 +125,7 @@ contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestIt
         public override view 
         returns (QuestItem memory)
     {
-        return items[itemsIndex[index]];
+        return QuestItem(items[itemsIndex[index]].name);
     }
 
 
@@ -133,7 +140,7 @@ contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestIt
         QuestItem[] memory result = new QuestItem[](take);
         for (uint i = 0; i < take; i++) 
         {
-            result[i] = items[itemsIndex[skip + i]];
+            result[i] = QuestItem(items[itemsIndex[skip + i]].name);
         }
 
         return result;
@@ -147,7 +154,7 @@ contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestIt
         public override view 
         returns (QuestItem memory)
     {
-        return items[itemInstances[tokenId]];
+        return QuestItem(items[itemInstances[tokenId]].name);
     }
 
 
@@ -161,7 +168,7 @@ contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestIt
         QuestItem[] memory result = new QuestItem[](tokenIds.length);
         for (uint i = 0; i < tokenIds.length; i++) 
         {
-            result[i] = items[itemInstances[tokenIds[i]]];
+            result[i] = QuestItem(items[itemInstances[tokenIds[i]]].name);
         }
 
         return result;
@@ -248,15 +255,21 @@ contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestIt
 
 
     /// @dev Sets the item
-    /// @param name The name of the item
-    function _setItem(bytes32 name)
+    /// @param item The item to set
+    function _setItem(QuestItem memory item)
         internal virtual
     {
-        // Add item
-        if (!_exists(name)) 
+        if (item.name == bytes32(0)) 
         {
-            items[name].index = itemsIndex.length;
-            itemsIndex.push(name);
+            revert QuestItemNotFound(item.name);
+        }
+
+        // Add item
+        if (!_exists(item.name)) 
+        {
+            itemsIndex.push(item.name);
+            items[item.name] = QuestItemDataEntry(
+                itemsIndex.length, item.name);
         }
     }
 }

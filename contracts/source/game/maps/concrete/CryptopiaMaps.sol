@@ -915,7 +915,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         tiles[index].terrain = values.terrain;
         tiles[index].elevation = values.elevation;
         tiles[index].waterLevel = values.waterLevel;
-        tiles[index].vegitationLevel = values.vegitationLevel;
+        tiles[index].vegetationLevel = values.vegetationLevel;
         tiles[index].rockLevel = values.rockLevel;
         tiles[index].wildlifeLevel = values.wildlifeLevel;
         tiles[index].riverFlags = values.riverFlags;
@@ -1079,8 +1079,8 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
             movementCost += edgeType == EdgeType.Flat ? 
                 MOVEMENT_COST_LAND_FLAT : MOVEMENT_COST_LAND_SLOPE;
 
-            // Add vegitation movement penalty
-            movementCost += tiles[toTileIndex].vegitationLevel + tiles[toTileIndex].rockLevel;
+            // Add vegetation movement penalty
+            movementCost += tiles[toTileIndex].vegetationLevel + tiles[toTileIndex].rockLevel;
         }
 
         // Water

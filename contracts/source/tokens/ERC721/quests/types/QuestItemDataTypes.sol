@@ -4,5 +4,5 @@ pragma solidity ^0.8.20 < 0.9.0;
 /// @dev Quest item
 struct QuestItem
 {
-    uint index;
+    bytes32 name;
 }

@@ -7,6 +7,7 @@ import path from 'path';
 interface DeploymentInfo {
     address: string; // The address at which the contract is deployed
     contractName: string; // The name of the contract
+    bytecode: string; // The bytecode of the contract
 }
 
 /**
@@ -59,15 +60,29 @@ export class DeploymentManager
      * @param deploymentKey - The key to use for the deployment.
      * @param contractName - The name of the contract.
      * @param contractAddress - The address where the contract is deployed.
+     * @param bytecode - The bytecode of the contract.
      */
-    public saveDeployment(deploymentKey: string, contractName: string, contractAddress: string): void 
+    public saveDeployment(deploymentKey: string, contractName: string, contractAddress: string, bytecode: string): void 
     {
         const deployments = this.readDeployments();
         deployments[deploymentKey] = { 
             address: contractAddress,
-            contractName: contractName
+            contractName: contractName,
+            bytecode: bytecode
         };
+
         this.writeDeployments(deployments);
+    }
+
+    /**
+     * Checks if a deployment exists.
+     * @param deploymentKey - The key to use for the deployment.
+     * @returns True if the contract is deployed, false otherwise.
+     */
+    public isDeployed(deploymentKey: string): boolean 
+    {
+        const deployments = this.readDeployments();
+        return !!deployments[deploymentKey];
     }
 
     /**

@@ -2,13 +2,14 @@
 pragma solidity ^0.8.20 < 0.9.0;
 
 import "../../../../game/types/GameEnums.sol";
+import "../../../../game/assets/types/AssetEnums.sol";
 
 /// @dev Tool template
 struct Tool
 {
+    bytes32 name;
     Rarity rarity;
     uint8 level;
-    uint24 damage;
     uint24 durability;
     uint24 multiplier_cooldown;
     uint24 multiplier_xp;
@@ -23,4 +24,11 @@ struct ToolInstance
 {
     bytes32 name;
     uint24 damage;
+}
+
+/// @dev Tool minting data
+struct ToolMintingData
+{
+    Resource resource;
+    uint amount;
 }

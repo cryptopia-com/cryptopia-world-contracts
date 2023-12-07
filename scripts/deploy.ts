@@ -12,14 +12,25 @@ const chalk = require('chalk');
 // Settins
 const MIN_TIME = 100;
 
-// Deployment manager
-const deploymentManager = new DeploymentManager(hre.network.name);
-
 // Roles
 const SYSTEM_ROLE = "SYSTEM_ROLE".toKeccak256();
 
+// Deployment
+enum DeploymentStatus 
+{
+    None,
+    Deployed,
+    Upgraded,
+    Skipped
+}
+
+const deploymentManager = new DeploymentManager(hre.network.name);
+
 // Internal
-let deploymentCounter = 0;
+let deployCounter = 0;
+let upgradeCounter = 0;
+let skipCounter = 0;
+let lastDeploymentStatus = DeploymentStatus.None;
 
 
 /**
@@ -34,23 +45,26 @@ async function main() {
     const config: any = appConfig.networks[
         isDevEnvironment ? "development" : hre.network.name];
 
+    console.log(`\n\nStarting deployment to ${chalk.yellow(hre.network.name)}..`);
+
     //////////////////////////////////
     /////// Deploy Inventories ///////
     //////////////////////////////////
-    const inventoriesProxy = await deployContract(
+    const [inventoriesProxy, inventoriesDeploymentStatus] = await ensureDeployed(
         "CryptopiaInventories", 
         [
             config.CryptopiaTreasury.address
         ]);
 
     const inventoriesAddress = await inventoriesProxy.getAddress();
-    const inventoriesInstance = await ethers.getContractAt("CryptopiaInventories", inventoriesAddress);
+    const inventoriesInstance = await ethers.getContractAt(
+        "CryptopiaInventories", inventoriesAddress);
 
 
     //////////////////////////////////
     //////// Deploy Whitelist ////////
     //////////////////////////////////
-    const whitelistProxy = await deployContract(
+    const [whitelistProxy, whitelistDeploymentStatus] = await ensureDeployed(
         "Whitelist", 
         [
             [inventoriesAddress]
@@ -62,29 +76,34 @@ async function main() {
     //////////////////////////////////
     //////// Deploy CRT Token ////////
     //////////////////////////////////
-    const cryptopiaTokenProxy = await deployContract("CryptopiaToken", []);
+    const [cryptopiaTokenProxy, cryptopiaTokenDeploymentStatus] = await ensureDeployed(
+        "CryptopiaToken", []);
     const cryptopiaTokenAddress = await cryptopiaTokenProxy.getAddress();
 
 
     //////////////////////////////////
     ///// Deploy Account Register ////
     //////////////////////////////////
-    const accountRegisterProxy = await deployContract("CryptopiaAccountRegister", []);
+    const [accountRegisterProxy, accountRegisterDeploymentStatus] = await ensureDeployed(
+        "CryptopiaAccountRegister", []);
     const accountRegisterAddress = await accountRegisterProxy.getAddress();
 
 
     //////////////////////////////////
     ////// Deploy Asset Register /////
     //////////////////////////////////
-    const assetRegisterProxy = await deployContract("CryptopiaAssetRegister", []);
+    const [assetRegisterProxy, assetRegisterDeploymentStatus] = await ensureDeployed(
+        "CryptopiaAssetRegister", []);
+
     const assetRegisterAddress = await assetRegisterProxy.getAddress();
-    const assetRegisterInstance = await ethers.getContractAt("CryptopiaAssetRegister", assetRegisterAddress);
+    const assetRegisterInstance = await ethers.getContractAt(
+        "CryptopiaAssetRegister", assetRegisterAddress);
 
 
     //////////////////////////////////
     ////////// Deploy Ships //////////
     //////////////////////////////////
-    const shipTokenProxy = await deployContract(
+    const [shipTokenProxy, shipTokenDeploymentStatus] = await ensureDeployed(
         "CryptopiaShipToken", 
         [
             whitelistAddress, 
@@ -98,17 +117,20 @@ async function main() {
     //////////////////////////////////
     ///////// Deploy Crafting ////////
     //////////////////////////////////
-    const craftingProxy = await deployContract("CryptopiaCrafting", [inventoriesAddress]);
+    const [craftingProxy, craftingDeploymentStatus] = await ensureDeployed(
+        "CryptopiaCrafting", [inventoriesAddress]);
     const craftingAddress = await craftingProxy.getAddress();
 
     // Grant roles
-    await grantSystemRole("CryptopiaInventories", "CryptopiaCrafting");
+    await grantSystemRole(
+        "CryptopiaInventories", inventoriesDeploymentStatus, 
+        "CryptopiaCrafting", craftingDeploymentStatus);
 
 
     //////////////////////////////////
     ///// Deploy Player Register /////
     //////////////////////////////////
-    const playerRegisterProxy = await deployContract(
+    const [playerRegisterProxy, playerRegisterDeploymentStatus] = await ensureDeployed(
         "CryptopiaPlayerRegister", 
         [
             accountRegisterAddress, 
@@ -121,15 +143,23 @@ async function main() {
     const playerRegisterAddress = await playerRegisterProxy.getAddress();
 
     // Grant roles
-    await grantSystemRole("CryptopiaInventories", "CryptopiaPlayerRegister");
-    await grantSystemRole("CryptopiaShipToken", "CryptopiaPlayerRegister");
-    await grantSystemRole("CryptopiaCrafting", "CryptopiaPlayerRegister");
+    await grantSystemRole(
+        "CryptopiaInventories", inventoriesDeploymentStatus, 
+        "CryptopiaPlayerRegister", playerRegisterDeploymentStatus);
+
+    await grantSystemRole(
+        "CryptopiaShipToken", shipTokenDeploymentStatus, 
+        "CryptopiaPlayerRegister", playerRegisterDeploymentStatus);
+
+    await grantSystemRole(
+        "CryptopiaCrafting", craftingDeploymentStatus, 
+        "CryptopiaPlayerRegister", playerRegisterDeploymentStatus);
 
 
     //////////////////////////////////
     ////////// Deploy Tools //////////
     //////////////////////////////////
-    const toolTokenProxy = await deployContract(
+    const [toolTokenProxy, toolTokenDeploymentStatus] = await ensureDeployed(
         "CryptopiaToolToken", 
         [
             whitelistAddress, 
@@ -142,21 +172,30 @@ async function main() {
     const toolTokenAddress = await toolTokenProxy.getAddress();
 
     // Register with inventories
-    const registerToolsWithInventoriesTransactionLoader =  ora(`Registering..`).start();
-    const registerToolsWithInventoriesTransactionStartTime = Date.now();
-    await inventoriesInstance.setNonFungibleAsset(toolTokenAddress, true);
-    await waitForMinimumTime(registerToolsWithInventoriesTransactionStartTime, MIN_TIME);
-    registerToolsWithInventoriesTransactionLoader.succeed(`Registered with ${chalk.green("CryptopiaInventories")}`);
+    if (toolTokenDeploymentStatus == DeploymentStatus.Deployed || inventoriesDeploymentStatus == DeploymentStatus.Deployed)
+    {
+        const registerToolsWithInventoriesTransactionLoader =  ora(`Registering..`).start();
+        const registerToolsWithInventoriesTransactionStartTime = Date.now();
+        await inventoriesInstance.setNonFungibleAsset(toolTokenAddress, true);
+        await waitForMinimumTime(registerToolsWithInventoriesTransactionStartTime, MIN_TIME);
+        registerToolsWithInventoriesTransactionLoader.succeed(`Registered with ${chalk.green("CryptopiaInventories")}`);
+        lastDeploymentStatus = DeploymentStatus.None;
+    }
 
     // Grant tool roles
-    await grantSystemRole("CryptopiaInventories", "CryptopiaCrafting");
-    await grantSystemRole("CryptopiaToolToken", "CryptopiaCrafting");
+    await grantSystemRole(
+        "CryptopiaInventories", inventoriesDeploymentStatus, 
+        "CryptopiaCrafting", craftingDeploymentStatus);
+
+    await grantSystemRole(
+        "CryptopiaToolToken", toolTokenDeploymentStatus, 
+        "CryptopiaCrafting", craftingDeploymentStatus);
 
 
     //////////////////////////////////
     /////// Deploy Title Deeds ///////
     //////////////////////////////////
-    const titleDeedTokenProxy = await deployContract(
+    const [titleDeedTokenProxy, titleDeedTokenDeploymentStatus] = await ensureDeployed(
         "CryptopiaTitleDeedToken", 
         [
             whitelistAddress, 
@@ -170,7 +209,7 @@ async function main() {
     //////////////////////////////////
     /////////// Deploy Maps //////////
     //////////////////////////////////
-    const mapsProxy = await deployContract(
+    const [mapsProxy, mapsDeploymentStatus] = await ensureDeployed(
         "CryptopiaMaps", 
         [
             playerRegisterAddress, 
@@ -182,13 +221,15 @@ async function main() {
     const mapsAddress = await mapsProxy.getAddress();
 
     // Grant roles
-    await grantSystemRole("CryptopiaTitleDeedToken", "CryptopiaMaps");
+    await grantSystemRole(
+        "CryptopiaTitleDeedToken", titleDeedTokenDeploymentStatus, 
+        "CryptopiaMaps", mapsDeploymentStatus);
 
 
     //////////////////////////////////
     /////// Deploy Quest Items ///////
     //////////////////////////////////
-    await deployContract(
+    const [questTokenProxy, questTokenDeploymentStatus] = await ensureDeployed(
         "CryptopiaQuestToken", 
         [
             whitelistAddress, 
@@ -198,13 +239,15 @@ async function main() {
         ]);
 
     // Grant roles
-    await grantSystemRole("CryptopiaInventories", "CryptopiaQuestToken");
+    await grantSystemRole(
+        "CryptopiaInventories", inventoriesDeploymentStatus, 
+        "CryptopiaQuestToken", questTokenDeploymentStatus);
 
 
     //////////////////////////////////
     ////////// Deploy Quests /////////
     //////////////////////////////////
-    await deployContract(
+    const [questsProxy, questsDeploymentStatus] = await ensureDeployed(
         "CryptopiaQuests", 
         [
             playerRegisterAddress,
@@ -213,15 +256,23 @@ async function main() {
         ]);
 
     // Grant roles
-    await grantSystemRole("CryptopiaToolToken", "CryptopiaQuests");
-    await grantSystemRole("CryptopiaPlayerRegister", "CryptopiaQuests");
-    await grantSystemRole("CryptopiaQuestToken", "CryptopiaQuests");
+    await grantSystemRole(
+        "CryptopiaToolToken", toolTokenDeploymentStatus, 
+        "CryptopiaQuests", questsDeploymentStatus);
+
+    await grantSystemRole(
+        "CryptopiaPlayerRegister", playerRegisterDeploymentStatus, 
+        "CryptopiaQuests", questsDeploymentStatus);
+
+    await grantSystemRole(
+        "CryptopiaQuestToken", questTokenDeploymentStatus, 
+        "CryptopiaQuests", questsDeploymentStatus);
 
 
     //////////////////////////////////
     //// Deploy Resource Gathering ///
     //////////////////////////////////
-    await deployContract(
+    const [resourceGatheringProxy, resourceGatheringDeploymentStatus] = await ensureDeployed(
         "CryptopiaResourceGathering", 
         [
             mapsAddress,
@@ -232,9 +283,17 @@ async function main() {
         ]);
 
     // Grant roles
-    await grantSystemRole("CryptopiaToolToken", "CryptopiaResourceGathering");
-    await grantSystemRole("CryptopiaInventories", "CryptopiaResourceGathering");
-    await grantSystemRole("CryptopiaPlayerRegister", "CryptopiaResourceGathering");
+    await grantSystemRole(
+        "CryptopiaToolToken", toolTokenDeploymentStatus, 
+        "CryptopiaResourceGathering", resourceGatheringDeploymentStatus);
+
+    await grantSystemRole(
+        "CryptopiaInventories", inventoriesDeploymentStatus, 
+        "CryptopiaResourceGathering", resourceGatheringDeploymentStatus);
+
+    await grantSystemRole(
+        "CryptopiaPlayerRegister", playerRegisterDeploymentStatus, 
+        "CryptopiaResourceGathering", resourceGatheringDeploymentStatus);
 
 
     //////////////////////////////////
@@ -243,7 +302,7 @@ async function main() {
     let fuelTokenAddress = ""; 
     for (let asset of config.ERC20.CryptopiaAssetToken.resources)
     {
-        const assetTokenProxy = await deployContract(
+        const [assetTokenProxy, assetTokenDeploymentStatus] = await ensureDeployed(
             "CryptopiaAssetToken", 
             [
                 asset.name, 
@@ -255,26 +314,41 @@ async function main() {
         const assetTokenAddress = await assetTokenProxy.getAddress();
 
         // Register with asset register
-        const registerAssetTransactionLoader = ora(`Registering..`).start();
-        const registerAssetTransactionStartTime = Date.now();
-        await assetRegisterInstance.registerAsset(assetTokenAddress, true, asset.resource);
-        await waitForMinimumTime(registerAssetTransactionStartTime, MIN_TIME);
-        registerAssetTransactionLoader.succeed(`Registered with ${chalk.green("CryptopiaAssetRegister")}`);
+        if (assetTokenDeploymentStatus == DeploymentStatus.Deployed || assetRegisterDeploymentStatus == DeploymentStatus.Deployed)
+        {
+            const registerAssetTransactionLoader = ora(`Registering asset..`).start();
+            const registerAssetTransactionStartTime = Date.now();
+            await assetRegisterInstance.registerAsset(assetTokenAddress, true, asset.resource);
+            await waitForMinimumTime(registerAssetTransactionStartTime, MIN_TIME);
+            registerAssetTransactionLoader.succeed(`Registered asset with ${chalk.green("CryptopiaAssetRegister")}`);
+            lastDeploymentStatus = DeploymentStatus.None;
+        }
 
         // Register with inventories
-        const registerInventoryTransactionLoader =  ora(`Registering..`).start();
-        const registerInventoryTransactionStartTime = Date.now();
-        await inventoriesInstance.setFungibleAsset(assetTokenAddress, asset.weight);
-        await waitForMinimumTime(registerInventoryTransactionStartTime, MIN_TIME);
-        registerInventoryTransactionLoader.succeed(`Registered with ${chalk.green("CryptopiaInventories")}`);
+        if (assetTokenDeploymentStatus == DeploymentStatus.Deployed || inventoriesDeploymentStatus == DeploymentStatus.Deployed)
+        {
+            const registerInventoryTransactionLoader =  ora(`Registering asset..`).start();
+            const registerInventoryTransactionStartTime = Date.now();
+            await inventoriesInstance.setFungibleAsset(assetTokenAddress, asset.weight);
+            await waitForMinimumTime(registerInventoryTransactionStartTime, MIN_TIME);
+            registerInventoryTransactionLoader.succeed(`Registered asset with ${chalk.green("CryptopiaInventories")}`);
+            lastDeploymentStatus = DeploymentStatus.None;
+        }
 
         // Grant roles
-        await grantSystemRole(`CryptopiaAssetToken:${asset.name}`, "CryptopiaQuests");
-        await grantSystemRole("CryptopiaInventories", `CryptopiaAssetToken:${asset.name}`);
+        await grantSystemRole(
+            `CryptopiaAssetToken:${asset.name}`, assetTokenDeploymentStatus,
+             "CryptopiaQuests", questsDeploymentStatus);
+
+        await grantSystemRole(
+            "CryptopiaInventories", inventoriesDeploymentStatus,
+            `CryptopiaAssetToken:${asset.name}`, assetTokenDeploymentStatus);
 
         if (asset.system.includes("CryptopiaResourceGathering"))
         {
-            await grantSystemRole(`CryptopiaAssetToken:${asset.name}`, "CryptopiaResourceGathering");
+            await grantSystemRole(
+                `CryptopiaAssetToken:${asset.name}`, assetTokenDeploymentStatus,
+                "CryptopiaResourceGathering", resourceGatheringDeploymentStatus);
         }
 
         if (asset.resource == Resource.Fuel)
@@ -287,7 +361,7 @@ async function main() {
     //////////////////////////////////
     ///// Deploy Battle Mechanics ////
     //////////////////////////////////
-    const navalBattleMechanicsProxy = await deployContract(
+    const [navalBattleMechanicsProxy, navalBattleMechanicsDeploymentStatus] = await ensureDeployed(
         "CryptopiaNavalBattleMechanics", 
         [
             playerRegisterAddress,
@@ -298,13 +372,15 @@ async function main() {
     const navalBattleMechanicsAddress = await navalBattleMechanicsProxy.getAddress();
 
     // Grant roles
-    await grantSystemRole("CryptopiaShipToken", "CryptopiaNavalBattleMechanics");
+    await grantSystemRole(
+        "CryptopiaShipToken", shipTokenDeploymentStatus,
+        "CryptopiaNavalBattleMechanics", navalBattleMechanicsDeploymentStatus);
 
 
     //////////////////////////////////
     ///// Deploy Pirate Mechanics ////
     //////////////////////////////////
-    await deployContract(
+    const [pirateMechanicsProxy, pirateMechanicsDeploymentStatus] = await ensureDeployed(
         "CryptopiaPirateMechanics", 
         [
             navalBattleMechanicsAddress,
@@ -317,11 +393,25 @@ async function main() {
         ]);
 
     // Grant roles
-    await grantSystemRole("CryptopiaNavalBattleMechanics", "CryptopiaPirateMechanics");
-    await grantSystemRole("CryptopiaPlayerRegister", "CryptopiaPirateMechanics");
-    await grantSystemRole("CryptopiaInventories", "CryptopiaPirateMechanics");
-    await grantSystemRole("CryptopiaShipToken", "CryptopiaPirateMechanics");
-    await grantSystemRole("CryptopiaMaps", "CryptopiaPirateMechanics");
+    await grantSystemRole(
+        "CryptopiaNavalBattleMechanics", navalBattleMechanicsDeploymentStatus,
+        "CryptopiaPirateMechanics", pirateMechanicsDeploymentStatus);
+
+    await grantSystemRole(
+        "CryptopiaPlayerRegister", playerRegisterDeploymentStatus,
+        "CryptopiaPirateMechanics", pirateMechanicsDeploymentStatus);
+
+    await grantSystemRole(
+        "CryptopiaInventories", inventoriesDeploymentStatus, 
+        "CryptopiaPirateMechanics", pirateMechanicsDeploymentStatus);
+
+    await grantSystemRole(
+        "CryptopiaShipToken", shipTokenDeploymentStatus,
+        "CryptopiaPirateMechanics", pirateMechanicsDeploymentStatus);
+
+    await grantSystemRole(
+        "CryptopiaMaps", mapsDeploymentStatus, 
+        "CryptopiaPirateMechanics", pirateMechanicsDeploymentStatus);
 
 
     // Output bytecode
@@ -334,24 +424,89 @@ async function main() {
         console.log((AccountFactory as any).bytecode);
     }
 
-    console.log(`\n\nDeployed ${chalk.bold(deploymentCounter.toString())} contracts on ${chalk.yellow(hre.network.name)}!\n\n`);
+    console.log(`\n\nFinished deployment to ${chalk.yellow(hre.network.name)}:`);
+    console.log(`  ${chalk.bold(deployCounter)} deployed`);
+    console.log(`  ${chalk.bold(upgradeCounter)} upgraded`);
+    console.log(`  ${chalk.bold(skipCounter)} skipped\n\n`);
 }
 
 /**
  * Deploy contract
  * 
  * @param {string} contractName - Name of the contract to deploy.
- * @param {unknown[]} args - Arguments to pass to the contract constructor
- * @param {string} deploymentKey - Key to save the deployment
+ * @param {unknown[]} args - Arguments to pass to the contract constructor.
+ * @param {string} deploymentKey - Key to save the deployment.
+ * @returns A tuple containing the contract instance and a boolean indicating if the contract was deployed.
  */
-async function deployContract(contractName: string, args?: unknown[], deploymentKey?: string) : Promise<Contract> 
+async function ensureDeployed(contractName: string, args?: unknown[], deploymentKey?: string) : Promise<[Contract, DeploymentStatus]> 
 {
     if (!deploymentKey)
     {
         deploymentKey = contractName;
     }
 
-    console.log(`\n\nDeploying ${chalk.green(contractName)} to ${chalk.yellow(hre.network.name)}`);
+    if (deploymentManager.isDeployed(deploymentKey))
+    {
+        const factory = await ethers.getContractFactory(contractName);
+        const deploymentInfo = deploymentManager.getDeployment(deploymentKey);
+
+        // Skip
+        if (deploymentInfo.bytecode == factory.bytecode)
+        {
+            if (lastDeploymentStatus != DeploymentStatus.Skipped)
+            {
+                console.log("\n");
+            }
+
+            console.log(`Skipping ${chalk.green(deploymentKey)} (unchanged bytecode)`);
+            lastDeploymentStatus = DeploymentStatus.Skipped;
+            skipCounter++;
+            
+            return [
+                await ethers.getContractAt(
+                    contractName, 
+                    deploymentInfo.address), 
+                lastDeploymentStatus
+            ];
+        }
+
+        // Upgrade
+        else {
+            lastDeploymentStatus = DeploymentStatus.Upgraded;
+            return [
+                await _upgradeContract(
+                    contractName, 
+                    deploymentInfo.address, 
+                    deploymentKey), 
+                lastDeploymentStatus
+            ];
+        }
+    }
+
+    // Deploy
+    else {
+        lastDeploymentStatus = DeploymentStatus.Deployed;
+        return [
+            await _deployContract(
+                contractName, 
+                deploymentKey, 
+                args), 
+            lastDeploymentStatus
+        ];
+    }
+}
+
+/**
+ * Deploy contract
+ * 
+ * @param {string} contractName - Name of the contract to deploy.
+ * @param {string} deploymentKey - Key to save the deployment.
+ * @param {unknown[]} args - Arguments to pass to the contract constructor.
+ * @returns The contract instance.
+ */
+async function _deployContract(contractName: string, deploymentKey: string, args?: unknown[], ) : Promise<Contract> 
+{
+    console.log(`\n\nDeploying ${chalk.green(deploymentKey)} to ${chalk.yellow(hre.network.name)}`);
     const transactionLoader = ora(`Creating transaction...`).start();
     const deploymentLoader = ora(`Waiting for transaction...`).start();
     const transactionStartTime = Date.now();
@@ -359,7 +514,7 @@ async function deployContract(contractName: string, args?: unknown[], deployment
     // Create transaction
     const factory = await ethers.getContractFactory(contractName);
     const deployProxyOperation = await upgrades.deployProxy(factory, args);
-    
+
     await waitForMinimumTime(transactionStartTime, MIN_TIME);
     transactionLoader.succeed(`Transaction created ${chalk.cyan(deployProxyOperation.deploymentTransaction()?.hash)}`);
     deploymentLoader.text = `Waiting for confirmations...`;
@@ -370,23 +525,70 @@ async function deployContract(contractName: string, args?: unknown[], deployment
     const contractAddress = await proxy.getAddress();
 
     // Save deployment
-    deploymentManager.saveDeployment(deploymentKey, contractName, contractAddress);
+    deploymentManager.saveDeployment(deploymentKey, contractName, contractAddress, factory.bytecode);
 
     await waitForMinimumTime(confirmationLoaderStartTime, MIN_TIME);
     deploymentLoader.succeed(`Contract deployed at ${chalk.cyan(contractAddress)} in block ${chalk.cyan(deployProxyOperation.deploymentTransaction()?.blockNumber)}`);
 
-    deploymentCounter++;
+    deployCounter++;
     return proxy;
+}
+
+/**
+ * Upgrade contract
+ * 
+ * @param {string} contractName - Name of the contract to upgrade.
+ * @param {string} contractAddress - Address of the contract to upgrade.
+ * @param {string} deploymentKey - Key to save the deployment.
+ * @returns The contract instance.
+ */
+async function _upgradeContract(contractName: string, contractAddress: string, deploymentKey: string) : Promise<Contract> 
+{
+    console.log(`\n\nUpgrading ${chalk.green(deploymentKey)} on ${chalk.yellow(hre.network.name)}`);
+    const transactionLoader = ora(`Creating transaction...`).start();
+    const deploymentLoader = ora(`Waiting for transaction...`).start();
+    const transactionStartTime = Date.now();
+
+    // Create transaction
+    const factory = await ethers.getContractFactory(contractName);
+    const newImplementationAddress = await upgrades.prepareUpgrade(contractAddress, factory);
+
+    const proxyAdmin = await upgrades.admin.getInstance();
+    const tx = await proxyAdmin.upgrade(contractAddress, newImplementationAddress);
+
+    await waitForMinimumTime(transactionStartTime, MIN_TIME);
+    transactionLoader.succeed(`Transaction created ${chalk.cyan(tx.hash)}`);
+    deploymentLoader.text = `Waiting for confirmations...`;
+    const confirmationLoaderStartTime = Date.now();
+
+    // Wait for confirmation
+    await tx.wait();
+    
+    // Save deployment
+    deploymentManager.saveDeployment(deploymentKey, contractName, contractAddress, factory.bytecode);
+
+    await waitForMinimumTime(confirmationLoaderStartTime, MIN_TIME);
+    deploymentLoader.succeed(`Contract upgraded at ${chalk.cyan(contractAddress)} in block ${chalk.cyan(tx.blockNumber)}`);
+
+    upgradeCounter++;
+    return await ethers.getContractAt(contractName, contractAddress);
 }
 
 /**
  * Grant system role
  * 
  * @param {string} granter - Name of the contract that grants the role.
+ * @param {string} granterDeploymentStatus - Deployment status of the granter.
  * @param {string} system - Name of the contract that receives the role.
+ * @param {string} systemDeploymentStatus - Deployment status of the system.
  */
-async function grantSystemRole(granter: string, system: string): Promise<void>
+async function grantSystemRole(granter: string, granterDeploymentStatus: DeploymentStatus, system: string, systemDeploymentStatus: DeploymentStatus): Promise<void>
 {
+    if (granterDeploymentStatus != DeploymentStatus.Deployed || systemDeploymentStatus != DeploymentStatus.Deployed)
+    {
+        return Promise.resolve();
+    }
+
     const transactionLoader = ora(`Granting ${chalk.blue("SYSTEM")} role..`).start();
     const transactionStartTime = Date.now();
 
@@ -398,6 +600,7 @@ async function grantSystemRole(granter: string, system: string): Promise<void>
 
     await waitForMinimumTime(transactionStartTime, MIN_TIME);
     transactionLoader.succeed(`Granted ${chalk.blue("SYSTEM")} role to ${chalk.green(system)} on ${chalk.green(granter)}`);
+    lastDeploymentStatus = DeploymentStatus.None;
 } 
 
 // Deploy

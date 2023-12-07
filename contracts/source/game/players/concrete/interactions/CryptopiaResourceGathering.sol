@@ -223,7 +223,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
                 return 0;
             }
 
-            return tile.vegitationLevel * RESOURCE_PRECISION;
+            return tile.vegetationLevel * RESOURCE_PRECISION;
         }
         
         // Stone

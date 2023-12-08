@@ -44,7 +44,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         /// @dev index => CraftingSlot 
         mapping (uint => CraftingSlot) slots;
 
-        /// @dev asset (ERC721) => recipe name => learned
+        /// @dev asset (ERC721) => recipe item => learned
         mapping (address => mapping (bytes32 => bool)) learned;
         mapping (address => bytes32[]) learnedIndex;
     }
@@ -59,7 +59,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     /**
      * Storage
      */
-    /// @dev asset (ERC721) => recipe name => CraftingRecipe
+    /// @dev asset (ERC721) => recipe item => CraftingRecipe
     mapping (address => mapping (bytes32 => CraftingRecipeData)) public recipes;
     mapping (address => bytes32[]) private recipesIndex;
 
@@ -76,10 +76,10 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     /// @dev Called when the crafting of `asset` `recipe` was started by `player`
     /// @param player The player that is crafting the item
     /// @param asset The address of the ERC721 contract
-    /// @param recipe The recipe (name) that is crafted
+    /// @param item The item that is crafted
     /// @param slot The slot used to craft the item
     /// @param finished The datetime at which the item can be claimed
-    event CraftingStart(address indexed player, address indexed asset, bytes32 indexed recipe, uint slot, uint finished);
+    event CraftingStart(address indexed player, address indexed asset, bytes32 indexed item, uint slot, uint finished);
 
     /// @dev Called when the crafted `asset` item in `slot` was claimed by `player`
     /// @param player The player that crafted the item
@@ -96,14 +96,14 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
 
     /// @dev Called when the `asset` `recipe` was mutated
     /// @param asset The address of the ERC721 contract
-    /// @param recipe The recipe (name) that was mutated
-    event CraftingRecipeMutation(address indexed asset, bytes32 indexed recipe);
+    /// @param item The item that was mutated
+    event CraftingRecipeMutation(address indexed asset, bytes32 indexed item);
 
     /// @dev Called when the `player` learned `asset` `recipe` 
     /// @param player The player that learned the recipe
     /// @param asset The address of the ERC721 contract
-    /// @param recipe The recipe (name) that was learned
-    event CraftingRecipeLearn(address indexed player, address indexed asset, bytes32 indexed recipe);
+    /// @param item The item that was learned
+    event CraftingRecipeLearn(address indexed player, address indexed asset, bytes32 indexed item);
 
 
     /**
@@ -214,15 +214,15 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     }
 
 
-    /// @dev Returns a single `asset` recipe by `name` 
+    /// @dev Returns a single `asset` recipe by `item` 
     /// @param asset The contract address of the asset to which the recipe applies
-    /// @param name The name of the asset recipe
+    /// @param item The item of the asset recipe
     /// @return recipe The recipe
-    function getRecipe(address asset, bytes32 name)
+    function getRecipe(address asset, bytes32 item)
         public virtual override view 
         returns (CraftingRecipe memory recipe)
     {
-        recipe = _getRecipe(asset, name);
+        recipe = _getRecipe(asset, item);
     }   
 
 
@@ -279,7 +279,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
 
     /// @dev Returns a single `asset` recipe at `index`
     /// @param asset The contract address of the asset to which the recipe applies
-    /// @param recipe The name of recipe to retrieve the ingredients for
+    /// @param recipe The item of recipe to retrieve the ingredients for
     /// @return ingredients The recipe ingredients
     function getRecipeIngredients(address asset, bytes32 recipe)
         public virtual override view 
@@ -314,7 +314,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     /// @dev Returns the `asset` recipe at `index` for `player`
     /// @param player The player to retrieve the learned recipe for
     /// @param asset The contract address of the asset to which the recipe applies
-    /// @return recipe The recipe name
+    /// @return recipe The recipe item
     function getLearnedRecipeAt(address player, address asset, uint index) 
         public virtual override view 
         returns (bytes32 recipe)
@@ -328,7 +328,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     /// @param asset The contract address of the asset to which the recipe applies
     /// @param skip Starting index
     /// @param take Amount of recipes
-    /// @return recipes_ The recipe names
+    /// @return recipes_ The recipe items
     function getLearnedRecipes(address player, address asset, uint skip, uint take) 
         public virtual override view 
         returns (bytes32[] memory recipes_)
@@ -386,7 +386,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
 
     /// @dev Start the crafting process (completed by calling claim(..) after the crafting time has passed) of an item (ERC721)
     /// @param asset The contract address of the asset to which the recipes apply
-    /// @param recipe The name of the recipe to craft
+    /// @param recipe The item of the recipe to craft
     /// @param slotId The index (non-zero based) of the crafting slot to use
     /// @param inventory The inventory space to deduct ingredients from ({Ship|Backpack})
     function craft(address asset, bytes32 recipe, uint slotId, Inventory inventory) 
@@ -507,49 +507,49 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     /// @dev The `player` is able to craft the item after learning the `asset` `recipe` 
     /// @param player The player that learns the recipe
     /// @param asset The contract address of the asset to which the recipe applies
-    /// @param recipe The name of the asset recipe
-    function __learn(address player, address asset, bytes32 recipe) 
+    /// @param item The that can be crafted
+    function __learn(address player, address asset, bytes32 item) 
         onlyRole(SYSTEM_ROLE)
         public virtual
     {
         // System only
-        playerData[player].learned[asset][recipe] = true;
-        playerData[player].learnedIndex[asset].push(recipe);
+        playerData[player].learned[asset][item] = true;
+        playerData[player].learnedIndex[asset].push(item);
 
         // Emit
-        emit CraftingRecipeLearn(player, asset, recipe);
+        emit CraftingRecipeLearn(player, asset, item);
     }
 
 
     /** 
      * Internal functions
      */
-    /// @dev Checks if an `asset` recipe with `name` exists
+    /// @dev Checks if an `asset` recipe with `item` exists
     /// @param asset The asset to wich the recipe applies
-    /// @param name The name of the recipe to check
+    /// @param item The item of the recipe to check
     /// @return bool True if the recipe exists
-    function _recipeExists(address asset, bytes32 name)
+    function _recipeExists(address asset, bytes32 item)
         internal view 
         returns (bool)
     {
-        return recipes[asset][name].level > 0;
+        return recipes[asset][item].level > 0;
     }
 
 
-    /// @dev Returns a single `asset` recipe by `name` 
+    /// @dev Returns a single `asset` recipe by `item` 
     /// @param asset The contract address of the asset to which the recipe applies
-    /// @param name The name of the asset recipe
+    /// @param item The item of the asset recipe
     /// @return recipe The recipe
-    function _getRecipe(address asset, bytes32 name)
+    function _getRecipe(address asset, bytes32 item)
         internal view 
         returns (CraftingRecipe memory recipe)
     {
-        CraftingRecipeData storage data = recipes[asset][name];
+        CraftingRecipeData storage data = recipes[asset][item];
         recipe = CraftingRecipe(
-            name,
             data.level,
             data.learnable,
             asset,
+            item,
             data.craftingTime,
             new CraftingRecipeIngredient[](data.ingredientsIndex.length));
 
@@ -568,15 +568,15 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         onlyRole(DEFAULT_ADMIN_ROLE) 
         public virtual 
     {
-        if (!_recipeExists(recipe_.asset, recipe_.name))
+        if (!_recipeExists(recipe_.asset, recipe_.item))
         {
             // Add index
-            recipes[recipe_.asset][recipe_.name].index = recipesIndex[recipe_.asset].length;
-            recipesIndex[recipe_.asset].push(recipe_.name);
+            recipes[recipe_.asset][recipe_.item].index = recipesIndex[recipe_.asset].length;
+            recipesIndex[recipe_.asset].push(recipe_.item);
         }
 
         // Set values
-        CraftingRecipeData storage recipe = recipes[recipe_.asset][recipe_.name];
+        CraftingRecipeData storage recipe = recipes[recipe_.asset][recipe_.item];
         recipe.level = recipe_.level;
         recipe.learnable = recipe_.learnable;
         recipe.craftingTime = recipe_.craftingTime;
@@ -600,7 +600,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         }
 
         // Emit
-        emit CraftingRecipeMutation(recipe_.asset, recipe_.name);
+        emit CraftingRecipeMutation(recipe_.asset, recipe_.item);
     }
 
 

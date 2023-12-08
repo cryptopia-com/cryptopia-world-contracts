@@ -4,12 +4,14 @@ pragma solidity ^0.8.20 < 0.9.0;
 /// @dev Crafting recipe data
 struct CraftingRecipe 
 {
-    bytes32 name;
     uint8 level; // Level zero indicated not initialized
     bool learnable;
 
     // Asset (ERC721)
     address asset;
+
+    // The item that is crafted
+    bytes32 item;
 
     // Crafting time
     uint64 craftingTime;

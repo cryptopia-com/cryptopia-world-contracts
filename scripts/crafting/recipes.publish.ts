@@ -5,10 +5,8 @@ import fs from 'fs';
 import hre, { ethers } from "hardhat";
 import { DeploymentManager } from "../helpers/deployments";
 import { waitForMinimumTime } from "../helpers/timers";
-import { resolveEnum } from "../helpers/enums";
-import { Faction, SubFaction } from '../types/enums';
-import { JsonData } from '../types/quests/input';
-import { QuestStruct } from "../../typechain-types/contracts/source/game/quests/IQuests.js";
+import { Ingredient, JsonData } from './types/recipes.input';
+import { CraftingRecipeStruct } from "../../typechain-types/contracts/source/game/crafting/ICrafting.js";
 
 const chalk = require('chalk');
 
@@ -16,8 +14,8 @@ const chalk = require('chalk');
 const MIN_TIME = 1000;
 
 // Default values
-const DEFAULT_BASE_PATH = './data/game/quests/';
-const DEFAULT_FILE = 'initial';
+const DEFAULT_BASE_PATH = './data/game/crafting/';
+const DEFAULT_FILE = 'recipes';
 const DEFAULT_BATCH_SIZE = 20;
 
 const deploymentManager = new DeploymentManager(hre.network.name);
@@ -25,56 +23,56 @@ const deploymentManager = new DeploymentManager(hre.network.name);
 /**
  * Main deployment function.
  * 
- * @param {string} questsFilePath - Path to the quests data file.
+ * @param {string} recipesFilePath - Path to the recipes data file.
  * @param {number} batchSize - Size of the deployment batch.
  */
-async function main(questsFilePath: string, batchSize: number) 
+async function main(recipesFilePath: string, batchSize: number) 
 {
-    if (!fs.existsSync(questsFilePath)) {
-        console.error(chalk.red(`Quests file not found: ${questsFilePath}`));
+    if (!fs.existsSync(recipesFilePath)) {
+        console.error(chalk.red(`Quests file not found: ${recipesFilePath}`));
         return;
     }
 
-    let quests: QuestStruct[];
+    let recipes: CraftingRecipeStruct[];
     try {
-        quests = resolve(require(questsFilePath));
+        recipes = resolve(require(recipesFilePath));
     } catch (error) {
         if (error instanceof Error) {
             // Now 'error' is typed as 'Error'
-            console.error(chalk.red(`Error loading quest data from ${questsFilePath}: ${error.message}`));
+            console.error(chalk.red(`Error loading recipes data from ${recipesFilePath}: ${error.message}`));
         } else {
             // Handle non-Error objects
-            console.error(chalk.red(`An unexpected error occurred while loading quest data from ${questsFilePath}`));
+            console.error(chalk.red(`An unexpected error occurred while loading recipe data from ${recipesFilePath}`));
         }
         return;
     }
 
     
-    const questsAddress = deploymentManager.getDeployment("CryptopiaQuests")?.address;
+    const craftingAddress = deploymentManager.getDeployment("CryptopiaCrafting")?.address;
 
-    console.log(`\nFound ${chalk.bold(quests.length.toString())} quests to deploy on ${chalk.yellow(hre.network.name)}`);
-    console.log(`Found ${chalk.green("CryptopiaQuests")} at ${chalk.cyan(questsAddress)}\n`);
+    console.log(`\nFound ${chalk.bold(recipes.length.toString())} recipes to deploy on ${chalk.yellow(hre.network.name)}`);
+    console.log(`Found ${chalk.green("CryptopiaCrafting")} at ${chalk.cyan(craftingAddress)}\n`);
 
-    const questsInstance = await ethers.getContractAt("CryptopiaQuests", questsAddress);
+    const craftingInstance = await ethers.getContractAt("CryptopiaCrafting", craftingAddress);
 
-    // Deploy quests in batches
-    for (let i = 0; i < quests.length; i += batchSize) 
+    // Deploy recipes in batches
+    for (let i = 0; i < recipes.length; i += batchSize) 
     {
-        const batch = quests.slice(i, i + batchSize);
-        if (i + batchSize >= quests.length) 
+        const batch = recipes.slice(i, i + batchSize);
+        if (i + batchSize >= recipes.length) 
         {
-            console.log(`Deploying batch ${`${Math.floor(i / batchSize) + 1}`}/${Math.ceil(quests.length / batchSize)}`);
+            console.log(`Deploying batch ${`${Math.floor(i / batchSize) + 1}`}/${Math.ceil(recipes.length / batchSize)}`);
         }
         else 
         {
-            console.log(`Deploying batch ${chalk.grey(`${Math.floor(i / batchSize) + 1}`)}/${Math.ceil(quests.length / batchSize)}`);
+            console.log(`Deploying batch ${chalk.grey(`${Math.floor(i / batchSize) + 1}`)}/${Math.ceil(recipes.length / batchSize)}`);
         }
 
         const transactionLoader = ora(`Creating transaction...`).start();
         const transactionLoaderStartTime = Date.now();
 
         // Create the transaction
-        const transaction = await questsInstance.setQuests(batch);
+        const transaction = await craftingInstance.setRecipes(batch);
 
         await waitForMinimumTime(transactionLoaderStartTime, MIN_TIME);
         transactionLoader.succeed(`Transaction created ${chalk.cyan(transaction.hash)}`);
@@ -89,8 +87,36 @@ async function main(questsFilePath: string, batchSize: number)
         confirmationLoader.succeed(`Transaction ${chalk.green("confirmed")} in block ${chalk.cyan(receipt?.blockNumber)}\n`);
     }
 
-    console.log(`\nDeployed ${chalk.bold(quests.length.toString())} quests on ${chalk.yellow(hre.network.name)}!\n\n`);
+    console.log(`\nDeployed ${chalk.bold(recipes.length.toString())} recipes on ${chalk.yellow(hre.network.name)}!\n\n`);
 };
+
+/**
+ * Resolves the data from the JSON file.
+ *
+ * @param {JsonData[]} data - Data from the JSON file.
+ * @returns {CraftingRecipeStruct[]} The resolved data.
+ */
+function resolve(data: JsonData[]): CraftingRecipeStruct[]
+{
+    const resolvedRecipes: CraftingRecipeStruct[] = [];
+    data.forEach((recipeData, i) => {
+        resolvedRecipes.push({
+            level: recipeData.level,
+            learnable: recipeData.learnable,
+            asset: deploymentManager.getDeployment(recipeData.asset).address,
+            item: recipeData.item.toBytes32(), 
+            craftingTime: recipeData.craftingTime,
+            ingredients: recipeData.ingredients.map((ingredient: Ingredient) => {
+                return {
+                    asset: deploymentManager.getDeployment(ingredient.asset).address,
+                    amount: ingredient.amount.toWei()
+                };
+            })
+        });
+    });
+
+    return resolvedRecipes;
+}
 
 const basePath = path.resolve(DEFAULT_BASE_PATH);
 const batchSize = DEFAULT_BATCH_SIZE;

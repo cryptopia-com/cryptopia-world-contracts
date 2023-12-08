@@ -1,13 +1,13 @@
-import { Resource } from "../../types/enums";
-
 export interface Ingredient {
-    resource: Resource;
+    asset: string;
     amount: string;
 }
 
-export interface Recipe {
+export interface JsonData {
     level: number;
     learnable: boolean;
+    asset: string,
+    item: string,
     craftingTime: number;
     ingredients: Ingredient[];
 }

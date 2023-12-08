@@ -1,368 +1,164 @@
 [
     {
-        "name": "Stone Axe",
-        "rarity": 0,
         "level": 1,
-        "stats": {
-            "durability": 90,
-            "multiplier_cooldown": 200,
-            "multiplier_xp": 100,
-            "multiplier_effectiveness": 100,
-            "value1": 0,
-            "value2": 0,
-            "value3": 0
-        },
-        "minting": [
+        "learnable": false,
+        "asset": "CryptopiaToolToken",
+        "item": "Stone Axe",
+        "craftingTime": 300,
+        "ingredients": [
             {
-                "resource": 1,
+                "asset": "CryptopiaAssetToken:Wood",
                 "amount": "1"
             },
             {
-                "resource": 3,
+                "asset": "CryptopiaAssetToken:Stone",
                 "amount": "1"
             }
-        ],
-        "recipe": {
-            "level": 1,
-            "learnable": false,
-            "craftingTime": 300,
-            "ingredients": [
-                {
-                    "resource": 3,
-                    "amount": "1"
-                },
-                {
-                    "resource": 4,
-                    "amount": "1"
-                }
-            ]
-        }
+        ]
     },
     {
-        "name": "Iron Axe",
-        "rarity": 0,
         "level": 1,
-        "stats": {
-            "durability": 95,
-            "multiplier_cooldown": 100,
-            "multiplier_xp": 100,
-            "multiplier_effectiveness": 100,
-            "value1": 0,
-            "value2": 0,
-            "value3": 0
-        },
-        "minting": [
+        "learnable": true,
+        "asset": "CryptopiaToolToken",
+        "item": "Iron Axe",
+        "craftingTime": 600,
+        "ingredients": [
             {
-                "resource": 1,
+                "asset": "CryptopiaAssetToken:Wood",
                 "amount": "1"
             },
             {
-                "resource": 3,
+                "asset": "CryptopiaAssetToken:Iron",
                 "amount": "1"
             }
-        ],
-        "recipe": {
-            "level": 1,
-            "learnable": true,
-            "craftingTime": 600,
-            "ingredients": [
-                {
-                    "resource": 3,
-                    "amount": "1"
-                },
-                {
-                    "resource": 7,
-                    "amount": "1"
-                }
-            ]
-        }
+        ]
     },
     {
-        "name": "Steel Axe",
-        "rarity": 0,
         "level": 1,
-        "stats": {
-            "durability": 99,
-            "multiplier_cooldown": 100,
-            "multiplier_xp": 100,
-            "multiplier_effectiveness": 100,
-            "value1": 0,
-            "value2": 0,
-            "value3": 0
-        },
-        "minting": [
+        "learnable": true,
+        "asset": "CryptopiaToolToken",
+        "item": "Steel Axe",
+        "craftingTime": 1800,
+        "ingredients": [
             {
-                "resource": 1,
+                "asset": "CryptopiaAssetToken:Wood",
                 "amount": "1"
             },
             {
-                "resource": 3,
+                "asset": "CryptopiaAssetToken:Steel",
                 "amount": "1"
             }
-        ],
-        "recipe": {
-            "level": 1,
-            "learnable": true,
-            "craftingTime": 1800,
-            "ingredients": [
-                {
-                    "resource": 3,
-                    "amount": "1"
-                },
-                {
-                    "resource": 15,
-                    "amount": "1"
-                }
-            ]
-        }
+        ]
     },
     {
-        "name": "Stone Pickaxe",
-        "rarity": 0,
         "level": 1,
-        "stats": {
-            "durability": 80,
-            "multiplier_cooldown": 100,
-            "multiplier_xp": 100,
-            "multiplier_effectiveness": 100,
-            "value1": 0,
-            "value2": 0,
-            "value3": 0
-        },
-        "minting": [
+        "learnable": false,
+        "asset": "CryptopiaToolToken",
+        "item": "Stone Pickaxe",
+        "craftingTime": 300,
+        "ingredients": [
             {
-                "resource": 1,
+                "asset": "CryptopiaAssetToken:Wood",
                 "amount": "1"
             },
             {
-                "resource": 3,
+                "asset": "CryptopiaAssetToken:Stone",
                 "amount": "1"
             }
-        ],
-        "recipe": {
-            "level": 1,
-            "learnable": false,
-            "craftingTime": 300,
-            "ingredients": [
-                {
-                    "resource": 3,
-                    "amount": "1"
-                },
-                {
-                    "resource": 4,
-                    "amount": "1"
-                }
-            ]
-        }
+        ]
     },
     {
-        "name": "Iron Pickaxe",
-        "rarity": 0,
         "level": 1,
-        "stats": {
-            "durability": 90,
-            "multiplier_cooldown": 100,
-            "multiplier_xp": 100,
-            "multiplier_effectiveness": 100,
-            "value1": 0,
-            "value2": 0,
-            "value3": 0
-        },
-        "minting": [
+        "learnable": true,
+        "asset": "CryptopiaToolToken",
+        "item": "Iron Pickaxe",
+        "craftingTime": 600,
+        "ingredients": [
             {
-                "resource": 1,
+                "asset": "CryptopiaAssetToken:Wood",
                 "amount": "1"
             },
             {
-                "resource": 3,
+                "asset": "CryptopiaAssetToken:Iron",
                 "amount": "1"
             }
-        ],
-        "recipe": {
-            "level": 1,
-            "learnable": true,
-            "craftingTime": 600,
-            "ingredients": [
-                {
-                    "resource": 3,
-                    "amount": "1"
-                },
-                {
-                    "resource": 7,
-                    "amount": "1"
-                }
-            ]
-        }
+        ]
     },
     {
-        "name": "Steel Pickaxe",
-        "rarity": 0,
         "level": 1,
-        "stats": {
-            "durability": 95,
-            "multiplier_cooldown": 100,
-            "multiplier_xp": 100,
-            "multiplier_effectiveness": 100,
-            "value1": 0,
-            "value2": 0,
-            "value3": 0
-        },
-        "minting": [
+        "learnable": true,
+        "asset": "CryptopiaToolToken",
+        "item": "Steel Pickaxe",
+        "craftingTime": 1800,
+        "ingredients": [
             {
-                "resource": 1,
+                "asset": "CryptopiaAssetToken:Wood",
                 "amount": "1"
             },
             {
-                "resource": 3,
+                "asset": "CryptopiaAssetToken:Steel",
                 "amount": "1"
             }
-        ],
-        "recipe": {
-            "level": 1,
-            "learnable": true,
-            "craftingTime": 1800,
-            "ingredients": [
-                {
-                    "resource": 3,
-                    "amount": "1"
-                },
-                {
-                    "resource": 15,
-                    "amount": "1"
-                }
-            ]
-        }
+        ]
     },
     {
-        "name": "Wooden Rod",
-        "rarity": 0,
         "level": 1,
-        "stats": {
-            "durability": 80,
-            "multiplier_cooldown": 100,
-            "multiplier_xp": 100,
-            "multiplier_effectiveness": 100,
-            "value1": 0,
-            "value2": 0,
-            "value3": 0
-        },
-        "minting": [
+        "learnable": false,
+        "asset": "CryptopiaToolToken",
+        "item": "Wooden Rod",
+        "craftingTime": 300,
+        "ingredients": [
             {
-                "resource": 8,
+                "asset": "CryptopiaAssetToken:Wood",
                 "amount": "1"
             }
-        ],
-        "recipe": {
-            "level": 1,
-            "learnable": false,
-            "craftingTime": 300,
-            "ingredients": [
-                {
-                    "resource": 3,
-                    "amount": "1"
-                }
-            ]
-        }
+        ]
     },
     {
-        "name": "Wooden Shovel",
-        "rarity": 0,
         "level": 1,
-        "stats": {
-            "durability": 90,
-            "multiplier_cooldown": 100,
-            "multiplier_xp": 100,
-            "multiplier_effectiveness": 100,
-            "value1": 0,
-            "value2": 0,
-            "value3": 0
-        },
-        "minting": [
+        "learnable": false,
+        "asset": "CryptopiaToolToken",
+        "item": "Wooden Shovel",
+        "craftingTime": 300,
+        "ingredients": [
             {
-                "resource": 14,
-                "amount": "1"
+                "asset": "CryptopiaAssetToken:Wood",
+                "amount": "2"
             }
-        ],
-        "recipe": {
-            "level": 1,
-            "learnable": false,
-            "craftingTime": 300,
-            "ingredients": [
-                {
-                    "resource": 3,
-                    "amount": "2"
-                }
-            ]
-        }
+        ]
     },
     {
-        "name": "Iron Shovel",
-        "rarity": 0,
         "level": 1,
-        "stats": {
-            "durability": 95,
-            "multiplier_cooldown": 100,
-            "multiplier_xp": 100,
-            "multiplier_effectiveness": 100,
-            "value1": 0,
-            "value2": 0,
-            "value3": 0
-        },
-        "minting": [
+        "learnable": false,
+        "asset": "CryptopiaToolToken",
+        "item": "Iron Shovel",
+        "craftingTime": 300,
+        "ingredients": [
             {
-                "resource": 14,
+                "asset": "CryptopiaAssetToken:Wood",
+                "amount": "1"
+            },
+            {
+                "asset": "CryptopiaAssetToken:Iron",
                 "amount": "1"
             }
-        ],
-        "recipe": {
-            "level": 1,
-            "learnable": false,
-            "craftingTime": 300,
-            "ingredients": [
-                {
-                    "resource": 3,
-                    "amount": "1"
-                },
-                {
-                    "resource": 7,
-                    "amount": "1"
-                }
-            ]
-        }
+        ]
     },
     {
-        "name": "Steel Shovel",
-        "rarity": 0,
         "level": 1,
-        "stats": {
-            "durability": 99,
-            "multiplier_cooldown": 100,
-            "multiplier_xp": 100,
-            "multiplier_effectiveness": 100,
-            "value1": 0,
-            "value2": 0,
-            "value3": 0
-        },
-        "minting": [
+        "learnable": false,
+        "asset": "CryptopiaToolToken",
+        "item": "Steel Shovel",
+        "craftingTime": 300,
+        "ingredients": [
             {
-                "resource": 14,
+                "asset": "CryptopiaAssetToken:Wood",
+                "amount": "1"
+            },
+            {
+                "asset": "CryptopiaAssetToken:Steel",
                 "amount": "1"
             }
-        ],
-        "recipe": {
-            "level": 1,
-            "learnable": false,
-            "craftingTime": 300,
-            "ingredients": [
-                {
-                    "resource": 3,
-                    "amount": "1"
-                },
-                {
-                    "resource": 15,
-                    "amount": "1"
-                }
-            ]
-        }
+        ]
     }
 ]

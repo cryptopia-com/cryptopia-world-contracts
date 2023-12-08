@@ -7,7 +7,7 @@ import { DeploymentManager } from "../helpers/deployments";
 import { waitForMinimumTime } from "../helpers/timers";
 import { resolveEnum } from "../helpers/enums";
 import { Faction, SubFaction } from '../types/enums';
-import { JsonData } from '../types/quests/input';
+import { JsonData } from './types/quests.input';
 import { QuestStruct } from "../../typechain-types/contracts/source/game/quests/IQuests.js";
 
 const chalk = require('chalk');
@@ -17,7 +17,7 @@ const MIN_TIME = 1000;
 
 // Default values
 const DEFAULT_BASE_PATH = './data/game/quests/';
-const DEFAULT_FILE = 'initial';
+const DEFAULT_FILE = 'quests';
 const DEFAULT_BATCH_SIZE = 20;
 
 const deploymentManager = new DeploymentManager(hre.network.name);

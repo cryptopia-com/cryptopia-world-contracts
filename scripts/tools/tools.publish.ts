@@ -7,8 +7,8 @@ import { DeploymentManager } from "../helpers/deployments";
 import { waitForMinimumTime } from "../helpers/timers";
 import { resolveEnum } from "../helpers/enums";
 import { Rarity, Resource } from '../types/enums';
-import { JsonData } from '../types/tools/input';
-import { ToolStruct, ToolMintingDataStruct } from "../../typechain-types/contracts/source/tokens/ERC721/tools/ITools.js";
+import { JsonData } from './types/tools.input';
+import { ToolStruct } from "../../typechain-types/contracts/source/tokens/ERC721/tools/ITools.js";
 
 const chalk = require('chalk');
 
@@ -17,7 +17,7 @@ const MIN_TIME = 1000;
 
 // Default values
 const DEFAULT_BASE_PATH = './data/game/tools/';
-const DEFAULT_FILE = 'initial';
+const DEFAULT_FILE = 'tools';
 const DEFAULT_BATCH_SIZE = 20;
 
 const deploymentManager = new DeploymentManager(hre.network.name);

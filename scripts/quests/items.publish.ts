@@ -5,7 +5,7 @@ import fs from 'fs';
 import hre, { ethers } from "hardhat";
 import { DeploymentManager } from "../helpers/deployments";
 import { waitForMinimumTime } from "../helpers/timers";
-import { JsonData } from '../types/quests/input';
+import { JsonData } from './types/items.input';
 import { QuestItemStruct } from "../../typechain-types/contracts/source/tokens/ERC721/quests/IQuestItems.js";
 
 const chalk = require('chalk');
@@ -14,8 +14,8 @@ const chalk = require('chalk');
 const MIN_TIME = 1000;
 
 // Default values
-const DEFAULT_BASE_PATH = './data/game/quests/items/';
-const DEFAULT_FILE = 'initial';
+const DEFAULT_BASE_PATH = './data/game/quests/';
+const DEFAULT_FILE = 'items';
 const DEFAULT_BATCH_SIZE = 20;
 
 const deploymentManager = new DeploymentManager(hre.network.name);

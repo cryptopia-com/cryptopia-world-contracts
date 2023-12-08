@@ -177,8 +177,8 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
             bool canInteract
         ) = IMaps(mapContract).getPlayerLocationData(account);
 
-        Tile memory tile = IMaps(mapContract)
-            .getTile(tileIndex);
+        TileStatic memory tile = IMaps(mapContract)
+            .getTileDataStatic(tileIndex);
 
         if (!canInteract)
         {

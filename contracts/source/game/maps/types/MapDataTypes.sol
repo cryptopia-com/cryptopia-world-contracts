@@ -4,7 +4,28 @@ pragma solidity ^0.8.20 < 0.9.0;
 import "./MapEnums.sol";
 import "../../assets/types/AssetEnums.sol";
 
-struct Tile 
+/// @dev Map data
+struct Map  
+{
+    /// @dev True if the map is created
+    bool initialized;
+
+    /// @dev True if the map is final and immutable
+    bool finalized;
+
+    /// @dev Number of tiles in the x direction
+    uint16 sizeX;
+
+    /// @dev Number of tiles in the z direction
+    uint16 sizeZ;
+
+    /// @dev The index of the first tile in the map 
+    /// @notice Multiple maps exist but the tiles are numbered sequentially
+    uint16 tileStartIndex;
+}
+
+/// @dev Tile data
+struct TileStatic
 {
     /// @dev True if the tile is created
     bool initialized;
@@ -55,35 +76,43 @@ struct Tile
     /// @dev Indicates the presence of a lake on the tile
     /// @notice Lakes impose a movement penalty
     bool hasLake;
-}
-
-
-/// @dev Tile meta data
-struct TileData 
-{
-    /// @dev Player that most recently entered the tile 
-    address lastEnteredPlayer;
 
     /// @dev Natural resources
-    TileResourceData resource1;
-    TileResourceData resource2;
-    TileResourceData resource3;
+    TileResourceStatic[] resources;
 }
 
+/// @dev Tile meta data
+struct TileDynamic 
+{
+    /// @dev the owner of the title deed
+    address owner;
+
+    /// @dev Up to five players that last entered the tile
+    address[] lastEnteredPlayers;
+
+    /// @dev Natural resources
+    TileResourceDynamic[] resources;
+}
 
 /// @dev Resources can be attached to tiles
-struct TileResourceData 
+struct TileResourceStatic
 {
     /// @dev The type of resource
-    Resource type_;
-
-    /// @dev The amount of `asset` that if left
-    uint amount;
+    Resource resource;
 
     /// @dev The initial size of the `asset` deposit
     uint initialAmount;
 }
 
+/// @dev Resources can be attached to tiles
+struct TileResourceDynamic
+{
+    /// @dev The type of resource
+    Resource resource;
+
+    /// @dev The amount of `asset` that if left
+    uint amount;
+}
 
 /// @dev Player navigation data
 struct PlayerNavigationData {

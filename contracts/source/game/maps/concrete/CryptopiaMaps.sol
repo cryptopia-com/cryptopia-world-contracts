@@ -3,6 +3,7 @@ pragma solidity ^0.8.20 < 0.9.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 import "../IMaps.sol";
 import "../types/MapEnums.sol";
@@ -20,26 +21,75 @@ import "../../../tokens/ERC721/ships/IShips.sol";
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlayerFreezeControl {
 
-    struct Map  
+    /// @dev Tile data
+    struct TileStaticData
     {
-        /// @dev True if the map is created
+        /// @dev True if the tile is created
         bool initialized;
 
-        /// @dev True if the map is final and immutable
-        bool finalized;
+        /// @dev Index of the map that the tile belongs to
+        uint16 mapIndex;
 
-        /// @dev Number of tiles in the x direction
-        uint16 sizeX;
+        /// @dev Landmass or island index (zero signals water tile)
+        /// @notice Landmasses are global and can span multiple maps
+        uint16 group;
 
-        /// @dev Number of tiles in the z direction
-        uint16 sizeZ;
+        /// @dev Ranges from 0 to 100 and indicates the safety level of the tile 
+        /// @notice 100 - safety for pirates
+        uint8 safety; 
 
-        /// @dev The index of the first tile in the map 
-        /// @notice Multiple maps exist but the tiles are numbered sequentially
-        uint16 tileStartIndex;
+        /// @dev The type of biome 
+        /// {None, Plains, Grassland, Forest, RainForest, Desert, Tundra, Swamp, Reef}
+        Biome biome;
+
+        /// @dev The type of terrain 
+        /// {Flat, Hills, Mountains, Water, Seastead}
+        Terrain terrain;
+
+        /// @dev The elevation of the terrain (seafloor in case of sea tile)
+        uint8 elevation;
+
+        /// @dev The water level of the tile 
+        /// @notice Water level minus elevation equals the depth of the water
+        uint8 waterLevel;
+
+        /// @dev The level of vegetation that the tile contains
+        uint32 vegetationLevel;
+
+        /// @dev The size of rocks that the tile contains
+        uint32 rockLevel;
+
+        /// @dev The amount of wildlife that the tile contains
+        uint32 wildlifeLevel;
+
+        /// @dev Flags that indicate the presence of a river on the tile's hex edges
+        /// @notice 0 = NW, 
+        uint8 riverFlags; 
+
+        /// @dev Indicates the presence of a road on the tile
+        /// @notice Roads remove the movement penalty for hills
+        bool hasRoad;
+
+        /// @dev Indicates the presence of a lake on the tile
+        /// @notice Lakes impose a movement penalty
+        bool hasLake;
+
+        /// @dev Resource => initial amount
+        mapping (Resource => uint) resources;
+        Resource[] resourcesIndex;
     }
 
-    
+    /// @dev Tile meta data
+    struct TileDynamicData
+    {
+        /// @dev Player that most recently entered the tile 
+        address lastEnteredPlayer;
+
+        /// @dev Resource => current amount
+        mapping (Resource => uint) resources;
+    }
+
+
     /**
      * Roles
      */
@@ -77,12 +127,12 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     address public shipContract;
 
     /// @dev Maps
-    mapping(bytes32 => Map) public maps;
+    mapping(bytes32 => Map) public maps; 
     bytes32[] private mapsIndex;
 
     /// @dev Tiles
-    mapping(uint16 => Tile) public tiles;
-    mapping(uint16 => TileData) public tileData; 
+    mapping(uint16 => TileStaticData) public tileDataStatic;
+    mapping(uint16 => TileDynamicData) public tileDataDynamic; 
     uint public initializedTileCount;
 
     /// @dev player => PlayerNavigationData
@@ -281,37 +331,18 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     }
 
 
-    /// @dev Batch operation to set tiles
+    /// @dev Batch operation to set tiles 
     /// @param indices Indices of the tiles
-    /// @param values Tile values that are used to create the mesh
-    /// @param resource1_types Resource type
-    /// @param resource2_types Resource type
-    /// @param resource3_types Resource type
-    /// @param resource1_amounts Resource amount
-    /// @param resource2_amounts Resource amount
-    /// @param resource3_amounts Resource amount
+    /// @param data Tile datas
     function setTiles(
         uint16[] memory indices, 
-        Tile[] memory values, 
-        Resource[] memory resource1_types, 
-        Resource[] memory resource2_types, 
-        Resource[] memory resource3_types, 
-        uint[] memory resource1_amounts, 
-        uint[] memory resource2_amounts, 
-        uint[] memory resource3_amounts) 
-        public onlyRole(DEFAULT_ADMIN_ROLE) 
+        TileStatic[] memory data)
+        public virtual
+        onlyRole(DEFAULT_ADMIN_ROLE) 
     {
         for (uint i = 0; i < indices.length; i++)
         {
-            _setTile(
-                indices[i], 
-                values[i], 
-                resource1_types[i], 
-                resource2_types[i],
-                resource3_types[i],
-                resource1_amounts[i],
-                resource2_amounts[i],
-                resource3_amounts[i]);
+            _setTile(indices[i], data[i]);
         }
     }
 
@@ -331,34 +362,84 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
 
     /// @dev Retreives the map at `index`
     /// @param index Map index (not mapping key)
-    /// @return Map data
+    /// @return map Map data
     function getMapAt(uint index) 
         public virtual view 
-        returns (Map memory)
+        returns (Map memory map)
     {
-        return maps[mapsIndex[index]];
+        map = maps[mapsIndex[index]];
     }
 
       
-    /// @dev Retrieve a tile
-    /// @param tileIndex Index of the tile to retrieve
-    /// @return Tile data
-    function getTile(uint16 tileIndex) 
+    /// @dev Retrieve static data for the tile with `tileIndex`
+    /// @param tileIndex Index of hte tile to retrieve
+    /// @return tileData Static tile data
+    function getTileDataStatic(uint16 tileIndex) 
         public virtual override view 
-        returns (Tile memory)
+        returns (TileStatic memory tileData)
     {
-        return tiles[tileIndex];
+        TileStaticData storage data = tileDataStatic[tileIndex];
+        tileData.initialized = data.initialized;
+        tileData.mapIndex = data.mapIndex;
+        tileData.group = data.group;
+        tileData.safety = data.safety;
+        tileData.biome = data.biome;
+        tileData.terrain = data.terrain;
+        tileData.elevation = data.elevation;
+        tileData.waterLevel = data.waterLevel;
+        tileData.vegetationLevel = data.vegetationLevel;
+        tileData.rockLevel = data.rockLevel;
+        tileData.wildlifeLevel = data.wildlifeLevel;
+        tileData.riverFlags = data.riverFlags;
+        tileData.hasRoad = data.hasRoad;
+        tileData.hasLake = data.hasLake;
+        tileData.resources = new TileResourceStatic[](data.resourcesIndex.length);
+        for (uint i = 0; i < data.resourcesIndex.length; i++)
+        {
+            tileData.resources[i] = TileResourceStatic(
+                data.resourcesIndex[i], 
+                data.resources[data.resourcesIndex[i]]);
+        }
     }
 
     
-    /// @dev Retrieve tile data
-    /// @param tileIndex Index of the tile to retrieve data for
-    /// @return TileData data
-    function getTileData(uint16 tileIndex)
-        public virtual view 
-        returns (TileData memory)
+    /// @dev Retrieve dynamic data for the tile with `tileIndex`
+    /// @param tileIndex Index of the tile to retrieve
+    /// @return tileData Dynamic tile data
+    function getTileDataDynamic(uint16 tileIndex)
+        public virtual override view 
+        returns (TileDynamic memory tileData)
     {
-        return tileData[tileIndex];
+        TileStaticData storage staticData = tileDataStatic[tileIndex];
+        TileDynamicData storage dynamicData = tileDataDynamic[tileIndex];
+
+        // Add owener
+        try IERC721(titleDeedContract).ownerOf(tileIndex) 
+            returns (address owner)
+        {
+            tileData.owner = owner;
+        } 
+        catch (bytes memory)
+        {
+            tileData.owner = address(0);
+        }
+
+        // Add last entered players
+        tileData.lastEnteredPlayers = new address[](5);
+        tileData.lastEnteredPlayers[0] = dynamicData.lastEnteredPlayer;
+        tileData.lastEnteredPlayers[1] = playerData[tileData.lastEnteredPlayers[0]].chain_prev;
+        tileData.lastEnteredPlayers[2] = playerData[tileData.lastEnteredPlayers[1]].chain_prev;
+        tileData.lastEnteredPlayers[3] = playerData[tileData.lastEnteredPlayers[2]].chain_prev;
+        tileData.lastEnteredPlayers[4] = playerData[tileData.lastEnteredPlayers[3]].chain_prev;
+
+        // Add resources
+        tileData.resources = new TileResourceDynamic[](staticData.resourcesIndex.length);
+        for (uint i = 0; i < tileDataStatic[tileIndex].resourcesIndex.length; i++)
+        {
+            tileData.resources[i] = TileResourceDynamic(
+                staticData.resourcesIndex[i], 
+                dynamicData.resources[staticData.resourcesIndex[i]]);
+        }
     }
 
 
@@ -368,7 +449,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         public virtual view 
         returns (uint8)
     {
-        return tiles[tileIndex].safety;
+        return tileDataStatic[tileIndex].safety;
     }
 
 
@@ -521,20 +602,19 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     /// @param max Max amount of players to return
     function getPlayers(uint16 tileIndex, address start, uint max)
         public virtual view  
-        returns (
-            address[] memory players)
+        returns (address[] memory players)
     {
         players = new address[](max);
 
         // No players
-        if (start == address(0) && tileData[tileIndex].lastEnteredPlayer == address(0))
+        if (start == address(0) && tileDataDynamic[tileIndex].lastEnteredPlayer == address(0))
         {
             return players;
         }
 
         // Set first player
         players[0] = start == address(0) 
-            ? tileData[tileIndex].lastEnteredPlayer : start;
+            ? tileDataDynamic[tileIndex].lastEnteredPlayer : start;
 
         // Walk chain
         for (uint i = 1; i < max; i++)
@@ -729,7 +809,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         internal view 
         returns (bool)
     {
-        return tiles[index].initialized && maps[mapsIndex[tiles[index].mapIndex]].finalized;
+        return tileDataStatic[index].initialized && maps[mapsIndex[tileDataStatic[index].mapIndex]].finalized;
     }
 
 
@@ -740,7 +820,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         internal view 
         returns (bool)
     {
-        return tiles[index].waterLevel > tiles[index].elevation;
+        return tileDataStatic[index].waterLevel > tileDataStatic[index].elevation;
     }
 
 
@@ -752,7 +832,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         internal view 
         returns (bool) 
     {
-        Map storage map = maps[mapsIndex[tiles[a].mapIndex]];
+        Map storage map = maps[mapsIndex[tileDataStatic[a].mapIndex]];
         (uint16 x, uint16 z) = (a % map.sizeX, a / map.sizeX);
 
         // West
@@ -865,25 +945,13 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     }
 
 
-    /// @dev Populate (or override) the tile at `index` with `values`. The `index` is used to determin 
+    /// @dev Populate (or override) the tile at `index` with `tileData`. The `index` is used to determin  
     /// the map to which the tile belongs as well as it's cooridinates within that map.
     /// @param index Index of the tile
-    /// @param values Tile values
-    /// @param resource1_type Resource type
-    /// @param resource2_type Resource type
-    /// @param resource3_type Resource type
-    /// @param resource1_amount Resource amount
-    /// @param resource2_amount Resource amount
-    /// @param resource3_amount Resource amount
+    /// @param tileData Tile data 
     function _setTile(
         uint16 index, 
-        Tile memory values, 
-        Resource resource1_type, 
-        Resource resource2_type, 
-        Resource resource3_type, 
-        uint resource1_amount, 
-        uint resource2_amount, 
-        uint resource3_amount) 
+        TileStatic memory tileData) 
         internal
     {
         Map storage map = maps[mapsIndex[mapsIndex.length - 1]];
@@ -902,52 +970,32 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
             revert TileIndexOutOfBounds();
         }
 
-        if (!tiles[index].initialized)
+        if (!tileDataStatic[index].initialized)
         {
             initializedTileCount++;
         }
 
-        tiles[index].initialized = true;
-        tiles[index].mapIndex = uint16(mapsIndex.length - 1);
-        tiles[index].group = values.group;
-        tiles[index].safety = values.safety;
-        tiles[index].biome = values.biome;
-        tiles[index].terrain = values.terrain;
-        tiles[index].elevation = values.elevation;
-        tiles[index].waterLevel = values.waterLevel;
-        tiles[index].vegetationLevel = values.vegetationLevel;
-        tiles[index].rockLevel = values.rockLevel;
-        tiles[index].wildlifeLevel = values.wildlifeLevel;
-        tiles[index].riverFlags = values.riverFlags;
-        tiles[index].hasRoad = values.hasRoad;
-        tiles[index].hasLake = values.hasLake;
+        tileDataStatic[index].initialized = true;
+        tileDataStatic[index].mapIndex = uint16(mapsIndex.length - 1);
+        tileDataStatic[index].group = tileData.group;
+        tileDataStatic[index].safety = tileData.safety;
+        tileDataStatic[index].biome = tileData.biome;
+        tileDataStatic[index].terrain = tileData.terrain;
+        tileDataStatic[index].elevation = tileData.elevation;
+        tileDataStatic[index].waterLevel = tileData.waterLevel;
+        tileDataStatic[index].vegetationLevel = tileData.vegetationLevel;
+        tileDataStatic[index].rockLevel = tileData.rockLevel;
+        tileDataStatic[index].wildlifeLevel = tileData.wildlifeLevel;
+        tileDataStatic[index].riverFlags = tileData.riverFlags;
+        tileDataStatic[index].hasRoad = tileData.hasRoad;
+        tileDataStatic[index].hasLake = tileData.hasLake;
 
         // Set resources
-        if (resource1_amount > 0)
+        for (uint i = 0; i < tileData.resources.length; i++)
         {
-            tileData[index].resource1 = TileResourceData({ 
-                type_: resource1_type,
-                amount: resource1_amount,
-                initialAmount: resource1_amount
-            });
-        }
-        
-        if (resource2_amount > 0)
-        {
-            tileData[index].resource2 = TileResourceData({ 
-                type_: resource2_type,
-                amount: resource2_amount,
-                initialAmount: resource2_amount
-            });
-        }
-        
-        if (resource3_amount > 0)
-        {
-             tileData[index].resource3 = TileResourceData({ 
-                type_: resource3_type,
-                amount: resource3_amount,
-                initialAmount: resource3_amount
-            });
+            tileDataStatic[index].resourcesIndex.push(tileData.resources[i].resource);
+            tileDataStatic[index].resources[tileData.resources[i].resource] = tileData.resources[i].initialAmount;
+            tileDataDynamic[index].resources[tileData.resources[i].resource] = tileData.resources[i].initialAmount;
         }
     }
 
@@ -992,7 +1040,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         for (uint i = 1; i < path.length; i++)
         {
             // Validate segment in the same map as origin
-            if (tiles[path[0]].mapIndex != tiles[path[i]].mapIndex)
+            if (tileDataStatic[path[0]].mapIndex != tileDataStatic[path[i]].mapIndex)
             {
                 return (false, 0, bytes32(0));
             }
@@ -1069,7 +1117,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         if (!_tileIsUnderwater(fromTileIndex) && !_tileIsUnderwater(toTileIndex))
         {
             EdgeType edgeType = _getEdgeType(
-                tiles[fromTileIndex].elevation, tiles[toTileIndex].elevation);
+                tileDataStatic[fromTileIndex].elevation, tileDataStatic[toTileIndex].elevation);
             if (edgeType == EdgeType.Cliff)
             {
                 return (false, 0); // Can't move over cliffs
@@ -1080,7 +1128,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
                 MOVEMENT_COST_LAND_FLAT : MOVEMENT_COST_LAND_SLOPE;
 
             // Add vegetation movement penalty
-            movementCost += tiles[toTileIndex].vegetationLevel + tiles[toTileIndex].rockLevel;
+            movementCost += tileDataStatic[toTileIndex].vegetationLevel + tileDataStatic[toTileIndex].rockLevel;
         }
 
         // Water
@@ -1093,7 +1141,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         else if (_tileIsUnderwater(fromTileIndex))
         {
             EdgeType edgeType = _getEdgeType(
-                tiles[fromTileIndex].waterLevel, tiles[toTileIndex].elevation);
+                tileDataStatic[fromTileIndex].waterLevel, tileDataStatic[toTileIndex].elevation);
             if (edgeType == EdgeType.Cliff)
             {
                 return (false, 0); // Can't embark from cliffs
@@ -1106,7 +1154,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         else 
         {
             EdgeType edgeType = _getEdgeType(
-                tiles[fromTileIndex].elevation, tiles[toTileIndex].waterLevel);
+                tileDataStatic[fromTileIndex].elevation, tileDataStatic[toTileIndex].waterLevel);
             if (edgeType == EdgeType.Cliff)
             {
                 return (false, 0); // Can't embark from cliffs
@@ -1208,7 +1256,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         if (playerData[account].chain_next == address(0))
         {
             // Fix chain (replace head)
-            tileData[playerData[account].location_tileIndex].lastEnteredPlayer = playerData[account].chain_prev;
+            tileDataDynamic[playerData[account].location_tileIndex].lastEnteredPlayer = playerData[account].chain_prev;
             playerData[playerData[account].chain_prev].chain_next = address(0); // Our prev becomes new head
             // No need for (playerData[account].chain_prev = address(0);) as long as _playerEnterTile(..) is always called after _playerExitTile(..)
         }
@@ -1231,8 +1279,8 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         playerData[account].location_tileIndex = tileIndex;
         playerData[account].location_arrival = arrival;
         playerData[account].chain_next = address(0);
-        playerData[account].chain_prev = tileData[tileIndex].lastEnteredPlayer;
-        playerData[tileData[tileIndex].lastEnteredPlayer].chain_next = account; 
-        tileData[tileIndex].lastEnteredPlayer = account;
+        playerData[account].chain_prev = tileDataDynamic[tileIndex].lastEnteredPlayer;
+        playerData[tileDataDynamic[tileIndex].lastEnteredPlayer].chain_next = account; 
+        tileDataDynamic[tileIndex].lastEnteredPlayer = account;
     }
 }

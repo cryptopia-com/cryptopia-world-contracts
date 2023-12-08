@@ -13,20 +13,20 @@ interface IMaps {
     /**
      * Public functions
      */
-    /// @dev Retrieve a tile
+    /// @dev Retrieve static data for the tile with `tileIndex`
     /// @param tileIndex Index of hte tile to retrieve
-    /// @return Tile data
-    function getTile(uint16 tileIndex) 
+    /// @return tileData Static tile data
+    function getTileDataStatic(uint16 tileIndex) 
         external view 
-        returns (Tile memory);
+        returns (TileStatic memory tileData);
 
     
     /// @dev Retrieve tile data
     /// @param tileIndex Index of the tile to retrieve data for
-    /// @return TileData data
-    function getTileData(uint16 tileIndex)
+    /// @return tileData Dynamic tile data
+    function getTileDataDynamic(uint16 tileIndex)
         external view 
-        returns (TileData memory);
+        returns (TileDynamic memory tileData);
 
 
     /// @dev Retrieve tile safety score (0-100)

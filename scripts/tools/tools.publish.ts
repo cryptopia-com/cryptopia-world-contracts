@@ -7,7 +7,7 @@ import { DeploymentManager } from "../helpers/deployments";
 import { waitForMinimumTime } from "../helpers/timers";
 import { resolveEnum } from "../helpers/enums";
 import { Rarity, Resource } from '../types/enums';
-import { JsonData } from './types/tools.input';
+import { ToolJsonData } from './types/tools.input';
 import { ToolStruct } from "../../typechain-types/contracts/source/tokens/ERC721/tools/ITools.js";
 
 const chalk = require('chalk');
@@ -96,10 +96,10 @@ async function main(toolsFilePath: string, batchSize: number)
 /**
  * Resolves the data from the JSON file.
  *
- * @param {JsonData[]} data - Data from the JSON file.
+ * @param {ToolJsonData[]} data - Data from the JSON file.
  * @returns {ToolStruct[]} The resolved data.
  */
-function resolve(data: JsonData[]): ToolStruct[]
+function resolve(data: ToolJsonData[]): ToolStruct[]
 {
     const resolvedTools: ToolStruct[] = [];
     data.forEach((toolData, i) => {

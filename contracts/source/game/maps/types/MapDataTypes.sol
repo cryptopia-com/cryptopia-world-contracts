@@ -7,6 +7,9 @@ import "../../assets/types/AssetEnums.sol";
 /// @dev Map data
 struct Map  
 {
+    /// @dev The name of the map
+    bytes32 name;
+
     /// @dev True if the map is created
     bool initialized;
 

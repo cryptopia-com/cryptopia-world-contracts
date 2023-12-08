@@ -5,7 +5,7 @@ import fs from 'fs';
 import hre, { ethers } from "hardhat";
 import { DeploymentManager } from "../helpers/deployments";
 import { waitForMinimumTime } from "../helpers/timers";
-import { JsonData } from './types/items.input';
+import { ItemJsonData } from './types/items.input';
 import { QuestItemStruct } from "../../typechain-types/contracts/source/tokens/ERC721/quests/IQuestItems.js";
 
 const chalk = require('chalk');
@@ -93,10 +93,10 @@ async function main(questsFilePath: string, batchSize: number)
 /**
  * Resolves the data from the JSON file.
  * 
- * @param {JsonData[]} data - Data from the JSON file.
+ * @param {ItemJsonData[]} data - Data from the JSON file.
  * @returns {QuestItemStruct[]} The resolved data.
  */
-function resolve(data: JsonData[]): QuestItemStruct[] {
+function resolve(data: ItemJsonData[]): QuestItemStruct[] {
     const resolvedData: QuestItemStruct[] = data.map((jsonData) => {
         const questItem: QuestItemStruct = {
             name: jsonData.name.toBytes32() 

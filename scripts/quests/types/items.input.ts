@@ -1,3 +1,3 @@
-export interface JsonData {
+export interface ItemJsonData {
     name: string;
 }

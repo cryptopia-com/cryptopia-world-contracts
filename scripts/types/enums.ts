@@ -66,7 +66,8 @@ export enum Biome
     Desert,
     Tundra,
     Swamp,
-    Reef // Water only
+    Reef, // Water only
+    Vulcanic
 }
 
 export enum Resource {

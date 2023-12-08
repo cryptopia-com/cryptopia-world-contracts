@@ -7,7 +7,7 @@ import { DeploymentManager } from "../helpers/deployments";
 import { waitForMinimumTime } from "../helpers/timers";
 import { resolveEnum } from "../helpers/enums";
 import { Faction, SubFaction } from '../types/enums';
-import { JsonData } from './types/quests.input';
+import { QuestJsonData } from './types/quests.input';
 import { QuestStruct } from "../../typechain-types/contracts/source/game/quests/IQuests.js";
 
 const chalk = require('chalk');
@@ -95,10 +95,10 @@ async function main(questsFilePath: string, batchSize: number)
 /**
  * Resolves the data from the JSON file.
  * 
- * @param {JsonData[]} data - Data from the JSON file.
+ * @param {QuestJsonData[]} data - Data from the JSON file.
  * @returns {QuestStruct[]} The resolved data.
  */
-function resolve(data: JsonData[]): QuestStruct[] {
+function resolve(data: QuestJsonData[]): QuestStruct[] {
     const resolvedData: QuestStruct[] = data.map((jsonData) => {
         const quest: QuestStruct = {
             name: jsonData.name.toBytes32(),

@@ -284,6 +284,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
             tileStartIndex = 0;
         }
 
+        maps[name].name = name;
         maps[name].initialized = true;
         maps[name].finalized = false;
         maps[name].sizeX = sizeX;

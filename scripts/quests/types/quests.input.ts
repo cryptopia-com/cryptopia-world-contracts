@@ -1,4 +1,4 @@
-export interface Step {
+export interface StepJsonData {
     name: string;
     hasTileConstraint: boolean;
     tile: number;
@@ -24,7 +24,7 @@ export interface Step {
     }[];
 }
 
-export interface Reward {
+export interface RewardJsonData {
     name: string;
     xp: number;
     karma: number;
@@ -40,7 +40,7 @@ export interface Reward {
     }[];
 }
 
-export interface JsonData {
+export interface QuestJsonData {
     name: string;
     hasLevelConstraint: boolean;
     level: number;
@@ -54,6 +54,6 @@ export interface JsonData {
     cooldown: number;
     hasTimeConstraint: boolean;
     maxDuration: number;
-    steps: Step[];
-    rewards: Reward[];
+    steps: StepJsonData[];
+    rewards: RewardJsonData[];
 }

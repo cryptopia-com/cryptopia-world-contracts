@@ -31,7 +31,8 @@ enum Biome
     Desert,
     Tundra,
     Swamp,
-    Reef // Water only
+    Reef, // Water only
+    Vulcanic
 }
 
 /// @dev Specifies the position of a tile in relation to the traveler's progress along the route

@@ -5,7 +5,7 @@ import fs from 'fs';
 import hre, { ethers } from "hardhat";
 import { DeploymentManager } from "../helpers/deployments";
 import { waitForMinimumTime } from "../helpers/timers";
-import { Ingredient, JsonData } from './types/recipes.input';
+import { IngredientJsonData, RecipeJsonData } from './types/recipes.input';
 import { CraftingRecipeStruct } from "../../typechain-types/contracts/source/game/crafting/ICrafting.js";
 
 const chalk = require('chalk');
@@ -29,7 +29,7 @@ const deploymentManager = new DeploymentManager(hre.network.name);
 async function main(recipesFilePath: string, batchSize: number) 
 {
     if (!fs.existsSync(recipesFilePath)) {
-        console.error(chalk.red(`Quests file not found: ${recipesFilePath}`));
+        console.error(chalk.red(`Recipes file not found: ${recipesFilePath}`));
         return;
     }
 
@@ -93,10 +93,10 @@ async function main(recipesFilePath: string, batchSize: number)
 /**
  * Resolves the data from the JSON file.
  *
- * @param {JsonData[]} data - Data from the JSON file.
+ * @param {RecipeJsonData[]} data - Data from the JSON file.
  * @returns {CraftingRecipeStruct[]} The resolved data.
  */
-function resolve(data: JsonData[]): CraftingRecipeStruct[]
+function resolve(data: RecipeJsonData[]): CraftingRecipeStruct[]
 {
     const resolvedRecipes: CraftingRecipeStruct[] = [];
     data.forEach((recipeData, i) => {
@@ -106,7 +106,7 @@ function resolve(data: JsonData[]): CraftingRecipeStruct[]
             asset: deploymentManager.getDeployment(recipeData.asset).address,
             item: recipeData.item.toBytes32(), 
             craftingTime: recipeData.craftingTime,
-            ingredients: recipeData.ingredients.map((ingredient: Ingredient) => {
+            ingredients: recipeData.ingredients.map((ingredient: IngredientJsonData) => {
                 return {
                     asset: deploymentManager.getDeployment(ingredient.asset).address,
                     amount: ingredient.amount.toWei()

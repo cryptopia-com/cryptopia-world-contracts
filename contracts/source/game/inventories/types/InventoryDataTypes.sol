@@ -1,6 +1,39 @@
 // SPDX-License-Identifier: ISC
 pragma solidity ^0.8.20 < 0.9.0;
 
+struct InventorySpace
+{
+    // Combined weight (fungible + non-fungible)
+    uint weight;
+
+    // Maximum combined weight (including module effects etc.)
+    uint maxWeight;
+
+    // Fungible assets
+    FungibleTokenInventorySpace[] fungible;
+
+    // Non-fungible assets
+    NonFungibleTokenInventorySpace[] nonFungible;
+}
+
+struct FungibleTokenInventorySpace
+{
+    // Contract address (ERC20)
+    address asset;
+
+    // Amount of tokens
+    uint amount;
+}
+
+struct NonFungibleTokenInventorySpace
+{
+    // Contract address (ERC20)
+    address asset;
+
+    // Token IDs 
+    uint[] tokenIds;
+}
+
 /// @dev Describes a fungible transaction
 struct FungibleTransactionData
 {

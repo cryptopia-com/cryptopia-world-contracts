@@ -29,7 +29,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         uint weight;
     }
 
-    struct InventorySpace 
+    struct InventorySpaceData
     {
         // Combined weight (fungible + non-fungible)
         uint weight;
@@ -40,11 +40,11 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         // Asset => amount
         mapping (address => uint) fungible;
 
-        // Asset => NonFungibleTokenInventory
-        mapping (address => NonFungibleTokenInventory) nonFungible;
+        // Asset => NonFungibleTokenInventorySpaceData
+        mapping (address => NonFungibleTokenInventorySpaceData) nonFungible;
     }
 
-    struct NonFungibleTokenInventory
+    struct NonFungibleTokenInventorySpaceData
     {
         // TokenId => index
         mapping (uint => uint) tokens;
@@ -93,11 +93,11 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     // Asset => tokenId => NonFungibleTokenData
     mapping (address => mapping (uint => NonFungibleTokenData)) nonFungibleTokenDatas;
 
-    // Ship tokenId => InventorySpace
-    mapping (uint => InventorySpace) shipInventories;
+    // Ship tokenId => InventorySpaceData
+    mapping (uint => InventorySpaceData) shipInventories;
 
-    // Player => Starter ship | Backpack => InventorySpace
-    mapping (address => InventorySpace) playerInventories;
+    // Player => Starter ship | Backpack => InventorySpaceData
+    mapping (address => InventorySpaceData) playerInventories;
 
     // Player => PlayerInventoryData
     mapping (address => PlayerInventoryData) playerData;
@@ -273,40 +273,35 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
 
     /// @dev Retrieves the contents from 'player' inventory 
     /// @param player The account of the player to retrieve the info for
-    /// @return weight The current total weight of player's inventory
-    /// @return maxWeight The maximum weight of the player's inventory
-    /// @return fungible_asset Contract addresses of fungible assets
-    /// @return fungible_amount Amounts of fungible tokens
-    /// @return nonFungible_asset Contract addresses of non-fungible assets
-    /// @return nonFungible_tokenIds Token Ids of non-fungible assets
+    /// @return inventory The inventory space of the player (backpack)
     function getPlayerInventory(address player) 
         public virtual override view 
-        returns (
-            uint weight,
-            uint maxWeight,
-            address[] memory fungible_asset, 
-            uint[] memory fungible_amount, 
-            address[] memory nonFungible_asset, 
-            uint[][] memory nonFungible_tokenIds)
+        returns (InventorySpace memory inventory)
     {
-        InventorySpace storage inventory = playerInventories[player];
-        weight = inventory.weight;
-        maxWeight = inventory.maxWeight;
-        fungible_amount = new uint[](fungibleIndex.length);
-        nonFungible_tokenIds = new uint[][](nonFungibleIndex.length);
-        
+        inventory = InventorySpace({
+            weight: playerInventories[player].weight,
+            maxWeight: playerInventories[player].maxWeight,
+            fungible: new FungibleTokenInventorySpace[](fungibleIndex.length), 
+            nonFungible: new NonFungibleTokenInventorySpace[](nonFungibleIndex.length) 
+        });
+
+
         // Fungible
-        fungible_asset = fungibleIndex;
         for (uint i = 0; i < fungibleIndex.length; i++)
         {
-            fungible_amount[i] = inventory.fungible[fungible_asset[i]];
+            inventory.fungible[i] = FungibleTokenInventorySpace({
+                asset: fungibleIndex[i],
+                amount: playerInventories[player].fungible[fungibleIndex[i]]
+            });
         }
 
         // Non-fungible
-        nonFungible_asset = nonFungibleIndex;
         for (uint i = 0; i < nonFungibleIndex.length; i++)
         {
-            nonFungible_tokenIds[i] = inventory.nonFungible[nonFungible_asset[i]].tokensIndex;
+            inventory.nonFungible[i] = NonFungibleTokenInventorySpace({
+                asset: nonFungibleIndex[i],
+                tokenIds: playerInventories[player].nonFungible[nonFungibleIndex[i]].tokensIndex
+            });
         }
     }
 
@@ -314,24 +309,24 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @dev Retrieves the amount of 'asset' in 'player' inventory 
     /// @param player The account of the player to retrieve the info for
     /// @param asset Contract addres of fungible assets
-    /// @return uint Amount of fungible tokens
+    /// @return balance Amount of fungible tokens
     function getPlayerBalanceFungible(address player, address asset) 
         public virtual override view 
-        returns (uint)
+        returns (uint balance)
     {
-        return playerInventories[player].fungible[asset];
+        balance = playerInventories[player].fungible[asset];
     }
 
 
     /// @dev Retrieves the 'asset' 'tokenIds' in 'player' inventory 
     /// @param player The account of the player to retrieve the info for
     /// @param asset Contract addres of non-fungible assets
-    /// @return uint Amount of non-fungible tokens
+    /// @return balance Amount of non-fungible tokens
     function getPlayerBalanceNonFungible(address player, address asset) 
         public virtual override view 
-        returns (uint)
+        returns (uint balance)
     {
-        return playerInventories[player].nonFungible[asset].tokensIndex.length;
+        balance = playerInventories[player].nonFungible[asset].tokensIndex.length;
     }
 
 
@@ -350,40 +345,35 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
 
     /// @dev Retrieves the contents from 'ship' inventory 
     /// @param ship The tokenId of the ship 
-    /// @return weight The current total weight of ship's inventory
-    /// @return maxWeight The maximum weight of the ship's inventory
-    /// @return fungible_asset Contract addresses of fungible assets
-    /// @return fungible_amount Amounts of fungible tokens
-    /// @return nonFungible_asset Contract addresses of non-fungible assets
-    /// @return nonFungible_tokenIds Token Ids of non-fungible assets
+    /// @return inventory The inventory space of the ship
     function getShipInventory(uint ship) 
         public virtual override view 
-        returns (
-            uint weight,
-            uint maxWeight,
-            address[] memory fungible_asset, 
-            uint[] memory fungible_amount, 
-            address[] memory nonFungible_asset, 
-            uint[][] memory nonFungible_tokenIds)
+        returns (InventorySpace memory inventory)
     {
-        InventorySpace storage inventory = shipInventories[ship];
-        weight = inventory.weight;
-        maxWeight = inventory.maxWeight;
-        fungible_amount = new uint[](fungibleIndex.length);
-        nonFungible_tokenIds = new uint[][](nonFungibleIndex.length);
-        
+        inventory = InventorySpace({
+            weight: shipInventories[ship].weight,
+            maxWeight: shipInventories[ship].maxWeight,
+            fungible: new FungibleTokenInventorySpace[](fungibleIndex.length), 
+            nonFungible: new NonFungibleTokenInventorySpace[](nonFungibleIndex.length) 
+        });
+
+
         // Fungible
-        fungible_asset = fungibleIndex;
         for (uint i = 0; i < fungibleIndex.length; i++)
         {
-            fungible_amount[i] = inventory.fungible[fungible_asset[i]];
+            inventory.fungible[i] = FungibleTokenInventorySpace({
+                asset: fungibleIndex[i],
+                amount: shipInventories[ship].fungible[fungibleIndex[i]]
+            });
         }
 
         // Non-fungible
-        nonFungible_asset = nonFungibleIndex;
         for (uint i = 0; i < nonFungibleIndex.length; i++)
         {
-            nonFungible_tokenIds[i] = inventory.nonFungible[nonFungible_asset[i]].tokensIndex;
+            inventory.nonFungible[i] = NonFungibleTokenInventorySpace({
+                asset: nonFungibleIndex[i],
+                tokenIds: shipInventories[ship].nonFungible[nonFungibleIndex[i]].tokensIndex
+            });
         }
     }
 
@@ -391,24 +381,24 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /// @dev Retrieves the amount of 'asset' in 'ship' inventory 
     /// @param ship The tokenId of the ship 
     /// @param asset Contract addres of fungible assets
-    /// @return uint Amount of fungible tokens
+    /// @return balance Amount of fungible tokens
     function getShipBalanceFungible(uint ship, address asset) 
         public virtual override view 
-        returns (uint)
+        returns (uint balance)
     {
-        return shipInventories[ship].fungible[asset];
+        balance = shipInventories[ship].fungible[asset];
     }
 
 
     /// @dev Retrieves the 'asset' 'tokenIds' in 'ship' inventory 
     /// @param ship The tokenId of the ship 
     /// @param asset Contract addres of non-fungible assets
-    /// @return uint Amount of non-fungible tokens
+    /// @return balance Amount of non-fungible tokens
     function getShipBalanceNonFungible(uint ship, address asset) 
         public virtual override view 
-        returns (uint)
+        returns (uint balance)
     {
-        return shipInventories[ship].nonFungible[asset].tokensIndex.length;
+        balance = shipInventories[ship].nonFungible[asset].tokensIndex.length;
     }
 
 
@@ -960,7 +950,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         }
         else if (inventory_from == Inventory.Backpack)
         {
-            InventorySpace storage inventory = playerInventories[player_from];
+            InventorySpaceData storage inventory = playerInventories[player_from];
             if (inventory.fungible[asset] < amount)
             {
                 revert InventoryInsufficientBalance(
@@ -973,7 +963,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         }
         else if (inventory_from == Inventory.Ship)
         {
-            InventorySpace storage inventory = shipInventories[playerToShip[player_from]];
+            InventorySpaceData storage inventory = shipInventories[playerToShip[player_from]];
             if (inventory.fungible[asset] < amount)
             {
                 revert InventoryInsufficientBalance(
@@ -1002,7 +992,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         }
         else if (inventory_to == Inventory.Backpack) 
         {
-            InventorySpace storage inventory = playerInventories[player_to];
+            InventorySpaceData storage inventory = playerInventories[player_to];
             if (inventory.weight + weight > inventory.maxWeight)
             {
                 revert PlayerInventoryTooHeavy(player_to);
@@ -1014,7 +1004,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         }
         else if (inventory_to == Inventory.Ship)
         {
-            InventorySpace storage inventory = shipInventories[playerToShip[player_to]];
+            InventorySpaceData storage inventory = shipInventories[playerToShip[player_to]];
             if (inventory.weight + weight > inventory.maxWeight)
             {
                 revert ShipInventoryTooHeavy(playerToShip[player_to]);
@@ -1058,9 +1048,9 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         }
         else if (inventory_from == Inventory.Backpack)
         {
-            InventorySpace storage inventory = playerInventories[player_from];
+            InventorySpaceData storage inventory = playerInventories[player_from];
             NonFungibleTokenData storage nonFungibleTokenData = nonFungibleTokenDatas[asset][tokenId];
-            NonFungibleTokenInventory storage nonFungibleInventory = inventory.nonFungible[asset];
+            NonFungibleTokenInventorySpaceData storage nonFungibleInventory = inventory.nonFungible[asset];
 
             // Check if token is owned by player
             if (nonFungibleTokenData.owner != player_from)
@@ -1084,9 +1074,9 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         }
         else if (inventory_from == Inventory.Ship)
         {
-            InventorySpace storage inventory = shipInventories[playerToShip[player_from]];
+            InventorySpaceData storage inventory = shipInventories[playerToShip[player_from]];
             NonFungibleTokenData storage nonFungibleTokenData = nonFungibleTokenDatas[asset][tokenId];
-            NonFungibleTokenInventory storage nonFungibleInventory = inventory.nonFungible[asset];
+            NonFungibleTokenInventorySpaceData storage nonFungibleInventory = inventory.nonFungible[asset];
 
             // Check if token is owned by player
             if (nonFungibleTokenData.owner != player_from)
@@ -1122,9 +1112,9 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         }
         else if (inventory_to == Inventory.Backpack) 
         {
-            InventorySpace storage inventory = playerInventories[player_from];
+            InventorySpaceData storage inventory = playerInventories[player_from];
             NonFungibleTokenData storage nonFungibleTokenData = nonFungibleTokenDatas[asset][tokenId];
-            NonFungibleTokenInventory storage nonFungibleInventory = inventory.nonFungible[asset];
+            NonFungibleTokenInventorySpaceData storage nonFungibleInventory = inventory.nonFungible[asset];
 
             // Check if backpack not is too heavy
             if (inventory.weight + INVENTORY_SLOT_SIZE > inventory.maxWeight)
@@ -1141,9 +1131,9 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         }
         else if (inventory_to == Inventory.Ship)
         {
-            InventorySpace storage inventory = shipInventories[playerToShip[player_to]];
+            InventorySpaceData storage inventory = shipInventories[playerToShip[player_to]];
             NonFungibleTokenData storage nonFungibleTokenData = nonFungibleTokenDatas[asset][tokenId];
-            NonFungibleTokenInventory storage nonFungibleInventory = inventory.nonFungible[asset];
+            NonFungibleTokenInventorySpaceData storage nonFungibleInventory = inventory.nonFungible[asset];
 
             // Check if ship not is too heavy
             if (inventory.weight + INVENTORY_SLOT_SIZE > inventory.maxWeight)
@@ -1187,7 +1177,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         // SYSTEM caller > Assume inventory exists
         if (inventory == Inventory.Ship) 
         {
-            InventorySpace storage shipInventory = shipInventories[playerToShip[player]];
+            InventorySpaceData storage shipInventory = shipInventories[playerToShip[player]];
             if (shipInventory.weight + weight > shipInventory.maxWeight)
             {
                 revert ShipInventoryTooHeavy(playerToShip[player]);
@@ -1199,7 +1189,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         }
         else 
         {
-            InventorySpace storage backpackInventory = playerInventories[player];
+            InventorySpaceData storage backpackInventory = playerInventories[player];
             if (backpackInventory.weight + weight > backpackInventory.maxWeight)
             {
                 revert PlayerInventoryTooHeavy(player);
@@ -1231,7 +1221,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         // SYSTEM caller > Assume inventory exists
         if (inventory == Inventory.Ship) 
         {
-            InventorySpace storage shipInventory = shipInventories[playerToShip[player]];
+            InventorySpaceData storage shipInventory = shipInventories[playerToShip[player]];
             if (shipInventory.weight + INVENTORY_SLOT_SIZE > shipInventory.maxWeight)
             {
                 revert ShipInventoryTooHeavy(playerToShip[player]);
@@ -1244,7 +1234,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         }
         else 
         {
-            InventorySpace storage backpackInventory = playerInventories[player];
+            InventorySpaceData storage backpackInventory = playerInventories[player];
             if (backpackInventory.weight + INVENTORY_SLOT_SIZE > backpackInventory.maxWeight)
             {
                 revert PlayerInventoryTooHeavy(player);
@@ -1282,7 +1272,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         // SYSTEM caller > Assume inventory exists
         if (inventory == Inventory.Ship) 
         {
-            InventorySpace storage shipInventory = shipInventories[playerToShip[player]];
+            InventorySpaceData storage shipInventory = shipInventories[playerToShip[player]];
             if (shipInventory.fungible[asset] < amount)
             {
                 revert InventoryInsufficientBalance(
@@ -1295,7 +1285,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         }
         else 
         {
-            InventorySpace storage backpackInventory = playerInventories[player];
+            InventorySpaceData storage backpackInventory = playerInventories[player];
             if (backpackInventory.fungible[asset] < amount)
             {
                 revert InventoryInsufficientBalance(
@@ -1334,9 +1324,9 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         // SYSTEM caller > Assume inventory exists
         if (inventory == Inventory.Ship) 
         {
-            InventorySpace storage inventorySpace = shipInventories[playerToShip[player]];
+            InventorySpaceData storage inventorySpace = shipInventories[playerToShip[player]];
             NonFungibleTokenData storage nonFungibleTokenData = nonFungibleTokenDatas[asset][tokenId];
-            NonFungibleTokenInventory storage nonFungibleInventory = inventorySpace.nonFungible[asset];
+            NonFungibleTokenInventorySpaceData storage nonFungibleInventory = inventorySpace.nonFungible[asset];
 
             // Check if token is owned by player
             if (nonFungibleTokenData.owner != player)
@@ -1360,9 +1350,9 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         }
         else 
         {
-            InventorySpace storage inventorySpace = playerInventories[player];
+            InventorySpaceData storage inventorySpace = playerInventories[player];
             NonFungibleTokenData storage nonFungibleTokenData = nonFungibleTokenDatas[asset][tokenId];
-            NonFungibleTokenInventory storage nonFungibleInventory = inventorySpace.nonFungible[asset];
+            NonFungibleTokenInventorySpaceData storage nonFungibleInventory = inventorySpace.nonFungible[asset];
 
             // Check if token is owned by player
             if (nonFungibleTokenData.owner != player)

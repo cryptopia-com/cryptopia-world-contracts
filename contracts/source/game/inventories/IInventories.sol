@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20 < 0.9.0;
 
 import "./types/InventoryEnums.sol";
+import "./types/InventoryDataTypes.sol";
 
 /// @title Cryptopia Inventories
 /// @dev Contains player and ship assets
@@ -30,39 +31,28 @@ interface IInventories {
 
     /// @dev Retrieves the contents from 'player' inventory 
     /// @param player The account of the player to retrieve the info for
-    /// @return weight The current total weight of player's inventory
-    /// @return maxWeight The maximum weight of the player's inventory
-    /// @return fungible_asset Contract addresses of fungible assets
-    /// @return fungible_amount Amounts of fungible tokens
-    /// @return nonFungible_asset Contract addresses of non-fungible assets
-    /// @return nonFungible_tokenIds Token Ids of non-fungible assets
+    /// @return inventory The inventory space of the player (backpack)
     function getPlayerInventory(address player) 
         external view 
-        returns (
-            uint weight,
-            uint maxWeight,
-            address[] memory fungible_asset, 
-            uint[] memory fungible_amount, 
-            address[] memory nonFungible_asset, 
-            uint[][] memory nonFungible_tokenIds);
+        returns (InventorySpace memory inventory);
 
     
     /// @dev Retrieves the amount of 'asset' in 'player' inventory 
     /// @param player The account of the player to retrieve the info for
     /// @param asset Contract addres of fungible assets
-    /// @return uint Amount of fungible tokens
+    /// @return balance Amount of fungible tokens
     function getPlayerBalanceFungible(address player, address asset) 
         external view 
-        returns (uint);
+        returns (uint balance);
 
 
     /// @dev Retrieves the amount of 'asset' 'tokenIds' in 'player' inventory 
     /// @param player The account of the player to retrieve the info for
     /// @param asset Contract addres of non-fungible assets
-    /// @return uint Amount of non-fungible tokens
+    /// @return balance Amount of non-fungible tokens
     function getPlayerBalanceNonFungible(address player, address asset) 
         external view 
-        returns (uint);
+        returns (uint balance);
 
 
     /// @dev Retrieves info about 'ship' inventory 
@@ -76,39 +66,28 @@ interface IInventories {
 
     /// @dev Retrieves the contents from 'ship' inventory 
     /// @param ship The tokenId of the ship 
-    /// @return weight The current total weight of ship's inventory
-    /// @return maxWeight The maximum weight of the ship's inventory
-    /// @return fungible_asset Contract addresses of fungible assets
-    /// @return fungible_amount Amounts of fungible tokens
-    /// @return nonFungible_asset Contract addresses of non-fungible assets
-    /// @return nonFungible_tokenIds Token Ids of non-fungible assets
+    /// @return inventory The inventory space of the ship
     function getShipInventory(uint ship) 
         external view 
-        returns (
-            uint weight,
-            uint maxWeight,
-            address[] memory fungible_asset, 
-            uint[] memory fungible_amount, 
-            address[] memory nonFungible_asset, 
-            uint[][] memory nonFungible_tokenIds);
+        returns (InventorySpace memory inventory);
 
 
     /// @dev Retrieves the amount of 'asset' in 'ship' inventory 
     /// @param ship The tokenId of the ship 
     /// @param asset Contract addres of fungible assets
-    /// @return uint Amount of fungible tokens
+    /// @return balance Amount of fungible tokens
     function getShipBalanceFungible(uint ship, address asset) 
         external view 
-        returns (uint);
+        returns (uint balance);
 
 
     /// @dev Retrieves the 'asset' 'tokenIds' in 'ship' inventory 
     /// @param ship The tokenId of the ship 
     /// @param asset Contract addres of non-fungible assets
-    /// @return uint Amount of non-fungible tokens
+    /// @return balance Amount of non-fungible tokens
     function getShipBalanceNonFungible(uint ship, address asset) 
         external view 
-        returns (uint);
+        returns (uint balance);
 
 
     /// @dev Returns non-fungible token data for `tokenId` of `asset`

@@ -359,10 +359,10 @@ describe("Crafting Contract", function () {
         await craftingInstance.setRecipes(
             tools.map((tool: any) => {
                 return {
-                    name: tool.name.toBytes32(),
                     level: tool.recipe.level,
                     learnable: tool.recipe.learnable,
                     asset: toolTokenAddress,
+                    item: tool.name.toBytes32(),
                     craftingTime: tool.recipe.craftingTime,
                     ingredients: tool.recipe.ingredients.map((ingredient: any) => {
                         return {

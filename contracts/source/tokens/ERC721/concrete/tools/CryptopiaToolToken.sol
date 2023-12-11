@@ -12,25 +12,45 @@ import "../../tools/ITools.sol";
 import "../CryptopiaERC721.sol";
 
 /// @title Cryptopia Tool Token
-/// @dev Non-fungible token (ERC721)
+/// @notice This contract handles the creation, management, and utilization of tools within Cryptopia.
+/// It provides functionalities to craft tools, use them for minting resources, and manage their durability.
+/// Tools in this contract are ERC721 tokens, allowing each tool to have unique properties and state.
+/// @dev Inherits from CryptopiaERC721, implements ITools, ICraftable, and INonFungibleQuestReward interfaces.
+/// The contract stores tool data, manages tool instances, and interfaces with other game contracts like inventories and players.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungibleQuestReward {
 
-    /// @dev Tool data
-    struct ToolData 
-    {
+    /// @dev Tool 
+    struct ToolData {
+
+        /// @dev Index of the tool in the toolsIndex array
         uint index;
+
+        /// @dev Rarity level of the tool
         Rarity rarity;
+
+        /// @dev Minimum player level required to use the tool
         uint8 level;
+
+        /// @dev Durability of the tool
+        /// @notice Represents the rate at which the tool takes damage
         uint24 durability;
+
+        /// @dev Multiplier affecting the cooldown period for actions using the tool
         uint24 multiplier_cooldown;
+
+        /// @dev Multiplier for experience points gained while using the tool
         uint24 multiplier_xp;
+
+        /// @dev Multiplier impacting the effectiveness of the tool in various game scenarios
         uint24 multiplier_effectiveness;
+
+        // Generic values
         uint24 value1;
         uint24 value2;
         uint24 value3;
 
-        /// @dev Resource => minting data
+        /// @dev Mapping from resource types to specific minting capabilities of the tool
         mapping (Resource => uint) minting;
         Resource[] mintingIndex;
     }
@@ -44,11 +64,13 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
     // Auto token id 
     uint private _currentTokenId; 
 
-    /// @dev name => ToolData
+    /// @dev Mapping from tool name to its corresponding ToolData
+    /// @notice Allows quick lookup of tool details using the tool's unique name
     mapping (bytes32 => ToolData) public tools;
     bytes32[] private toolsIndex;
 
-    /// @dev tokenId => ToolInstance
+    /// @dev Mapping from token ID to ToolInstance
+    /// @notice Stores individual instances of tools each reffering to ToolData
     mapping (uint => ToolInstance) public toolInstances;
 
     // Refs
@@ -92,7 +114,7 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
     /// @param name Unique token name
     modifier onlyExisting(bytes32 name)
     {  
-        if (!_exists(name))
+        if (!_toolExists(name))
         {
             revert ToolNotFound(name);
         }
@@ -356,23 +378,11 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
     /// @dev True if a tool with `name` exists
     /// @param tool The tool to check
     /// @return True if a tool with `name` exists
-    function _exists(bytes32 tool) 
+    function _toolExists(bytes32 tool) 
         internal view 
         returns (bool) 
     {
         return tools[tool].multiplier_effectiveness > 0;
-    }
-
-
-    /// @dev True if a minting data entry for `resource` and `tool` exists
-    /// @param tool The tool to check
-    /// @param resource The resource to check
-    /// @return True if a minting data entry for `resource` and `tool` exists
-    function _exists(bytes32 tool, Resource resource) 
-        internal view 
-        returns (bool) 
-    {
-        return tools[tool].minting[resource] > 0;
     }
 
 
@@ -413,15 +423,29 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
     function _setTool(Tool memory tool_) 
         internal 
     {
-        // Add tool
-        if (!_exists(tool_.name))
+        ToolData storage tool = tools[tool_.name];
+        if (!_toolExists(tool_.name))
         {
+            // Add tool
             tools[tool_.name].index = toolsIndex.length;
             toolsIndex.push(tool_.name);
         }
 
-        // Set tool
-        ToolData storage tool = tools[tool_.name];
+        else 
+        {
+            // Update tool 
+            if (tool.mintingIndex.length > 0)
+            {
+                for (uint i = 0; i < tool.mintingIndex.length; i++)
+                {
+                    delete tool.minting[tool.mintingIndex[i]];
+                }
+
+                delete tool.mintingIndex;
+            }
+        }
+
+        // Set tool data
         tool.rarity = tool_.rarity;
         tool.level = tool_.level;
         tool.durability = tool_.durability;
@@ -431,17 +455,6 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
         tool.value1 = tool_.value1;
         tool.value2 = tool_.value2;
         tool.value3 = tool_.value3;
-
-        // Reset minting data
-        if (tool.mintingIndex.length > 0)
-        {
-            for (uint i = 0; i < tool.mintingIndex.length; i++)
-            {
-                delete tool.minting[tool.mintingIndex[i]];
-            }
-
-            delete tool.mintingIndex;
-        }
 
         // Add minting data
         for (uint i = 0; i < tool_.minting.length; i++)

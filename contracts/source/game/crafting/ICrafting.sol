@@ -4,8 +4,11 @@ pragma solidity ^0.8.20 < 0.9.0;
 import "./types/CraftingDataTypes.sol";
 import "../inventories/types/InventoryEnums.sol";
 
-/// @title Crafting interface
-/// @dev Allows the player to craft Non-fungible tokens (ERC721) based on recepies
+/// @title Cryptopia Crafting Contract
+/// @notice Serves as the core mechanism for crafting within Cryptopia, facilitating the creation of unique in-game items.
+/// This contract enables players to craft various items using specific recipes and ingredients, blending strategy and resource management.
+/// Players can learn and master recipes, manage crafting slots, and engage in a creative process to produce items ranging from basic commodities to rare artifacts.
+/// The crafting system adds depth to the gameplay, encouraging exploration and trade to acquire necessary components.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface ICrafting {
 

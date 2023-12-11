@@ -19,11 +19,92 @@ import "../rewards/IFungibleQuestReward.sol";
 import "../rewards/INonFungibleQuestReward.sol";
 import "../IQuests.sol";
 
-/// @title Quests 
-/// @dev Non-fungible token (ERC721) 
+/// @title Cryptopia Quests Contract
+/// @notice Handles the functionality of quests within Cryptopia. 
+/// It orchestrates the quest life cycle, including starting quests, completing quest steps, 
+/// and claiming rewards. The contract allows players to engage in diverse quests with multiple steps, 
+/// providing a dynamic and interactive gameplay experience. It integrates various aspects of the game, 
+/// such as player data, inventories, and maps, to offer quests that are not only challenging but also deeply 
+/// integrated with the game's lore and mechanics.
+/// @dev Inherits from Initializable and AccessControlUpgradeable and implements the IQuests interface. 
+/// It manages a comprehensive set of quest-related data and provides a robust system for quest management, 
+/// including constraints, steps, and rewards. The contract is designed to be upgradable, ensuring future flexibility 
+/// and adaptability for the evolving needs of the game.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
 {
+    /// @dev Quest within Cryptopia
+    /// @notice Quests come with constraints (like level or faction requirements) that players must meet to start them
+    /// @notice Quests include a series of ordered steps for completion and offer multiple rewards for players to choose from upon completion
+    struct QuestData {
+
+        /// @dev Index in the questsIndex array
+        uint index;
+
+        /// @dev Indicates if a level constraint is applied to start the quest
+        bool hasLevelConstraint;
+        /// @dev Minimum player level required to start the quest, effective if hasLevelConstraint is true
+        uint8 level;
+
+        /// @dev Indicates if a faction constraint is applied to start the quest
+        bool hasFactionConstraint;
+        /// @dev Specific faction required to start the quest, effective if hasFactionConstraint is true
+        Faction faction;
+
+        /// @dev Indicates if a sub-faction constraint is applied to start the quest
+        bool hasSubFactionConstraint;
+        /// @dev Specific sub-faction required to start the quest, effective if hasSubFactionConstraint is true
+        SubFaction subFaction;
+
+        /// @dev Indicates if there's a limit on how many times the quest can be repeated
+        bool hasRecurrenceConstraint;
+        /// @dev Maximum number of times the quest can be repeated, effective if hasRecurrenceConstraint is true
+        uint maxRecurrences;
+
+        /// @dev Indicates if there's a cooldown period between quest repetitions
+        bool hasCooldownConstraint;
+        /// @dev Cooldown duration in seconds before the quest can be started again, effective if hasCooldownConstraint is true
+        uint cooldown;
+
+        /// @dev Indicates if there's a time limit to complete the quest
+        bool hasTimeConstraint;
+        /// @dev Maximum duration in seconds to complete the quest, effective if hasTimeConstraint is true
+        uint maxDuration;
+
+        /// @dev Array of steps that need to be completed in order to finish the quest
+        QuestStep[] steps;
+
+        /// @dev Array of rewards available upon quest completion
+        /// @notice Players can choose only one reward per quest completion
+        QuestReward[] rewards;
+    }
+
+    /// @dev Individual player's progress and interactions with a specific quest
+    struct QuestPlayerData 
+    {
+        /// @dev Total number of times the player has completed the quest
+        uint16 completedCount;
+
+        /// @dev Count of steps completed in the current iteration of the quest
+        uint8 stepsCompletedCount;
+
+        /// @dev Bitmask representing the steps completed in the current iteration
+        /// @notice Each bit corresponds to a step in the quest, where a set bit indicates completion
+        bytes8 stepsCompleted;
+
+        /// @dev Timestamp marking when the player started the current iteration of the quest
+        uint64 timestampStarted;
+
+        /// @dev Timestamp marking when the player completed the quest in the current iteration
+        /// This is set when all required steps of the quest are completed
+        uint64 timestampCompleted;
+
+        /// @dev Timestamp marking when the player claimed their reward for the quest
+        /// @notice This is set when the player claims one of the available rewards upon completing the quest
+        uint64 timestampClaimed;
+    }
+
+
     /**
      * Roles
      */
@@ -36,11 +117,11 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
     // Settings
     uint8 constant private MAX_STEPS_PER_QUEST = 8;
 
-    /// @dev Quests
-    mapping (bytes32 => Quest) private quests;
+    /// @dev Details of each quest, mapped by a unique quest identifier
+    mapping (bytes32 => QuestData) private quests;
     bytes32[] private questsIndex;
 
-    /// @dev Player quest data
+    /// @dev Tracks player-specific data for each quest, including progress and completion status
     mapping(address => mapping(bytes32 => QuestPlayerData)) public playerQuestData;
 
     // Refs
@@ -167,7 +248,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
      */
     /// @dev Set quest
     /// @param quest Quest to add
-    function setQuest(Quest calldata quest) 
+    function setQuest(Quest memory quest) 
         public
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
@@ -177,7 +258,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
 
     /// @dev Set multiple quests
     /// @param quests_ Quests to add
-    function setQuests(Quest[] calldata quests_) 
+    function setQuests(Quest[] memory quests_) 
         public
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
@@ -208,7 +289,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         public override view 
         returns (Quest memory quest) 
     {
-        quest = quests[questsIndex[index]];
+        quest = _getQuest(questsIndex[index]);
     }
 
 
@@ -229,7 +310,8 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         quests_ = new Quest[](length);
         for (uint i = 0; i < length; i++) 
         {
-            quests_[i] = quests[questsIndex[skip + i]];
+
+            quests_[i] = _getQuest(questsIndex[skip + i]);
         }
 
         return quests_;
@@ -484,9 +566,17 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
     /**
      * Internal functions
      */
+    function _questExists(bytes32 quest) 
+        internal view 
+        returns (bool) 
+    {
+        return questsIndex.length > 0 && questsIndex[quests[quest].index] == quest;
+    }
+
+
     /// @dev Add quest
     /// @param quest Quest to add
-    function _setQuest(Quest calldata quest) 
+    function _setQuest(Quest memory quest) 
         internal
     {
         // Quest name cannot be empty
@@ -501,8 +591,133 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
             revert ArgumentInvalid();
         }
 
-        quests[quest.name] = quest;
-        questsIndex.push(quest.name);
+        QuestData storage data = quests[quest.name];
+        if (!_questExists(quest.name)) 
+        {
+            // Add quest
+            quests[quest.name].index = questsIndex.length;
+            questsIndex.push(quest.name);
+        }
+        else 
+        {
+            // Update quest
+            delete data.steps;
+            delete data.rewards;
+        }
+
+        // Set quest data
+        data.hasLevelConstraint = quest.hasLevelConstraint;
+        data.level = quest.level;
+        data.hasFactionConstraint = quest.hasFactionConstraint;
+        data.faction = quest.faction;
+        data.hasSubFactionConstraint = quest.hasSubFactionConstraint;
+        data.subFaction = quest.subFaction;
+        data.hasRecurrenceConstraint = quest.hasRecurrenceConstraint;
+        data.maxRecurrences = quest.maxRecurrences;
+        data.hasCooldownConstraint = quest.hasCooldownConstraint;
+        data.cooldown = quest.cooldown;
+        data.hasTimeConstraint = quest.hasTimeConstraint;
+        data.maxDuration = quest.maxDuration;
+
+        // Set steps
+        for (uint i = 0; i < quest.steps.length; i++) 
+        {
+            data.steps.push();
+            data.steps[i].name = quest.steps[i].name;
+            data.steps[i].hasTileConstraint = quest.steps[i].hasTileConstraint;
+            data.steps[i].tile = quest.steps[i].tile;
+        
+            // Take fungible 
+            for (uint j = 0; j < quest.steps[i].takeFungible.length; j++) 
+            {
+                data.steps[i].takeFungible.push();
+                data.steps[i].takeFungible[j].asset = quest.steps[i].takeFungible[j].asset;
+                data.steps[i].takeFungible[j].amount = quest.steps[i].takeFungible[j].amount;
+                data.steps[i].takeFungible[j].allowWallet = quest.steps[i].takeFungible[j].allowWallet;
+            }
+
+            // Take non-fungible
+            for (uint j = 0; j < quest.steps[i].takeNonFungible.length; j++) 
+            {
+                data.steps[i].takeNonFungible.push();
+                data.steps[i].takeNonFungible[j].asset = quest.steps[i].takeNonFungible[j].asset;
+                data.steps[i].takeNonFungible[j].item = quest.steps[i].takeNonFungible[j].item;
+                data.steps[i].takeNonFungible[j].allowWallet = quest.steps[i].takeNonFungible[j].allowWallet;
+            }
+
+            // Give fungible
+            for (uint j = 0; j < quest.steps[i].giveFungible.length; j++) 
+            {
+                data.steps[i].giveFungible.push();
+                data.steps[i].giveFungible[j].asset = quest.steps[i].giveFungible[j].asset;
+                data.steps[i].giveFungible[j].amount = quest.steps[i].giveFungible[j].amount;
+                data.steps[i].giveFungible[j].allowWallet = quest.steps[i].giveFungible[j].allowWallet;
+            }
+
+            // Give non-fungible
+            for (uint j = 0; j < quest.steps[i].giveNonFungible.length; j++) 
+            {
+                data.steps[i].giveNonFungible.push();
+                data.steps[i].giveNonFungible[j].asset = quest.steps[i].giveNonFungible[j].asset;
+                data.steps[i].giveNonFungible[j].item = quest.steps[i].giveNonFungible[j].item;
+                data.steps[i].giveNonFungible[j].allowWallet = quest.steps[i].giveNonFungible[j].allowWallet;
+            }
+        }
+
+        // Set rewards
+        for (uint i = 0; i < quest.rewards.length; i++) 
+        {
+            data.rewards.push();
+            data.rewards[i].name = quest.rewards[i].name;
+            data.rewards[i].karma = quest.rewards[i].karma;
+            data.rewards[i].xp = quest.rewards[i].xp;
+
+            // Fungible 
+            for (uint j = 0; j < quest.rewards[i].fungible.length; j++) 
+            {
+                data.rewards[i].fungible.push();
+                data.rewards[i].fungible[j].asset = quest.rewards[i].fungible[j].asset;
+                data.rewards[i].fungible[j].amount = quest.rewards[i].fungible[j].amount;
+                data.rewards[i].fungible[j].allowWallet = quest.rewards[i].fungible[j].allowWallet;
+            }
+
+            // Non-fungible
+            for (uint j = 0; j < quest.rewards[i].nonFungible.length; j++) 
+            {
+                data.rewards[i].nonFungible.push();
+                data.rewards[i].nonFungible[j].asset = quest.rewards[i].nonFungible[j].asset;
+                data.rewards[i].nonFungible[j].item = quest.rewards[i].nonFungible[j].item;
+                data.rewards[i].nonFungible[j].allowWallet = quest.rewards[i].nonFungible[j].allowWallet;
+            }
+        }
+    }
+
+
+    /// @dev Get quest by name
+    /// @param name Quest name
+    /// @return quest The quest data
+    function _getQuest(bytes32 name) 
+        internal view 
+        returns (Quest memory quest) 
+    {
+        QuestData storage data = quests[name];
+        quest = Quest({
+            name: name,
+            hasLevelConstraint: data.hasLevelConstraint,
+            level: data.level,
+            hasFactionConstraint: data.hasFactionConstraint,
+            faction: data.faction,
+            hasSubFactionConstraint: data.hasSubFactionConstraint,
+            subFaction: data.subFaction,
+            hasRecurrenceConstraint: data.hasRecurrenceConstraint,
+            maxRecurrences: data.maxRecurrences,
+            hasCooldownConstraint: data.hasCooldownConstraint,
+            cooldown: data.cooldown,
+            hasTimeConstraint: data.hasTimeConstraint,
+            maxDuration: data.maxDuration,
+            steps: data.steps,
+            rewards: data.rewards
+        });
     }
 
     
@@ -512,7 +727,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         internal 
     {
          // Get quest data  
-        Quest storage quest = quests[name];
+        QuestData storage quest = quests[name]; 
         QuestPlayerData storage questPlayerData = playerQuestData[msg.sender][name];
 
         // Get player data
@@ -623,8 +838,8 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         uint[] memory takeTokenIds) 
         internal 
     {
-        // Get quest
-        Quest storage quest = quests[questName];
+        // Get quest 
+        QuestData storage quest = quests[questName];
         QuestStep storage questStep = quest.steps[stepIndex];
         QuestPlayerData storage questPlayerData = playerQuestData[msg.sender][questName];
 
@@ -762,7 +977,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         internal 
     {
         // Get quest
-        Quest storage quest = quests[questName]; 
+        QuestData storage quest = quests[questName];
         QuestPlayerData storage questPlayerData = playerQuestData[msg.sender][questName];
 
         // Check reward index

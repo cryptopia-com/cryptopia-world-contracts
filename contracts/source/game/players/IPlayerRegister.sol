@@ -10,8 +10,13 @@ import "../types/FactionEnums.sol";
 import "./types/PlayerDataTypes.sol";
 import "./types/PlayerEnums.sol";
 
-/// @title Cryptopia Players
-/// @dev Contains player data
+/// @title Cryptopia Players Contract
+/// @notice This contract is central to managing player profiles within Cryptopia, 
+/// encompassing the creation and progression of player accounts. It efficiently handles player data, 
+/// including levels, stats, and inventory management. The contract integrates seamlessly with various 
+/// game elements, such as ships and crafting, to provide a comprehensive player experience. 
+/// It allows players to embark on their journey, level up, and evolve within the game, 
+/// aligning with their chosen faction and adapting their characters to suit their play style.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface IPlayerRegister {
 

@@ -12,39 +12,53 @@ import "../../inventories/IInventories.sol";
 import "../ICraftable.sol";
 import "../ICrafting.sol";
 
-/// @title Cryptopia Crafting 
-/// @dev Crafting is the process of creating Non-fungible assets (ERC721) based on recipes. 
-/// @notice The CryptopiaCrafting contract allows players to craft these assets by providing 
-/// the necessary ingredients and crafting time. The contract also keeps track of the 
-/// recipes and their learnability.
+/// @title Cryptopia Crafting Contract
+/// @notice Serves as the core mechanism for crafting within Cryptopia, facilitating the creation of unique in-game items.
+/// This contract enables players to craft various items using specific recipes and ingredients, blending strategy and resource management.
+/// Players can learn and master recipes, manage crafting slots, and engage in a creative process to produce items ranging from basic commodities to rare artifacts.
+/// The crafting system adds depth to the gameplay, encouraging exploration and trade to acquire necessary components.
+/// @dev Inherits from Initializable and AccessControlUpgradeable, implementing the ICrafting interface.
+/// It manages detailed crafting recipes and player crafting data, including ingredients, crafting levels, and slots.
+/// The contract is structured to support upgradability, ensuring adaptability to future expansions of crafting features.
+/// It emphasizes security and integrity in managing crafting operations, with checks and balances to maintain fair gameplay.
+/// A comprehensive solution for managing ERC-20 tokens, NFTs, and crafting dynamics within the game's ecosystem.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting {
 
-    /// @dev Crafting recipe data
+    /// @dev Data structure for a crafting recipe
     struct CraftingRecipeData 
     {
+        /// @dev Index that identifies the position in the mapping
         uint index; 
-        uint8 level; // Level zero indicated not initialized
+
+        /// @dev The crafting level required
+        /// @notice Level zero indicates the recipe is not initialized
+        uint8 level;
+
+        /// @dev Flag indicating whether the recipe can be learned by players
         bool learnable;
 
-        // Crafting
+        /// @dev Crafting time in seconds required to complete this recipe
         uint64 craftingTime;
 
-        // Ingredients
+        /// @dev Mapping of ingredient addresses to their required quantities
         mapping (address => uint) ingredients;
         address[] ingredientsIndex;
     }
 
-    /// @dev Crafting data for player
+    /// @dev Crafting related data for a player
     struct CraftingPlayerData 
     {
-        // Slots
-        uint slotCount; // Zero indicates not initiated
+        /// @dev The total number of crafting slots available to the player
+        /// @notice Zero indicates that the player's crafting capability is not initiated
+        uint slotCount; 
 
-        /// @dev index => CraftingSlot 
+        /// @dev Mapping from slot index to the crafting slot data
+        /// @notice Slots holds the current crafting status and recipe information
         mapping (uint => CraftingSlot) slots;
 
-        /// @dev asset (ERC721) => recipe item => learned
+        /// @dev Nested mapping to track recipes learned by the player
+        /// @notice Maps the asset (ERC721) address to the recipe item and its learned status.
         mapping (address => mapping (bytes32 => bool)) learned;
         mapping (address => bytes32[]) learnedIndex;
     }

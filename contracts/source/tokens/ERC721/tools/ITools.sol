@@ -5,8 +5,10 @@ import "../../../game/types/GameEnums.sol";
 import "../../../game/assets/types/AssetEnums.sol";
 import "./types/ToolDataTypes.sol";
 
-/// @title Tools 
-/// @dev Non-fungible token (ERC721) 
+/// @title Cryptopia Tool Token
+/// @notice This contract handles the creation, management, and utilization of tools within Cryptopia.
+/// It provides functionalities to craft tools, use them for minting resources, and manage their durability.
+/// Tools in this contract are ERC721 tokens, allowing each tool to have unique properties and state.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface ITools {
 

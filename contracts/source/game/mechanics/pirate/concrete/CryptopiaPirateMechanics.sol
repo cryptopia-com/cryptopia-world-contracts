@@ -21,8 +21,19 @@ import "../../../../game/errors/TimingErrors.sol";
 import "../../../../accounts/multisig/IMultiSigWallet.sol";
 import "../../../../accounts/multisig/errors/MultisigErrors.sol";
 
-/// @title Cryptopia pirate game mechanics
-/// @dev Provides the mechanics for the pirate gameplay
+/// @title Cryptopia Pirate Game Mechanics
+/// @notice This contract governs the core pirate interactions within Cryptopia. 
+/// It orchestrates various pirate-related activities such as intercepting targets, negotiating confrontations,
+/// attempting escapes, and executing plunder operations. The contract integrates advanced game mechanics 
+/// and decision-making processes, enhancing the immersive pirate experience for players.
+/// The mechanics ensure a dynamic and strategic environment where players' decisions and actions 
+/// significantly impact their gaming journey. This contract, being a central piece of the Cryptopia gaming ecosystem,
+/// interacts with multiple other contracts for managing player data, inventory, map movements, and battle outcomes.
+/// @dev Inherits from Initializable, NoncesUpgradeable, PseudoRandomness, and implements IPirateMechanics interface.
+/// It utilizes upgradable patterns for long-term scalability and improvement, ensuring future compatibility 
+/// with evolving game features. The contract also incorporates pseudo-randomness for unpredictable game outcomes,
+/// adding an element of surprise and challenge. The contract's functions are designed to handle complex game interactions 
+/// efficiently, maintaining game integrity and fairness.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRandomness, IPirateMechanics {
 

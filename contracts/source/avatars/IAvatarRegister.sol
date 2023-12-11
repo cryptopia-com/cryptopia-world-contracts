@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: ISC
 pragma solidity ^0.8.20 < 0.9.0;
 
-/// @title Cryptopia Avatar Register
-/// @notice Register for avatar data
+/// @title Cryptopia Avatar Register Contract
+/// @notice Manages and stores avatar customization data for players in Cryptopia.
+/// This contract serves as a centralized repository for avatar attributes, allowing players to personalize their avatars.
+/// It handles the storage of detailed avatar characteristics, including physical features, clothing, and accessories.
+/// The customization options are extensive, offering players the ability to create avatars that reflect their unique style and preferences.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface IAvatarRegister {
 

@@ -4,8 +4,10 @@ pragma solidity ^0.8.20 < 0.9.0;
 import "./types/InventoryEnums.sol";
 import "./types/InventoryDataTypes.sol";
 
-/// @title Cryptopia Inventories
-/// @dev Contains player and ship assets
+/// @title Cryptopia Inventories Contract
+/// @notice Manages player and ship inventories in Cryptopia, handling both fungible (ERC20) and non-fungible (ERC721) assets.
+/// It allows for transferring, assigning, and deducting assets from inventories while managing their weight and capacity limits.
+/// Integrates with ERC20 and ERC721 contracts for robust asset management within the game's ecosystem.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface IInventories {
 

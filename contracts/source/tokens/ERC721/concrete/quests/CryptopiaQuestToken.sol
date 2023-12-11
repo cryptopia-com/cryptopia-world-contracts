@@ -6,16 +6,22 @@ import "../../../../game/inventories/IInventories.sol";
 import "../../quests/IQuestItems.sol";
 import "../CryptopiaERC721.sol";
 
-/// @title Quest Items 
-/// @dev Non-fungible token (ERC721) 
+/// @title Cryptopia Quest Token Contract
+/// @notice Specializes in managing Non-Fungible Tokens (NFTs) for quests within Cryptopia, facilitating unique in-game interactions and rewards.
+/// This contract governs the lifecycle of quest-related NFTs, from minting for specific quest achievements to burning post-usage or trade.
+/// It ensures that these tokens, integral to quest progression and completion, are accurately tracked and managed within the game's ecosystem.
+/// @dev Inherits from CryptopiaERC721 and implements INonFungibleQuestItem and IQuestItems interfaces.
+/// The contract allows for creating, assigning, and destroying NFTs tied to game quests, linking quest progress with tangible in-game assets.
+/// It interacts with the inventories contract to manage the assignment of these NFTs to player inventories, ensuring a seamless in-game experience.
+/// This contract is an essential part of the quest mechanics, integrating NFTs with the game’s narrative and reward system.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestItems {
 
-    /// @dev Quest item
-    struct QuestItemDataEntry
-    {
+    /// @dev Data related to individual quest items
+    struct QuestItemData {
+
+        /// @dev Index of the item in the item listing array for quick access
         uint index;
-        bytes32 name; 
     }
 
     /**
@@ -23,11 +29,11 @@ contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestIt
      */
     uint private _currentTokenId; 
 
-    /// @dev name => Item
-    mapping (bytes32 => QuestItemDataEntry) public items;
+    /// @dev Mapping of quest item names to their corresponding data
+    mapping (bytes32 => QuestItemData) public items; 
     bytes32[] private itemsIndex;
 
-    /// @dev tokenId => item name
+    /// @dev Mapping from each token ID to its associated quest item name
     mapping (uint => bytes32) public itemInstances;
 
     // Refs
@@ -49,7 +55,7 @@ contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestIt
     /// @param item Unique token name
     modifier onlyExisting(bytes32 item)
     {  
-        if (!_exists(item))
+        if (!_itemExists(item)) 
         {
             revert QuestItemNotFound(item);
         }
@@ -125,7 +131,7 @@ contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestIt
         public override view 
         returns (QuestItem memory item)
     {
-        item = QuestItem(items[itemsIndex[index]].name);
+        item = QuestItem(itemsIndex[index]); 
     }
 
 
@@ -146,7 +152,7 @@ contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestIt
         items_ = new QuestItem[](length);
         for (uint i = 0; i < length; i++) 
         {
-            items_[i] = QuestItem(items[itemsIndex[skip + i]].name);
+            items_[i] = QuestItem(itemsIndex[skip + i]);
         }
 
         return items_;
@@ -160,7 +166,7 @@ contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestIt
         public override view 
         returns (QuestItem memory item)
     {
-        item = QuestItem(items[itemInstances[tokenId]].name);
+        item = QuestItem(itemInstances[tokenId]);
     }
 
 
@@ -174,7 +180,7 @@ contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestIt
         items_ = new QuestItem[](tokenIds.length);
         for (uint i = 0; i < tokenIds.length; i++) 
         {
-            items_[i] = QuestItem(items[itemInstances[tokenIds[i]]].name);
+            items_[i] = QuestItem(itemInstances[tokenIds[i]]);
         }
 
         return items_;
@@ -252,7 +258,7 @@ contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestIt
 
     /// @dev Returns true if the item exists
     /// @param name The name of the item
-    function _exists(bytes32 name)
+    function _itemExists(bytes32 name)
         internal virtual view 
         returns (bool)
     {
@@ -271,10 +277,9 @@ contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestIt
         }
 
         // Add item
-        if (!_exists(item.name)) 
+        if (!_itemExists(item.name)) 
         {
-            items[item.name] = QuestItemDataEntry(
-                itemsIndex.length, item.name);
+            items[item.name] = QuestItemData(itemsIndex.length);
             itemsIndex.push(item.name);
         }
     }

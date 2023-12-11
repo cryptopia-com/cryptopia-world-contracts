@@ -4,8 +4,14 @@ pragma solidity ^0.8.20 < 0.9.0;
 import "../../inventories/types/InventoryEnums.sol";
 import "./types/PirateDataTypes.sol";
 
-/// @title Cryptopia pirate game mechanics
-/// @dev Provides the mechanics for the pirate gameplay
+/// @title Cryptopia Pirate Game Mechanics
+/// @notice This contract governs the core pirate interactions within Cryptopia. 
+/// It orchestrates various pirate-related activities such as intercepting targets, negotiating confrontations,
+/// attempting escapes, and executing plunder operations. The contract integrates advanced game mechanics 
+/// and decision-making processes, enhancing the immersive pirate experience for players.
+/// The mechanics ensure a dynamic and strategic environment where players' decisions and actions 
+/// significantly impact their gaming journey. This contract, being a central piece of the Cryptopia gaming ecosystem,
+/// interacts with multiple other contracts for managing player data, inventory, map movements, and battle outcomes.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface IPirateMechanics {
 

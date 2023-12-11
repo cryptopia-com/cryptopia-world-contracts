@@ -1,37 +1,39 @@
 // SPDX-License-Identifier: ISC
 pragma solidity ^0.8.20 < 0.9.0;
 
-/// @dev Pirate confrontation data
+/// @dev Data related to a pirate's confrontation with a target player
 struct Confrontation 
 {
-    // Pirate
+    /// @dev Address of the pirate initiating the confrontation
     address attacker;
 
-    // Location intercept took place
+    /// @dev The map location where the interception occurred
     uint16 location;
 
-    // Arrival timestamp of the target (used to prevent multiple interceptions)
+    /// @dev Timestamp of the target's arrival
+    /// @notice Used to prevent multiple interceptions
     uint64 arrival;
 
-    // Deadline for the target to respond
+    /// @dev Deadline for the target to respond to the confrontation
     uint64 deadline;
 
-    // Timestamp after which the confrontation expires (can be extended by the target)
+    /// @dev Expiration timestamp for the confrontation
+    /// @notice After expiration the confrontation can no longer be acted upon
     uint64 expiration;
 
-    // Escape attempt (can only be attempted once)
+    /// @dev Indicates whether an escape attempt has been made (true if attempted)
     bool escapeAttempted;
 }
 
-/// @dev Pirate plunder data
+/// @dev Data related to the potential plundering by a pirate post-confrontation
 struct Plunder  
 {
-    // Deadline for the pirate to loot
+    /// @dev Deadline for the pirate to complete the looting process
     uint64 deadline;
 
-    // Timestamp after which the loot is no longer hot
+    /// @dev Timestamp indicating when the looted assets are no longer considered 'hot' (recently stolen)
     uint64 loot_hot;
 
-    // Assets that the pirate has looted
+    /// @dev Hash of the looted assets, representing what the pirate has taken
     bytes32 loot_hash;
 }

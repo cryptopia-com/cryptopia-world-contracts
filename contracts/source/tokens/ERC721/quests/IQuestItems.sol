@@ -3,8 +3,10 @@ pragma solidity ^0.8.20 < 0.9.0;
 
 import "./types/QuestItemDataTypes.sol";
 
-/// @title Quest Items 
-/// @dev Non-fungible token (ERC721) 
+/// @title Cryptopia Quest Token Contract
+/// @notice Specializes in managing Non-Fungible Tokens (NFTs) for quests within Cryptopia, facilitating unique in-game interactions and rewards.
+/// This contract governs the lifecycle of quest-related NFTs, from minting for specific quest achievements to burning post-usage or trade.
+/// It ensures that these tokens, integral to quest progression and completion, are accurately tracked and managed within the game's ecosystem.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface IQuestItems {
 

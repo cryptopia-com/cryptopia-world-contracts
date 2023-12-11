@@ -7,18 +7,75 @@ import "../../ships/types/ShipDataTypes.sol";
 import "../../ships/errors/ShipErrors.sol";  
 import "../CryptopiaERC721.sol";
 
-/// @title Cryptopia Ship Token
-/// @dev Non-fungible token (ERC721)
+/// @title Cryptopia Ship Token Contract
+/// @notice Manages the creation, attributes, and interactions of ship tokens in Cryptopia.
+/// This contract handles everything from ship minting, updating ship attributes, 
+/// to managing different ship types and their specific characteristics like speed, 
+/// health, and attack power. It supports various ship classes, aligns ships with 
+/// game factions, and manages the special variants like pirate ships.
+/// @dev Extends CryptopiaERC721, integrating ERC721 functionalities with game-specific mechanics.
+/// It maintains a comprehensive dataset of ships through mappings, enabling intricate gameplay
+/// strategies and in-game economics. The contract includes mechanisms for both the creation of 
+/// new ship tokens and the dynamic modification of existing ships, reflecting the evolving nature 
+/// of the in-game naval fleet.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaShipToken is CryptopiaERC721, IShips {
+
+    /// @dev Ship in Cryptopia
+    struct ShipData
+    {
+        /// @dev Index within the shipsIndex array
+        uint index;
+
+        /// @dev Indicates if the ship is generic, allowing it to be equipped by any player regardless of faction
+        bool generic;
+
+        /// @dev Faction type (Eco, Tech, Traditional, Industrial) 
+        Faction faction;
+
+        /// @dev SubFaction type (None/Pirate/BountyHunter) 
+        SubFaction subFaction;
+
+        /// @dev Rarity level of the ship (Common, Rare, etc.)
+        Rarity rarity;
+
+        /// @dev The number of module slots available
+        uint8 modules;
+
+        /// @dev The CO2 emission level of the ship
+        /// @notice Reflecting its environmental impact in the game's ecosystem
+        uint16 co2;
+
+        /// @dev Base speed defining the ship's movement capability 
+        uint16 base_speed;
+
+        /// @dev Base attack power of the ship 
+        uint16 base_attack;
+
+        /// @dev Base health points of the ship (max damage the ship can take)
+        uint16 base_health;
+
+        /// @dev Base defense rating (ability to resist attacks)
+        uint16 base_defence;
+
+        /// @dev Base storage capacity
+        uint base_inventory;
+
+        /// @dev Base fuel consumption rate (intercepting or escaping)
+        uint base_fuelConsumption;
+
+        /// @dev Reference to the pirate variant of the ship
+        bytes32 pirateVersion;
+    }
+
 
     /**
      * Storage
      */
     uint private _currentTokenId; 
 
-    /// @dev name => Ship
-    mapping(bytes32 => Ship) private ships;
+    /// @dev name => ShipData
+    mapping(bytes32 => ShipData) private ships;
     bytes32[] private shipsIndex;
 
     /// @dev tokenId => ShipInstance
@@ -121,7 +178,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         public virtual override view 
         returns (Ship memory data)
     {
-        data = ships[name];
+        data = _getShip(name);
     }
 
 
@@ -142,7 +199,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         ships_ = new Ship[](length);
         for (uint i = 0; i < length; i++)
         {
-            ships_[i] = ships[shipsIndex[i]];
+            ships_[i] = _getShip(shipsIndex[skip + i]);
         }
     }
 
@@ -169,7 +226,6 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         for (uint i = 0; i < tokenIds.length; i++)
         {
             instances[i] = shipInstances[tokenIds[i]];
-
         }
     }
 
@@ -181,13 +237,13 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         public virtual override view  
         returns (ShipEquipData memory equipData)
     {
-        Ship storage ship = ships[shipInstances[tokenId].name];
+        ShipData storage data = ships[shipInstances[tokenId].name];
         equipData = ShipEquipData({
             locked: shipInstances[tokenId].locked,
-            generic: ship.generic,
-            faction: ship.faction,
-            subFaction: ship.subFaction,
-            inventory: ship.base_inventory + shipInstances[tokenId].inventory
+            generic: data.generic,
+            faction: data.faction,
+            subFaction: data.subFaction,
+            inventory: data.base_inventory + shipInstances[tokenId].inventory
         });
     }
 
@@ -410,24 +466,65 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
 
 
     /// @dev Add or update ships
-    /// @param data Ship data
-    function _setShip(Ship memory data) 
+    /// @param ship Ship data
+    function _setShip(Ship memory ship) 
         internal 
     {
         assert(
-            (data.subFaction == SubFaction.None && data.pirateVersion != bytes32(0)) || // Requires pirate version
-            (data.subFaction == SubFaction.Pirate && data.pirateVersion == bytes32(0)) || // Is already pirate version
-            (data.subFaction == SubFaction.BountyHunter && data.pirateVersion == bytes32(0)) // Can never turn pirate
+            (ship.subFaction == SubFaction.None && ship.pirateVersion != bytes32(0)) || // Requires pirate version
+            (ship.subFaction == SubFaction.Pirate && ship.pirateVersion == bytes32(0)) || // Is already pirate version
+            (ship.subFaction == SubFaction.BountyHunter && ship.pirateVersion == bytes32(0)) // Can never turn pirate
         );
 
         // Add ship
-        if (!_exists(data.name))
+        if (!_exists(ship.name))
         {
-            shipsIndex.push(data.name);
+            ships[ship.name].index = shipsIndex.length;
+            shipsIndex.push(ship.name);
         }
 
         // Set ship
-        ships[data.name] = data;
+        ShipData storage data = ships[ship.name];
+        data.generic = ship.generic;
+        data.faction = ship.faction;
+        data.subFaction = ship.subFaction;
+        data.rarity = ship.rarity;
+        data.co2 = ship.co2;
+        data.modules = ship.modules;
+        data.base_speed = ship.base_speed;
+        data.base_attack = ship.base_attack;
+        data.base_health = ship.base_health;
+        data.base_defence = ship.base_defence;
+        data.base_inventory = ship.base_inventory;
+        data.base_fuelConsumption = ship.base_fuelConsumption;
+        data.pirateVersion = ship.pirateVersion;
+    }
+
+
+    /// @dev Retreive a ship by name
+    /// @param name Ship name (unique)
+    /// @return ship a single ship
+    function _getShip(bytes32 name) 
+        internal virtual view 
+        returns (Ship memory ship)
+    {
+        ShipData memory data = ships[name];
+        ship = Ship({
+            name: name,
+            generic: data.generic,
+            rarity: data.rarity,
+            faction: data.faction,
+            subFaction: data.subFaction,
+            co2: data.co2,
+            modules: data.modules,
+            base_speed: data.base_speed,
+            base_attack: data.base_attack,
+            base_health: data.base_health,
+            base_defence: data.base_defence,
+            base_inventory: data.base_inventory,
+            base_fuelConsumption: data.base_fuelConsumption,
+            pirateVersion: data.pirateVersion
+        });
     }
 
 

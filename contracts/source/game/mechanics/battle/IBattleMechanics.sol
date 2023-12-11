@@ -3,8 +3,15 @@ pragma solidity ^0.8.20 < 0.9.0;
 
 import "./types/BattleDataTypes.sol";
 
-/// @title Cryptopia battle game mechanics
-/// @dev Provides the mechanics for the battle gameplay
+/// @title Cryptopia Naval Battle Mechanics
+/// @notice This contract is at the heart of naval combat within Cryptopia, 
+/// orchestrating the complexities of ship-to-ship battles. It manages the intricate details of naval 
+/// engagements, including attack effectiveness, defense mechanisms, and the influence of luck and 
+/// environmental factors like tile safety. The contract ensures a dynamic and strategic battle environment, 
+/// where each player's decisions, ship attributes, and tile locations significantly impact the battle outcomes.
+/// It integrates closely with ship and player data contracts to fetch relevant information for calculating battle dynamics. 
+/// This contract provides a framework for players to engage in exciting naval battles, enhancing their gaming experience 
+/// with unpredictable and thrilling combat scenarios.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface IBattleMechanics {
 

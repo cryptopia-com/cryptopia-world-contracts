@@ -4,133 +4,140 @@ pragma solidity ^0.8.20 < 0.9.0;
 import "../../../../game/types/GameEnums.sol";
 import "../../../../game/types/FactionEnums.sol";
 
-/// @dev Ship template
+/// @dev Ship in Cryptopia
 struct Ship
 {
-    /// @dev Ship name (unique)
+    /// @dev Unique name identifier for the ship
     bytes32 name;
 
-    /// @dev if true faction and subfaction are disregarded (any player can equipt)
+    /// @dev Indicates if the ship is generic, allowing it to be equipped by any player regardless of faction
     bool generic;
 
-    /// @dev {Faction} (can only be equipted by this faction)
+    /// @dev Faction type (Eco, Tech, Traditional, Industrial) 
     Faction faction;
 
-    /// @dev {SubFaction} (pirate/bountyhunter)
+    /// @dev SubFaction type (None, Pirate, BountyHunter) 
     SubFaction subFaction;
 
-    /// @dev Ship rarity {Rarity}
+    /// @dev Rarity level of the ship (Common, Rare, etc.)
     Rarity rarity;
 
-    /// @dev the amount of module slots
+    /// @dev The number of module slots available
     uint8 modules;
 
-    /// @dev The amount of CO2 that is outputted
+    /// @dev The CO2 emission level of the ship
+    /// @notice Reflecting its environmental impact in the game's ecosystem
     uint16 co2;
 
-    /// @dev Base speed (before modules)
+    /// @dev Base speed defining the ship's movement capability 
     uint16 base_speed;
 
-    /// @dev Base attack (before modules)
+    /// @dev Base attack power of the ship 
     uint16 base_attack;
 
-    /// @dev Base health (before modules)
+    /// @dev Base health points of the ship (max damage the ship can take)
     uint16 base_health;
 
-    /// @dev Base defence (before modules)
+    /// @dev Base defense rating (ability to resist attacks)
     uint16 base_defence;
 
-    /// @dev Base storage (before modules)
+    /// @dev Base storage capacity
     uint base_inventory;
 
-    /// @dev Base fuel consumption (before modules)
+    /// @dev Base fuel consumption rate (intercepting or escaping)
     uint base_fuelConsumption;
 
-    /// @dev The pirate version of this ship (if any)
+    /// @dev Reference to the pirate variant of the ship
     bytes32 pirateVersion;
 }
 
-/// @dev Ship instance (equiptable by player)
+/// @dev An Instance of a ship (ERC721 token data)
 struct ShipInstance
 {
-    /// @dev Ship name (maps to template)
+    /// @dev Reference to Ship definition
     bytes32 name;
 
-    /// @dev If true the ship cannot be transferred
+    /// @dev Indicates if the ship is locked, meaning it cannot be transferred if true
     bool locked;
 
-    /// @dev The ID of the ship's skin
+    /// @dev Identifier for the ship's skin, defining its visual appearance
     uint16 skin;
 
-    /// @dev Speed (after modules)
+    /// @dev Effects on speed of any equipped modules
     uint16 speed;
 
-    /// @dev Attack (after modules)
+    /// @dev Effects on attack of any equipped modules
     uint16 attack;
 
-    /// @dev Health (after modules)
+    /// @dev Effects on health of any equipped modules
     uint16 health;
 
-    /// @dev Damage (0 - health)
+    /// @dev Effects on damage of any equipped modules
     uint16 damage;
 
-    /// @dev Defence (after modules)
+    /// @dev Effects on defence of any equipped modules
     uint16 defence;
 
-    /// @dev Storage (after modules)
+    /// @dev Effects on inventory of any equipped modules
     uint inventory;
 
-    /// @dev Fuel consumption (after modules)
+    /// @dev Effects on fuelConsumption of any equipped modules
     uint fuelConsumption;
 }
 
-/// @dev Represents ship equip data
-/// @notice Used as return type for `getShipEquipData` to prevent stack too deep errors
-struct ShipEquipData {
-
-    /// @dev If true the ship cannot be transferred
+/// @dev Structure encapsulating essential ship equipment data
+/// @notice Used to avoid 'stack too deep' errors
+struct ShipEquipData 
+{
+    /// @dev Indicates if the ship is locked and thus non-transferable
     bool locked;
 
-    /// @dev If true faction and subfaction are disregarded (any player can equipt)
+    /// @dev Indicates if the ship is generic, allowing it to be equipped by any player regardless of faction
     bool generic;
 
-    /// @dev {Faction} (can only be equipted by this faction)
+    /// @dev Faction type (Eco, Tech, Traditional, Industrial) 
     Faction faction;
 
-    /// @dev {SubFaction} (pirate/bountyhunter)
+    /// @dev SubFaction type (None, Pirate, BountyHunter) 
     SubFaction subFaction;
 
-    /// @dev Ship storage (after modules)
+    /// @dev Storage capacity
+    /// @notice Includes the effects of any equipped modules
     uint inventory;
 }
 
-/// @dev Represents ship travel data
-/// @notice Used as return type for `getShipTravelData` to prevent stack too deep errors
-struct ShipTravelData {
-
-    /// @dev The ship's speed
+/// @dev Structure representing the travel capabilities of a ship.
+/// @notice Used to avoid 'stack too deep' errors
+struct ShipTravelData 
+{
+    /// @dev Speed defining the ship's movement capability
+    /// @notice Includes the effects of any equipped modules
     uint16 speed;
 
-    /// @dev The ship's fuel consumption (fuel token)
+    /// @dev Fuel consumption rate (intercepting or escaping)
+    /// @notice Includes the effects of any equipped modules
     uint fuelConsumption;
 }
 
-/// @dev Represents ship battle data
-/// @notice Used as return type for `getShipBattleData` to prevent stack too deep errors
-struct ShipBattleData {
-
-    /// @dev The ship's current damage (0 - health)
+/// @dev Structure outlining the battle characteristics of a ship.
+/// @notice Used in the `getShipBattleData` function to simplify data retrieval.
+struct ShipBattleData 
+{
+    /// @dev The amount of damage currently sustained by the ship
     uint16 damage;
 
-    /// @dev The ship's base attack power 
+    /// @dev Attack power of the ship 
+    /// @notice Includes the effects of any equipped modules
     uint16 attack;
 
-    /// @dev The ship's max health
+    /// @dev Health points of the ship (max damage the ship can take)
+    /// @notice Includes the effects of any equipped modules
     uint16 health;
 
-    /// @dev The ship's defence score (after modules)
+    /// @dev Defense rating (ability to resist attacks)
+    /// @notice Includes the effects of any equipped modules
     uint16 defence;
 
-    /// @dev True if the tile safety is inverted (unsafe tiles become safe and vice versa)
+    /// @dev Indicates if tile safety is inverted (for pirates)
     bool tileSafetyInverse;
 }

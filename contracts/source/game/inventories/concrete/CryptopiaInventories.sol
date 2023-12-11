@@ -16,53 +16,63 @@ import "../../players/control/IPlayerFreezeControl.sol";
 import "../../assets/errors/AssetErrors.sol";
 import "../../../errors/ArgumentErrors.sol";
 
-/// @title Cryptopia Inventories
-/// @dev Contains player and ship assets
+/// @title Cryptopia Inventories Contract
+/// @notice Manages player and ship inventories in Cryptopia, handling both fungible (ERC20) and non-fungible (ERC721) assets.
+/// It allows for transferring, assigning, and deducting assets from inventories while managing their weight and capacity limits.
+/// Integrates with ERC20 and ERC721 contracts for robust asset management within the game's ecosystem.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInventories, IPlayerFreezeControl, IERC721Receiver {
 
+    /// @dev Represents an asset with a specific weight and index, used 
+    /// for inventory weight calculations and mapping identification
     struct Asset 
     {
+        /// @dev Position of the asset in its respective index array for quick access
         uint index;
 
-        // Unit weight
+        /// @dev Unit weight of the asset, used for calculating total inventory weight
         uint weight;
     }
 
+    /// @dev Inventory space that holds fungible and non-fungible assets
     struct InventorySpaceData
     {
-        // Combined weight (fungible + non-fungible)
+        /// @dev Combined weight of both fungible and non-fungible assets
         uint weight;
 
-        // Maximum combined weight (including module effects etc.)
+        /// @dev Maximum allowable weight for this inventory
         uint maxWeight;
 
-        // Asset => amount
+        /// @dev Mapping of fungible asset addresses (ERC20 tokens) to their quantities
         mapping (address => uint) fungible;
 
-        // Asset => NonFungibleTokenInventorySpaceData
+        /// @dev Mapping of non-fungible asset addresses (ERC721 tokens) to their specific inventory data
         mapping (address => NonFungibleTokenInventorySpaceData) nonFungible;
     }
 
+    /// @dev Manages the non-fungible token (NFT) data within an inventory space
     struct NonFungibleTokenInventorySpaceData
     {
-        // TokenId => index
+        /// @dev Mapping from NFT token ID to its index in the tokensIndex array
         mapping (uint => uint) tokens;
         uint[] tokensIndex;
     }
 
+    /// @dev Represents data associated with an NFT in the inventory system
     struct NonFungibleTokenData
     {
-        // Allocated for owner
+        /// @dev Address of the owner of the token
         address owner;
 
-        // The inventory in which this token is stored
+        /// @dev Inventory location (e.g., player's backpack or ship) where the token is stored
         Inventory inventory;
     }
 
-    struct PlayerInventoryData 
+    /// @dev Holds data about a player's inventory
+    struct PlayerInventoryData
     {
-        // Frozen until
+        /// @dev Timestamp marking when the freeze status expires
+        /// @notice Restricts inventory interactions until this time passes
         uint64 frozenUntil;
     }
 
@@ -76,30 +86,30 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     /**
      * Storage
      */
-    // One slot 10kg
-    uint constant public INVENTORY_SLOT_SIZE = 1_000_000_000_000_000_000_000; 
+    /// @dev Defines the weight of a single inventory slot in kilograms
+    uint constant public INVENTORY_SLOT_SIZE = 1_000_000_000_000_000_000_000; // 10kg
 
-    // contract => Asset
+    /// @dev Mapping of fungible assets (ERC20 tokens) to their corresponding asset data
     mapping (address => Asset) fungible; 
     address[] fungibleIndex;
 
-    // contract => Asset
+    /// @dev Mapping of non-fungible assets (ERC721 tokens) to their corresponding asset data
     mapping (address => Asset) nonFungible; 
     address[] nonFungibleIndex;
 
-    // Player => Equipted ship 
+    /// @dev Mapping from player address to the tokenId of their equipped ship
     mapping (address => uint) playerToShip;
 
-    // Asset => tokenId => NonFungibleTokenData
+    /// @dev Nested mapping for non-fungible token data, mapping asset addresses to tokenIds and their data
     mapping (address => mapping (uint => NonFungibleTokenData)) nonFungibleTokenDatas;
 
-    // Ship tokenId => InventorySpaceData
+    /// @dev Mapping of ship tokenIds to their inventory space data
     mapping (uint => InventorySpaceData) shipInventories;
 
-    // Player => Starter ship | Backpack => InventorySpaceData
+    /// @dev Mapping from player addresses to their inventory data, covering both starter ships and backpacks
     mapping (address => InventorySpaceData) playerInventories;
 
-    // Player => PlayerInventoryData
+    /// @dev Mapping from player addresses to their inventory-specific data
     mapping (address => PlayerInventoryData) playerData;
 
     // Refs

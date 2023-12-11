@@ -6,8 +6,12 @@ import "../../../game/types/FactionEnums.sol";
 import "../types/ERC721DataTypes.sol";
 import "./types/ShipDataTypes.sol";
 
-/// @title Ships
-/// @dev Non-fungible token (ERC721) 
+/// @title Cryptopia Ship Token Contract
+/// @notice Manages the creation, attributes, and interactions of ship tokens in Cryptopia.
+/// This contract handles everything from ship minting, updating ship attributes, 
+/// to managing different ship types and their specific characteristics like speed, 
+/// health, and attack power. It supports various ship classes, aligns ships with 
+/// game factions, and manages the special variants like pirate ships.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface IShips {
 

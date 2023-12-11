@@ -5,6 +5,12 @@ import "@nomicfoundation/hardhat-toolbox";
 import '@openzeppelin/hardhat-upgrades';
 import "@typechain/hardhat"; 
 
+const secret = JSON.parse(
+  require('fs')
+    .readFileSync(".secret")
+    .toString()
+    .trim());
+
 const config: HardhatUserConfig = {
   networks: {
     hardhat: {
@@ -20,21 +26,21 @@ const config: HardhatUserConfig = {
         count: 10
       }
     },
-    chaos: {
-      url: "https://staging-v3.skalenodes.com/v1/staging-fast-active-bellatrix",
-      chainId: 1351057110,
+    mumbai: {
+      url: "https://matic.getblock.io/testnet/?api_key=4b8e44c3-94a7-4d7f-be1e-e08ebe8453fd",
+      chainId: 80001,
       accounts: {
-        mnemonic: "media arrow mean erode human thank cave wild giggle labor suggest shoot",
+        mnemonic: secret.mumbai,
         path: "m/44'/60'/0'/0",
         initialIndex: 0,
         count: 10
       }
     },
-    mumbai: {
-      url: "https://matic.getblock.io/testnet/?api_key=4b8e44c3-94a7-4d7f-be1e-e08ebe8453fd",
-      chainId: 80001,
+    chaos: {
+      url: "https://staging-v3.skalenodes.com/v1/staging-fast-active-bellatrix",
+      chainId: 1351057110,
       accounts: {
-        mnemonic: "",
+        mnemonic: secret.chaos,
         path: "m/44'/60'/0'/0",
         initialIndex: 0,
         count: 10

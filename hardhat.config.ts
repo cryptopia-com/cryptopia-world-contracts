@@ -23,21 +23,21 @@ const config: HardhatUserConfig = {
         count: 10
       }
     },
-    mumbai: {
+    polygonMumbai: {
       url: "https://matic.getblock.io/testnet/?api_key=4b8e44c3-94a7-4d7f-be1e-e08ebe8453fd",
       chainId: 80001,
       accounts: {
-        mnemonic: secret.mumbai.mnemonic,
+        mnemonic: secret.polygonMumbai.mnemonic,
         path: "m/44'/60'/0'/0",
         initialIndex: 0,
         count: 10
       }
     },
-    chaos: {
+    skaleChaos: {
       url: "https://staging-v3.skalenodes.com/v1/staging-fast-active-bellatrix",
       chainId: 1351057110,
       accounts: {
-        mnemonic: secret.chaos.mnemonic,
+        mnemonic: secret.skaleChaos.mnemonic,
         path: "m/44'/60'/0'/0",
         initialIndex: 0,
         count: 10
@@ -55,12 +55,12 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: {
-      mumbai: secret.chaos.etherscan,
-      chaos: secret.chaos.etherscan,
+      polygonMumbai: secret.polygonMumbai.etherscan,
+      skaleChaos: secret.skaleChaos.etherscan,
     },
     customChains: [
       {
-         network: "chaos",
+         network: "skaleChaos",
          chainId: 1351057110,
          urls: {
             apiURL: "https://staging-fast-active-bellatrix.explorer.staging-v3.skalenodes.com/api",

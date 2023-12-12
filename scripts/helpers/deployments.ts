@@ -8,6 +8,7 @@ interface DeploymentInfo {
     address: string; // The address at which the contract is deployed
     contractName: string; // The name of the contract
     bytecode: string; // The bytecode of the contract
+    verified: boolean; // Whether the contract has been verified on Etherscan
 }
 
 /**
@@ -61,16 +62,30 @@ export class DeploymentManager
      * @param contractName - The name of the contract.
      * @param contractAddress - The address where the contract is deployed.
      * @param bytecode - The bytecode of the contract.
+     * @param verified - Whether the contract has been verified on Etherscan.
      */
-    public saveDeployment(deploymentKey: string, contractName: string, contractAddress: string, bytecode: string): void 
+    public saveDeployment(deploymentKey: string, contractName: string, contractAddress: string, bytecode: string, verified: boolean): void 
     {
         const deployments = this.readDeployments();
         deployments[deploymentKey] = { 
             address: contractAddress,
             contractName: contractName,
-            bytecode: bytecode
+            bytecode: bytecode,
+            verified: verified
         };
 
+        this.writeDeployments(deployments);
+    }
+
+    /**
+     * Sets the verification status of a deployment.
+     * @param deploymentKey - The key to use for the deployment.
+     * @param verified - Whether the contract has been verified on Etherscan.
+     */
+    public setVerified(deploymentKey: string, verified: boolean): void
+    {
+        const deployments = this.readDeployments();
+        deployments[deploymentKey].verified = verified;
         this.writeDeployments(deployments);
     }
 
@@ -99,4 +114,29 @@ export class DeploymentManager
         
         throw `No deployment found for ${deploymentKey} on ${this.networkName}`;
     }
+
+    /**
+     * Retrieves all deployments' information.
+     * @returns An object mapping contract names to their deployment information.
+     */
+    public getDeployments(): { [contractName: string]: DeploymentInfo }
+    {
+        return this.readDeployments();
+    }
+
+    /**
+     * Checks if a deployment has been verified.
+     * @param deploymentKey - The key to use for the deployment.
+     * @returns True if the contract is verified, false otherwise.
+     */
+    public isVerified(deploymentKey: string): boolean
+    {
+        const deployments = this.readDeployments();
+        if (deployments[deploymentKey]) {
+            return deployments[deploymentKey].verified;
+        }
+        
+        throw `No deployment found for ${deploymentKey} on ${this.networkName}`;
+    }
+
 }

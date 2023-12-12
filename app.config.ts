@@ -165,7 +165,7 @@ const config : AppConfig = {
                 }
             }
         }, 
-        mumbai: {
+        polygonMumbai: {
             CryptopiaTreasury: {
                 address: "0xee27be821e9b6ec58f0ec73feb0723124181a676"
             },
@@ -328,7 +328,7 @@ const config : AppConfig = {
                 }
             }
         },
-        chaos: {
+        skaleChaos: {
             CryptopiaTreasury: {
                 address: "0xee27be821e9b6ec58f0ec73feb0723124181a676"
             },

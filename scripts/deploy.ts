@@ -67,8 +67,7 @@ async function main() {
         "Whitelist", 
         [
             [inventoriesAddress]
-        ],
-        inventoriesDeploymentStatus == DeploymentStatus.Deployed);
+        ]);
 
     const whitelistAddress = await whitelistProxy.getAddress();
 
@@ -309,7 +308,6 @@ async function main() {
                 asset.symbol,
                 inventoriesAddress
             ],
-            inventoriesDeploymentStatus == DeploymentStatus.Deployed,
             `CryptopiaAssetToken:${asset.name}`);
 
         const assetTokenAddress = await assetTokenProxy.getAddress();
@@ -436,18 +434,17 @@ async function main() {
  * 
  * @param {string} contractName - Name of the contract to deploy.
  * @param {unknown[]} args - Arguments to pass to the contract constructor.
- * @param {Boolean} forceRedeployment - Force redeployment of the contract.
  * @param {string} deploymentKey - Key to save the deployment.
  * @returns A tuple containing the contract instance and a boolean indicating if the contract was deployed.
  */
-async function ensureDeployed(contractName: string, args?: unknown[], forceRedeployment?: Boolean, deploymentKey?: string) : Promise<[Contract, DeploymentStatus]> 
+async function ensureDeployed(contractName: string, args?: unknown[], deploymentKey?: string) : Promise<[Contract, DeploymentStatus]> 
 {
     if (!deploymentKey)
     {
         deploymentKey = contractName;
     }
 
-    if (!forceRedeployment && deploymentManager.isDeployed(deploymentKey))
+    if (deploymentManager.isDeployed(deploymentKey))
     {
         const factory = await ethers.getContractFactory(contractName);
         const deploymentInfo = deploymentManager.getDeployment(deploymentKey);
@@ -515,25 +512,25 @@ async function _deployContract(contractName: string, deploymentKey: string, args
 
     // Create transaction
     const factory = await ethers.getContractFactory(contractName);
-    const instance = await upgrades.deployProxy(factory, args);
+    const deployProxyOperation = await upgrades.deployProxy(factory, args);
 
     await waitForMinimumTime(transactionStartTime, MIN_TIME);
-    transactionLoader.succeed(`Transaction created ${chalk.cyan(instance.deploymentTransaction()?.hash)}`);
+    transactionLoader.succeed(`Transaction created ${chalk.cyan(deployProxyOperation.deploymentTransaction()?.hash)}`);
     deploymentLoader.text = `Waiting for confirmations...`;
     const confirmationLoaderStartTime = Date.now();
 
     // Wait for confirmation
-    await instance.waitForDeployment();
-    const contractAddress = await instance.getAddress();
+    const proxy = await deployProxyOperation.waitForDeployment();
+    const contractAddress = await proxy.getAddress();
 
     // Save deployment
-    deploymentManager.saveDeployment(deploymentKey, contractName, contractAddress, factory.bytecode);
+    deploymentManager.saveDeployment(deploymentKey, contractName, contractAddress, factory.bytecode, false);
 
     await waitForMinimumTime(confirmationLoaderStartTime, MIN_TIME);
-    deploymentLoader.succeed(`Contract deployed at ${chalk.cyan(contractAddress)} in block ${chalk.cyan(instance.deploymentTransaction()?.blockNumber)}`);
+    deploymentLoader.succeed(`Contract deployed at ${chalk.cyan(contractAddress)} in block ${chalk.cyan(deployProxyOperation.deploymentTransaction()?.blockNumber)}`);
 
     deployCounter++;
-    return instance;
+    return proxy;
 }
 
 /**
@@ -553,18 +550,21 @@ async function _upgradeContract(contractName: string, contractAddress: string, d
 
     // Create transaction
     const factory = await ethers.getContractFactory(contractName);
-    const upgraded: any = await upgrades.upgradeProxy(contractAddress, factory);
+    const upgradeProxyOperation = await upgrades.upgradeProxy(contractAddress, factory);
 
     await waitForMinimumTime(transactionStartTime, MIN_TIME);
-    transactionLoader.succeed(`Transaction created ${chalk.cyan(upgraded.deployTransaction.hash)}`);
+    transactionLoader.succeed(`Transaction created ${chalk.cyan(upgradeProxyOperation.deployTransaction?.hash)}`);
     deploymentLoader.text = `Waiting for confirmations...`;
     const confirmationLoaderStartTime = Date.now();
 
+    // Wait for confirmation
+    await upgradeProxyOperation.waitForDeployment(); 
+
     // Save deployment
-    deploymentManager.saveDeployment(deploymentKey, contractName, contractAddress, factory.bytecode);
+    deploymentManager.saveDeployment(deploymentKey, contractName, contractAddress, factory.bytecode, false);
 
     await waitForMinimumTime(confirmationLoaderStartTime, MIN_TIME);
-    deploymentLoader.succeed(`Contract upgraded at ${chalk.cyan(contractAddress)} in block ${chalk.cyan(upgraded.deployTransaction.blockNumber)}`);
+    deploymentLoader.succeed(`Contract upgraded at ${chalk.cyan(contractAddress)} in block ${chalk.cyan(upgradeProxyOperation.deployTransaction?.blockNumber)}`);
 
     upgradeCounter++;
     return await ethers.getContractAt(contractName, contractAddress);

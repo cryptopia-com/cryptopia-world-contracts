@@ -1,13 +1,12 @@
 import "./helpers/converters.ts";
 import ora from 'ora-classic';
-import hre, { ethers, upgrades } from "hardhat";
-import appConfig from "../config";
+import chalk from 'chalk';
+import hre, { ethers, upgrades } from "hardhat"; 
+import appConfig from "../app.config";
 import { Contract } from "ethers";
 import { Resource } from './types/enums';
 import { DeploymentManager } from "./helpers/deployments";
 import { waitForMinimumTime } from "./helpers/timers";
-
-const chalk = require('chalk');
 
 // Settins
 const MIN_TIME = 100;
@@ -68,7 +67,8 @@ async function main() {
         "Whitelist", 
         [
             [inventoriesAddress]
-        ]);
+        ],
+        inventoriesDeploymentStatus == DeploymentStatus.Deployed);
 
     const whitelistAddress = await whitelistProxy.getAddress();
 
@@ -309,6 +309,7 @@ async function main() {
                 asset.symbol,
                 inventoriesAddress
             ],
+            inventoriesDeploymentStatus == DeploymentStatus.Deployed,
             `CryptopiaAssetToken:${asset.name}`);
 
         const assetTokenAddress = await assetTokenProxy.getAddress();
@@ -435,17 +436,18 @@ async function main() {
  * 
  * @param {string} contractName - Name of the contract to deploy.
  * @param {unknown[]} args - Arguments to pass to the contract constructor.
+ * @param {Boolean} forceRedeployment - Force redeployment of the contract.
  * @param {string} deploymentKey - Key to save the deployment.
  * @returns A tuple containing the contract instance and a boolean indicating if the contract was deployed.
  */
-async function ensureDeployed(contractName: string, args?: unknown[], deploymentKey?: string) : Promise<[Contract, DeploymentStatus]> 
+async function ensureDeployed(contractName: string, args?: unknown[], forceRedeployment?: Boolean, deploymentKey?: string) : Promise<[Contract, DeploymentStatus]> 
 {
     if (!deploymentKey)
     {
         deploymentKey = contractName;
     }
 
-    if (deploymentManager.isDeployed(deploymentKey))
+    if (!forceRedeployment && deploymentManager.isDeployed(deploymentKey))
     {
         const factory = await ethers.getContractFactory(contractName);
         const deploymentInfo = deploymentManager.getDeployment(deploymentKey);
@@ -551,24 +553,21 @@ async function _upgradeContract(contractName: string, contractAddress: string, d
 
     // Create transaction
     const factory = await ethers.getContractFactory(contractName);
-    const newImplementationAddress = await upgrades.prepareUpgrade(contractAddress, factory);
-
-    const proxyAdmin = await upgrades.admin.getInstance();
-    const tx = await proxyAdmin.upgrade(contractAddress, newImplementationAddress);
+    const upgradeProxyOperation = await upgrades.upgradeProxy(contractAddress, factory);
 
     await waitForMinimumTime(transactionStartTime, MIN_TIME);
-    transactionLoader.succeed(`Transaction created ${chalk.cyan(tx.hash)}`);
+    transactionLoader.succeed(`Transaction created ${chalk.cyan(upgradeProxyOperation.deployTransaction?.hash)}`);
     deploymentLoader.text = `Waiting for confirmations...`;
     const confirmationLoaderStartTime = Date.now();
 
     // Wait for confirmation
-    await tx.wait();
-    
+    await upgradeProxyOperation.waitForDeployment();
+
     // Save deployment
     deploymentManager.saveDeployment(deploymentKey, contractName, contractAddress, factory.bytecode);
 
     await waitForMinimumTime(confirmationLoaderStartTime, MIN_TIME);
-    deploymentLoader.succeed(`Contract upgraded at ${chalk.cyan(contractAddress)} in block ${chalk.cyan(tx.blockNumber)}`);
+    deploymentLoader.succeed(`Contract upgraded at ${chalk.cyan(contractAddress)} in block ${chalk.cyan(upgradeProxyOperation.deployTransaction?.blockNumber)}`);
 
     upgradeCounter++;
     return await ethers.getContractAt(contractName, contractAddress);

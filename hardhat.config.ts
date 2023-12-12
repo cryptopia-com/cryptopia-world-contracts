@@ -1,9 +1,6 @@
-import "hardhat-gas-reporter";
 import { HardhatUserConfig } from "hardhat/config";
-import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-toolbox";
 import '@openzeppelin/hardhat-upgrades';
-import "@typechain/hardhat"; 
 
 const secret = JSON.parse(
   require('fs')
@@ -30,7 +27,7 @@ const config: HardhatUserConfig = {
       url: "https://matic.getblock.io/testnet/?api_key=4b8e44c3-94a7-4d7f-be1e-e08ebe8453fd",
       chainId: 80001,
       accounts: {
-        mnemonic: secret.mumbai,
+        mnemonic: secret.mumbai.mnemonic,
         path: "m/44'/60'/0'/0",
         initialIndex: 0,
         count: 10
@@ -40,7 +37,7 @@ const config: HardhatUserConfig = {
       url: "https://staging-v3.skalenodes.com/v1/staging-fast-active-bellatrix",
       chainId: 1351057110,
       accounts: {
-        mnemonic: secret.chaos,
+        mnemonic: secret.chaos.mnemonic,
         path: "m/44'/60'/0'/0",
         initialIndex: 0,
         count: 10
@@ -56,15 +53,28 @@ const config: HardhatUserConfig = {
       }
     }
   },
-  typechain: {
-    target: 'ethers-v6'
+  etherscan: {
+    apiKey: {
+      mumbai: secret.chaos.etherscan,
+      chaos: secret.chaos.etherscan,
+    },
+    customChains: [
+      {
+         network: "chaos",
+         chainId: 1351057110,
+         urls: {
+            apiURL: "https://staging-fast-active-bellatrix.explorer.staging-v3.skalenodes.com/api",
+            browserURL: "https://staging-fast-active-bellatrix.explorer.staging-v3.skalenodes.com"
+         }
+     }
+    ]
   },
-  gasReporter: {
-    enabled: false,
-    coinmarketcap: "931e13ca-da1b-4faa-8542-081a7cc94217",
-    gasPrice: 21,
-    currency: 'USD'
-  }
+  // gasReporter: {
+  //   enabled: false,
+  //   coinmarketcap: "931e13ca-da1b-4faa-8542-081a7cc94217",
+  //   gasPrice: 21,
+  //   currency: 'USD'
+  // }
 };
 
 export default config;

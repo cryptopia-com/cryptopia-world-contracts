@@ -25,7 +25,7 @@ export class DeploymentManager
     constructor(networkName: string) 
     {
         this.networkName = networkName;
-        this.deploymentFilePath = path.join(__dirname, '../../data/.deployments', `${networkName}.json`);
+        this.deploymentFilePath = path.join(__dirname, '../../.deployments', `${networkName}.json`);
     }
 
     /**

@@ -274,7 +274,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
             // Check if previous map is finalized
             if (!prevMap.finalized)
             {
-                revert MapUnderConstruction();
+                revert MapUnderConstruction();  
             }
 
             tileStartIndex = prevMap.tileStartIndex + prevMap.sizeX * prevMap.sizeZ;
@@ -284,7 +284,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
             tileStartIndex = 0; 
         }
 
-        maps[name].name = name;
+        maps[name].name = name; 
         maps[name].initialized = true;
         maps[name].finalized = false;
         maps[name].sizeX = sizeX;

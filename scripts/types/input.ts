@@ -28,9 +28,9 @@ export interface Tile {
     terrain: Terrain;
     elevation: BigNumberish;
     waterLevel: BigNumberish;
-    vegetationLevel: BigNumberish;
-    rockLevel: BigNumberish;
-    wildlifeLevel: BigNumberish;
+    vegetationData: BigNumberish;
+    rockData: BigNumberish;
+    wildlifeData: BigNumberish;
     riverFlags: BigNumberish;
     hasRoad: boolean;
     hasLake: boolean;

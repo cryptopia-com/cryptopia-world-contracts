@@ -5,8 +5,6 @@ declare global {
   interface String {
     toBytes(n: number): string;
     toBytes32(): string;
-    toBytes28(): string;
-    toBytes26(): string;
     toWei(): string;
     toKeccak256(): string;
   }
@@ -31,20 +29,6 @@ String.prototype.toBytes = function(n: number) {
  */
 String.prototype.toBytes32 = function() {
   return String(this).toBytes(32);
-};
-
-/**
- * Convert string to bytes28 format
- */
-String.prototype.toBytes28 = function() {
-  return String(this).toBytes(28);
-};
-
-/**
- * Convert string to bytes26 format
- */
-String.prototype.toBytes26 = function() {
-  return String(this).toBytes(26);
 };
 
 /**

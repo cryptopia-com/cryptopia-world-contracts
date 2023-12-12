@@ -20,8 +20,8 @@ contract MockCryptopiaMap is Initializable {
         uint8 terrainOrientation;
         uint8 elevation;
         uint8 waterLevel;
-        uint8 vegetationLevel;
-        uint8 rockLevel;
+        uint8 vegetationData;
+        uint8 rockData;
         uint8 incommingRiverData;
         uint8 outgoingRiverData;
         uint8 roadFlags;
@@ -93,8 +93,8 @@ contract MockCryptopiaMap is Initializable {
             tiles[indices[i]].terrainOrientation = values[i][3];
             tiles[indices[i]].elevation = values[i][4];
             tiles[indices[i]].waterLevel = values[i][5];
-            tiles[indices[i]].vegetationLevel = values[i][6];
-            tiles[indices[i]].rockLevel = values[i][7];
+            tiles[indices[i]].vegetationData = values[i][6];
+            tiles[indices[i]].rockData = values[i][7];
             tiles[indices[i]].incommingRiverData = values[i][8];
             tiles[indices[i]].outgoingRiverData = values[i][9];
             tiles[indices[i]].roadFlags = values[i][10];
@@ -152,13 +152,13 @@ contract MockCryptopiaMap is Initializable {
         // Fruit || Wood
         if (resource == Resource.Fruit || resource == Resource.Wood)
         {
-            return tiles[playerData[account].location_tileIndex].vegetationLevel;
+            return tiles[playerData[account].location_tileIndex].vegetationData;
         }
         
         // Stone
         if (resource == Resource.Stone)
         {
-            return tiles[playerData[account].location_tileIndex].rockLevel;
+            return tiles[playerData[account].location_tileIndex].rockData;
         }
 
         // Sand

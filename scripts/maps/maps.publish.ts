@@ -50,6 +50,7 @@ async function main(mapsFilePath: string, batchSize: number)
         return;
     }
 
+    console.log(JSON.stringify(tiles, null, 2)  + "\n\n");
     
     const mapsAddress = deploymentManager.getDeployment("CryptopiaMaps")?.address;
 
@@ -190,9 +191,9 @@ function resolve(data: MapJsonData): TileStaticStruct[]
             terrain: resolveEnum(Terrain, tileData.terrain),
             elevation: tileData.elevation,
             waterLevel: tileData.waterLevel,
-            vegetationLevel: tileData.vegetationLevel,
-            rockLevel: tileData.rockLevel,
-            wildlifeLevel: tileData.wildlifeLevel,
+            vegetationData: tileData.vegetationData.toString().toBytes(8),
+            rockData: tileData.rockData.toString().toBytes(4),
+            wildlifeData: tileData.wildlifeData.toString().toBytes(4),
             riverFlags: tileData.riverFlags,
             hasRoad: tileData.hasRoad,
             hasLake: tileData.hasLake,

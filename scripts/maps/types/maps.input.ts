@@ -5,9 +5,9 @@ export interface TileJsonData {
     terrain: string;
     elevation: number;
     waterLevel: number;
-    vegetationLevel: number;
-    rockLevel: number;
-    wildlifeLevel: number;
+    vegetationData: number;
+    rockData: number;
+    wildlifeData: number;
     riverFlags: number;
     hasRoad: boolean;
     hasLake: boolean;

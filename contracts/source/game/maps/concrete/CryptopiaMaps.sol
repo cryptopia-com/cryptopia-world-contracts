@@ -53,14 +53,14 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         /// @notice Water level minus elevation equals the depth of the water
         uint8 waterLevel;
 
-        /// @dev The level of vegetation that the tile contains
-        uint32 vegetationLevel;
+        /// @dev The vegetation that the tile contains
+        bytes8 vegetationData;
 
-        /// @dev The size of rocks that the tile contains
-        uint32 rockLevel;
+        /// @dev The rocks that the tile contains
+        bytes4 rockData;
 
-        /// @dev The amount of wildlife that the tile contains
-        uint32 wildlifeLevel;
+        /// @dev The wildlife that the tile contains
+        bytes4 wildlifeData;
 
         /// @dev Flags that indicate the presence of a river on the tile's hex edges
         /// @notice 0 = NW, 
@@ -388,9 +388,9 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         tileData.terrain = data.terrain;
         tileData.elevation = data.elevation;
         tileData.waterLevel = data.waterLevel;
-        tileData.vegetationLevel = data.vegetationLevel;
-        tileData.rockLevel = data.rockLevel;
-        tileData.wildlifeLevel = data.wildlifeLevel;
+        tileData.vegetationData = data.vegetationData;
+        tileData.rockData = data.rockData;
+        tileData.wildlifeData = data.wildlifeData;
         tileData.riverFlags = data.riverFlags;
         tileData.hasRoad = data.hasRoad;
         tileData.hasLake = data.hasLake;
@@ -984,9 +984,9 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         tileDataStatic[index].terrain = tileData.terrain;
         tileDataStatic[index].elevation = tileData.elevation;
         tileDataStatic[index].waterLevel = tileData.waterLevel;
-        tileDataStatic[index].vegetationLevel = tileData.vegetationLevel;
-        tileDataStatic[index].rockLevel = tileData.rockLevel;
-        tileDataStatic[index].wildlifeLevel = tileData.wildlifeLevel;
+        tileDataStatic[index].vegetationData = tileData.vegetationData;
+        tileDataStatic[index].rockData = tileData.rockData;
+        tileDataStatic[index].wildlifeData = tileData.wildlifeData;
         tileDataStatic[index].riverFlags = tileData.riverFlags;
         tileDataStatic[index].hasRoad = tileData.hasRoad;
         tileDataStatic[index].hasLake = tileData.hasLake;
@@ -1127,9 +1127,6 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
             // Base land movement costs
             movementCost += edgeType == EdgeType.Flat ? 
                 MOVEMENT_COST_LAND_FLAT : MOVEMENT_COST_LAND_SLOPE;
-
-            // Add vegetation movement penalty
-            movementCost += tileDataStatic[toTileIndex].vegetationLevel + tileDataStatic[toTileIndex].rockLevel;
         }
 
         // Water
@@ -1210,13 +1207,13 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         returns (bool)
     {
         return playerData[account].location_arrival > 0;
-    }
+    } 
 
 
     /// @dev Move `account` to `tileIndex` by exiting the previous tile and entering the next
     /// @param account Player being moved
     /// @param path Tiles that represent a route
-    function _playerMove(address account, uint16[] memory path)
+    function _playerMove(address account, uint16[] memory path) 
         internal 
     {
         PlayerNavigationData storage data = playerData[account];

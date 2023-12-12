@@ -212,7 +212,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
                 return 0;
             }
 
-            return tile.wildlifeLevel * RESOURCE_PRECISION;
+            return RESOURCE_PRECISION;
         }
 
         // Fruit || Wood
@@ -223,7 +223,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
                 return 0;
             }
 
-            return tile.vegetationLevel * RESOURCE_PRECISION;
+            return RESOURCE_PRECISION;
         }
         
         // Stone
@@ -234,7 +234,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
                 return 0;
             }
 
-            return tile.rockLevel * RESOURCE_PRECISION;
+            return RESOURCE_PRECISION;
         }
 
         // Sand

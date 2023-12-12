@@ -16,8 +16,10 @@ async function main() {
 
     console.log(`\n\nStarting verification on ${chalk.yellow(hre.network.name)}..`);
 
-    for (const deployment of Object.values(deploymentManager.getDeployments())) 
+    for (const deploymentKey of Object.keys(deploymentManager.getDeployments())) 
     {
+        const deployment = deploymentManager.getDeployment(deploymentKey);
+
         // Skip if already verified
         if (deployment.verified) 
         {
@@ -27,12 +29,12 @@ async function main() {
             }
 
             skipCounter++;
-            console.log(`Skipping ${chalk.green(deployment.contractName)} (already verified)`);
+            console.log(`Skipping ${chalk.green(deploymentKey)} (already verified)`);
             continue;
         }
 
         // Verify
-        console.log(`\n\nVerifying ${chalk.green(deployment.contractName)}..`);
+        console.log(`\n\nVerifying ${chalk.green(deploymentKey)}..`);
 
         try {
             await hre.run("verify:verify", {
@@ -41,11 +43,11 @@ async function main() {
         }
         catch (error)
         {
-            console.log(`\n\nFailed to verify ${chalk.red(deployment.contractName)}..`);
+            console.log(`\n\nFailed to verify ${chalk.red(deploymentKey)}..`);
             continue;
         }
 
-        deploymentManager.setVerified(deployment.contractName, true);
+        deploymentManager.setVerified(deploymentKey, true);
         verifyCounter++;
     }
 

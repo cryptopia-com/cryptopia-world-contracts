@@ -2,11 +2,15 @@ import "./helpers/converters.ts";
 import ora from 'ora-classic';
 import chalk from 'chalk';
 import hre, { ethers, upgrades } from "hardhat"; 
-import appConfig from "../app.config";
+import appConfig, { NetworkConfig } from "../app.config";
 import { Contract } from "ethers";
 import { Resource } from './types/enums';
 import { DeploymentManager } from "./helpers/deployments";
 import { waitForMinimumTime } from "./helpers/timers";
+import { waitForTransaction } from "./helpers/transactions";
+
+// Config
+let config: NetworkConfig;
 
 // Settins
 const MIN_TIME = 100;
@@ -41,9 +45,10 @@ async function main() {
     const isDevEnvironment = hre.network.name == "hardhat" 
         || hre.network.name == "ganache" 
         || hre.network.name == "localhost";
-    const config: any = appConfig.networks[
+    config = appConfig.networks[
         isDevEnvironment ? "development" : hre.network.name];
 
+    upgrades.silenceWarnings(); // Prevents warnings from being printed to the console
     console.log(`\n\nStarting deployment to ${chalk.yellow(hre.network.name)}..`);
 
     //////////////////////////////////
@@ -506,28 +511,44 @@ async function ensureDeployed(contractName: string, args?: unknown[], deployment
 async function _deployContract(contractName: string, deploymentKey: string, args?: unknown[], ) : Promise<Contract> 
 {
     console.log(`\n\nDeploying ${chalk.green(deploymentKey)} to ${chalk.yellow(hre.network.name)}`);
-    const transactionLoader = ora(`Creating transaction...`).start();
-    const deploymentLoader = ora(`Waiting for transaction...`).start();
+    let transactionLoader = ora(`Creating transaction...`).start();
     const transactionStartTime = Date.now();
 
     // Create transaction
     const factory = await ethers.getContractFactory(contractName);
     const instance = await upgrades.deployProxy(factory, args);
+    const deploymentTransaction = instance.deploymentTransaction();
+
+    if (!deploymentTransaction)
+    {
+        throw new Error(`Failed to create deployment transaction for ${contractName}`);
+    }
 
     await waitForMinimumTime(transactionStartTime, MIN_TIME);
-    transactionLoader.succeed(`Transaction created ${chalk.cyan(instance.deploymentTransaction()?.hash)}`);
-    deploymentLoader.text = `Waiting for confirmations...`;
+    transactionLoader.succeed(`Transaction created ${chalk.cyan(deploymentTransaction.hash)}`);
+    const deploymentLoader = ora(`Waiting for confirmations...`).start();
     const confirmationLoaderStartTime = Date.now();
 
     // Wait for confirmation
     await instance.waitForDeployment();
+    const receipt = await waitForTransaction(
+        deploymentTransaction.hash, 
+        config.confirmations ?? 1, 
+        config.pollingInterval ?? 1000, 
+        config.pollingTimeout ?? 5000);
+
+    if (!receipt) 
+    {
+        throw new Error(`Transaction receipt not found for hash: ${deploymentTransaction.hash}`);
+    }
+
     const contractAddress = await instance.getAddress();
 
     // Save deployment
     deploymentManager.saveDeployment(deploymentKey, contractName, contractAddress, factory.bytecode, false);
 
     await waitForMinimumTime(confirmationLoaderStartTime, MIN_TIME);
-    deploymentLoader.succeed(`Contract deployed at ${chalk.cyan(contractAddress)} in block ${chalk.cyan(instance.deploymentTransaction()?.blockNumber)}`);
+    deploymentLoader.succeed(`Contract deployed at ${chalk.cyan(contractAddress)} in block ${chalk.cyan(receipt.blockNumber)}`);
 
     deployCounter++;
     return instance;
@@ -550,21 +571,37 @@ async function _upgradeContract(contractName: string, contractAddress: string, d
 
     // Create transaction
     const factory = await ethers.getContractFactory(contractName);
-    const upgraded: any = await upgrades.upgradeProxy(contractAddress, factory);
+    const upgraded = await upgrades.upgradeProxy(contractAddress, factory);
+    const deploymentTransaction: any = upgraded.deployTransaction;
+
+    if (!deploymentTransaction)
+    {
+        throw new Error(`Failed to create upgrade transaction for ${contractName}`);
+    }
 
     await waitForMinimumTime(transactionStartTime, MIN_TIME);
-    transactionLoader.succeed(`Transaction created ${chalk.cyan(upgraded.deployTransaction?.hash)}`);
+    transactionLoader.succeed(`Transaction created ${chalk.cyan(deploymentTransaction.hash)}`);
     deploymentLoader.text = `Waiting for confirmations...`;
     const confirmationLoaderStartTime = Date.now();
 
     // Wait for confirmation
-    await upgraded.waitForDeployment(); 
+    await upgraded.waitForDeployment();
+    const receipt = await waitForTransaction(
+        deploymentTransaction.hash, 
+        config.confirmations ?? 1, 
+        config.pollingInterval ?? 1000, 
+        config.pollingTimeout ?? 5000);
+
+    if (!receipt) 
+    {
+        throw new Error(`Transaction receipt not found for hash: ${deploymentTransaction.hash}`);
+    }
 
     // Save deployment
     deploymentManager.saveDeployment(deploymentKey, contractName, contractAddress, factory.bytecode, false);
 
     await waitForMinimumTime(confirmationLoaderStartTime, MIN_TIME);
-    deploymentLoader.succeed(`Contract upgraded at ${chalk.cyan(contractAddress)} in block ${chalk.cyan(upgraded.deployTransaction?.blockNumber)}`);
+    deploymentLoader.succeed(`Contract upgraded at ${chalk.cyan(contractAddress)} in block ${chalk.cyan(receipt.blockNumber)}`);
 
     upgradeCounter++;
     return await ethers.getContractAt(contractName, contractAddress);

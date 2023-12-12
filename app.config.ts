@@ -166,6 +166,9 @@ const config : AppConfig = {
             }
         }, 
         polygonMumbai: {
+            confirmations: 2,
+            pollingInterval: 5000,
+            pollingTimeout: 300000,
             CryptopiaTreasury: {
                 address: "0xee27be821e9b6ec58f0ec73feb0723124181a676"
             },
@@ -329,6 +332,9 @@ const config : AppConfig = {
             }
         },
         skaleChaos: {
+            confirmations: 2,
+            pollingInterval: 5000,
+            pollingTimeout: 300000,
             CryptopiaTreasury: {
                 address: "0xee27be821e9b6ec58f0ec73feb0723124181a676"
             },
@@ -530,7 +536,10 @@ interface ERC20Config {
     };
 }
 
-interface NetworkConfig {
+export interface NetworkConfig {
+    confirmations?: number;
+    pollingInterval?: number;
+    pollingTimeout?: number;
     CryptopiaTreasury: CryptopiaTreasury;
     CryptopiaAccount: CryptopiaAccount;
     ERC721: ERC721Config;

@@ -184,6 +184,311 @@
       "address": "0xa8834c497769488Ef7014FdD201918882A1B8C9d",
       "txHash": "0xb746a082af2880129059280f21385f825912a4993fdd0d5e796f88d068b1e1a8",
       "kind": "transparent"
+    },
+    {
+      "address": "0x3ffC65D0896E176c323067Cf3CdDa8dc5664D1CF",
+      "txHash": "0x7cd8ed71924b93b173461718ea8914635edea283ea3401c09b18c7bb0874b116",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xF2458dc3aae37De6b13a53687a3F8e96f593DbF3",
+      "txHash": "0xa725a4a3b243e470772179f8068cafe331add322a77521fabb7c4007dc65c78c",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x9723284F7C75632beD25fC227EadD5A5c8ae3823",
+      "txHash": "0xabb5f52812eb818b18a12c4cf9fb2e5ed8892769e4c6d50a3c04e640f1012a25",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x81Bf79372CE95CBEBd4BA9ffeFe51971f18D3A39",
+      "txHash": "0x9ca5bc824f803255e08603fedd2bfbd9ee2f6ca3760803cdb98c86a32be7d4a6",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x631d78E5ca204A952643E61cefa6AB677264db22",
+      "txHash": "0x6964adc0e256a62d84f507d54f1c3749951fc24ef00b4262d956888faf3e3991",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x2A605B0174cD27eFd2b4779bDFA4dE13eF077526",
+      "txHash": "0x73665b135b8c9f846cf41cbe1284f5f437130091d4f4d8e0205024f795c87dba",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xB6309B95003Ad75d2239e0C3945F20C0C33354C5",
+      "txHash": "0xd44382496c691f6a5e725bfa45fef146b23767dc1ea267f741c31bd69574a46c",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x3f21767188d54dE659133d888C29577cEa0710E4",
+      "txHash": "0x6868b95d945ccd8ee239af940f2da678a3c7931cc1b7c6cb49fcdbb8c48020a8",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xa7B146439b0b5ea46B5a5d5e808B3eAf00394d30",
+      "txHash": "0x30da424bf94bba7df1a5ff0317c327f110e55f689b9b15eda1ea22f636f86596",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x2e6F80D185a260e77fE3AEc43c4ac54DDA800eA1",
+      "txHash": "0x6e797d36698be42dff751e77a3d3a85ae26bf1a0334c326e30abc2818a400f57",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x117CB4C52098454375e3B624D10eBEDb664F99dD",
+      "txHash": "0x9f61dc2a180b476c7617e52e9ce250aaa6bc95d95d23d4736c52be366e3bb076",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xe822840E9967d99E99cA84cA869C956E94d330a4",
+      "txHash": "0x3319ee3868c13a46508bd1e8923524b85f17c6f8dbd70a7f4aaa4d76979c3828",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x248AD357B1F3027dd83366421568864d26a7f389",
+      "txHash": "0x16ba72d274989e9dace64ac91b667d1cc323d9f2cbe3941cc0ffdbfb872d0026",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x998156C5FAC8bF176AF8E0E8dDA84A76A3668C33",
+      "txHash": "0xba9b9110bb4870536f4093e18a13209515551054b3e92db295f26ab54bfe647f",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xff878f345124568cd0e1bfB25f4B4B60b5731A8A",
+      "txHash": "0x79ab2903d7e24e0d787bffa162d997c15b5badbcc02e7fcf9a6c2c0c3d384965",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x03B16fD4CFCaE25A2D2Ef0D58A098F9a2E5af3fb",
+      "txHash": "0x615854bea1ca5edc2694db953d4abe304005f47e848f833814de8f47bda6c2a9",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x5394771a0e4C5DCBa6d2d113B15e6Bca91929F90",
+      "txHash": "0xd4b0486233c6b8cccd0b6adb07348b944f7dc1727c521036391518eeeecd5ebb",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x07f22f87c8BA5076bEf2fBFb814ffAD43B7C2050",
+      "txHash": "0x0d48a41d179cc5647a4aaf4b15e8c43906fc94556ad26236a5490e789e332600",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x350E4819EfE211bd0C125F933F840E67F54c92aE",
+      "txHash": "0x50451d69c24d7276916f3066de6d183a6d39d6c0e9c9a7376b0d14475ae6329d",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x4E28eA5c779C09e515992B1C3D60fBE1032380Ed",
+      "txHash": "0xf132d600c37209f2249cedbea4e1f2213311567c9e8ab07e8ef5575cba6f1649",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x60aDC4d32c5781973868b55b8D39736E62F3Da54",
+      "txHash": "0x0142d445f55d99c6de69bb5eaef2a813d71d07d79a0947bed9d375a13701fb96",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x0d0b8FAdE599AA3828994B047669513d7750b5Ff",
+      "txHash": "0x076bcf1ff22a492781f110560c0342b94b0062e178ea4d0f4957b2e349ce45c2",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x12E86571901b4afdfEabE45c05e65bB6139C18c8",
+      "txHash": "0x057dd726f17beafcd0d2b4fbc994334c3ef3032ec2e71a88c7386dad87f10044",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xc16F57cF009d20957a14A4eFA217DA74a75F64AB",
+      "txHash": "0x5c30915f7758831a99aa316bb76e0af9c0cc0516baebb383b5bdc39151340dbd",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x9d29a0B840A2aD6eEc090F7eEC0C19Cd3e668355",
+      "txHash": "0xe969ff0caca3b3a684cbbbc0b2e510cbf8867cc7daeada4f240758c200ef78b0",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x0a35c01Ba44a7d6cEEf5A0b701aBE63027316210",
+      "txHash": "0xc472b378dabce86d3dd0e07f25fcc019992cbd72604b9ee72b8751a63e5ed89a",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xeB8BaA43DA9dd2AB340a0fA030339c652Fd5751F",
+      "txHash": "0x739031e89cb9f86c57a19696cda92a53faee66c70addd261eb7fefd45b929aa4",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xAe2cc3e78F1Bf0fBBdab5d34982FF66271f2f872",
+      "txHash": "0x7dd9a914b7749a39e9a5e7b860fb374d1601f4674fcebe2a2345d825181e5fac",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x5677cf20dFDEc6B41bC34E9E0d658B3ddC33EB60",
+      "txHash": "0x80b219c2b1582a17fa14f25a188e40879928a2dbf033ac520fc97b223ad99005",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x34FC4aa7868f01a6C9a07D0a9E3db5EF08c8787c",
+      "txHash": "0x646b24736ee99fa8ca7595246e564149489b772d550569dbbef3e925b4d47d09",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xa428065362f83D43BB6535259CA4247131bC4f06",
+      "txHash": "0xc19ddc631f99afb9d348031f3618891333ec70f98a7bca9c09e1f1e61f737b47",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xdf36349BD512fE7E9ce3857e651273e3731b3765",
+      "txHash": "0x44c302e7d6421caf0315ee4fddb866bf98522594d3b71acffde6e97f534c664c",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xF7D774C3264C04949320AF98b200d6E1cCe93431",
+      "txHash": "0x787bbca6235f468fca7960ead3d71750862b48a1bf5d18856e77fba8cc11cf7b",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xa5614882fB63470e2173c3fe0cc168ae62E3c2D4",
+      "txHash": "0xbee708d8efb466d500f6c52ffcf43993b72a2b5fbc71f61ff0b64e80f024f02c",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x32C08f42019d0Ddcf766c46eaE08F45d3897fC95",
+      "txHash": "0x8bcc6c17032bf20f05fca3657a0bef76923afceddd47ebb1407735d45cf01575",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xf1B0E0522480392cF532EDC7864bf7963aCD6269",
+      "txHash": "0x8956d591a27fd2965df48ca56680eb092ec995769353c0b7d070a4f3018e18f7",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x52625139870764c8398Dc254db3Ac82fEE6bE09a",
+      "txHash": "0x4f8390f6fe9ecbe4da0fca0dd1d22dc88e12c2859eacd22c9f1ad83b601c0271",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x15b62A86B0B87B6562E7a77DD0f03E1e82805229",
+      "txHash": "0xa0ebee835c140a8d60b49515047120707a1943a24e080843ca87566e04956b94",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x23DfdEa996633e7694FcfC9b698226152A2E9C0A",
+      "txHash": "0x2628fc00b1094abda1bc67262e6bc4e1e1f3a1fd67bb2f55a7fe7cc5147fc180",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x9EA262Ae280775e9fB7cad0c83a929Cd7eAbE3e7",
+      "txHash": "0x675da64028a28ad4ab2ac3acff9d9591b1b6e1c9c99698216b7c145cf1995bff",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x63228036249F71Ba264DDeC0B5110932e240232e",
+      "txHash": "0x707de8e298f4f19339c81ff24e19866630bab35ef199243c81397ffdc11d32c1",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x62bA456eA4B80C32E191eEB96D05DA7D11633A6F",
+      "txHash": "0x3bea2f26d9bcce2fd2185884724690ffc6561f3d9a9b1f7c2b4651ff5b871d42",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xc219Cb3a3c742d069fFc052bF50a833C02a00653",
+      "txHash": "0xff9349465ddb6434468b6b4131f9b619e99c3f63200190863421c6edc710cfff",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x75B51529D4abee775637676ACbbbA9dA51Fa77De",
+      "txHash": "0x24261a038f9740bddcc1e91f40e7af57e76cd2f648e01e85658de7f15373e1df",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x93CbeE5B958c2AB7f2647b5775bBE6Ef28085C69",
+      "txHash": "0xbc11933d7abd56ea316c575903b89abbf94b360c35db2e20a2e6b17e157e0d5e",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x8A00A7b49830404fbA60b6047e370A050a8c0Cf3",
+      "txHash": "0xa78a94004fe8ed3e3e04e0e372b26159c5bb2a21629ad1bba651370089e434bf",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x8BD579d370C1e7e12E8dcBF57c91F9BbcC90c74e",
+      "txHash": "0x54e554884c6cc3a09406089e5be331cf1dba48a9fbae0c7389b71a910e86d7e7",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x22353E0c40ee33382dDd1291794ff5fc5F4d2464",
+      "txHash": "0xf2ee296895ae57f150dc2dff0e59e22b8d0eb704fec1559f5826521665d93d39",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x7CE5F83cd10c77E5E332885b34876526DbB2Ce00",
+      "txHash": "0x349e0329f6ff37019e41fecc603a3908280ae00bd059460481794623b20c7230",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x200Cc70c61d44495f71f7815db89207138E41E04",
+      "txHash": "0x92ec591afe0d418e513d7a7ee77e67a248f88b146f2e4329b3019052b5d96a30",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x3F476411EAC7a7aFa6B6b31aEAed6d89Be2b0253",
+      "txHash": "0x9dbdc7afdc5d6014e2a03e8f09dcaa23541d5352c18ac8aee145a740025cbfe7",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x021acfD8802e1C93D1006F67b33d1dbA2583d3c1",
+      "txHash": "0xd4bb636daf045c88ea76f80755b51e002096867a9659c9a4b384dc3bfac1af56",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x221fB0e460D1ac34BA83FE1fd70e260B96a910b0",
+      "txHash": "0x14940444385362c1a7359028ba0b099db89e31755339c6b2ceafb34b8e3b0dd8",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xa9E5124B4cf2d27D58a3D8303253AE3544292280",
+      "txHash": "0x6b8bd6667ea3d9a9a374d7baa79d05a9035c49f326d35e550935522ca176a0a3",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x9872Bcc95449e263B24A9C767FC49Bc7E503fbFd",
+      "txHash": "0xbd1d6274c9cc9e94e224c8c44fa4b694046985975582e6d224ee8490dfc20136",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x6DDAE72EF47eE8708589231d5C7A42E755533cC2",
+      "txHash": "0x7443a7066f5b409915dd514dce2688fd47f59024074716f124d0cbaab979e0f3",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x419243b98B1689AAB4a7cc6D75783FCa02eAfE2b",
+      "txHash": "0x28b283796152e67c52d706c20e36c4ca5c14cf459e82485f1494408772d1e75c",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xe8C95bF1900bDFc022D566B632Fe341fEE2ffAc1",
+      "txHash": "0x5f5c4e45d86eeda1c87734f117ccc0aa35f60a1a98adc45f2cb4728bdcac6724",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x68713a9663cE832ee4Fc09507D7AB5b94676F3F6",
+      "txHash": "0x5ddce686c8b6c257ec577bd1c738117fa6cad1eed451f1536d1830da12a00d92",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x79f05136C27012Ab76AF9239bB7c093c93C97746",
+      "txHash": "0x74db61e856fc63d384be91bf841a1b9d4d2be7db0c8c791ea7b6e07be116db6e",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x1687c2fAA2275469174705D701e2b2f142ede8b7",
+      "txHash": "0x86ddde059157aea92f50622c596704655df221f3e75b6c3c9842e6d9b1c1b429",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -5292,6 +5597,668 @@
               "slot": "0"
             }
           ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "c619c3a4f9de4d72b18a7950e1d8ae87affe68a309970aeb45d2970c58445ed7": {
+      "address": "0x8D0d3d1620C27656fbc86aAfef180524Eac5c5f3",
+      "txHash": "0xc1b40ac920c9585c8586742eedb814b3664ee589852242cf16c198d9c97b6c8f",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "playerRegisterContract",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:124"
+          },
+          {
+            "label": "assetRegisterContract",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:125"
+          },
+          {
+            "label": "titleDeedContract",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_address",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:126"
+          },
+          {
+            "label": "shipContract",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_address",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:127"
+          },
+          {
+            "label": "maps",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_bytes32,t_struct(Map)3998_storage)",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:130"
+          },
+          {
+            "label": "mapsIndex",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_array(t_bytes32)dyn_storage",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:131"
+          },
+          {
+            "label": "tileDataStatic",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_uint16,t_struct(TileStaticData)1144_storage)",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:134"
+          },
+          {
+            "label": "tileDataDynamic",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_mapping(t_uint16,t_struct(TileDynamicData)1155_storage)",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:135"
+          },
+          {
+            "label": "initializedTileCount",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_uint256",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:136"
+          },
+          {
+            "label": "playerData",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_mapping(t_address,t_struct(PlayerNavigationData)4104_storage)",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:139"
+          },
+          {
+            "label": "pathCache",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_mapping(t_uint32,t_uint256)",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:142"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)25_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AccessControlStorage)34_storage": {
+            "label": "struct AccessControlUpgradeable.AccessControlStorage",
+            "members": [
+              {
+                "label": "_roles",
+                "type": "t_mapping(t_bytes32,t_struct(RoleData)25_storage)",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(InitializableStorage)93_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(RoleData)25_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_enum(Resource)957)dyn_storage": {
+            "label": "enum Resource[]",
+            "numberOfBytes": "32"
+          },
+          "t_bytes4": {
+            "label": "bytes4",
+            "numberOfBytes": "4"
+          },
+          "t_bytes8": {
+            "label": "bytes8",
+            "numberOfBytes": "8"
+          },
+          "t_enum(Biome)4131": {
+            "label": "enum Biome",
+            "members": [
+              "None",
+              "Plains",
+              "Grassland",
+              "Forest",
+              "RainForest",
+              "Mangrove",
+              "Desert",
+              "Tundra",
+              "Swamp",
+              "Reef",
+              "Vulcanic"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(Resource)957": {
+            "label": "enum Resource",
+            "members": [
+              "Fish",
+              "Meat",
+              "Fruit",
+              "Wood",
+              "Stone",
+              "Sand",
+              "Uranium",
+              "Iron",
+              "Diamond",
+              "Copper",
+              "Silver",
+              "Gold",
+              "Carbon",
+              "Oil",
+              "Glass",
+              "Steel",
+              "Fuel"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(Terrain)4118": {
+            "label": "enum Terrain",
+            "members": [
+              "Flat",
+              "Hills",
+              "Mountains",
+              "Water",
+              "Seastead"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_struct(PlayerNavigationData)4104_storage)": {
+            "label": "mapping(address => struct PlayerNavigationData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(Map)3998_storage)": {
+            "label": "mapping(bytes32 => struct Map)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_enum(Resource)957,t_uint256)": {
+            "label": "mapping(enum Resource => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_struct(TileDynamicData)1155_storage)": {
+            "label": "mapping(uint16 => struct CryptopiaMaps.TileDynamicData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_struct(TileStaticData)1144_storage)": {
+            "label": "mapping(uint16 => struct CryptopiaMaps.TileStaticData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint32,t_uint256)": {
+            "label": "mapping(uint32 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Map)3998_storage": {
+            "label": "struct Map",
+            "members": [
+              {
+                "label": "name",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "initialized",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "finalized",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "1"
+              },
+              {
+                "label": "sizeX",
+                "type": "t_uint16",
+                "offset": 2,
+                "slot": "1"
+              },
+              {
+                "label": "sizeZ",
+                "type": "t_uint16",
+                "offset": 4,
+                "slot": "1"
+              },
+              {
+                "label": "tileStartIndex",
+                "type": "t_uint16",
+                "offset": 6,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(PlayerNavigationData)4104_storage": {
+            "label": "struct PlayerNavigationData",
+            "members": [
+              {
+                "label": "chain_next",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "chain_prev",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "movement",
+                "type": "t_uint16",
+                "offset": 20,
+                "slot": "1"
+              },
+              {
+                "label": "frozenUntil",
+                "type": "t_uint64",
+                "offset": 22,
+                "slot": "1"
+              },
+              {
+                "label": "location_tileIndex",
+                "type": "t_uint16",
+                "offset": 30,
+                "slot": "1"
+              },
+              {
+                "label": "location_arrival",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "location_route",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_struct(TileDynamicData)1155_storage": {
+            "label": "struct CryptopiaMaps.TileDynamicData",
+            "members": [
+              {
+                "label": "lastEnteredPlayer",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "resources",
+                "type": "t_mapping(t_enum(Resource)957,t_uint256)",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(TileStaticData)1144_storage": {
+            "label": "struct CryptopiaMaps.TileStaticData",
+            "members": [
+              {
+                "label": "initialized",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "mapIndex",
+                "type": "t_uint16",
+                "offset": 1,
+                "slot": "0"
+              },
+              {
+                "label": "group",
+                "type": "t_uint16",
+                "offset": 3,
+                "slot": "0"
+              },
+              {
+                "label": "safety",
+                "type": "t_uint8",
+                "offset": 5,
+                "slot": "0"
+              },
+              {
+                "label": "biome",
+                "type": "t_enum(Biome)4131",
+                "offset": 6,
+                "slot": "0"
+              },
+              {
+                "label": "terrain",
+                "type": "t_enum(Terrain)4118",
+                "offset": 7,
+                "slot": "0"
+              },
+              {
+                "label": "elevation",
+                "type": "t_uint8",
+                "offset": 8,
+                "slot": "0"
+              },
+              {
+                "label": "waterLevel",
+                "type": "t_uint8",
+                "offset": 9,
+                "slot": "0"
+              },
+              {
+                "label": "vegetationData",
+                "type": "t_bytes8",
+                "offset": 10,
+                "slot": "0"
+              },
+              {
+                "label": "rockData",
+                "type": "t_bytes4",
+                "offset": 18,
+                "slot": "0"
+              },
+              {
+                "label": "wildlifeData",
+                "type": "t_bytes4",
+                "offset": 22,
+                "slot": "0"
+              },
+              {
+                "label": "riverFlags",
+                "type": "t_uint8",
+                "offset": 26,
+                "slot": "0"
+              },
+              {
+                "label": "hasRoad",
+                "type": "t_bool",
+                "offset": 27,
+                "slot": "0"
+              },
+              {
+                "label": "hasLake",
+                "type": "t_bool",
+                "offset": 28,
+                "slot": "0"
+              },
+              {
+                "label": "resources",
+                "type": "t_mapping(t_enum(Resource)957,t_uint256)",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "resourcesIndex",
+                "type": "t_array(t_enum(Resource)957)dyn_storage",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint32": {
+            "label": "uint32",
+            "numberOfBytes": "4"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)25_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "178b7b278b9291f47539e5dfa16f7de360831a62520620ba5764b15e781b57bc": {
+      "address": "0x221BB713C5b73E84690B76449AB207B863F79BB9",
+      "txHash": "0x471cca21ddaf26a7282cae08838cb150857809e6917768fafcc8e0384e455f2f",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "mapContract",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "CryptopiaResourceGathering",
+            "src": "contracts\\source\\game\\players\\concrete\\interactions\\CryptopiaResourceGathering.sol:32"
+          },
+          {
+            "label": "assetRegisterContract",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address",
+            "contract": "CryptopiaResourceGathering",
+            "src": "contracts\\source\\game\\players\\concrete\\interactions\\CryptopiaResourceGathering.sol:33"
+          },
+          {
+            "label": "playerRegisterContract",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_address",
+            "contract": "CryptopiaResourceGathering",
+            "src": "contracts\\source\\game\\players\\concrete\\interactions\\CryptopiaResourceGathering.sol:34"
+          },
+          {
+            "label": "inventoriesContract",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_address",
+            "contract": "CryptopiaResourceGathering",
+            "src": "contracts\\source\\game\\players\\concrete\\interactions\\CryptopiaResourceGathering.sol:35"
+          },
+          {
+            "label": "toolTokenContract",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_address",
+            "contract": "CryptopiaResourceGathering",
+            "src": "contracts\\source\\game\\players\\concrete\\interactions\\CryptopiaResourceGathering.sol:36"
+          },
+          {
+            "label": "playerCooldown",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_address,t_mapping(t_enum(Resource)1846,t_uint256))",
+            "contract": "CryptopiaResourceGathering",
+            "src": "contracts\\source\\game\\players\\concrete\\interactions\\CryptopiaResourceGathering.sol:39"
+          }
+        ],
+        "types": {
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_struct(InitializableStorage)93_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_enum(Resource)1846": {
+            "label": "enum Resource",
+            "members": [
+              "Fish",
+              "Meat",
+              "Fruit",
+              "Wood",
+              "Stone",
+              "Sand",
+              "Uranium",
+              "Iron",
+              "Diamond",
+              "Copper",
+              "Silver",
+              "Gold",
+              "Carbon",
+              "Oil",
+              "Glass",
+              "Steel",
+              "Fuel"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_mapping(t_enum(Resource)1846,t_uint256))": {
+            "label": "mapping(address => mapping(enum Resource => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_enum(Resource)1846,t_uint256)": {
+            "label": "mapping(enum Resource => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        },
+        "namespaces": {
           "erc7201:openzeppelin.storage.Initializable": [
             {
               "contract": "Initializable",

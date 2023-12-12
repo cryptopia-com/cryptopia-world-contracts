@@ -1213,7 +1213,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     /// @dev Move `account` to `tileIndex` by exiting the previous tile and entering the next
     /// @param account Player being moved
     /// @param path Tiles that represent a route
-    function _playerMove(address account, uint16[] memory path) 
+    function _playerMove(address account, uint16[] memory path)  
         internal 
     {
         PlayerNavigationData storage data = playerData[account];

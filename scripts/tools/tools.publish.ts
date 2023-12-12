@@ -23,7 +23,9 @@ const DEFAULT_BATCH_SIZE = 20;
 const deploymentManager = new DeploymentManager(hre.network.name);
 
 /**
- * Main deployment function.
+ * Publish tools
+ * 
+ * npx hardhat run --network localhost ./scripts/tools/tools.publish.ts
  * 
  * @param {string} toolsFilePath - Path to the tools data file.
  * @param {number} batchSize - Size of the deployment batch.

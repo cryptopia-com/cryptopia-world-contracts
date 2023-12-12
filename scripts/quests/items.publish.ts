@@ -21,7 +21,9 @@ const DEFAULT_BATCH_SIZE = 20;
 const deploymentManager = new DeploymentManager(hre.network.name);
 
 /**
- * Main deployment function.
+ * Main deployment function
+ * 
+ * npx hardhat run --network localhost ./scripts/quests/items.publish.ts
  * 
  * @param {string} questsFilePath - Path to the quests data file.
  * @param {number} batchSize - Size of the deployment batch.

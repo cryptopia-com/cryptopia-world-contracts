@@ -25,6 +25,8 @@ const deploymentManager = new DeploymentManager(hre.network.name);
 /**
  * Main deployment function.
  * 
+ * npx hardhat run --network localhost ./scripts/maps/maps.publish.ts
+ * 
  * @param {string} mapsFilePath - Path to the recipes data file.
  * @param {number} batchSize - Size of the deployment batch.
  */
@@ -50,8 +52,6 @@ async function main(mapsFilePath: string, batchSize: number)
         return;
     }
 
-    console.log(JSON.stringify(tiles, null, 2)  + "\n\n");
-    
     const mapsAddress = deploymentManager.getDeployment("CryptopiaMaps")?.address;
 
     console.log(`\nFound ${map.name} map with ${chalk.bold(tiles.length.toString())} tiles to deploy on ${chalk.yellow(hre.network.name)}`);

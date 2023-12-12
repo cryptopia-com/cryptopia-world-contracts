@@ -23,6 +23,8 @@ const deploymentManager = new DeploymentManager(hre.network.name);
 /**
  * Main deployment function.
  * 
+ * npx hardhat run --network localhost ./scripts/crafting/recipes.publish.ts
+ * 
  * @param {string} recipesFilePath - Path to the recipes data file.
  * @param {number} batchSize - Size of the deployment batch.
  */

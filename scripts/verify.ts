@@ -10,7 +10,9 @@ let verifyCounter = 0;
 let skipCounter = 0;
 
 /**
- * Deploy contracts
+ * Verify contracts on Etherscan.
+ * 
+ * npx hardhat run --network localhost ./scripts/verify.ts
  */
 async function main() {
 

@@ -38,6 +38,8 @@ let lastDeploymentStatus = DeploymentStatus.None;
 
 /**
  * Deploy contracts
+ * 
+ * npx hardhat run --network localhost ./scripts/deploy.ts
  */
 async function main() {
 

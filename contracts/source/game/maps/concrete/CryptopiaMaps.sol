@@ -1014,7 +1014,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     /// |----------------------------|----------------------|------------------------------|-----------------------------|------------------|------------------|-----|-------------------|
     /// | 0                          | 8                    | 16                           | 24                          | 32               | 48               | ... | 208               |
     ///  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    function _traversePath(uint16[] memory path, address account) 
+    function _traversePath(uint16[] memory path, address account)  
         internal  
         returns (
             bool isValid, 

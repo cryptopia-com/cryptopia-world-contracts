@@ -1,5 +1,8 @@
 ## Scripts
 
+Port:
+npx hardhat run ./scripts/port.ts
+
 Deploy:
 npx hardhat run --network skaleChaos ./scripts/deploy.ts
 

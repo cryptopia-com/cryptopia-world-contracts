@@ -26,6 +26,7 @@
     "hardhat-erc1820": "^0.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
+    "nethereum-codegen": "^1.0.26",
     "chalk": "^3.0.0",
     "ora-classic": "^5.4.2"
   }

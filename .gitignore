@@ -9,5 +9,8 @@ typechain-types
 cache
 artifacts
 
+# Nethereum files
+.nethereum
+
 # Custom
 .secret

@@ -1,4 +1,4 @@
-import "./helpers/converters.ts";
+import "./helpers/converters.ts"; 
 import ora from 'ora-classic';
 import chalk from 'chalk';
 import hre, { ethers, upgrades } from "hardhat"; 
@@ -424,7 +424,7 @@ async function main() {
     if (config.CryptopiaAccount.outputBytecode)
     {
         const AccountFactory = await ethers.getContractFactory("CryptopiaAccount");
-        const bytecodeHash = "" + ethers.keccak256(AccountFactory.bytecode);
+        const bytecodeHash = "" + ethers.utils.keccak256(AccountFactory.bytecode);
         console.log("------ UPDATE BELOW BYTECODE OF CryptopiaAccount IN THE GAME CLIENT -----");
         console.log("bytecodeHash1: " + bytecodeHash);
         console.log((AccountFactory as any).bytecode);

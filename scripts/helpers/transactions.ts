@@ -1,5 +1,5 @@
 import { ethers } from 'hardhat';
-import { TransactionReceipt } from 'ethers';
+import { TransactionReceipt } from '@ethersproject/abstract-provider';
 
 /**
  * Wait for a transaction to be confirmed.
@@ -14,7 +14,7 @@ export async function waitForTransaction(transactionHash: string, confirmations:
     let startTime = Date.now();
     let receipt = null;
 
-    while (!receipt || await receipt.confirmations() < confirmations) 
+    while (!receipt || await receipt.confirmations < confirmations) 
     {
         if (Date.now() - startTime > pollingTimeout) 
         {

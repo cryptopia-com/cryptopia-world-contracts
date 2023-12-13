@@ -21,7 +21,7 @@ String.prototype.toBytes = function(n: number) {
   let input = String(this);
   assert.isAtMost(input.length, n * 2, `Input string is larger than ${n} bytes`);
 
-  return ethers.hexlify(ethers.toUtf8Bytes(input)).padEnd(n * 2 + 2, '0');
+  return ethers.utils.hexlify(ethers.utils.toUtf8Bytes(input)).padEnd(n * 2 + 2, '0');
 };
 
 /**
@@ -37,7 +37,7 @@ String.prototype.toBytes32 = function() {
  String.prototype.toWei = function() 
  {
   let input = String(this);
-  return ethers.parseEther(input).toString();
+  return ethers.utils.parseEther(input).toString();
  };
 
 /**
@@ -46,14 +46,14 @@ String.prototype.toBytes32 = function() {
  Number.prototype.toWei = function() 
  {
   let input = Number(this).toString();
-  return ethers.parseEther(input).toString();
+  return ethers.utils.parseEther(input).toString();
  };
 
 /**
  * Convert string to keccak256
  */
 String.prototype.toKeccak256 = function() {
-  return ethers.keccak256(ethers.toUtf8Bytes(String(this)));
+  return ethers.utils.keccak256(ethers.utils.toUtf8Bytes(String(this)));
 };
 
 export {};

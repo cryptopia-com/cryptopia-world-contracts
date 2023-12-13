@@ -1195,7 +1195,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         internal view 
         returns (bool)
     {
-        return playerData[account].location_arrival > block.timestamp;
+        return playerData[account].location_arrival > block.timestamp; 
     }
 
 

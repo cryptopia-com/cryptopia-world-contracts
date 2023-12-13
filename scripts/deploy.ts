@@ -62,7 +62,7 @@ async function main() {
             config.CryptopiaTreasury.address
         ]);
 
-    const inventoriesAddress = await inventoriesProxy.getAddress();
+    const inventoriesAddress = await inventoriesProxy.address;
     const inventoriesInstance = await ethers.getContractAt(
         "CryptopiaInventories", inventoriesAddress);
 
@@ -76,7 +76,7 @@ async function main() {
             [inventoriesAddress]
         ]);
 
-    const whitelistAddress = await whitelistProxy.getAddress();
+    const whitelistAddress = await whitelistProxy.address;
 
 
     //////////////////////////////////
@@ -84,7 +84,7 @@ async function main() {
     //////////////////////////////////
     const [cryptopiaTokenProxy, cryptopiaTokenDeploymentStatus] = await ensureDeployed(
         "CryptopiaToken", []);
-    const cryptopiaTokenAddress = await cryptopiaTokenProxy.getAddress();
+    const cryptopiaTokenAddress = await cryptopiaTokenProxy.address;
 
 
     //////////////////////////////////
@@ -92,7 +92,7 @@ async function main() {
     //////////////////////////////////
     const [accountRegisterProxy, accountRegisterDeploymentStatus] = await ensureDeployed(
         "CryptopiaAccountRegister", []);
-    const accountRegisterAddress = await accountRegisterProxy.getAddress();
+    const accountRegisterAddress = await accountRegisterProxy.address;
 
 
     //////////////////////////////////
@@ -101,7 +101,7 @@ async function main() {
     const [assetRegisterProxy, assetRegisterDeploymentStatus] = await ensureDeployed(
         "CryptopiaAssetRegister", []);
 
-    const assetRegisterAddress = await assetRegisterProxy.getAddress();
+    const assetRegisterAddress = await assetRegisterProxy.address;
     const assetRegisterInstance = await ethers.getContractAt(
         "CryptopiaAssetRegister", assetRegisterAddress);
 
@@ -117,7 +117,7 @@ async function main() {
             config.ERC721.CryptopiaShipToken.baseTokenURI
         ]);
 
-    const shipTokenAddress = await shipTokenProxy.getAddress();
+    const shipTokenAddress = await shipTokenProxy.address;
 
 
     //////////////////////////////////
@@ -125,7 +125,7 @@ async function main() {
     //////////////////////////////////
     const [craftingProxy, craftingDeploymentStatus] = await ensureDeployed(
         "CryptopiaCrafting", [inventoriesAddress]);
-    const craftingAddress = await craftingProxy.getAddress();
+    const craftingAddress = await craftingProxy.address;
 
     // Grant roles
     await grantSystemRole(
@@ -146,7 +146,7 @@ async function main() {
             []
         ]);
 
-    const playerRegisterAddress = await playerRegisterProxy.getAddress();
+    const playerRegisterAddress = await playerRegisterProxy.address;
 
     // Grant roles
     await grantSystemRole(
@@ -175,7 +175,7 @@ async function main() {
             inventoriesAddress
         ]);
 
-    const toolTokenAddress = await toolTokenProxy.getAddress();
+    const toolTokenAddress = await toolTokenProxy.address;
 
     // Register with inventories
     if (toolTokenDeploymentStatus == DeploymentStatus.Deployed || inventoriesDeploymentStatus == DeploymentStatus.Deployed)
@@ -209,7 +209,7 @@ async function main() {
             config.ERC721.CryptopiaTitleDeedToken.baseTokenURI
         ]);
 
-    const titleDeedTokenAddress = await titleDeedTokenProxy.getAddress();
+    const titleDeedTokenAddress = await titleDeedTokenProxy.address;
 
 
     //////////////////////////////////
@@ -224,7 +224,7 @@ async function main() {
             cryptopiaTokenAddress
         ]);
 
-    const mapsAddress = await mapsProxy.getAddress();
+    const mapsAddress = await mapsProxy.address;
 
     // Grant roles
     await grantSystemRole(
@@ -317,7 +317,7 @@ async function main() {
             ],
             `CryptopiaAssetToken:${asset.name}`);
 
-        const assetTokenAddress = await assetTokenProxy.getAddress();
+        const assetTokenAddress = await assetTokenProxy.address;
 
         // Register with asset register
         if (assetTokenDeploymentStatus == DeploymentStatus.Deployed || assetRegisterDeploymentStatus == DeploymentStatus.Deployed)
@@ -375,7 +375,7 @@ async function main() {
             shipTokenAddress
         ]);
 
-    const navalBattleMechanicsAddress = await navalBattleMechanicsProxy.getAddress();
+    const navalBattleMechanicsAddress = await navalBattleMechanicsProxy.address;
 
     // Grant roles
     await grantSystemRole(
@@ -519,7 +519,7 @@ async function _deployContract(contractName: string, deploymentKey: string, args
     // Create transaction
     const factory = await ethers.getContractFactory(contractName);
     const instance = await upgrades.deployProxy(factory, args);
-    const deploymentTransaction = instance.deploymentTransaction();
+    const deploymentTransaction = instance.deployTransaction;
 
     if (!deploymentTransaction)
     {
@@ -532,7 +532,6 @@ async function _deployContract(contractName: string, deploymentKey: string, args
     const confirmationLoaderStartTime = Date.now();
 
     // Wait for confirmation
-    await instance.waitForDeployment();
     const receipt = await waitForTransaction(
         deploymentTransaction.hash, 
         config.confirmations ?? 1, 
@@ -544,7 +543,7 @@ async function _deployContract(contractName: string, deploymentKey: string, args
         throw new Error(`Transaction receipt not found for hash: ${deploymentTransaction.hash}`);
     }
 
-    const contractAddress = await instance.getAddress();
+    const contractAddress = await instance.address;
 
     // Save deployment
     deploymentManager.saveDeployment(deploymentKey, contractName, contractAddress, factory.bytecode, false);
@@ -574,7 +573,7 @@ async function _upgradeContract(contractName: string, contractAddress: string, d
     // Create transaction
     const factory = await ethers.getContractFactory(contractName);
     const upgraded = await upgrades.upgradeProxy(contractAddress, factory);
-    const deploymentTransaction: any = upgraded.deployTransaction;
+    const deploymentTransaction = upgraded.deployTransaction;
 
     if (!deploymentTransaction)
     {
@@ -587,7 +586,6 @@ async function _upgradeContract(contractName: string, contractAddress: string, d
     const confirmationLoaderStartTime = Date.now();
 
     // Wait for confirmation
-    await upgraded.waitForDeployment();
     const receipt = await waitForTransaction(
         deploymentTransaction.hash, 
         config.confirmations ?? 1, 

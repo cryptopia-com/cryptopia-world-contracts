@@ -60,13 +60,13 @@ const config: HardhatUserConfig = {
     },
     customChains: [
       {
-         network: "skaleChaos",
-         chainId: 1351057110,
-         urls: {
+        network: "skaleChaos",
+        chainId: 1351057110,
+        urls: {
             apiURL: "https://staging-fast-active-bellatrix.explorer.staging-v3.skalenodes.com/api",
             browserURL: "https://staging-fast-active-bellatrix.explorer.staging-v3.skalenodes.com"
-         }
-     }
+        }
+      }
     ]
   },
   // gasReporter: {

@@ -19,12 +19,10 @@
     "@openzeppelin/contracts-upgradeable": "^5.0.1"
   },
   "devDependencies": {
-    "@nomicfoundation/hardhat-chai-matchers": "^2.0.2",
-    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
-    "@openzeppelin/hardhat-upgrades": "^3.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+    "@openzeppelin/hardhat-upgrades": "^1.0.0",
     "@openzeppelin/test-helpers": "^0.5.16",
-    "ethers": "^6.9.0",
-    "hardhat": "^2.19.2",
+    "hardhat": "^2.11.2",
     "hardhat-erc1820": "^0.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3",

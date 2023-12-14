@@ -18,7 +18,7 @@ contract MockCryptopiaMap is Initializable {
         uint8 terrainSecondaryIndex;
         uint8 terrainBlendFactor;
         uint8 terrainOrientation;
-        uint8 elevation;
+        uint8 elevationLevel;
         uint8 waterLevel;
         uint8 vegetationData;
         uint8 rockData;
@@ -91,7 +91,7 @@ contract MockCryptopiaMap is Initializable {
             tiles[indices[i]].terrainSecondaryIndex = values[i][1];
             tiles[indices[i]].terrainBlendFactor = values[i][2];
             tiles[indices[i]].terrainOrientation = values[i][3];
-            tiles[indices[i]].elevation = values[i][4];
+            tiles[indices[i]].elevationLevel = values[i][4];
             tiles[indices[i]].waterLevel = values[i][5];
             tiles[indices[i]].vegetationData = values[i][6];
             tiles[indices[i]].rockData = values[i][7];
@@ -133,7 +133,7 @@ contract MockCryptopiaMap is Initializable {
         {
             uint32 tileIndex = playerData[account].location_tileIndex;
             return _tileIsUnderwater(tileIndex) 
-                ? tiles[tileIndex].waterLevel - tiles[tileIndex].elevation // Deeper water = more fish
+                ? tiles[tileIndex].waterLevel - tiles[tileIndex].elevationLevel // Deeper water = more fish
                 : 1; // Small water body
         }
 
@@ -208,6 +208,6 @@ contract MockCryptopiaMap is Initializable {
         internal view 
         returns (bool)
     {
-        return tiles[index].waterLevel > tiles[index].elevation;
+        return tiles[index].waterLevel > tiles[index].elevationLevel;
     }
 }

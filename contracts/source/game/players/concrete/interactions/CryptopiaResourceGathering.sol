@@ -189,9 +189,9 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
         if (resource == Resource.Fish)
         {
             // On the sea
-            if (tile.waterLevel > tile.elevation)
+            if (tile.waterLevel > tile.elevationLevel)
             {
-                return (tile.waterLevel - tile.elevation) * RESOURCE_PRECISION;
+                return (tile.waterLevel - tile.elevationLevel) * RESOURCE_PRECISION;
             }
 
             // On land (has lake)
@@ -207,7 +207,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
         // Meat
         if (resource == Resource.Meat)
         {
-            if (tile.waterLevel > tile.elevation)
+            if (tile.waterLevel > tile.elevationLevel)
             {
                 return 0;
             }
@@ -218,7 +218,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
         // Fruit || Wood
         if (resource == Resource.Fruit || resource == Resource.Wood)
         {
-            if (tile.waterLevel > tile.elevation)
+            if (tile.waterLevel > tile.elevationLevel)
             {
                 return 0;
             }
@@ -229,7 +229,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
         // Stone
         if (resource == Resource.Stone)
         {
-            if (tile.waterLevel > tile.elevation)
+            if (tile.waterLevel > tile.elevationLevel)
             {
                 return 0;
             }
@@ -240,7 +240,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
         // Sand
         if (resource == Resource.Sand)
         {
-            if (tile.waterLevel > tile.elevation)
+            if (tile.waterLevel > tile.elevationLevel)
             {
                 return 0;
             }

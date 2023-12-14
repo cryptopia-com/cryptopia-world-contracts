@@ -1,6 +1,19 @@
 // SPDX-License-Identifier: ISC
 pragma solidity ^0.8.20 < 0.9.0;
 
+/// @dev Regions in a hex cell
+enum HexSection
+{
+    NE, // North East
+    E,  // East
+    SE, // South East
+    SW, // South West
+    W,  // West
+    NW, // North West
+    C,  // center
+    Count // Sentinel value
+}
+
 /// @dev Connection between tiles
 enum EdgeType
 {

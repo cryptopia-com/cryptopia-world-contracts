@@ -164,39 +164,39 @@ describe("Quests Contract", function () {
         tiles: [
             
             // Bottom row
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
             
             // Second row
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 7, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegetationData: 1, rockData: 1, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: true, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Gold, amount: "500".toWei() }] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 7, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 1, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: true, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Gold, amount: "500".toWei() }] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
             
             // Third row
-            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevation: 4, waterLevel: 5, vegetationData: 2, rockData: 0, wildlifeData: 2, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Mountains, elevation: 8, waterLevel: 5, vegetationData: 3, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [{ resource: Resource.Gold, amount: "500".toWei() }] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 2, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevationLevel: 4, waterLevel: 5, vegetationData: 2, rockData: 0, wildlifeData: 2, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Mountains, elevationLevel: 8, waterLevel: 5, vegetationData: 3, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [{ resource: Resource.Gold, amount: "500".toWei() }] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 2, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
 
             // Fourth row
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegetationData: 1, rockData: 1, wildlifeData: 1, riverFlags: 0, hasRoad: true, hasLake: false, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Copper, amount: "5000".toWei() }] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevation: 4, waterLevel: 5, vegetationData: 3, rockData: 0, wildlifeData: 3, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 1, wildlifeData: 1, riverFlags: 0, hasRoad: true, hasLake: false, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Copper, amount: "5000".toWei() }] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevationLevel: 4, waterLevel: 5, vegetationData: 3, rockData: 0, wildlifeData: 3, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
 
             // Top row
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 2, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 2, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 2, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 2, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
         ]
     };
     
@@ -228,15 +228,13 @@ describe("Quests Contract", function () {
         const QuestsFactory = await ethers.getContractFactory("CryptopiaQuests");
         
         // Deploy Inventories
-        const inventoriesProxy = await (
-            await upgrades.deployProxy(
-                InventoriesFactory, 
-                [
-                    treasury
-                ])
-        ).waitForDeployment();
+        const inventoriesProxy = await upgrades.deployProxy(
+            InventoriesFactory, 
+            [
+                treasury
+            ]);
 
-        inventoriesAddress = await inventoriesProxy.getAddress();
+        inventoriesAddress = await inventoriesProxy.address;
         inventoriesInstance = await ethers.getContractAt("CryptopiaInventories", inventoriesAddress);
 
         // Grant roles
@@ -244,35 +242,30 @@ describe("Quests Contract", function () {
 
 
         // Deploy Whitelist
-        const whitelistProxy = await (
-            await upgrades.deployProxy(
-                WhitelistFactory, 
+        const whitelistProxy = await upgrades.deployProxy(
+            WhitelistFactory, 
+            [
                 [
-                    [
-                        inventoriesAddress
-                    ]
-                ])
-        ).waitForDeployment();
+                    inventoriesAddress
+                ]
+            ]);
 
-        const whitelistAddress = await whitelistProxy.getAddress();
+        const whitelistAddress = await whitelistProxy.address;
 
 
         // Deploy Account register
-        const accountRegisterProxy = await (
-            await upgrades.deployProxy(AccountRegisterFactory)
-        ).waitForDeployment();
+        const accountRegisterProxy = await upgrades.deployProxy(
+            AccountRegisterFactory);
 
-        const accountRegisterAddress = await accountRegisterProxy.getAddress();
+        const accountRegisterAddress = await accountRegisterProxy.address;
         accountRegisterInstance = await ethers.getContractAt("CryptopiaAccountRegister", accountRegisterAddress);
 
 
         // Deploy Asset Register
-        const assetRegisterProxy = await (
-            await upgrades.deployProxy(
-                AssetRegisterFactory, [])
-            ).waitForDeployment();
+        const assetRegisterProxy = await upgrades.deployProxy(
+            AssetRegisterFactory, []);
 
-        const assetRegisterAddress = await assetRegisterProxy.getAddress();
+        const assetRegisterAddress = await assetRegisterProxy.address;
         const assetRegisterInstance = await ethers.getContractAt("CryptopiaAssetRegister", assetRegisterAddress);
 
         // Grant roles
@@ -280,30 +273,26 @@ describe("Quests Contract", function () {
 
 
         // Deploy Ships
-        const shipTokenProxy = await (
-            await upgrades.deployProxy(
-                ShipTokenFactory, 
-                [
-                    whitelistAddress,
-                    "", 
-                    ""
-                ])
-        ).waitForDeployment();
+        const shipTokenProxy = await upgrades.deployProxy(
+            ShipTokenFactory, 
+            [
+                whitelistAddress,
+                "", 
+                ""
+            ]);
 
-        const shipTokenAddress = await shipTokenProxy.getAddress();
+        const shipTokenAddress = await shipTokenProxy.address;
         shipTokenInstance = await ethers.getContractAt("CryptopiaShipToken", shipTokenAddress);
 
 
         // Deploy Crafting
-        const craftingProxy = await (
-            await upgrades.deployProxy(
-                CraftingFactory, 
-                [
-                    inventoriesAddress
-                ])
-        ).waitForDeployment();
+        const craftingProxy = await upgrades.deployProxy(
+            CraftingFactory, 
+            [
+                inventoriesAddress
+            ]);
 
-        const craftingAddress = await craftingProxy.getAddress();
+        const craftingAddress = await craftingProxy.address;
         const craftingInstance = await ethers.getContractAt("CryptopiaCrafting", craftingAddress);
 
         // Grant roles
@@ -312,7 +301,7 @@ describe("Quests Contract", function () {
         
 
         // Deploy Player Register
-        const playerRegisterProxy = await (await upgrades.deployProxy(
+        const playerRegisterProxy = await upgrades.deployProxy(
             PlayerRegisterFactory, 
             [
                 accountRegisterAddress, 
@@ -322,9 +311,9 @@ describe("Quests Contract", function () {
                 [
                     deployer
                 ]
-            ])).waitForDeployment();
+            ]);
 
-        const playerRegisterAddress = await playerRegisterProxy.getAddress();
+        const playerRegisterAddress = await playerRegisterProxy.address;
         playerRegisterInstance = await ethers.getContractAt("CryptopiaPlayerRegister", playerRegisterAddress);
 
         // Grant roles
@@ -335,33 +324,29 @@ describe("Quests Contract", function () {
 
 
         // Deploy title deed token
-        const titleDeedTokenProxy = await (
-            await upgrades.deployProxy(
-                TitleDeedTokenFactory, 
-                [
-                    whitelistAddress,
-                    "", 
-                    ""
-                ])
-        ).waitForDeployment();
+        const titleDeedTokenProxy = await upgrades.deployProxy(
+            TitleDeedTokenFactory, 
+            [
+                whitelistAddress,
+                "", 
+                ""
+            ]);
 
-        const titleDeedTokenAddress = await titleDeedTokenProxy.getAddress();
+        const titleDeedTokenAddress = await titleDeedTokenProxy.address;
         titleDeedTokenInstance = await ethers.getContractAt("CryptopiaTitleDeedToken", titleDeedTokenAddress);
 
 
         // Deploy Maps
-        const mapsProxy = await (
-            await upgrades.deployProxy(
-                MapsFactory, 
-                [
-                    playerRegisterAddress,
-                    assetRegisterAddress,
-                    titleDeedTokenAddress,
-                    shipTokenAddress
-                ])
-        ).waitForDeployment();
+        const mapsProxy = await upgrades.deployProxy(
+            MapsFactory, 
+            [
+                playerRegisterAddress,
+                assetRegisterAddress,
+                titleDeedTokenAddress,
+                shipTokenAddress
+            ]);
 
-        mapsAddress = await mapsProxy.getAddress();
+        mapsAddress = await mapsProxy.address;
         mapsInstance = await ethers.getContractAt("CryptopiaMaps", mapsAddress);
 
         // Grant roles
@@ -369,7 +354,7 @@ describe("Quests Contract", function () {
 
 
         // Deploy Tools
-        const toolTokenProxy = await (await upgrades.deployProxy(
+        const toolTokenProxy = await upgrades.deployProxy(
             ToolTokenFactory, 
             [
                 whitelistAddress, 
@@ -377,9 +362,9 @@ describe("Quests Contract", function () {
                 "",
                 playerRegisterAddress,
                 inventoriesAddress
-            ])).waitForDeployment();
+            ]);
 
-        toolTokenAddress = await toolTokenProxy.getAddress();
+        toolTokenAddress = await toolTokenProxy.address;
         toolTokenInstance = await ethers.getContractAt("CryptopiaToolToken", toolTokenAddress);
 
         // Grant roles
@@ -387,18 +372,16 @@ describe("Quests Contract", function () {
 
 
         // Deploy Quest Token
-        const questTokenProxy = await (
-            await upgrades.deployProxy(
-                QuestTokenFactory, 
-                [
-                    whitelistAddress,
-                    "", 
-                    "",
-                    inventoriesAddress
-                ])
-        ).waitForDeployment();
+        const questTokenProxy = await upgrades.deployProxy(
+            QuestTokenFactory, 
+            [
+                whitelistAddress,
+                "", 
+                "",
+                inventoriesAddress
+            ]);
 
-        questTokenAddress = await questTokenProxy.getAddress();
+        questTokenAddress = await questTokenProxy.address;
         questTokenInstance = await ethers.getContractAt("CryptopiaQuestToken", questTokenAddress);
 
         // Grant roles
@@ -406,17 +389,15 @@ describe("Quests Contract", function () {
 
 
         // Deploy Quests
-        const questsProxy = await (
-            await upgrades.deployProxy(
-                QuestsFactory, 
-                [
-                    playerRegisterAddress,
-                    inventoriesAddress,
-                    mapsAddress
-                ])
-        ).waitForDeployment();
+        const questsProxy = await upgrades.deployProxy(
+            QuestsFactory, 
+            [
+                playerRegisterAddress,
+                inventoriesAddress,
+                mapsAddress
+            ]);
 
-        questsAddress = await questsProxy.getAddress();
+        questsAddress = await questsProxy.address;
         questsInstance = await ethers.getContractAt("CryptopiaQuests", questsAddress);
 
         // Grant roles
@@ -428,17 +409,15 @@ describe("Quests Contract", function () {
         // Deploy assets
         for (let asset of assets)
         {
-            const assetTokenProxy = await (
-                await upgrades.deployProxy(
-                    AssetTokenFactory, 
-                    [
-                        asset.name, 
-                        asset.symbol,
-                        inventoriesAddress
-                    ])
-                ).waitForDeployment();
+            const assetTokenProxy = await upgrades.deployProxy(
+                AssetTokenFactory, 
+                [
+                    asset.name, 
+                    asset.symbol,
+                    inventoriesAddress
+                ]);
 
-            asset.contractAddress = await assetTokenProxy.getAddress();
+            asset.contractAddress = await assetTokenProxy.address;
             asset.contractInstance = await ethers
                 .getContractAt("CryptopiaAssetToken", asset.contractAddress);
 
@@ -456,7 +435,7 @@ describe("Quests Contract", function () {
 
         // Setup Tools
         await inventoriesInstance.setNonFungibleAsset(
-            await toolTokenProxy.getAddress(), true);
+            await toolTokenProxy.address, true);
 
         // Add tools
         await toolTokenInstance.setTools(
@@ -494,14 +473,14 @@ describe("Quests Contract", function () {
                 safety: tile.safety,
                 biome: tile.biome,
                 terrain: tile.terrain,
-                elevation: tile.elevation,
+                elevationLevel: tile.elevationLevel,
                 waterLevel: tile.waterLevel,
-                vegetationData: tile.vegetationData.toString().toBytes(8),
-                rockData: tile.rockData.toString().toBytes(4),
-                wildlifeData: tile.wildlifeData.toString().toBytes(4),
-                riverFlags: tile.riverFlags,
                 hasRoad: tile.hasRoad,
                 hasLake: tile.hasLake,
+                riverFlags: tile.riverFlags,
+                rockData: tile.rockData.toString().toBytes(4),
+                vegetationData: tile.vegetationData.toString().toBytes(8),
+                wildlifeData: tile.wildlifeData.toString().toBytes(4),
                 resources: tile.resources.map(resource => ({    
                     resource: resource.resource,
                     initialAmount: resource.amount

@@ -225,6 +225,12 @@ async function main() {
         ]);
 
     const mapsAddress = await mapsProxy.address;
+    const [mapsExtensionsProxy, mapsExtensionsDeploymentStatus] = await ensureDeployed(
+        "CryptopiaMapsExtensions", 
+        [
+            mapsAddress, 
+            titleDeedTokenAddress, 
+        ]);
 
     // Grant roles
     await grantSystemRole(

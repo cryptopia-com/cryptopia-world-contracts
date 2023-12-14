@@ -91,39 +91,39 @@ describe("Maps Contract", function () {
         tiles: [
             
             // Bottom row
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
             
             // Second row
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 7, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegetationData: 1, rockData: 1, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: true, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Gold, amount: "500".toWei() }] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 7, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 1, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: true, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Gold, amount: "500".toWei() }] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
             
             // Third row
-            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevation: 4, waterLevel: 5, vegetationData: 2, rockData: 0, wildlifeData: 2, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Mountains, elevation: 8, waterLevel: 5, vegetationData: 3, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [{ resource: Resource.Gold, amount: "500".toWei() }] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 2, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevationLevel: 4, waterLevel: 5, vegetationData: 2, rockData: 0, wildlifeData: 2, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Mountains, elevationLevel: 8, waterLevel: 5, vegetationData: 3, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [{ resource: Resource.Gold, amount: "500".toWei() }] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 2, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
 
             // Fourth row
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegetationData: 1, rockData: 1, wildlifeData: 1, riverFlags: 0, hasRoad: true, hasLake: false, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Copper, amount: "5000".toWei() }] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevation: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevation: 4, waterLevel: 5, vegetationData: 3, rockData: 0, wildlifeData: 3, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 1, wildlifeData: 1, riverFlags: 0, hasRoad: true, hasLake: false, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Copper, amount: "5000".toWei() }] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevationLevel: 4, waterLevel: 5, vegetationData: 3, rockData: 0, wildlifeData: 3, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
 
             // Top row
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 2, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevation: 2, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 2, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 2, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
         ]
     };
     
@@ -153,15 +153,13 @@ describe("Maps Contract", function () {
         const CraftingFactory = await ethers.getContractFactory("CryptopiaCrafting");
         
         // Deploy Inventories
-        const inventoriesProxy = await (
-            await upgrades.deployProxy(
-                InventoriesFactory, 
-                [
-                    treasury
-                ])
-        ).waitForDeployment();
+        const inventoriesProxy = await upgrades.deployProxy(
+            InventoriesFactory, 
+            [
+                treasury
+            ]);
 
-        const inventoriesAddress = await inventoriesProxy.getAddress();
+        const inventoriesAddress = await inventoriesProxy.address;
         const inventoriesInstance = await ethers.getContractAt("CryptopiaInventories", inventoriesAddress);
 
         // Grant roles
@@ -169,35 +167,29 @@ describe("Maps Contract", function () {
 
 
         // Deploy Whitelist
-        const whitelistProxy = await (
-            await upgrades.deployProxy(
-                WhitelistFactory, 
+        const whitelistProxy = await upgrades.deployProxy(
+            WhitelistFactory, 
+            [
                 [
-                    [
-                        inventoriesAddress
-                    ]
-                ])
-        ).waitForDeployment();
+                    inventoriesAddress
+                ]
+            ]);
 
-        const whitelistAddress = await whitelistProxy.getAddress();
+        const whitelistAddress = await whitelistProxy.address;
 
 
         // Deploy Account register
-        const accountRegisterProxy = await (
-            await upgrades.deployProxy(AccountRegisterFactory)
-        ).waitForDeployment();
+        const accountRegisterProxy = await upgrades.deployProxy(AccountRegisterFactory);
 
-        const accountRegisterAddress = await accountRegisterProxy.getAddress();
+        const accountRegisterAddress = await accountRegisterProxy.address;
         accountRegisterInstance = await ethers.getContractAt("CryptopiaAccountRegister", accountRegisterAddress);
 
 
         // Deploy Asset Register
-        const assetRegisterProxy = await (
-            await upgrades.deployProxy(
-                AssetRegisterFactory, [])
-            ).waitForDeployment();
+        const assetRegisterProxy = await upgrades.deployProxy(
+            AssetRegisterFactory, []);
 
-        const assetRegisterAddress = await assetRegisterProxy.getAddress();
+        const assetRegisterAddress = await assetRegisterProxy.address;
         const assetRegisterInstance = await ethers.getContractAt("CryptopiaAssetRegister", assetRegisterAddress);
 
         // Grant roles
@@ -205,30 +197,26 @@ describe("Maps Contract", function () {
 
 
         // Deploy Ships
-        const shipTokenProxy = await (
-            await upgrades.deployProxy(
-                ShipTokenFactory, 
-                [
-                    whitelistAddress,
-                    "", 
-                    ""
-                ])
-        ).waitForDeployment();
+        const shipTokenProxy = await upgrades.deployProxy(
+            ShipTokenFactory, 
+            [
+                whitelistAddress,
+                "", 
+                ""
+            ]);
 
-        const shipTokenAddress = await shipTokenProxy.getAddress();
+        const shipTokenAddress = await shipTokenProxy.address;
         shipTokenInstance = await ethers.getContractAt("CryptopiaShipToken", shipTokenAddress);
 
 
         // Deploy Crafting
-        const craftingProxy = await (
-            await upgrades.deployProxy(
-                CraftingFactory, 
-                [
-                    inventoriesAddress
-                ])
-        ).waitForDeployment();
+        const craftingProxy = await upgrades.deployProxy(
+            CraftingFactory, 
+            [
+                inventoriesAddress
+            ]);
 
-        const craftingAddress = await craftingProxy.getAddress();
+        const craftingAddress = await craftingProxy.address;
         const craftingInstance = await ethers.getContractAt("CryptopiaCrafting", craftingAddress);
 
         // Grant roles
@@ -237,7 +225,7 @@ describe("Maps Contract", function () {
 
 
         // Deploy Player Register
-        const playerRegisterProxy = await (await upgrades.deployProxy(
+        const playerRegisterProxy = await upgrades.deployProxy(
             PlayerRegisterFactory, 
             [
                 accountRegisterAddress, 
@@ -247,9 +235,9 @@ describe("Maps Contract", function () {
                 [
                     deployer
                 ]
-            ])).waitForDeployment();
+            ]);
 
-        const playerRegisterAddress = await playerRegisterProxy.getAddress();
+        const playerRegisterAddress = await playerRegisterProxy.address;
         playerRegisterInstance = await ethers.getContractAt("CryptopiaPlayerRegister", playerRegisterAddress);
 
         // Grant roles
@@ -259,33 +247,29 @@ describe("Maps Contract", function () {
 
 
         // Deploy title deed token
-        const titleDeedTokenProxy = await (
-            await upgrades.deployProxy(
-                TitleDeedTokenFactory, 
-                [
-                    whitelistAddress,
-                    "", 
-                    ""
-                ])
-        ).waitForDeployment();
+        const titleDeedTokenProxy = await upgrades.deployProxy(
+            TitleDeedTokenFactory, 
+            [
+                whitelistAddress,
+                "", 
+                ""
+            ]);
 
-        const titleDeedTokenAddress = await titleDeedTokenProxy.getAddress();
+        const titleDeedTokenAddress = await titleDeedTokenProxy.address;
         titleDeedTokenInstance = await ethers.getContractAt("CryptopiaTitleDeedToken", titleDeedTokenAddress);
 
 
         // Deploy Maps
-        const mapsProxy = await (
-            await upgrades.deployProxy(
-                MapsFactory, 
-                [
-                    playerRegisterAddress,
-                    assetRegisterAddress,
-                    titleDeedTokenAddress,
-                    shipTokenAddress
-                ])
-        ).waitForDeployment();
+        const mapsProxy = await upgrades.deployProxy(
+            MapsFactory, 
+            [
+                playerRegisterAddress,
+                assetRegisterAddress,
+                titleDeedTokenAddress,
+                shipTokenAddress
+            ]);
 
-        const mapsAddress = await mapsProxy.getAddress();
+        const mapsAddress = await mapsProxy.address;
         mapInstance = await ethers.getContractAt("CryptopiaMaps", mapsAddress);
 
         // Grant roles
@@ -293,33 +277,29 @@ describe("Maps Contract", function () {
 
 
         // Deploy Maps Extensions
-        const mapsExtensionsProxy = await (
-            await upgrades.deployProxy(
-                MapsExtensionsFactory, 
-                [
-                    mapsAddress,
-                    titleDeedTokenAddress
-                ])
-        ).waitForDeployment();
+        const mapsExtensionsProxy = await upgrades.deployProxy(
+            MapsExtensionsFactory, 
+            [
+                mapsAddress,
+                titleDeedTokenAddress
+            ]);
 
-        const mapsExtensionsAddress = await mapsExtensionsProxy.getAddress();
+        const mapsExtensionsAddress = await mapsExtensionsProxy.address;
         mapsExtensionsInstance = await ethers.getContractAt("CryptopiaMapsExtensions", mapsExtensionsAddress);
 
 
         // Deploy assets
         for (let asset of assets)
         {
-            const assetTokenProxy = await (
-                await upgrades.deployProxy(
-                    AssetTokenFactory, 
-                    [
-                        asset.name, 
-                        asset.symbol,
-                        inventoriesAddress
-                    ])
-                ).waitForDeployment();
+            const assetTokenProxy = await upgrades.deployProxy(
+                AssetTokenFactory, 
+                [
+                    asset.name, 
+                    asset.symbol,
+                    inventoriesAddress
+                ]);
 
-            asset.contractAddress = await assetTokenProxy.getAddress();
+            asset.contractAddress = await assetTokenProxy.address;
             asset.contractInstance = await ethers
                 .getContractAt("CryptopiaAssetToken", asset.contractAddress);
 
@@ -434,14 +414,14 @@ describe("Maps Contract", function () {
                     safety: tile.safety,
                     biome: tile.biome,
                     terrain: tile.terrain,
-                    elevation: tile.elevation,
+                    elevationLevel: tile.elevationLevel,
                     waterLevel: tile.waterLevel,
-                    vegetationData: tile.vegetationData.toString().toBytes(8),
-                    rockData: tile.rockData.toString().toBytes(4),
-                    wildlifeData: tile.wildlifeData.toString().toBytes(4),
-                    riverFlags: tile.riverFlags,
                     hasRoad: tile.hasRoad,
                     hasLake: tile.hasLake,
+                    riverFlags: tile.riverFlags,
+                    rockData: tile.rockData.toString().toBytes(4),
+                    vegetationData: tile.vegetationData.toString().toBytes(8),
+                    wildlifeData: tile.wildlifeData.toString().toBytes(4),
                     resources: tile.resources.map(resource => ({    
                         resource: resource.resource,
                         initialAmount: resource.amount
@@ -490,14 +470,14 @@ describe("Maps Contract", function () {
             const signer = await ethers.provider.getSigner(other);
             const operation = unregisteredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+                .submitTransaction(await mapInstance.address, 0, calldata);
 
             // Assert
             if (REVERT_MODE)
             {
                 await expect(operation).to.be
                     .revertedWithCustomError(mapInstance, "PlayerNotRegistered")
-                    .withArgs(await unregisteredAccountInstance.getAddress());
+                    .withArgs(await unregisteredAccountInstance.address);
             } else 
             {
                 await expect(operation).to
@@ -517,13 +497,13 @@ describe("Maps Contract", function () {
             const signer = await ethers.provider.getSigner(account1);
             const receipt = await registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+                .submitTransaction(await mapInstance.address, 0, calldata);
 
             // Assert
             const expectedArrivalTime = await time.latest();
             await expect(receipt).to
                 .emit(mapInstance, "PlayerEnterMap")
-                .withArgs(await registeredAccountInstance.getAddress(), map.name, expectedTileIndex, expectedArrivalTime);
+                .withArgs(await registeredAccountInstance.address, map.name, expectedTileIndex, expectedArrivalTime);
         });
 
         it ("Should not allow a player to enter a map if they are already in a map", async function () {
@@ -536,14 +516,14 @@ describe("Maps Contract", function () {
             const signer = await ethers.provider.getSigner(account1);
             const operation = registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+                .submitTransaction(await mapInstance.address, 0, calldata);
 
             // Assert
             if (REVERT_MODE)
             {
                 await expect(operation).to.be
                     .revertedWithCustomError(mapInstance, "PlayerAlreadyEnteredMap")
-                    .withArgs(await registeredAccountInstance.getAddress());
+                    .withArgs(await registeredAccountInstance.address);
             } else 
             {
                 await expect(operation).to
@@ -568,7 +548,7 @@ describe("Maps Contract", function () {
             const signer = await ethers.provider.getSigner(account1);
             const operation = registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+                .submitTransaction(await mapInstance.address, 0, calldata);
 
             // Assert
             if (REVERT_MODE)
@@ -593,7 +573,7 @@ describe("Maps Contract", function () {
             const signer = await ethers.provider.getSigner(account1);
             const operation = registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+                .submitTransaction(await mapInstance.address, 0, calldata);
 
             // Assert
             if (REVERT_MODE)
@@ -618,7 +598,7 @@ describe("Maps Contract", function () {
             const signer = await ethers.provider.getSigner(account1);
             const operation = registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+                .submitTransaction(await mapInstance.address, 0, calldata);
 
             // Assert
             if (REVERT_MODE)
@@ -643,7 +623,7 @@ describe("Maps Contract", function () {
             const signer = await ethers.provider.getSigner(account1);
             const operation = registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+                .submitTransaction(await mapInstance.address, 0, calldata);
 
             // Assert
             if (REVERT_MODE)
@@ -668,7 +648,7 @@ describe("Maps Contract", function () {
             const signer = await ethers.provider.getSigner(account1);
             const operation = registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+                .submitTransaction(await mapInstance.address, 0, calldata);
 
             // Assert
             if (REVERT_MODE)
@@ -693,7 +673,7 @@ describe("Maps Contract", function () {
             const signer = await ethers.provider.getSigner(account1);
             const operation = registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+                .submitTransaction(await mapInstance.address, 0, calldata);
 
             // Assert
             if (REVERT_MODE)
@@ -718,14 +698,14 @@ describe("Maps Contract", function () {
             const signer = await ethers.provider.getSigner(other);
             const operation = unregisteredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+                .submitTransaction(await mapInstance.address, 0, calldata);
 
             // Assert
             if (REVERT_MODE)
             {
                 await expect(operation).to.be
                     .revertedWithCustomError(mapInstance, "PlayerNotEnteredMap")
-                    .withArgs(await unregisteredAccountInstance.getAddress());
+                    .withArgs(await unregisteredAccountInstance.address);
             } else 
             {
                 await expect(operation).to
@@ -751,7 +731,7 @@ describe("Maps Contract", function () {
             const signer = await ethers.provider.getSigner(account1);
             const receipt = await registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+                .submitTransaction(await mapInstance.address, 0, calldata);
 
             // Assert
             const expectedArrivalTime = await time.latest() + (expectedTurns * MapConfig.MOVEMENT_TURN_DURATION);
@@ -759,7 +739,7 @@ describe("Maps Contract", function () {
 
             await expect(receipt).to
                 .emit(mapInstance, "PlayerMove")
-                .withArgs(await registeredAccountInstance.getAddress(), path[0], path[path.length - 1], anyValue, expectedArrivalTime);
+                .withArgs(await registeredAccountInstance.address, path[0], path[path.length - 1], anyValue, expectedArrivalTime);
         });  
 
         it ("Should emit valid route data when traveling", async function () {
@@ -791,7 +771,7 @@ describe("Maps Contract", function () {
             const signer = await ethers.provider.getSigner(account1);
             const transaction = await registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+                .submitTransaction(await mapInstance.address, 0, calldata);
             const receipt = await transaction.wait();
 
             const player = getParamFromEvent(mapInstance, receipt, "player", "PlayerMove");
@@ -804,7 +784,7 @@ describe("Maps Contract", function () {
             await time.increaseTo(arrival);
 
             // Assert
-            expect(player).to.equal(await registeredAccountInstance.getAddress());
+            expect(player).to.equal(await registeredAccountInstance.address);
             expect(origin).to.equal(path[0]);
             expect(destination).to.equal(path[path.length - 1]);
             expect(arrival).to.equal(expectedArrivalTime);
@@ -860,7 +840,7 @@ describe("Maps Contract", function () {
             const signer = await ethers.provider.getSigner(account1);
             const transaction = await registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+                .submitTransaction(await mapInstance.address, 0, calldata);
             const receipt = await transaction.wait();
 
             player = getParamFromEvent(mapInstance, receipt, "player", "PlayerMove");
@@ -1421,7 +1401,7 @@ describe("Maps Contract", function () {
         it ("Should advance time to halfway through the route", async function () {
 
             // Setup
-            const timeToHalfway = arrival - BigInt(turns * MapConfig.MOVEMENT_TURN_DURATION / 2);
+            const timeToHalfway = BigInt(arrival) - BigInt(turns * MapConfig.MOVEMENT_TURN_DURATION / 2);
 
             // Act
             await time.increaseTo(timeToHalfway);
@@ -2186,7 +2166,7 @@ describe("Maps Contract", function () {
         it ("Should advance time to after the end of the route", async function () {
 
             // Setup
-            const timeAfterArrival = arrival + BigInt(MapConfig.MOVEMENT_TURN_DURATION);
+            const timeAfterArrival = BigInt(arrival) + BigInt(MapConfig.MOVEMENT_TURN_DURATION);
 
             // Act
             await time.increaseTo(timeAfterArrival);
@@ -2640,11 +2620,11 @@ describe("Maps Contract", function () {
             const signer = await ethers.provider.getSigner(account1);
             await accountInstance1
                 .connect(signer)
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+                .submitTransaction(await mapInstance.address, 0, calldata);
 
             // Assert
             const data = await mapsExtensionsInstance.getTileDataDynamic(tileIndex, 1);
-            expect(data[0].lastEnteredPlayers[0]).to.equal(await accountInstance1.getAddress());
+            expect(data[0].lastEnteredPlayers[0]).to.equal(await accountInstance1.address);
             expect(data[0].lastEnteredPlayers[1]).to.equal(ZERO_ADDRESS);
             expect(data[0].lastEnteredPlayers[2]).to.equal(ZERO_ADDRESS);
             expect(data[0].lastEnteredPlayers[3]).to.equal(ZERO_ADDRESS);
@@ -2662,12 +2642,12 @@ describe("Maps Contract", function () {
             const signer = await ethers.provider.getSigner(account2);
             await accountInstance2
                 .connect(signer)
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+                .submitTransaction(await mapInstance.address, 0, calldata);
 
             // Assert
             const data = await mapsExtensionsInstance.getTileDataDynamic(tileIndex, 1);
-            expect(data[0].lastEnteredPlayers[0]).to.equal(await accountInstance2.getAddress());
-            expect(data[0].lastEnteredPlayers[1]).to.equal(await accountInstance1.getAddress());
+            expect(data[0].lastEnteredPlayers[0]).to.equal(await accountInstance2.address);
+            expect(data[0].lastEnteredPlayers[1]).to.equal(await accountInstance1.address);
             expect(data[0].lastEnteredPlayers[2]).to.equal(ZERO_ADDRESS);
             expect(data[0].lastEnteredPlayers[3]).to.equal(ZERO_ADDRESS);
             expect(data[0].lastEnteredPlayers[4]).to.equal(ZERO_ADDRESS);
@@ -2684,25 +2664,25 @@ describe("Maps Contract", function () {
             const signer3 = await ethers.provider.getSigner(account3);
             await accountInstance3
                 .connect(signer3)
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+                .submitTransaction(await mapInstance.address, 0, calldata);
 
             const signer4 = await ethers.provider.getSigner(account4);
             await accountInstance4
                 .connect(signer4)
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+                .submitTransaction(await mapInstance.address, 0, calldata);
 
             const signer5 = await ethers.provider.getSigner(account5);
             await accountInstance5
                 .connect(signer5)
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+                .submitTransaction(await mapInstance.address, 0, calldata);
 
             // Assert
             const data = await mapsExtensionsInstance.getTileDataDynamic(tileIndex, 1);
-            expect(data[0].lastEnteredPlayers[0]).to.equal(await accountInstance5.getAddress());
-            expect(data[0].lastEnteredPlayers[1]).to.equal(await accountInstance4.getAddress());
-            expect(data[0].lastEnteredPlayers[2]).to.equal(await accountInstance3.getAddress());
-            expect(data[0].lastEnteredPlayers[3]).to.equal(await accountInstance2.getAddress());
-            expect(data[0].lastEnteredPlayers[4]).to.equal(await accountInstance1.getAddress());
+            expect(data[0].lastEnteredPlayers[0]).to.equal(await accountInstance5.address);
+            expect(data[0].lastEnteredPlayers[1]).to.equal(await accountInstance4.address);
+            expect(data[0].lastEnteredPlayers[2]).to.equal(await accountInstance3.address);
+            expect(data[0].lastEnteredPlayers[3]).to.equal(await accountInstance2.address);
+            expect(data[0].lastEnteredPlayers[4]).to.equal(await accountInstance1.address);
         });
 
         it ("Should remove a player from the chain head of the chain", async function () {
@@ -2718,14 +2698,14 @@ describe("Maps Contract", function () {
             const signer = await ethers.provider.getSigner(account5);
             await accountInstance5
                 .connect(signer)
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+                .submitTransaction(await mapInstance.address, 0, calldata);
 
             // Assert
             const data = await mapsExtensionsInstance.getTileDataDynamic(tileIndex, 1);
-            expect(data[0].lastEnteredPlayers[0]).to.equal(await accountInstance4.getAddress());
-            expect(data[0].lastEnteredPlayers[1]).to.equal(await accountInstance3.getAddress());
-            expect(data[0].lastEnteredPlayers[2]).to.equal(await accountInstance2.getAddress());
-            expect(data[0].lastEnteredPlayers[3]).to.equal(await accountInstance1.getAddress());
+            expect(data[0].lastEnteredPlayers[0]).to.equal(await accountInstance4.address);
+            expect(data[0].lastEnteredPlayers[1]).to.equal(await accountInstance3.address);
+            expect(data[0].lastEnteredPlayers[2]).to.equal(await accountInstance2.address);
+            expect(data[0].lastEnteredPlayers[3]).to.equal(await accountInstance1.address);
             expect(data[0].lastEnteredPlayers[4]).to.equal(ZERO_ADDRESS);
         });
 
@@ -2742,13 +2722,13 @@ describe("Maps Contract", function () {
             const signer = await ethers.provider.getSigner(account3);
             await accountInstance3
                 .connect(signer)
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+                .submitTransaction(await mapInstance.address, 0, calldata);
 
             // Assert
             const data = await mapsExtensionsInstance.getTileDataDynamic(tileIndex, 1);
-            expect(data[0].lastEnteredPlayers[0]).to.equal(await accountInstance4.getAddress());
-            expect(data[0].lastEnteredPlayers[1]).to.equal(await accountInstance2.getAddress());
-            expect(data[0].lastEnteredPlayers[2]).to.equal(await accountInstance1.getAddress());
+            expect(data[0].lastEnteredPlayers[0]).to.equal(await accountInstance4.address);
+            expect(data[0].lastEnteredPlayers[1]).to.equal(await accountInstance2.address);
+            expect(data[0].lastEnteredPlayers[2]).to.equal(await accountInstance1.address);
             expect(data[0].lastEnteredPlayers[3]).to.equal(ZERO_ADDRESS);
             expect(data[0].lastEnteredPlayers[4]).to.equal(ZERO_ADDRESS);
         });
@@ -2766,12 +2746,12 @@ describe("Maps Contract", function () {
             const signer = await ethers.provider.getSigner(account1);
             await accountInstance1
                 .connect(signer)
-                .submitTransaction(await mapInstance.getAddress(), 0, calldata);
+                .submitTransaction(await mapInstance.address, 0, calldata);
 
             // Assert
             const data = await mapsExtensionsInstance.getTileDataDynamic(tileIndex, 1);
-            expect(data[0].lastEnteredPlayers[0]).to.equal(await accountInstance4.getAddress());
-            expect(data[0].lastEnteredPlayers[1]).to.equal(await accountInstance2.getAddress());
+            expect(data[0].lastEnteredPlayers[0]).to.equal(await accountInstance4.address);
+            expect(data[0].lastEnteredPlayers[1]).to.equal(await accountInstance2.address);
             expect(data[0].lastEnteredPlayers[2]).to.equal(ZERO_ADDRESS);
             expect(data[0].lastEnteredPlayers[3]).to.equal(ZERO_ADDRESS);
             expect(data[0].lastEnteredPlayers[4]).to.equal(ZERO_ADDRESS);

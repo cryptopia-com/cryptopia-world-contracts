@@ -26,7 +26,7 @@ export interface Tile {
     safety: BigNumberish,
     biome: Biome;
     terrain: Terrain;
-    elevation: BigNumberish;
+    elevationLevel: BigNumberish;
     waterLevel: BigNumberish;
     vegetationData: BigNumberish;
     rockData: BigNumberish;

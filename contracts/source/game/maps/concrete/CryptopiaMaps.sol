@@ -22,6 +22,63 @@ import "../../../tokens/ERC721/ships/IShips.sol";
 contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlayerFreezeControl {
 
     /// @dev Tile data
+    struct TileInput
+    {
+        /// @dev True if the tile is created
+        bool initialized;
+
+        /// @dev Index of the map that the tile belongs to
+        uint16 mapIndex;
+
+        /// @dev Landmass or island index (zero signals water tile)
+        /// @notice Landmasses are global and can span multiple maps
+        uint16 group;
+
+        /// @dev Ranges from 0 to 100 and indicates the safety level of the tile 
+        /// @notice 100 - safety for pirates
+        uint8 safety; 
+
+        /// @dev The type of biome 
+        /// {None, Plains, Grassland, Forest, RainForest, Desert, Tundra, Swamp, Reef}
+        Biome biome;
+
+        /// @dev The type of terrain 
+        /// {Flat, Hills, Mountains, Water, Seastead}
+        Terrain terrain;
+
+        /// @dev The elevation of the terrain (seafloor in case of sea tile)
+        uint8 elevationLevel;
+
+        /// @dev The water level of the tile 
+        /// @notice Water level minus elevation equals the depth of the water
+        uint8 waterLevel;
+
+        /// @dev Flags that indicate the presence of a river on the tile's hex edges
+        /// @notice 0 = NW, 
+        uint8 riverFlags; 
+
+        /// @dev Indicates the presence of a road on the tile
+        /// @notice Roads remove the movement penalty for hills
+        bool hasRoad;
+
+        /// @dev Indicates the presence of a lake on the tile
+        /// @notice Lakes impose a movement penalty
+        bool hasLake;
+
+        /// @dev The rocks that the tile contains
+        bytes4 rockData;
+
+        /// @dev The vegetation that the tile contains
+        bytes8 vegetationData;
+
+        /// @dev The wildlife that the tile contains
+        bytes4 wildlifeData;
+
+        /// @dev Natural resources
+        TileResourceStatic[] resources;
+    }
+
+    /// @dev Static tile data
     struct TileStaticData
     {
         /// @dev True if the tile is created
@@ -47,44 +104,44 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         Terrain terrain;
 
         /// @dev The elevation of the terrain (seafloor in case of sea tile)
-        uint8 elevation;
+        uint8 elevationLevel;
 
         /// @dev The water level of the tile 
         /// @notice Water level minus elevation equals the depth of the water
         uint8 waterLevel;
 
-        /// @dev The vegetation that the tile contains
-        bytes8 vegetationData;
-
-        /// @dev The rocks that the tile contains
-        bytes4 rockData;
-
-        /// @dev The wildlife that the tile contains
-        bytes4 wildlifeData;
+        /// @dev Indicates the presence of a lake on the tile
+        /// @notice Lakes impose a movement penalty
+        bool hasLake;
 
         /// @dev Flags that indicate the presence of a river on the tile's hex edges
         /// @notice 0 = NW, 
         uint8 riverFlags; 
-
-        /// @dev Indicates the presence of a road on the tile
-        /// @notice Roads remove the movement penalty for hills
-        bool hasRoad;
-
-        /// @dev Indicates the presence of a lake on the tile
-        /// @notice Lakes impose a movement penalty
-        bool hasLake;
 
         /// @dev Resource => initial amount
         mapping (Resource => uint) resources;
         Resource[] resourcesIndex;
     }
 
-    /// @dev Tile meta data
+    /// @dev Dynamic tile data
     struct TileDynamicData
     {
+        /// @dev Indicates the presence of a road on the tile
+        /// @notice Roads remove the movement penalty 
+        bool hasRoad;
+
+        /// @dev The rocks that the tile contains
+        bytes4 rockData;
+
+        /// @dev The vegetation that the tile contains
+        bytes8 vegetationData;
+
+        /// @dev The wildlife that the tile contains
+        bytes4 wildlifeData;
+
         /// @dev Player that most recently entered the tile 
         address lastEnteredPlayer;
-
+        
         /// @dev Resource => current amount
         mapping (Resource => uint) resources;
     }
@@ -107,11 +164,23 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     uint16 constant private PLAYER_START_MOVEMENT = 25;
     uint64 constant private PLAYER_IDLE_TIME = 600; // 10 minutes
     uint64 constant private MOVEMENT_TURN_DURATION = 60; // 1 min (TODO: scale with ship speed and player speed)
-    uint16 constant private MOVEMENT_COST_LAND_FLAT = 11;
-    uint16 constant private MOVEMENT_COST_LAND_SLOPE = 19;
+    uint16 constant private MOVEMENT_COST_MAX = PLAYER_START_MOVEMENT;
+    uint16 constant private MOVEMENT_COST_LAND_FLAT = 7; 
+    uint16 constant private MOVEMENT_COST_LAND_SLOPE = 17;
     uint16 constant private MOVEMENT_COST_WATER = 5; // Lower by ship speed
-    uint16 constant private MOVEMENT_COST_WATER_EMBARK_DISEMBARK = 25; 
+    uint16 constant private MOVEMENT_COST_WATER_EMBARK_DISEMBARK = MOVEMENT_COST_MAX; 
+    uint16 constant private MOVEMENT_PENALTY_HILLS = 10;
+    uint16 constant private MOVEMENT_PENALTY_LAKE = 10;
+    uint16 constant private MOVEMENT_PENALTY_RIVER = 5;
 
+     // Rock data packing
+    uint8 constant private ROCK_PACKING_SECTION_BIT_LENGTH = 4;
+    uint8 constant private ROCK_PACKING_LEVEL_MASK = 0x3;
+
+    // Vegetation data packing
+    uint8 constant private VEGETATION_PACKING_SECTION_BIT_LENGTH = 6;
+    uint8 constant private VEGETATION_PACKING_LEVEL_MASK = 0x3;
+    
     // Route packing
     uint8 constant ROUTE_PACKING_TIME_PER_TURN_OFFSET = 0; 
     uint8 constant ROUTE_PACKING_TOTAL_TURNS_OFFSET = 8;  
@@ -140,6 +209,8 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
   
     /// @dev a | (b << 16) => movementCost
     mapping (uint32 => uint) public pathCache;
+
+    mapping (uint16 => uint16) public movementPenaltyCache;
 
 
     /**
@@ -337,13 +408,13 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     /// @param data Tile datas
     function setTiles(
         uint16[] memory indices, 
-        TileStatic[] memory data)
+        TileInput[] memory data)
         public virtual
         onlyRole(DEFAULT_ADMIN_ROLE) 
     {
         for (uint i = 0; i < indices.length; i++)
         {
-            _setTile(indices[i], data[i]);
+            _setTile(indices[i], data[i]); 
         }
     }
 
@@ -386,13 +457,9 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         tileData.safety = data.safety;
         tileData.biome = data.biome;
         tileData.terrain = data.terrain;
-        tileData.elevation = data.elevation;
+        tileData.elevationLevel = data.elevationLevel;
         tileData.waterLevel = data.waterLevel;
-        tileData.vegetationData = data.vegetationData;
-        tileData.rockData = data.rockData;
-        tileData.wildlifeData = data.wildlifeData;
         tileData.riverFlags = data.riverFlags;
-        tileData.hasRoad = data.hasRoad;
         tileData.hasLake = data.hasLake;
         tileData.resources = new TileResourceStatic[](data.resourcesIndex.length);
         for (uint i = 0; i < data.resourcesIndex.length; i++)
@@ -424,6 +491,11 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         {
             tileData.owner = address(0);
         }
+
+        tileData.vegetationData = dynamicData.vegetationData;
+        tileData.rockData = dynamicData.rockData;
+        tileData.wildlifeData = dynamicData.wildlifeData;
+        tileData.hasRoad = dynamicData.hasRoad;
 
         // Add last entered players
         tileData.lastEnteredPlayers = new address[](5);
@@ -821,7 +893,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         internal view 
         returns (bool)
     {
-        return tileDataStatic[index].waterLevel > tileDataStatic[index].elevation;
+        return tileDataStatic[index].waterLevel > tileDataStatic[index].elevationLevel;
     }
 
 
@@ -952,7 +1024,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     /// @param tileData Tile data 
     function _setTile(
         uint16 index, 
-        TileStatic memory tileData) 
+        TileInput memory tileData)  
         internal
     {
         Map storage map = maps[mapsIndex[mapsIndex.length - 1]];
@@ -976,20 +1048,23 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
             initializedTileCount++;
         }
 
+        // Set static data
         tileDataStatic[index].initialized = true;
         tileDataStatic[index].mapIndex = uint16(mapsIndex.length - 1);
         tileDataStatic[index].group = tileData.group;
         tileDataStatic[index].safety = tileData.safety;
         tileDataStatic[index].biome = tileData.biome;
         tileDataStatic[index].terrain = tileData.terrain;
-        tileDataStatic[index].elevation = tileData.elevation;
+        tileDataStatic[index].elevationLevel = tileData.elevationLevel;
         tileDataStatic[index].waterLevel = tileData.waterLevel;
-        tileDataStatic[index].vegetationData = tileData.vegetationData;
-        tileDataStatic[index].rockData = tileData.rockData;
-        tileDataStatic[index].wildlifeData = tileData.wildlifeData;
-        tileDataStatic[index].riverFlags = tileData.riverFlags;
-        tileDataStatic[index].hasRoad = tileData.hasRoad;
         tileDataStatic[index].hasLake = tileData.hasLake;
+        tileDataStatic[index].riverFlags = tileData.riverFlags;
+        
+        // Set dynamic data
+        tileDataDynamic[index].hasRoad = tileData.hasRoad;
+        tileDataDynamic[index].vegetationData = tileData.vegetationData; 
+        tileDataDynamic[index].rockData = tileData.rockData;
+        tileDataDynamic[index].wildlifeData = tileData.wildlifeData;
 
         // Set resources
         for (uint i = 0; i < tileData.resources.length; i++)
@@ -998,6 +1073,9 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
             tileDataStatic[index].resources[tileData.resources[i].resource] = tileData.resources[i].initialAmount;
             tileDataDynamic[index].resources[tileData.resources[i].resource] = tileData.resources[i].initialAmount;
         }
+
+        // Cache movement penalty
+        movementPenaltyCache[index] = _getMovementPenalty(index); 
     }
 
 
@@ -1118,7 +1196,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         if (!_tileIsUnderwater(fromTileIndex) && !_tileIsUnderwater(toTileIndex))
         {
             EdgeType edgeType = _getEdgeType(
-                tileDataStatic[fromTileIndex].elevation, tileDataStatic[toTileIndex].elevation);
+                tileDataStatic[fromTileIndex].elevationLevel, tileDataStatic[toTileIndex].elevationLevel);
             if (edgeType == EdgeType.Cliff)
             {
                 return (false, 0); // Can't move over cliffs
@@ -1127,6 +1205,16 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
             // Base land movement costs
             movementCost += edgeType == EdgeType.Flat ? 
                 MOVEMENT_COST_LAND_FLAT : MOVEMENT_COST_LAND_SLOPE;
+
+            // Add movement penalty
+            if (!tileDataDynamic[toTileIndex].hasRoad && movementPenaltyCache[toTileIndex] > 0)
+            {
+                movementCost += movementPenaltyCache[toTileIndex];
+                if (movementCost > MOVEMENT_COST_MAX)
+                {
+                    movementCost = MOVEMENT_COST_MAX;
+                }
+            }
         }
 
         // Water
@@ -1139,7 +1227,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         else if (_tileIsUnderwater(fromTileIndex))
         {
             EdgeType edgeType = _getEdgeType(
-                tileDataStatic[fromTileIndex].waterLevel, tileDataStatic[toTileIndex].elevation);
+                tileDataStatic[fromTileIndex].waterLevel, tileDataStatic[toTileIndex].elevationLevel);
             if (edgeType == EdgeType.Cliff)
             {
                 return (false, 0); // Can't embark from cliffs
@@ -1152,7 +1240,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         else 
         {
             EdgeType edgeType = _getEdgeType(
-                tileDataStatic[fromTileIndex].elevation, tileDataStatic[toTileIndex].waterLevel);
+                tileDataStatic[fromTileIndex].elevationLevel, tileDataStatic[toTileIndex].waterLevel);
             if (edgeType == EdgeType.Cliff)
             {
                 return (false, 0); // Can't embark from cliffs
@@ -1176,6 +1264,114 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         returns (uint16)
     {
         return a < b ? a | (b << 16) : b | (a << 16);
+    }
+
+
+    /// @dev Derrives the movement penalty for `tileIndex` from it's terrain data
+    /// @notice Tiles that are underwater or have a road have no movement penalty
+    /// 
+    /// Rock data format:
+    ///  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    /// | Level NE (2 bits) | Decal NE (2 bits) | Level E (2 bits)  | Decal E (2 bits)  | Level SE (2 bits) | Decal SE (2 bits) | Level SW (2 bits) | Decal SW (2 bits) | Level W (2 bits)  | Decal W (2 bits)  | Level NW (2 bits) | Decal NW (2 bits) | Level C (2 bits)  | Decal C (2 bits)  |
+    /// |-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|
+    /// | 0                 | 2                 | 4                 | 6                 | 8                 | 10                | 12                | 14                | 16                | 18                | 20                | 22                | 24                | 26                |
+    ///  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    ///
+    /// Vegetation data format:
+    ///  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    /// | Level NE (2 bits) | Decal NE (2 bits) | Stamp NE (2 bits) | Level E (2 bits)  | Decal E (2 bits)  | Stamp E (2 bits)  | Level SE (2 bits) | Decal SE (2 bits) | Stamp SE (2 bits) | Level SW (2 bits) | Decal SW (2 bits) | Stamp SW (2 bits) | Level W (2 bits)  | Decal W (2 bits)  | Stamp W (2 bits)  | Level NW (2 bits) | Decal NW (2 bits) | Stamp NW (2 bits) | Level C (2 bits)  | Decal C (2 bits)  | Stamp C (2 bits)  |
+    /// |-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|
+    /// | 0                 | 2                 | 4                 | 6                 | 8                 | 10                | 12                | 14                | 16                | 18                | 20                | 22                | 24                | 26                | 28                | 30                | 32                | 34                | 36                | 38                | 40                |
+    ///  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    function _getMovementPenalty(uint16 tileIndex) 
+        internal view 
+        returns (uint16 penalty)
+    {
+        // No penalty if tile is underwater
+        if (_tileIsUnderwater(tileIndex))
+        {
+            return 0;
+        }
+
+        // No penalty if tile has road
+        if (tileDataDynamic[tileIndex].hasRoad)
+        {
+            return 0;
+        }
+
+        // Vegetation
+        if (bytes8(0) != tileDataDynamic[tileIndex].vegetationData)
+        {
+            uint vegigationLevelCenter = uint(bytes32(tileDataDynamic[tileIndex].vegetationData)) 
+                >> (uint(HexSection.C) * VEGETATION_PACKING_SECTION_BIT_LENGTH) & VEGETATION_PACKING_LEVEL_MASK; 
+            uint vegitationLevelSum = vegigationLevelCenter;
+
+            for (uint i = uint(HexSection.NE); i <= uint(HexSection.NW); i++)
+            {
+                // If center and one of the fans has no level, skip
+                uint vegitationLevelSection = uint(bytes32(tileDataDynamic[tileIndex].vegetationData) 
+                    >> (i * VEGETATION_PACKING_SECTION_BIT_LENGTH)) & VEGETATION_PACKING_LEVEL_MASK;
+                if (0 == vegitationLevelSection && 0 == vegigationLevelCenter)
+                {
+                    vegitationLevelSum = 0;
+                    continue;
+                }
+
+                vegitationLevelSum += vegitationLevelSection;
+            }
+
+            if (vegitationLevelSum > 0)
+            {
+                // Add penalty (round up)
+                penalty += uint16(vegitationLevelSum + uint(HexSection.Count) - 1) / uint16(HexSection.Count);
+            } 
+        }
+        
+        // Rocks
+        if (bytes4(0) != tileDataDynamic[tileIndex].rockData)
+        {
+            uint rockLevelCenter = uint(bytes32(tileDataDynamic[tileIndex].rockData)) 
+                >> (uint(HexSection.C) * ROCK_PACKING_SECTION_BIT_LENGTH) & ROCK_PACKING_LEVEL_MASK; 
+            uint rockLevelSum = rockLevelCenter;
+
+            for (uint i = uint(HexSection.NE); i <= uint(HexSection.NW); i++)
+            {
+                // If center and one of the fans has no level, skip
+                uint rockLevelSection = uint(bytes32(tileDataDynamic[tileIndex].rockData) 
+                    >> (i * ROCK_PACKING_SECTION_BIT_LENGTH)) & ROCK_PACKING_LEVEL_MASK;
+                if (0 == rockLevelSection && 0 == rockLevelCenter)
+                {
+                    rockLevelSum = 0;
+                    continue;
+                }
+
+                rockLevelSum += rockLevelSection;
+            }
+
+            if (rockLevelSum > 0)
+            {
+                // Add penalty (round up)
+                penalty += uint16(rockLevelSum + uint(HexSection.Count) - 1) / uint16(HexSection.Count);
+            } 
+        }
+
+        // Hills
+        if (tileDataStatic[tileIndex].terrain == Terrain.Hills)
+        {
+            penalty += MOVEMENT_PENALTY_HILLS;
+        }
+
+        // Rivers
+        if (tileDataStatic[tileIndex].riverFlags != 0)
+        {
+            penalty += MOVEMENT_PENALTY_RIVER;
+        }
+
+        // Lakes
+        if (tileDataStatic[tileIndex].hasLake)
+        {
+            penalty += MOVEMENT_PENALTY_LAKE;
+        }
     }
 
 

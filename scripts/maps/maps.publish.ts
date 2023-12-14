@@ -3,12 +3,13 @@ import ora from 'ora-classic';
 import path from 'path';
 import fs from 'fs';
 import hre, { ethers } from "hardhat";
+import { BigNumber } from "ethers";
 import { resolveEnum } from "../helpers/enums";
 import { Resource, Biome, Terrain } from '../types/enums';
 import { DeploymentManager } from "../helpers/deployments";
 import { waitForMinimumTime } from "../helpers/timers";
 import { MapJsonData } from './types/maps.input';
-import { TileStaticStruct } from "../../typechain-types/contracts/source/game/maps/IMaps.js";
+import { TileInputStruct } from "../../typechain-types/contracts/source/game/maps/concrete/CryptopiaMaps.js";
 
 const chalk = require('chalk');
 
@@ -38,7 +39,7 @@ async function main(mapsFilePath: string, batchSize: number)
     }
 
     const map: MapJsonData = require(mapsFilePath);
-    let tiles: TileStaticStruct[];
+    let tiles: TileInputStruct[];
     try {
         tiles = resolve(map);
     } catch (error) {
@@ -60,11 +61,11 @@ async function main(mapsFilePath: string, batchSize: number)
     const mapsInstance = await ethers.getContractAt("CryptopiaMaps", mapsAddress);
 
     let createMap = false;
-    let tileStartingIndex = BigInt(0);
-    const mapCount = await mapsInstance.getMapCount();
-    if (mapCount > BigInt(0)) 
+    let tileStartingIndex = 0;
+    const mapCount = (await mapsInstance.getMapCount()).toNumber();
+    if (mapCount > 0) 
     {
-        const lastMap = await mapsInstance.getMapAt(mapCount - BigInt(1));
+        const lastMap = await mapsInstance.getMapAt(mapCount - 1);
         
         // Create map
         if (lastMap.finalized)
@@ -120,7 +121,7 @@ async function main(mapsFilePath: string, batchSize: number)
     for (let i = 0; i < tiles.length; i += batchSize) 
     {
         const batch = tiles.slice(i, i + batchSize);
-        const batchIndices = batch.map((tile, j) => tileStartingIndex + BigInt(i) + BigInt(j));
+        const batchIndices = batch.map((tile, j) => tileStartingIndex + i + j);
         if (i + batchSize >= tiles.length) 
         {
             console.log(`Deploying batch ${`${Math.floor(i / batchSize) + 1}`}/${Math.ceil(tiles.length / batchSize)}`);
@@ -176,11 +177,11 @@ async function main(mapsFilePath: string, batchSize: number)
  * Resolves the data from the JSON file.
  *
  * @param {MapJsonData} data - Data from the JSON file.
- * @returns {TileStaticStruct[]} The resolved data.
+ * @returns {TileInputStruct[]} The resolved data.
  */
-function resolve(data: MapJsonData): TileStaticStruct[]
+function resolve(data: MapJsonData): TileInputStruct[]
 {
-    const resolvedTiles: TileStaticStruct[] = [];
+    const resolvedTiles: TileInputStruct[] = [];
     data.tiles.forEach((tileData, i) => {
         resolvedTiles.push({
             initialized: true,
@@ -189,14 +190,14 @@ function resolve(data: MapJsonData): TileStaticStruct[]
             safety: tileData.safety,
             biome: resolveEnum(Biome, tileData.biome),
             terrain: resolveEnum(Terrain, tileData.terrain),
-            elevation: tileData.elevation,
+            elevationLevel: tileData.elevationLevel,
             waterLevel: tileData.waterLevel,
-            vegetationData: tileData.vegetationData.toString().toBytes(8),
-            rockData: tileData.rockData.toString().toBytes(4),
-            wildlifeData: tileData.wildlifeData.toString().toBytes(4),
             riverFlags: tileData.riverFlags,
             hasRoad: tileData.hasRoad,
             hasLake: tileData.hasLake,
+            vegetationData: tileData.vegetationData.toBytes(8),
+            rockData: tileData.rockData.toBytes(4),
+            wildlifeData: tileData.wildlifeData.toBytes(4),
             resources: tileData.resources.map((resource) => {
                 return {
                     resource: resolveEnum(Resource, resource.resource),

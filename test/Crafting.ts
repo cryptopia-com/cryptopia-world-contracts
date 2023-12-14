@@ -1,4 +1,4 @@
-import "../scripts/helpers/converters.ts"; 
+import "../scripts/helpers/converters.ts";
 import { expect } from "chai";
 import { ethers, upgrades} from "hardhat";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
@@ -193,75 +193,64 @@ describe("Crafting Contract", function () {
         const CraftingFactory = await ethers.getContractFactory("CryptopiaCrafting");
         
         // Deploy Inventories
-        const inventoriesProxy = await (
-            await upgrades.deployProxy(
-                InventoriesFactory, 
-                [
-                    treasury
-                ])
-        ).waitForDeployment();
+        const inventoriesProxy = await upgrades.deployProxy(
+            InventoriesFactory, 
+            [
+                treasury
+            ]);
 
-        const inventoriesAddress = await inventoriesProxy.getAddress();
+        const inventoriesAddress = await inventoriesProxy.address;
         inventoriesInstance = await ethers.getContractAt("CryptopiaInventories", inventoriesAddress);
 
         // Deploy Whitelist
-        const whitelistProxy = await (
-            await upgrades.deployProxy(
-                WhitelistFactory, 
+        const whitelistProxy = await upgrades.deployProxy(
+            WhitelistFactory, 
+            [
                 [
-                    [
-                        inventoriesAddress
-                    ]
-                ])
-        ).waitForDeployment();
+                    inventoriesAddress
+                ]
+            ]);
 
-        const whitelistAddress = await whitelistProxy.getAddress();
+        const whitelistAddress = await whitelistProxy.address;
 
         // Deploy Account register
-        const accountRegisterProxy = await (
-            await upgrades.deployProxy(AccountRegisterFactory)
-        ).waitForDeployment();
+        const accountRegisterProxy = await upgrades.deployProxy(
+            AccountRegisterFactory);
 
-        const accountRegisterAddress = await accountRegisterProxy.getAddress();
+        const accountRegisterAddress = await accountRegisterProxy.address;
         accountRegisterInstance = await ethers.getContractAt("CryptopiaAccountRegister", accountRegisterAddress);
 
         // Deploy Asset Register
-        const assetRegisterProxy = await (
-            await upgrades.deployProxy(
-                AssetRegisterFactory, [])
-            ).waitForDeployment();
+        const assetRegisterProxy = await upgrades.deployProxy(
+            AssetRegisterFactory, []);
 
-        const assetRegisterAddress = await assetRegisterProxy.getAddress();
+        const assetRegisterAddress = await assetRegisterProxy.address;
         const assetRegisterInstance = await ethers.getContractAt("CryptopiaAssetRegister", assetRegisterAddress);
 
         // Deploy Ships
-        const shipTokenProxy = await (
-            await upgrades.deployProxy(
-                ShipTokenFactory, 
-                [
-                    whitelistAddress,
-                    "", 
-                    ""
-                ])
-        ).waitForDeployment();
+        const shipTokenProxy = await upgrades.deployProxy(
+            ShipTokenFactory, 
+            [
+                whitelistAddress,
+                "", 
+                ""
+            ]);
 
-        const shipTokenAddress = await shipTokenProxy.getAddress();
+        const shipTokenAddress = await shipTokenProxy.address;
         shipTokenInstance = await ethers.getContractAt("CryptopiaShipToken", shipTokenAddress);
 
         // Deploy Crafting
-        const craftingProxy = await (
-            await upgrades.deployProxy(
-                CraftingFactory, 
-                [
-                    inventoriesAddress
-                ])
-        ).waitForDeployment();
+        const craftingProxy = await upgrades.deployProxy(
+            CraftingFactory, 
+            [
+                inventoriesAddress
+            ]);
 
-        const craftingAddress = await craftingProxy.getAddress();
+        const craftingAddress = await craftingProxy.address;
         craftingInstance = await ethers.getContractAt("CryptopiaCrafting", craftingAddress);
 
         // Deploy Player Register
-        const playerRegisterProxy = await (await upgrades.deployProxy(
+        const playerRegisterProxy = await upgrades.deployProxy(
             PlayerRegisterFactory, 
             [
                 accountRegisterAddress, 
@@ -271,13 +260,13 @@ describe("Crafting Contract", function () {
                 [
                     deployer
                 ]
-            ])).waitForDeployment();
+            ]);
 
-        const playerRegisterAddress = await playerRegisterProxy.getAddress();
+        const playerRegisterAddress = await playerRegisterProxy.address;
         playerRegisterInstance = await ethers.getContractAt("CryptopiaPlayerRegister", playerRegisterAddress);
 
         // Deploy Tools
-        const toolTokenProxy = await (await upgrades.deployProxy(
+        const toolTokenProxy = await upgrades.deployProxy(
             ToolTokenFactory, 
             [
                 whitelistAddress, 
@@ -285,9 +274,9 @@ describe("Crafting Contract", function () {
                 "",
                 playerRegisterAddress,
                 inventoriesAddress
-            ])).waitForDeployment();
+            ]);
 
-        const toolTokenAddress = await toolTokenProxy.getAddress();
+        const toolTokenAddress = await toolTokenProxy.address;
         toolTokenInstance = await ethers.getContractAt("CryptopiaToolToken", toolTokenAddress);
 
         // Grant roles
@@ -304,17 +293,15 @@ describe("Crafting Contract", function () {
         // Deploy assets
         for (let asset of assets)
         {
-            const assetTokenProxy = await (
-                await upgrades.deployProxy(
-                    AssetTokenFactory, 
-                    [
-                        asset.name, 
-                        asset.symbol,
-                        inventoriesAddress
-                    ])
-                ).waitForDeployment();
+            const assetTokenProxy = await upgrades.deployProxy(
+                AssetTokenFactory, 
+                [
+                    asset.name, 
+                    asset.symbol,
+                    inventoriesAddress
+                ]);
 
-            asset.contractAddress = await assetTokenProxy.getAddress();
+            asset.contractAddress = await assetTokenProxy.address;
             asset.contractInstance = await ethers
                 .getContractAt("CryptopiaAssetToken", asset.contractAddress);
 
@@ -330,7 +317,7 @@ describe("Crafting Contract", function () {
 
         // Setup Tools
         await inventoriesInstance.setNonFungibleAsset(
-            await toolTokenProxy.getAddress(), true);
+            await toolTokenProxy.address, true);
 
         // Add tools
         await toolTokenInstance.setTools(
@@ -397,7 +384,7 @@ describe("Crafting Contract", function () {
             const slot = 2;
             const inventory = 1; // Backpack
             const invalidRecipe = "invalidRecipe".toBytes32();
-            const toolTokenAddress = await toolTokenInstance.getAddress();
+            const toolTokenAddress = await toolTokenInstance.address;
 
             const callData = craftingInstance.interface
                 .encodeFunctionData("craft", [toolTokenAddress, invalidRecipe, slot, inventory]);
@@ -406,7 +393,7 @@ describe("Crafting Contract", function () {
             const signer = await ethers.provider.getSigner(account1);
             const operation = registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await craftingInstance.getAddress(), 0, callData);
+                .submitTransaction(await craftingInstance.address, 0, callData);
 
             // Assert
             if (REVERT_MODE) 
@@ -434,14 +421,14 @@ describe("Crafting Contract", function () {
             const signer = await ethers.provider.getSigner(account1);
             const operation = registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await craftingInstance.getAddress(), 0, callData);
+                .submitTransaction(await craftingInstance.address, 0, callData);
     
             // Assert
             if (REVERT_MODE) 
             {
                 await expect(operation).to.be
                     .revertedWithCustomError(craftingInstance, "CraftingSlotIsEmpty")
-                    .withArgs(await registeredAccountInstance.getAddress(), emptySlot);
+                    .withArgs(await registeredAccountInstance.address, emptySlot);
             } else 
             {
                 await expect(operation).to.emit(
@@ -456,8 +443,8 @@ describe("Crafting Contract", function () {
             const inventory = 1; // Backpack
             const craftable = tools[0];
             const recipe = craftable.name.toBytes32();
-            const craftableTokenAddress = await toolTokenInstance.getAddress();
-            const craftingAddress = await craftingInstance.getAddress();
+            const craftableTokenAddress = await toolTokenInstance.address;
+            const craftingAddress = await craftingInstance.address;
     
             const callDataCraft = craftingInstance.interface
                 .encodeFunctionData("craft", [craftableTokenAddress, recipe, slot, inventory]);
@@ -480,11 +467,11 @@ describe("Crafting Contract", function () {
             {
                 await expect(operationCraft).to.be
                     .revertedWithCustomError(craftingInstance, "PlayerNotRegistered")
-                    .withArgs(await unregisteredAccountInstance.getAddress());
+                    .withArgs(await unregisteredAccountInstance.address);
     
                 await expect(operationClaim).to.be
                     .revertedWithCustomError(craftingInstance, "CraftingSlotIsEmpty")
-                    .withArgs(await unregisteredAccountInstance.getAddress(), slot);
+                    .withArgs(await unregisteredAccountInstance.address, slot);
             } else 
             {
                 await expect(operationCraft).to
@@ -502,8 +489,8 @@ describe("Crafting Contract", function () {
             const invalidInventory = 0; // Wallet
             const craftable = tools[0];
             const recipeName = craftable.name.toBytes32();
-            const craftableTokenAddress = await toolTokenInstance.getAddress();
-            const craftingAddress = await craftingInstance.getAddress();
+            const craftableTokenAddress = await toolTokenInstance.address;
+            const craftingAddress = await craftingInstance.address;
 
             const callDataCraft = craftingInstance.interface
                 .encodeFunctionData("craft", [craftableTokenAddress, recipeName, slot, invalidInventory]);
@@ -534,11 +521,11 @@ describe("Crafting Contract", function () {
             const inventory = 1; // Backpack
             const craftable = tools[0];
             const recipeName = craftable.name.toBytes32();
-            const craftableTokenAddress = await toolTokenInstance.getAddress();
-            const craftingAddress = await craftingInstance.getAddress();
-            const registeredAccountAddress = await registeredAccountInstance.getAddress();
+            const craftableTokenAddress = await toolTokenInstance.address;
+            const craftingAddress = await craftingInstance.address;
+            const registeredAccountAddress = await registeredAccountInstance.address;
             const assetAddress = getAssetBySymbol(craftable.recipe.ingredients[0].asset).contractAddress;
-            const assetAmount = ethers.parseUnits(craftable.recipe.ingredients[0].amount[0], craftable.recipe.ingredients[0].amount[1]);
+            const assetAmount = ethers.utils.parseUnits(craftable.recipe.ingredients[0].amount[0], craftable.recipe.ingredients[0].amount[1]);
 
             const callDataCraft = craftingInstance.interface
                 .encodeFunctionData("craft", [craftableTokenAddress, recipeName, slot, inventory]);
@@ -569,10 +556,10 @@ describe("Crafting Contract", function () {
             const inventory = 1; // Backpack
             const craftable = tools[0];
             const recipeName = craftable.name.toBytes32();
-            const craftableTokenAddress = await toolTokenInstance.getAddress();
-            const inventoriesAddress = await inventoriesInstance.getAddress();
-            const craftingAddress = await craftingInstance.getAddress();
-            const playerAddress = await registeredAccountInstance.getAddress();
+            const craftableTokenAddress = await toolTokenInstance.address;
+            const inventoriesAddress = await inventoriesInstance.address;
+            const craftingAddress = await craftingInstance.address;
+            const playerAddress = await registeredAccountInstance.address;
             const minterSigner = await ethers.provider.getSigner(minter);
             const systemSigner = await ethers.provider.getSigner(system);
     
@@ -580,7 +567,7 @@ describe("Crafting Contract", function () {
             for (let ingredient of craftable.recipe.ingredients)
             {
                 const asset = getAssetBySymbol(ingredient.asset);
-                const amount = ethers.parseUnits(ingredient.amount[0], ingredient.amount[1]);
+                const amount = ethers.utils.parseUnits(ingredient.amount[0], ingredient.amount[1]);
 
                 // Mint asset
                 await asset.contractInstance
@@ -623,9 +610,9 @@ describe("Crafting Contract", function () {
             const expectedTokenId = 1;
             const craftable = tools[0];
             const recipeName = craftable.name.toBytes32();
-            const craftableTokenAddress = await toolTokenInstance.getAddress();
-            const craftingAddress = await craftingInstance.getAddress();
-            const playerAddress = await registeredAccountInstance.getAddress();
+            const craftableTokenAddress = await toolTokenInstance.address;
+            const craftingAddress = await craftingInstance.address;
+            const playerAddress = await registeredAccountInstance.address;
 
             const calldata = craftingInstance.interface
                 .encodeFunctionData("claim", [slot, inventory]);
@@ -657,9 +644,9 @@ describe("Crafting Contract", function () {
             const inventory = 1; // Backpack
             const craftable = tools[1];
             const recipeName = craftable.name.toBytes32();
-            const craftableTokenAddress = await toolTokenInstance.getAddress();
-            const craftingAddress = await craftingInstance.getAddress();
-            const registeredAccountAddress = await registeredAccountInstance.getAddress();
+            const craftableTokenAddress = await toolTokenInstance.address;
+            const craftingAddress = await craftingInstance.address;
+            const registeredAccountAddress = await registeredAccountInstance.address;
 
             const callData = craftingInstance.interface
                 .encodeFunctionData("craft", [craftableTokenAddress, recipeName, slot, inventory]);
@@ -688,9 +675,9 @@ describe("Crafting Contract", function () {
             // Setup 
             const craftable = tools[1];
             const recipeName = craftable.name.toBytes32();
-            const craftableTokenAddress = await toolTokenInstance.getAddress();
-            const craftingAddress = await craftingInstance.getAddress();
-            const registeredAccountAddress = await registeredAccountInstance.getAddress();
+            const craftableTokenAddress = await toolTokenInstance.address;
+            const craftingAddress = await craftingInstance.address;
+            const registeredAccountAddress = await registeredAccountInstance.address;
 
             const signer = await ethers.provider.getSigner(account1);
             const callData = craftingInstance.interface
@@ -719,8 +706,8 @@ describe("Crafting Contract", function () {
             // Setup 
             const craftable = tools[1];
             const recipeName = craftable.name.toBytes32();
-            const craftableTokenAddress = await toolTokenInstance.getAddress();
-            const registeredAccountAddress = await registeredAccountInstance.getAddress();
+            const craftableTokenAddress = await toolTokenInstance.address;
+            const registeredAccountAddress = await registeredAccountInstance.address;
 
             // Act
             const signer = await ethers.provider.getSigner(system);
@@ -741,10 +728,10 @@ describe("Crafting Contract", function () {
             const inventory = 1; // Backpack
             const craftable = tools[1];
             const recipeName = craftable.name.toBytes32();
-            const craftableTokenAddress = await toolTokenInstance.getAddress();
-            const inventoriesAddress = await inventoriesInstance.getAddress();
-            const craftingAddress = await craftingInstance.getAddress();
-            const playerAddress = await registeredAccountInstance.getAddress();
+            const craftableTokenAddress = await toolTokenInstance.address;
+            const inventoriesAddress = await inventoriesInstance.address;
+            const craftingAddress = await craftingInstance.address;
+            const playerAddress = await registeredAccountInstance.address;
             const minterSigner = await ethers.provider.getSigner(minter);
             const systemSigner = await ethers.provider.getSigner(system);
 
@@ -752,7 +739,7 @@ describe("Crafting Contract", function () {
             for (let ingredient of craftable.recipe.ingredients)
             {
                 const asset = getAssetBySymbol(ingredient.asset);
-                const amount = ethers.parseUnits(ingredient.amount[0], ingredient.amount[1]);
+                const amount = ethers.utils.parseUnits(ingredient.amount[0], ingredient.amount[1]);
 
                 // Mint asset
                 await asset.contractInstance
@@ -795,9 +782,9 @@ describe("Crafting Contract", function () {
             const expectedTokenId = 2;
             const craftable = tools[1];
             const recipeName = craftable.name.toBytes32();
-            const craftableTokenAddress = await toolTokenInstance.getAddress();
-            const craftingAddress = await craftingInstance.getAddress();
-            const playerAddress = await registeredAccountInstance.getAddress();
+            const craftableTokenAddress = await toolTokenInstance.address;
+            const craftingAddress = await craftingInstance.address;
+            const playerAddress = await registeredAccountInstance.address;
 
             const calldata = craftingInstance.interface
                 .encodeFunctionData("claim", [slot, inventory]);

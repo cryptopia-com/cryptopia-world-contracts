@@ -1,6 +1,6 @@
-import { ethers, network} from "hardhat";
+import { ethers, network } from "hardhat";
+import { TypedDataSigner } from "@ethersproject/abstract-signer";
 import { EIP712Domain, EIP712TypeDefinition, TransferProposal } from '../types/meta'
-import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
 const EIP712_DOMAIN_NAME = "Cryptopia";
 const EIP712_DOMAIN_VERSION = "1.0.0";
@@ -14,7 +14,7 @@ const EIP712_DOMAIN_VERSION = "1.0.0";
  * @param proposal The proposal
  * @returns The signature
  */
-export const getTransferProposalSignature = async (signer: HardhatEthersSigner, contract: string, nonce: number, proposal: TransferProposal) : Promise<string> =>
+export const getTransferProposalSignature = async (signer: TypedDataSigner, contract: string, nonce: number, proposal: TransferProposal) : Promise<string> =>
 {
     const domain: EIP712Domain = {
         name: EIP712_DOMAIN_NAME,
@@ -37,16 +37,16 @@ export const getTransferProposalSignature = async (signer: HardhatEthersSigner, 
         ]
     }
 
-    return signer.signTypedData(
+    return signer._signTypedData(
         domain, 
         proposalTypeDefinition,
         {
             from: proposal.from,
             to: proposal.to,
-            inventories: ethers.solidityPackedKeccak256(["uint8[]"], [proposal.inventories]),
-            assets: ethers.solidityPackedKeccak256(["address[]"], [proposal.assets]),
-            tokenIds: ethers.solidityPackedKeccak256(["uint256[]"], [proposal.tokenIds]),
-            amounts: ethers.solidityPackedKeccak256(["uint256[]"], [proposal.amounts]),
+            inventories: ethers.utils.solidityKeccak256(["uint8[]"], [proposal.inventories]),
+            assets: ethers.utils.solidityKeccak256(["address[]"], [proposal.assets]),
+            tokenIds: ethers.utils.solidityKeccak256(["uint256[]"], [proposal.tokenIds]),
+            amounts: ethers.utils.solidityKeccak256(["uint256[]"], [proposal.amounts]),
             deadline: proposal.deadline,
             nonce: nonce,
             contract: contract

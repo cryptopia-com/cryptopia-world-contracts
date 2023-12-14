@@ -3,14 +3,14 @@ export interface TileJsonData {
     safety: number;
     biome: string;
     terrain: string;
-    elevation: number;
+    elevationLevel: number;
     waterLevel: number;
-    vegetationData: number;
-    rockData: number;
-    wildlifeData: number;
     riverFlags: number;
     hasRoad: boolean;
     hasLake: boolean;
+    vegetationData: string;
+    rockData: string;
+    wildlifeData: string;
     resources: Array<{ resource: string, amount: string }>;
 }
 

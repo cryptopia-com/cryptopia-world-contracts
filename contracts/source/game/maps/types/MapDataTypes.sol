@@ -27,7 +27,7 @@ struct Map
     uint16 tileStartIndex;
 }
 
-/// @dev Tile data
+/// @dev Static tile data
 struct TileStatic
 {
     /// @dev True if the tile is created
@@ -53,42 +53,42 @@ struct TileStatic
     Terrain terrain;
 
     /// @dev The elevation of the terrain (seafloor in case of sea tile)
-    uint8 elevation;
+    uint8 elevationLevel;
 
     /// @dev The water level of the tile 
     /// @notice Water level minus elevation equals the depth of the water
     uint8 waterLevel;
 
-    /// @dev The vegetation that the tile contains
-    bytes8 vegetationData;
-
-    /// @dev The rocks that the tile contains
-    bytes4 rockData;
-
-    /// @dev The wildlife that the tile contains
-    bytes4 wildlifeData;
+    /// @dev Indicates the presence of a lake on the tile
+    /// @notice Lakes impose a movement penalty
+    bool hasLake;
 
     /// @dev Flags that indicate the presence of a river on the tile's hex edges
     /// @notice 0 = NW, 
     uint8 riverFlags; 
 
-    /// @dev Indicates the presence of a road on the tile
-    /// @notice Roads remove the movement penalty for hills
-    bool hasRoad;
-
-    /// @dev Indicates the presence of a lake on the tile
-    /// @notice Lakes impose a movement penalty
-    bool hasLake;
-
     /// @dev Natural resources
     TileResourceStatic[] resources;
 }
 
-/// @dev Tile meta data
+/// @dev Dynamic tile meta data
 struct TileDynamic 
 {
     /// @dev the owner of the title deed
     address owner;
+
+    /// @dev Indicates the presence of a road on the tile
+    /// @notice Roads remove the movement penalty for hills
+    bool hasRoad;
+
+    /// @dev The rocks that the tile contains
+    bytes4 rockData;
+
+    /// @dev The vegetation that the tile contains
+    bytes8 vegetationData;
+
+    /// @dev The wildlife that the tile contains
+    bytes4 wildlifeData;
 
     /// @dev Up to five players that last entered the tile
     address[] lastEnteredPlayers;

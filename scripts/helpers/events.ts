@@ -1,4 +1,5 @@
-import { BaseContract, Log, TransactionReceipt } from 'ethers';
+import { BaseContract } from 'ethers'; 
+import { Log, TransactionReceipt } from '@ethersproject/providers'; 
 import { ethers } from 'hardhat';
 import { assert } from 'chai';
 
@@ -24,8 +25,8 @@ export function getParamFromEvent(contract: BaseContract, receipt: TransactionRe
         throw new Error(`Event ${eventName} not found in contract interface`);
     }
 
-    const eventTopic = ethers.keccak256(
-        ethers.toUtf8Bytes(eventFragment.format()));
+    const eventTopic = ethers.utils.keccak256(
+        ethers.utils.toUtf8Bytes(eventFragment.format()));
 
     const filteredLogs = receipt.logs.filter(
         (log: Log) => log.topics && log.topics[0] === eventTopic);
@@ -67,7 +68,7 @@ export function containsEvent(contract: BaseContract, receipt: TransactionReceip
         throw new Error(`Event ${eventName} not found in contract interface`);
     }
 
-    const eventTopic = ethers.id(eventFragment.format());
+    const eventTopic = ethers.utils.id(eventFragment.format());
     const filteredLogs = receipt.logs.filter(
         (log: Log) => log.topics && log.topics[0] === eventTopic);
 

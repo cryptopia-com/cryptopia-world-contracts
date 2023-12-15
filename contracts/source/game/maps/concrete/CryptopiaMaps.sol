@@ -146,6 +146,12 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         mapping (Resource => uint) resources;
     }
 
+    struct TileMovementPenaltyCacheKey
+    {
+        bool initialized;
+        uint16 penalty;
+    }
+
 
     /**
      * Roles
@@ -210,7 +216,8 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     /// @dev a | (b << 16) => movementCost
     mapping (uint32 => uint) public pathCache;
 
-    mapping (uint16 => uint16) public movementPenaltyCache;
+    /// @dev tileIndex => cache
+    mapping (uint16 => TileMovementPenaltyCacheKey) public movementPenaltyCache;
 
 
     /**
@@ -1075,7 +1082,8 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         }
 
         // Cache movement penalty
-        movementPenaltyCache[index] = _getMovementPenalty(index); 
+        movementPenaltyCache[index] = TileMovementPenaltyCacheKey(
+            true, _getMovementPenalty(index)); 
     }
 
 
@@ -1205,16 +1213,6 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
             // Base land movement costs
             movementCost += edgeType == EdgeType.Flat ? 
                 MOVEMENT_COST_LAND_FLAT : MOVEMENT_COST_LAND_SLOPE;
-
-            // Add movement penalty
-            if (!tileDataDynamic[toTileIndex].hasRoad && movementPenaltyCache[toTileIndex] > 0)
-            {
-                movementCost += movementPenaltyCache[toTileIndex];
-                if (movementCost > MOVEMENT_COST_MAX)
-                {
-                    movementCost = MOVEMENT_COST_MAX;
-                }
-            }
         }
 
         // Water
@@ -1247,6 +1245,22 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
             }
 
             movementCost += MOVEMENT_COST_WATER_EMBARK_DISEMBARK;
+        }
+
+        // Add movement penalty
+        if (!movementPenaltyCache[toTileIndex].initialized)
+        {
+            movementPenaltyCache[toTileIndex] = TileMovementPenaltyCacheKey(
+                true, _getMovementPenalty(toTileIndex));
+        }
+
+        if (movementPenaltyCache[toTileIndex].penalty > 0)
+        {
+            movementCost += movementPenaltyCache[toTileIndex].penalty;
+            if (movementCost > MOVEMENT_COST_MAX)
+            {
+                movementCost = MOVEMENT_COST_MAX;
+            }
         }
 
         // Cache result
@@ -1314,7 +1328,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
                 if (0 == vegitationLevelSection && 0 == vegigationLevelCenter)
                 {
                     vegitationLevelSum = 0;
-                    continue;
+                    break;
                 }
 
                 vegitationLevelSum += vegitationLevelSection;
@@ -1342,7 +1356,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
                 if (0 == rockLevelSection && 0 == rockLevelCenter)
                 {
                     rockLevelSum = 0;
-                    continue;
+                    break;
                 }
 
                 rockLevelSum += rockLevelSection;

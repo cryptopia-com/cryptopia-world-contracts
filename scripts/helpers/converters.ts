@@ -20,7 +20,6 @@ declare global {
 String.prototype.toBytes = function(n: number) {
   let input = String(this);
   assert.isAtMost(input.length, n * 2, `Input string is larger than ${n} bytes`);
-
   return ethers.utils.hexlify(ethers.utils.toUtf8Bytes(input)).padEnd(n * 2 + 2, '0');
 };
 

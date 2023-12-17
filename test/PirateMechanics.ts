@@ -1,10 +1,10 @@
 import "../scripts/helpers/converters";
 import { expect } from "chai";
 import { ethers, upgrades } from "hardhat";
-import { BigNumber } from "ethers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { getParamFromEvent, containsEvent } from '../scripts/helpers/events';
+import { encodeRockData, encodeVegetationData, encodeWildlifeData } from '../scripts/maps/helpers/encoders';
 import { getTransferProposalSignature } from "../scripts/helpers/meta";
 import { TransferProposal } from "../scripts/types/meta";
 import { ZERO_ADDRESS } from "./settings/constants";
@@ -47,7 +47,7 @@ describe("PirateMechanics Contract", function () {
     let treasury: string;
 
     // Instances
-    let mapInstance: CryptopiaMaps;
+    let mapsInstance: CryptopiaMaps;
     let shipTokenInstance: CryptopiaShipToken;
     let titleDeedTokenInstance: CryptopiaTitleDeedToken;
     let playerRegisterInstance: CryptopiaPlayerRegister;
@@ -98,39 +98,39 @@ describe("PirateMechanics Contract", function () {
         tiles: [
             
             // Bottom row
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
             
             // Second row
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 7, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 1, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: true, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Gold, amount: "500".toWei() }] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 7, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b1010101010101010101010101010' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: true, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Gold, amount: "500".toWei() }] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
             
             // Third row
-            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevationLevel: 4, waterLevel: 5, vegetationData: 2, rockData: 0, wildlifeData: 2, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Mountains, elevationLevel: 8, waterLevel: 5, vegetationData: 3, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [{ resource: Resource.Gold, amount: "500".toWei() }] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 2, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevationLevel: 4, waterLevel: 5, vegetationData: '0b101010101010101010101010101010101010101010' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b10000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Mountains, elevationLevel: 8, waterLevel: 5, vegetationData: '0b111111111111111111111111111111111111111111' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [{ resource: Resource.Gold, amount: "500".toWei() }] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
 
             // Fourth row
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 1, wildlifeData: 1, riverFlags: 0, hasRoad: true, hasLake: false, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Copper, amount: "5000".toWei() }] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevationLevel: 4, waterLevel: 5, vegetationData: 3, rockData: 0, wildlifeData: 3, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b1010101010101010101010101010' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: true, hasLake: false, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Copper, amount: "5000".toWei() }] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevationLevel: 4, waterLevel: 5, vegetationData: '0b111111111111111111111111111111111111111111' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b11000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
 
             // Top row
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 2, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 2, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
         ]
     };
     
@@ -278,7 +278,7 @@ describe("PirateMechanics Contract", function () {
             ]);
 
         const mapsAddress = await mapsProxy.address;
-        mapInstance = await ethers.getContractAt("CryptopiaMaps", mapsAddress);
+        mapsInstance = await ethers.getContractAt("CryptopiaMaps", mapsAddress);
 
         // Grant roles
         await titleDeedTokenInstance.grantRole(SYSTEM_ROLE, mapsAddress);
@@ -348,13 +348,13 @@ describe("PirateMechanics Contract", function () {
         await playerRegisterInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
         await inventoriesInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
         await shipTokenInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
-        await mapInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
+        await mapsInstance.grantRole(SYSTEM_ROLE, pirateMechanicsAddress);
 
         // Create map 
-        await mapInstance.createMap(
+        await mapsInstance.createMap(
             map.name, map.sizeX, map.sizeZ);
 
-        await mapInstance.setTiles(
+        await mapsInstance.setTiles(
             map.tiles.map((_, index) => index), 
             map.tiles.map(tile => ({
                 initialized: true, 
@@ -368,16 +368,16 @@ describe("PirateMechanics Contract", function () {
                 hasRoad: tile.hasRoad,
                 hasLake: tile.hasLake,
                 riverFlags: tile.riverFlags,
-                rockData: tile.rockData.toString().toBytes(4),
-                vegetationData: tile.vegetationData.toString().toBytes(8),
-                wildlifeData: tile.wildlifeData.toString().toBytes(4),
+                rockData: encodeRockData(tile.rockData),
+                vegetationData: encodeVegetationData(tile.vegetationData),
+                wildlifeData: encodeWildlifeData(tile.wildlifeData),
                 resources: tile.resources.map(resource => ({    
                     resource: resource.resource,
                     initialAmount: resource.amount
                 }))
             })));
         
-        await mapInstance.finalizeMap();
+        await mapsInstance.finalizeMap();
     });
 
     /**
@@ -421,16 +421,16 @@ describe("PirateMechanics Contract", function () {
             anotherTargetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAnotherAccount);
 
             // Add another pirate and target to the map
-            const playerEnterCalldata = mapInstance.interface
+            const playerEnterCalldata = mapsInstance.interface
                 .encodeFunctionData("playerEnter");
 
             await anotherPirateAccountInstance
                 .connect(await ethers.provider.getSigner(account3))
-                .submitTransaction(await mapInstance.address, 0, playerEnterCalldata);
+                .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
 
             await anotherTargetAccountInstance
                 .connect(await ethers.provider.getSigner(account4))
-                .submitTransaction(await mapInstance.address, 0, playerEnterCalldata);
+                .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
         });
         
         it ("Should not allow a pirate to intercept while entered the map", async function () {
@@ -464,20 +464,20 @@ describe("PirateMechanics Contract", function () {
                 1  // Turn 1 
             ];
 
-            const mapContractAddress = await mapInstance.address;
+            const mapContractAddress = await mapsInstance.address;
             const pirateMechanicsAddress = await pirateMechanicsInstance.address;
             const pirateAccountSigner = await ethers.provider.getSigner(account1);
             const pirateAccountAddress = await pirateAccountInstance.address;
             const targetAccountAddress = await targetAccountInstance.address;
 
-            const playerEnterCalldata = mapInstance.interface
+            const playerEnterCalldata = mapsInstance.interface
                 .encodeFunctionData("playerEnter");
 
             await pirateAccountInstance
                 .connect(pirateAccountSigner)
                 .submitTransaction(mapContractAddress, 0, playerEnterCalldata);
 
-            const playerMoveCalldata = mapInstance.interface
+            const playerMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [path]);
 
             await pirateAccountInstance
@@ -518,13 +518,13 @@ describe("PirateMechanics Contract", function () {
                 7  // Turn 2 (Land adjacent to water)
             ];
 
-            const mapContractAddress = await mapInstance.address;
+            const mapContractAddress = await mapsInstance.address;
             const pirateMechanicsAddress = await pirateMechanicsInstance.address;
             const pirateAccountSigner = await ethers.provider.getSigner(account1);
             const pirateAccountAddress = await pirateAccountInstance.address;
             const targetAccountAddress = await targetAccountInstance.address;
 
-            const playerMoveCalldata = mapInstance.interface
+            const playerMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [path]);
             
             const playerMoveTransaction = await pirateAccountInstance
@@ -533,7 +533,7 @@ describe("PirateMechanics Contract", function () {
 
             const playerMoveReceipt = await playerMoveTransaction.wait();
             const arrival = getParamFromEvent(
-                mapInstance, playerMoveReceipt, "arrival", "PlayerMove");
+                mapsInstance, playerMoveReceipt, "arrival", "PlayerMove");
 
             await time.increaseTo(arrival);
 
@@ -559,7 +559,7 @@ describe("PirateMechanics Contract", function () {
             }
 
             // Cleanup (revert to start location)
-            const revertMoveCalldata = mapInstance.interface
+            const revertMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [[7, 2, 1, 0]]);
             
             const revertMoveTransaction = await pirateAccountInstance
@@ -568,7 +568,7 @@ describe("PirateMechanics Contract", function () {
 
             const revertMoveReceipt = await revertMoveTransaction.wait();
             const revertArrival = getParamFromEvent(
-                mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
+                mapsInstance, revertMoveReceipt, "arrival", "PlayerMove");
                 
             await time.increaseTo(revertArrival);   
         });
@@ -604,20 +604,20 @@ describe("PirateMechanics Contract", function () {
                 7  // Turn 2 (Land adjacent to water)
             ];
 
-            const mapContractAddress = await mapInstance.address;
+            const mapContractAddress = await mapsInstance.address;
             const pirateMechanicsAddress = await pirateMechanicsInstance.address;
             const pirateAccountSigner = await ethers.provider.getSigner(account1);
             const targetAccountSigner = await ethers.provider.getSigner(account2);
             const targetAccountAddress = await targetAccountInstance.address;
 
-            const playerEnterCalldata = mapInstance.interface
+            const playerEnterCalldata = mapsInstance.interface
                 .encodeFunctionData("playerEnter");
 
             await targetAccountInstance
                 .connect(targetAccountSigner)
                 .submitTransaction(mapContractAddress, 0, playerEnterCalldata);
 
-            const playerMoveCalldata = mapInstance.interface
+            const playerMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [path]);
             
             const playerMoveTransaction = await targetAccountInstance
@@ -626,7 +626,7 @@ describe("PirateMechanics Contract", function () {
 
             const playerMoveReceipt = await playerMoveTransaction.wait();
             const arrival = getParamFromEvent(
-                mapInstance, playerMoveReceipt, "arrival", "PlayerMove");
+                mapsInstance, playerMoveReceipt, "arrival", "PlayerMove");
 
             await time.increaseTo(arrival);
 
@@ -652,7 +652,7 @@ describe("PirateMechanics Contract", function () {
             }
 
             // Cleanup (revert to start location)
-            const revertMoveCalldata = mapInstance.interface
+            const revertMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [[7, 2, 1, 0]]);
             
             const revertMoveTransaction = await targetAccountInstance
@@ -661,7 +661,7 @@ describe("PirateMechanics Contract", function () {
 
             const revertMoveReceipt = await revertMoveTransaction.wait();
             const revertArrival = getParamFromEvent(
-                mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
+                mapsInstance, revertMoveReceipt, "arrival", "PlayerMove");
                 
             await time.increaseTo(revertArrival);   
         });
@@ -675,14 +675,14 @@ describe("PirateMechanics Contract", function () {
                 2  // Turn 1 (Water tile not ajacent to pirate)
             ];
 
-            const mapContractAddress = await mapInstance.address;
+            const mapContractAddress = await mapsInstance.address;
             const pirateMechanicsAddress = await pirateMechanicsInstance.address;
             const pirateAccountSigner = await ethers.provider.getSigner(account1);
             const pirateAccountAddress = await pirateAccountInstance.address;
             const targetAccountSigner = await ethers.provider.getSigner(account2);
             const targetAccountAddress = await targetAccountInstance.address;
 
-            const playerMoveCalldata = mapInstance.interface
+            const playerMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [path]);
             
             const playerMoveTransaction = await targetAccountInstance
@@ -691,7 +691,7 @@ describe("PirateMechanics Contract", function () {
 
             const playerMoveReceipt = await playerMoveTransaction.wait();
             const arrival = getParamFromEvent(
-                mapInstance, playerMoveReceipt, "arrival", "PlayerMove");
+                mapsInstance, playerMoveReceipt, "arrival", "PlayerMove");
 
             await time.increaseTo(arrival);
 
@@ -717,7 +717,7 @@ describe("PirateMechanics Contract", function () {
             }
 
             // Cleanup (revert to start location)
-            const revertMoveCalldata = mapInstance.interface
+            const revertMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [[2, 1, 0]]);
             
             const revertMoveTransaction = await targetAccountInstance
@@ -726,7 +726,7 @@ describe("PirateMechanics Contract", function () {
 
             const revertMoveReceipt = await revertMoveTransaction.wait();
             const revertArrival = getParamFromEvent(
-                mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
+                mapsInstance, revertMoveReceipt, "arrival", "PlayerMove");
                 
             await time.increaseTo(revertArrival);   
         });
@@ -748,14 +748,14 @@ describe("PirateMechanics Contract", function () {
             const totalTravelTime = turns * MapConfig.MOVEMENT_TURN_DURATION;
             const interceptionWindowInSeconds = totalTravelTime / totalTilesPacked / 2;
 
-            const mapContractAddress = await mapInstance.address;
+            const mapContractAddress = await mapsInstance.address;
             const pirateMechanicsAddress = await pirateMechanicsInstance.address;
             const pirateAccountSigner = await ethers.provider.getSigner(account1);
             const pirateAccountAddress = await pirateAccountInstance.address;
             const targetAccountSigner = await ethers.provider.getSigner(account2);
             const targetAccountAddress = await targetAccountInstance.address;
 
-            const playerMoveCalldata = mapInstance.interface
+            const playerMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [path]);
             
             const playerMoveTransaction = await targetAccountInstance
@@ -764,7 +764,7 @@ describe("PirateMechanics Contract", function () {
 
             const playerMoveReceipt = await playerMoveTransaction.wait();
             const arrival = getParamFromEvent(
-                mapInstance, playerMoveReceipt, "arrival", "PlayerMove");
+                mapsInstance, playerMoveReceipt, "arrival", "PlayerMove");
 
             // Increase time to move the target out of reach of the pirate
             await time.increase(interceptionWindowInSeconds + 1);
@@ -793,7 +793,7 @@ describe("PirateMechanics Contract", function () {
             // Cleanup (revert to start location)
             await time.increaseTo(arrival)
 
-            const revertMoveCalldata = mapInstance.interface
+            const revertMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [[21, 20, 15, 10, 5, 0]]);
             
             const revertMoveTransaction = await targetAccountInstance
@@ -802,7 +802,7 @@ describe("PirateMechanics Contract", function () {
 
             const revertMoveReceipt = await revertMoveTransaction.wait();
             const revertArrival = getParamFromEvent(
-                mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
+                mapsInstance, revertMoveReceipt, "arrival", "PlayerMove");
                 
             await time.increaseTo(revertArrival);   
         });
@@ -826,7 +826,7 @@ describe("PirateMechanics Contract", function () {
             const interceptionWindowInSeconds = totalTravelTime / totalTilesPacked / 2;
 
             const fuelAsset = getAssetByResource(Resource.Fuel);
-            const mapContractAddress = await mapInstance.address;
+            const mapContractAddress = await mapsInstance.address;
             const pirateMechanicsAddress = await pirateMechanicsInstance.address;
             const pirateAccountSigner = await ethers.provider.getSigner(account1);
             const pirateAccountAddress = await pirateAccountInstance.address;
@@ -834,7 +834,7 @@ describe("PirateMechanics Contract", function () {
             const targetAccountAddress = await targetAccountInstance.address;
             const strartingTime = await time.latest();
 
-            const playerMoveCalldata = mapInstance.interface
+            const playerMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [path]);
 
             const playerMoveTransaction = await targetAccountInstance
@@ -843,7 +843,7 @@ describe("PirateMechanics Contract", function () {
             const playerMoveReceipt = await playerMoveTransaction.wait();
             
             const arrival = getParamFromEvent(
-                mapInstance, playerMoveReceipt, "arrival", "PlayerMove");
+                mapsInstance, playerMoveReceipt, "arrival", "PlayerMove");
 
             // Increase time but not engough to move the target out of reach of the pirate
             await time.increaseTo(strartingTime + interceptionWindowInSeconds - 1);
@@ -872,7 +872,7 @@ describe("PirateMechanics Contract", function () {
             // Cleanup (revert to start location)
             await time.increaseTo(arrival);
 
-            const revertMoveCalldata = mapInstance.interface
+            const revertMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [[22, 21, 20, 15, 10, 5, 0]]);
 
             const revertMoveTransaction = await targetAccountInstance
@@ -881,7 +881,7 @@ describe("PirateMechanics Contract", function () {
                 
             const revertMoveReceipt = await revertMoveTransaction.wait();
             const revertArrival = getParamFromEvent(
-                mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
+                mapsInstance, revertMoveReceipt, "arrival", "PlayerMove");
 
             await time.increaseTo(revertArrival);
         });
@@ -905,7 +905,7 @@ describe("PirateMechanics Contract", function () {
             const interceptionWindowInSeconds = totalTravelTime / totalTilesPacked / 2;
 
             const fuelAsset = getAssetByResource(Resource.Fuel);
-            const mapContractAddress = await mapInstance.address;
+            const mapContractAddress = await mapsInstance.address;
             const inventoriesAddress = await inventoriesInstance.address;
             const pirateMechanicsAddress = await pirateMechanicsInstance.address;
             const systemSigner = await ethers.provider.getSigner(system);
@@ -924,7 +924,7 @@ describe("PirateMechanics Contract", function () {
                 .connect(systemSigner)
                 .__assignFungibleToken(pirateAccountAddress, Inventory.Ship, fuelAsset.contractAddress, PirateMechanicsConfig.BASE_FUEL_COST);
 
-            const playerMoveCalldata = mapInstance.interface
+            const playerMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [path]);
 
             await targetAccountInstance
@@ -1031,12 +1031,12 @@ describe("PirateMechanics Contract", function () {
                 5   // Turn 1 (Ajeacent to target)
             ];
 
-            const mapContractAddress = await mapInstance.address;
+            const mapContractAddress = await mapsInstance.address;
             const pirateMechanicsAddress = await pirateMechanicsInstance.address;
             const anotherPirateAccountSigner = await ethers.provider.getSigner(account3);
             const anotherTargetAccountAddress = await anotherTargetAccountInstance.address;
     
-            const playerMoveCalldata = mapInstance.interface
+            const playerMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [path]);
 
             const playerMovetransaction = await anotherPirateAccountInstance
@@ -1045,7 +1045,7 @@ describe("PirateMechanics Contract", function () {
             const playerMoveReceipt = await playerMovetransaction.wait();
 
             const arrival = getParamFromEvent(
-                mapInstance, playerMoveReceipt, "arrival", "PlayerMove");
+                mapsInstance, playerMoveReceipt, "arrival", "PlayerMove");
             await time.increaseTo(arrival);
 
             // Ensure the target is idle
@@ -1073,7 +1073,7 @@ describe("PirateMechanics Contract", function () {
             }
 
             // Cleanup (revert to start location)
-            const revertMoveCalldata = mapInstance.interface
+            const revertMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [[5, 0]]);
 
             const revertMoveTransaction = await anotherPirateAccountInstance
@@ -1082,7 +1082,7 @@ describe("PirateMechanics Contract", function () {
                 
             const revertMoveReceipt = await revertMoveTransaction.wait();
             const revertArrival = getParamFromEvent(
-                mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
+                mapsInstance, revertMoveReceipt, "arrival", "PlayerMove");
 
             await time.increaseTo(revertArrival);
         });
@@ -1108,14 +1108,14 @@ describe("PirateMechanics Contract", function () {
                 5   // Turn 1 (Ajeacent to pirate)
             ];
 
-            const mapContractAddress = await mapInstance.address;
+            const mapContractAddress = await mapsInstance.address;
             const pirateMechanicsAddress = await pirateMechanicsInstance.address;
             const anotherPirateAccountSigner = await ethers.provider.getSigner(account3);
             const anotherPirateAccountAddress = await anotherPirateAccountInstance.address;
             const anotherTargetAccountSigner = await ethers.provider.getSigner(account4);
             const anotherTargetAccountAddress = await anotherTargetAccountInstance.address;
     
-            const playerMoveCalldata = mapInstance.interface
+            const playerMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [path]);
 
             const playerMovetransaction = await anotherTargetAccountInstance
@@ -1124,7 +1124,7 @@ describe("PirateMechanics Contract", function () {
             const playerMoveReceipt = await playerMovetransaction.wait();
 
             const arrival = getParamFromEvent(
-                mapInstance, playerMoveReceipt, "arrival", "PlayerMove");
+                mapsInstance, playerMoveReceipt, "arrival", "PlayerMove");
             await time.increaseTo(arrival);
 
             // Act
@@ -1163,7 +1163,7 @@ describe("PirateMechanics Contract", function () {
             const anotherTargetAccountAddress = await anotherTargetAccountInstance.address;
             
             // Act
-            const mapPlayerData = await mapInstance
+            const mapPlayerData = await mapsInstance
                 .getPlayerData(anotherTargetAccountAddress);
             
             const confrontationData = await pirateMechanicsInstance
@@ -1180,7 +1180,7 @@ describe("PirateMechanics Contract", function () {
             const anotherTargetAccountAddress = await anotherTargetAccountInstance.address;
             
             // Act
-            const mapPlayerData = await mapInstance
+            const mapPlayerData = await mapsInstance
                 .getPlayerData(anotherPirateAccountAddress);
             
             const confrontationData = await pirateMechanicsInstance
@@ -1212,7 +1212,7 @@ describe("PirateMechanics Contract", function () {
             ];
 
             // Setup 
-            const mapContractAddress = await mapInstance.address;
+            const mapContractAddress = await mapsInstance.address;
             const pirateMechanicsAddress = await pirateMechanicsInstance.address;
             const anotherPirateAccountSigner = await ethers.provider.getSigner(account3);
             const anotherPirateAccountAddress = await anotherPirateAccountInstance.address;
@@ -1226,7 +1226,7 @@ describe("PirateMechanics Contract", function () {
             await time.increaseTo(confrontation.expiration);
 
             // Ensure not idle
-            const playerMoveCalldata = mapInstance.interface
+            const playerMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [path]);
 
             const playerMovetransaction = await anotherPirateAccountInstance
@@ -1235,7 +1235,7 @@ describe("PirateMechanics Contract", function () {
             const playerMoveReceipt = await playerMovetransaction.wait();
 
             const arrival = getParamFromEvent(
-                mapInstance, playerMoveReceipt, "arrival", "PlayerMove");
+                mapsInstance, playerMoveReceipt, "arrival", "PlayerMove");
             await time.increaseTo(arrival);
 
             // Act
@@ -1280,16 +1280,16 @@ describe("PirateMechanics Contract", function () {
             targetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAccount);
 
             // Add another pirate and target to the map
-            const playerEnterCalldata = mapInstance.interface
+            const playerEnterCalldata = mapsInstance.interface
                 .encodeFunctionData("playerEnter");
 
             await pirateAccountInstance
                 .connect(await ethers.provider.getSigner(account1))
-                .submitTransaction(await mapInstance.address, 0, playerEnterCalldata);
+                .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
 
             await targetAccountInstance
                 .connect(await ethers.provider.getSigner(account2))
-                .submitTransaction(await mapInstance.address, 0, playerEnterCalldata);
+                .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
         });
 
         it ("Should not accept an offer when the target was not intercepted", async function () {
@@ -1353,7 +1353,7 @@ describe("PirateMechanics Contract", function () {
             // Setup
             const ironAsset = getAssetByResource(Resource.Iron);
             const goldAsset = getAssetByResource(Resource.Gold);
-            const mapContractAddress = await mapInstance.address;
+            const mapContractAddress = await mapsInstance.address;
             const pirateMechanicsAddress = await pirateMechanicsInstance.address;
             const pirateAccountSigner = await ethers.provider.getSigner(account1);
             const pirateAccountAddress = await pirateAccountInstance.address;
@@ -1423,7 +1423,7 @@ describe("PirateMechanics Contract", function () {
             await time.increaseTo(expiration);
 
             // Move target to new location
-            const revertMoveCalldata = mapInstance.interface
+            const revertMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [[0, 1]]);
 
             const revertMoveTransaction = await targetAccountInstance
@@ -1432,7 +1432,7 @@ describe("PirateMechanics Contract", function () {
                 
             const revertMoveReceipt = await revertMoveTransaction.wait();
             const revertArrival = getParamFromEvent(
-                mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
+                mapsInstance, revertMoveReceipt, "arrival", "PlayerMove");
 
             await time.increaseTo(revertArrival);
         });
@@ -1442,7 +1442,7 @@ describe("PirateMechanics Contract", function () {
             // Setup
             const ironAsset = getAssetByResource(Resource.Iron);
             const goldAsset = getAssetByResource(Resource.Gold);
-            const mapContractAddress = await mapInstance.address;
+            const mapContractAddress = await mapsInstance.address;
             const pirateMechanicsAddress = await pirateMechanicsInstance.address;
             const pirateAccountSigner = await ethers.provider.getSigner(account1);
             const pirateAccountAddress = await pirateAccountInstance.address;
@@ -1513,7 +1513,7 @@ describe("PirateMechanics Contract", function () {
             await time.increaseTo(expiration);
 
             // Move target to new location
-            const revertMoveCalldata = mapInstance.interface
+            const revertMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [[1, 0]]);
 
             const revertMoveTransaction = await targetAccountInstance
@@ -1522,7 +1522,7 @@ describe("PirateMechanics Contract", function () {
                 
             const revertMoveReceipt = await revertMoveTransaction.wait();
             const revertArrival = getParamFromEvent(
-                mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
+                mapsInstance, revertMoveReceipt, "arrival", "PlayerMove");
 
             await time.increaseTo(revertArrival);
         });
@@ -1650,7 +1650,7 @@ describe("PirateMechanics Contract", function () {
             const targetAccountAddress = await targetAccountInstance.address;
             
             // Act
-            const mapPlayerData = await mapInstance
+            const mapPlayerData = await mapsInstance
                 .getPlayerData(targetAccountAddress);
  
             // Assert 
@@ -1663,7 +1663,7 @@ describe("PirateMechanics Contract", function () {
             const pirateAccountAddress = await pirateAccountInstance.address;
             
             // Act
-            const mapPlayerData = await mapInstance
+            const mapPlayerData = await mapsInstance
                 .getPlayerData(pirateAccountAddress);
 
             // Assert 
@@ -1698,16 +1698,16 @@ describe("PirateMechanics Contract", function () {
             targetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAccount);
 
             // Add another pirate and target to the map
-            const playerEnterCalldata = mapInstance.interface
+            const playerEnterCalldata = mapsInstance.interface
                 .encodeFunctionData("playerEnter");
 
             await pirateAccountInstance
                 .connect(await ethers.provider.getSigner(account1))
-                .submitTransaction(await mapInstance.address, 0, playerEnterCalldata);
+                .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
 
             await targetAccountInstance
                 .connect(await ethers.provider.getSigner(account2))
-                .submitTransaction(await mapInstance.address, 0, playerEnterCalldata);
+                .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
         });
 
         it ("Should not allow a target to attempt an escape when the target was not intercepted", async function () {
@@ -1742,7 +1742,7 @@ describe("PirateMechanics Contract", function () {
         it ("Should not allow a target to attempt an escape when the dealine for the target to respond expired", async function () {
 
             // Setup
-            const mapContractAddress = await mapInstance.address;
+            const mapContractAddress = await mapsInstance.address;
             const pirateMechanicsAddress = await pirateMechanicsInstance.address;
             const pirateAccountSigner = await ethers.provider.getSigner(account1);
             const targetAccountSigner = await ethers.provider.getSigner(account2);
@@ -1788,7 +1788,7 @@ describe("PirateMechanics Contract", function () {
             await time.increaseTo(expiration);
 
             // Move target to new location
-            const revertMoveCalldata = mapInstance.interface
+            const revertMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [[0, 1]]);
 
             const revertMoveTransaction = await targetAccountInstance
@@ -1797,7 +1797,7 @@ describe("PirateMechanics Contract", function () {
                 
             const revertMoveReceipt = await revertMoveTransaction.wait();
             const revertArrival = getParamFromEvent(
-                mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
+                mapsInstance, revertMoveReceipt, "arrival", "PlayerMove");
 
             await time.increaseTo(revertArrival);
         });
@@ -1806,7 +1806,7 @@ describe("PirateMechanics Contract", function () {
 
             // Setup
             const fuelAsset = getAssetByResource(Resource.Fuel);
-            const mapContractAddress = await mapInstance.address;
+            const mapContractAddress = await mapsInstance.address;
             const pirateMechanicsAddress = await pirateMechanicsInstance.address;
             const pirateAccountSigner = await ethers.provider.getSigner(account1);
             const targetAccountSigner = await ethers.provider.getSigner(account2);
@@ -1848,7 +1848,7 @@ describe("PirateMechanics Contract", function () {
             await time.increaseTo(expiration);
 
             // Move target to new location
-            const revertMoveCalldata = mapInstance.interface
+            const revertMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [[1, 0]]);
 
             const revertMoveTransaction = await targetAccountInstance
@@ -1857,7 +1857,7 @@ describe("PirateMechanics Contract", function () {
                 
             const revertMoveReceipt = await revertMoveTransaction.wait();
             const revertArrival = getParamFromEvent(
-                mapInstance, revertMoveReceipt, "arrival", "PlayerMove");
+                mapsInstance, revertMoveReceipt, "arrival", "PlayerMove");
 
             await time.increaseTo(revertArrival);
         });
@@ -1946,16 +1946,16 @@ describe("PirateMechanics Contract", function () {
                 targetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAccountAddress);
 
                 // Add another pirate and target to the map
-                const playerEnterCalldata = mapInstance.interface
+                const playerEnterCalldata = mapsInstance.interface
                     .encodeFunctionData("playerEnter");
 
                 await pirateAccountInstance
                     .connect(await ethers.provider.getSigner(account1))
-                    .submitTransaction(await mapInstance.address, 0, playerEnterCalldata);
+                    .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
 
                 await targetAccountInstance
                     .connect(await ethers.provider.getSigner(account2))
-                    .submitTransaction(await mapInstance.address, 0, playerEnterCalldata);
+                    .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
 
                 const interceptCalldata = pirateMechanicsInstance.interface
                     .encodeFunctionData("intercept", [targetAccountAddress, 0]);
@@ -2033,16 +2033,16 @@ describe("PirateMechanics Contract", function () {
                 targetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAccountAddress);
 
                 // Add another pirate and target to the map
-                const playerEnterCalldata = mapInstance.interface
+                const playerEnterCalldata = mapsInstance.interface
                     .encodeFunctionData("playerEnter");
 
                 await pirateAccountInstance
                     .connect(await ethers.provider.getSigner(account1))
-                    .submitTransaction(await mapInstance.address, 0, playerEnterCalldata);
+                    .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
 
                 await targetAccountInstance
                     .connect(await ethers.provider.getSigner(account2))
-                    .submitTransaction(await mapInstance.address, 0, playerEnterCalldata);
+                    .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
 
                     const interceptCalldata = pirateMechanicsInstance.interface
                     .encodeFunctionData("intercept", [targetAccountAddress, 0]);
@@ -2153,16 +2153,16 @@ describe("PirateMechanics Contract", function () {
             targetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAccountAddress);
 
             // Add another pirate and target to the map
-            const playerEnterCalldata = mapInstance.interface
+            const playerEnterCalldata = mapsInstance.interface
                 .encodeFunctionData("playerEnter");
 
             await pirateAccountInstance
                 .connect(await ethers.provider.getSigner(account1))
-                .submitTransaction(await mapInstance.address, 0, playerEnterCalldata);
+                .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
 
             await targetAccountInstance
                 .connect(await ethers.provider.getSigner(account2))
-                .submitTransaction(await mapInstance.address, 0, playerEnterCalldata);
+                .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
 
             const interceptCalldata = pirateMechanicsInstance.interface
                 .encodeFunctionData("intercept", [targetAccountAddress, 0]);
@@ -2544,16 +2544,16 @@ describe("PirateMechanics Contract", function () {
                 const targetAccountSigner = await ethers.provider.getSigner(account2);
                 
                 // Add pirate and target to the map
-                const playerEnterCalldata = mapInstance.interface
+                const playerEnterCalldata = mapsInstance.interface
                     .encodeFunctionData("playerEnter");
 
                 await pirateAccountInstance
                     .connect(pirateAccountSigner)
-                    .submitTransaction(await mapInstance.address, 0, playerEnterCalldata);
+                    .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
 
                 await targetAccountInstance
                     .connect(targetAccountSigner)
-                    .submitTransaction(await mapInstance.address, 0, playerEnterCalldata);
+                    .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
 
                 const interceptCalldata = pirateMechanicsInstance.interface
                     .encodeFunctionData("intercept", [targetAccountAddress, 0]);

@@ -5,6 +5,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
+import "hardhat/console.sol";
+
 import "../IMaps.sol";
 import "../types/MapEnums.sol";
 import "../types/MapDataTypes.sol";
@@ -1298,7 +1300,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     /// | 0                 | 2                 | 4                 | 6                 | 8                 | 10                | 12                | 14                | 16                | 18                | 20                | 22                | 24                | 26                | 28                | 30                | 32                | 34                | 36                | 38                | 40                |
     ///  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     function _getMovementPenalty(uint16 tileIndex) 
-        internal view 
+        public view 
         returns (uint16 penalty)
     {
         // No penalty if tile is underwater
@@ -1316,15 +1318,20 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         // Vegetation
         if (bytes8(0) != tileDataDynamic[tileIndex].vegetationData)
         {
-            uint vegigationLevelCenter = uint(bytes32(tileDataDynamic[tileIndex].vegetationData)) 
-                >> (uint(HexSection.C) * VEGETATION_PACKING_SECTION_BIT_LENGTH) & VEGETATION_PACKING_LEVEL_MASK; 
+            uint vegigationLevelCenter = (
+                uint64(tileDataDynamic[tileIndex].vegetationData) >> 
+                (uint(HexSection.C) * VEGETATION_PACKING_SECTION_BIT_LENGTH)
+            ) & VEGETATION_PACKING_LEVEL_MASK; 
             uint vegitationLevelSum = vegigationLevelCenter;
 
             for (uint i = uint(HexSection.NE); i <= uint(HexSection.NW); i++)
             {
                 // If center and one of the fans has no level, skip
-                uint vegitationLevelSection = uint(bytes32(tileDataDynamic[tileIndex].vegetationData) 
-                    >> (i * VEGETATION_PACKING_SECTION_BIT_LENGTH)) & VEGETATION_PACKING_LEVEL_MASK;
+                uint vegitationLevelSection = (
+                    uint64(tileDataDynamic[tileIndex].vegetationData) >> 
+                    (i * VEGETATION_PACKING_SECTION_BIT_LENGTH)
+                ) & VEGETATION_PACKING_LEVEL_MASK;
+
                 if (0 == vegitationLevelSection && 0 == vegigationLevelCenter)
                 {
                     vegitationLevelSum = 0;

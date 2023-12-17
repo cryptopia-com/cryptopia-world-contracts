@@ -1,15 +1,15 @@
-import "../helpers/converters.ts";  
+import "../helpers/converters.ts";
 import ora from 'ora-classic';
 import path from 'path';
 import fs from 'fs';
 import hre, { ethers } from "hardhat";
-import { BigNumber } from "ethers";
 import { resolveEnum } from "../helpers/enums";
+import { encodeRockData, encodeVegetationData, encodeWildlifeData } from './helpers/encoders';
 import { Resource, Biome, Terrain } from '../types/enums';
 import { DeploymentManager } from "../helpers/deployments";
 import { waitForMinimumTime } from "../helpers/timers";
 import { MapJsonData } from './types/maps.input';
-import { TileInputStruct } from "../../typechain-types/contracts/source/game/maps/concrete/CryptopiaMaps.js";
+import { CryptopiaMaps } from "../../typechain-types/contracts/source/game/maps/concrete/CryptopiaMaps.js";  
 
 const chalk = require('chalk');
 
@@ -19,7 +19,7 @@ const MIN_TIME = 1000;
 // Default values
 const DEFAULT_BASE_PATH = './data/game/maps/';
 const DEFAULT_FILE = 'genesis';
-const DEFAULT_BATCH_SIZE = 5;
+const DEFAULT_BATCH_SIZE = 25;
 
 const deploymentManager = new DeploymentManager(hre.network.name);
 
@@ -39,7 +39,7 @@ async function main(mapsFilePath: string, batchSize: number)
     }
 
     const map: MapJsonData = require(mapsFilePath);
-    let tiles: TileInputStruct[];
+    let tiles: CryptopiaMaps.TileInputStruct[];
     try {
         tiles = resolve(map);
     } catch (error) {
@@ -177,11 +177,11 @@ async function main(mapsFilePath: string, batchSize: number)
  * Resolves the data from the JSON file.
  *
  * @param {MapJsonData} data - Data from the JSON file.
- * @returns {TileInputStruct[]} The resolved data.
+ * @returns {CryptopiaMaps.TileInputStruct[]} The resolved data.
  */
-function resolve(data: MapJsonData): TileInputStruct[]
+function resolve(data: MapJsonData): CryptopiaMaps.TileInputStruct[]
 {
-    const resolvedTiles: TileInputStruct[] = [];
+    const resolvedTiles: CryptopiaMaps.TileInputStruct[] = [];
     data.tiles.forEach((tileData, i) => {
         resolvedTiles.push({
             initialized: true,
@@ -195,9 +195,9 @@ function resolve(data: MapJsonData): TileInputStruct[]
             riverFlags: tileData.riverFlags,
             hasRoad: tileData.hasRoad,
             hasLake: tileData.hasLake,
-            vegetationData: tileData.vegetationData.toBytes(8),
-            rockData: tileData.rockData.toBytes(4),
-            wildlifeData: tileData.wildlifeData.toBytes(4),
+            rockData: encodeRockData(tileData.rockData),
+            vegetationData: encodeVegetationData(tileData.vegetationData),
+            wildlifeData: encodeWildlifeData(tileData.wildlifeData),
             resources: tileData.resources.map((resource) => {
                 return {
                     resource: resolveEnum(Resource, resource.resource),

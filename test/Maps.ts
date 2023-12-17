@@ -5,6 +5,7 @@ import { BytesLike } from "ethers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { getParamFromEvent} from '../scripts/helpers/events';
+import { encodeRockData, encodeVegetationData, encodeWildlifeData } from '../scripts/maps/helpers/encoders';
 import { REVERT_MODE, MapConfig } from "./settings/config";
 import { DEFAULT_ADMIN_ROLE, SYSTEM_ROLE } from "./settings/roles";   
 import { ZERO_ADDRESS } from "./settings/constants";
@@ -47,7 +48,7 @@ describe("Maps Contract", function () {
 
     // Instances
     let accountRegisterInstance: CryptopiaAccountRegister;
-    let mapInstance: CryptopiaMaps;
+    let mapsInstance: CryptopiaMaps;
     let mapsExtensionsInstance: CryptopiaMapsExtensions;
     let shipTokenInstance: CryptopiaShipToken;
     let titleDeedTokenInstance: CryptopiaTitleDeedToken;
@@ -91,39 +92,39 @@ describe("Maps Contract", function () {
         tiles: [
             
             // Bottom row
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
             
             // Second row
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 7, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 1, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: true, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Gold, amount: "500".toWei() }] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 7, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b1010101010101010101010101010' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: true, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Gold, amount: "500".toWei() }] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
             
             // Third row
-            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevationLevel: 4, waterLevel: 5, vegetationData: 2, rockData: 0, wildlifeData: 2, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Mountains, elevationLevel: 8, waterLevel: 5, vegetationData: 3, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [{ resource: Resource.Gold, amount: "500".toWei() }] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 2, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevationLevel: 4, waterLevel: 5, vegetationData: '0b101010101010101010101010101010101010101010' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b10000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Mountains, elevationLevel: 8, waterLevel: 5, vegetationData: '0b111111111111111111111111111111111111111111' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [{ resource: Resource.Gold, amount: "500".toWei() }] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
 
             // Fourth row
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 1, wildlifeData: 1, riverFlags: 0, hasRoad: true, hasLake: false, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Copper, amount: "5000".toWei() }] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: 1, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevationLevel: 4, waterLevel: 5, vegetationData: 3, rockData: 0, wildlifeData: 3, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 1, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b1010101010101010101010101010' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: true, hasLake: false, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Copper, amount: "5000".toWei() }] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Water, elevationLevel: 4, waterLevel: 5, vegetationData: '0b111111111111111111111111111111111111111111' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b11000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
 
             // Top row
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 2, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 2, waterLevel: 5, vegetationData: 0, rockData: 0, wildlifeData: 0, riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
         ]
     };
     
@@ -270,7 +271,7 @@ describe("Maps Contract", function () {
             ]);
 
         const mapsAddress = await mapsProxy.address;
-        mapInstance = await ethers.getContractAt("CryptopiaMaps", mapsAddress);
+        mapsInstance = await ethers.getContractAt("CryptopiaMaps", mapsAddress);
 
         // Grant roles
         await titleDeedTokenInstance.grantRole(SYSTEM_ROLE, mapsAddress);
@@ -334,7 +335,7 @@ describe("Maps Contract", function () {
         it("Should not contain any maps", async function () {
 
             // Setup 
-            const mapCount = await mapInstance.getMapCount();
+            const mapCount = await mapsInstance.getMapCount();
 
             // Assert 
             expect(mapCount).to.equal(0);
@@ -344,35 +345,35 @@ describe("Maps Contract", function () {
 
             // Act
             const signer = await ethers.provider.getSigner(other);
-            const operation = mapInstance
+            const operation = mapsInstance
                 .connect(signer)
                 .createMap(map.name, map.sizeX, map.sizeZ);
 
             // Assert
             await expect(operation).to.be
-                .revertedWithCustomError(mapInstance, "AccessControlUnauthorizedAccount")
+                .revertedWithCustomError(mapsInstance, "AccessControlUnauthorizedAccount")
                 .withArgs(other, DEFAULT_ADMIN_ROLE);
         });
 
         it ("Should not be able to finalize a map if there is no map under construction", async function () {
             
             // Act
-            const operation = mapInstance
+            const operation = mapsInstance
                 .finalizeMap();
 
             // Assert
             await expect(operation).to.be
-                .revertedWithCustomError(mapInstance, "MapUnderConstructionNotFound");
+                .revertedWithCustomError(mapsInstance, "MapUnderConstructionNotFound");
         });
 
         it ("Should be able to create a map if admin", async function () {
 
             // Act
-            await mapInstance.createMap(
+            await mapsInstance.createMap(
                 map.name, map.sizeX, map.sizeZ);
 
             // Assert
-            const actualMap = await mapInstance.getMapAt(0);
+            const actualMap = await mapsInstance.getMapAt(0);
             expect(actualMap.initialized).to.equal(true); 
             expect(actualMap.finalized).to.equal(false);
             expect(actualMap.sizeX).to.equal(map.sizeX);
@@ -383,29 +384,29 @@ describe("Maps Contract", function () {
         it ("Should not be able to create a map when the map name is already in use", async function () {
 
             // Act
-            const operation = mapInstance
+            const operation = mapsInstance
                 .createMap(map.name, map.sizeX, map.sizeZ);
 
             // Assert
             await expect(operation).to.be
-                .revertedWithCustomError(mapInstance, "MapNameAlreadyUsed");
+                .revertedWithCustomError(mapsInstance, "MapNameAlreadyUsed");
         });
 
         it ("Should not be able to finalzie a map before all tiles are added", async function () {
 
             // Act 
-            const operation = mapInstance
+            const operation = mapsInstance
                 .finalizeMap();
 
             // Assert
             await expect(operation).to.be
-                .revertedWithCustomError(mapInstance, "MapUnderConstructionIncomplete");
+                .revertedWithCustomError(mapsInstance, "MapUnderConstructionIncomplete");
         });
 
         it ("Should not be able to finalize a map that is under construction when not admin", async function () {
 
             // Setup
-            await mapInstance.setTiles(
+            await mapsInstance.setTiles(
                 map.tiles.map((_, index) => index), 
                 map.tiles.map(tile => ({
                     initialized: true, 
@@ -419,9 +420,9 @@ describe("Maps Contract", function () {
                     hasRoad: tile.hasRoad,
                     hasLake: tile.hasLake,
                     riverFlags: tile.riverFlags,
-                    rockData: tile.rockData.toString().toBytes(4),
-                    vegetationData: tile.vegetationData.toString().toBytes(8),
-                    wildlifeData: tile.wildlifeData.toString().toBytes(4),
+                    rockData: encodeRockData(tile.rockData),
+                    vegetationData: encodeVegetationData(tile.vegetationData),
+                    wildlifeData: encodeWildlifeData(tile.wildlifeData),
                     resources: tile.resources.map(resource => ({    
                         resource: resource.resource,
                         initialAmount: resource.amount
@@ -430,23 +431,23 @@ describe("Maps Contract", function () {
             
             // Act
             const signer = await ethers.provider.getSigner(other);
-            const operation = mapInstance
+            const operation = mapsInstance
                 .connect(signer)
                 .finalizeMap();
 
             // Assert
             await expect(operation).to.be
-                .revertedWithCustomError(mapInstance, "AccessControlUnauthorizedAccount")
+                .revertedWithCustomError(mapsInstance, "AccessControlUnauthorizedAccount")
                 .withArgs(other, DEFAULT_ADMIN_ROLE);
         });
 
         it ("Should be able to finalize a map that is under construction and complete when admin", async function () {
 
             // Act
-            await mapInstance.finalizeMap();
+            await mapsInstance.finalizeMap();
 
             // Assert
-            const actualMap = await mapInstance.getMapAt(0);
+            const actualMap = await mapsInstance.getMapAt(0);
             expect(actualMap.initialized).to.equal(true); 
             expect(actualMap.finalized).to.equal(true);
             expect(actualMap.sizeX).to.equal(map.sizeX);
@@ -463,20 +464,20 @@ describe("Maps Contract", function () {
         it ("Should not allow a non-player to enter a map", async function () {
 
             // Setup
-            const calldata = mapInstance.interface
+            const calldata = mapsInstance.interface
                 .encodeFunctionData("playerEnter");
 
             // Act
             const signer = await ethers.provider.getSigner(other);
             const operation = unregisteredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.address, 0, calldata);
+                .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
             if (REVERT_MODE)
             {
                 await expect(operation).to.be
-                    .revertedWithCustomError(mapInstance, "PlayerNotRegistered")
+                    .revertedWithCustomError(mapsInstance, "PlayerNotRegistered")
                     .withArgs(await unregisteredAccountInstance.address);
             } else 
             {
@@ -490,39 +491,39 @@ describe("Maps Contract", function () {
             // Setup
             const expectedTileIndex = 0;
 
-            const calldata = mapInstance.interface
+            const calldata = mapsInstance.interface
                 .encodeFunctionData("playerEnter");
 
             // Act
             const signer = await ethers.provider.getSigner(account1);
             const receipt = await registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.address, 0, calldata);
+                .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
             const expectedArrivalTime = await time.latest();
             await expect(receipt).to
-                .emit(mapInstance, "PlayerEnterMap")
+                .emit(mapsInstance, "PlayerEnterMap")
                 .withArgs(await registeredAccountInstance.address, map.name, expectedTileIndex, expectedArrivalTime);
         });
 
         it ("Should not allow a player to enter a map if they are already in a map", async function () {
 
             // Setup
-            const calldata = mapInstance.interface
+            const calldata = mapsInstance.interface
                 .encodeFunctionData("playerEnter");
 
             // Act
             const signer = await ethers.provider.getSigner(account1);
             const operation = registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.address, 0, calldata);
+                .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
             if (REVERT_MODE)
             {
                 await expect(operation).to.be
-                    .revertedWithCustomError(mapInstance, "PlayerAlreadyEnteredMap")
+                    .revertedWithCustomError(mapsInstance, "PlayerAlreadyEnteredMap")
                     .withArgs(await registeredAccountInstance.address);
             } else 
             {
@@ -541,20 +542,20 @@ describe("Maps Contract", function () {
 
             // Setup
             const invalidPath: any[] = [];
-            const calldata = mapInstance.interface
+            const calldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [invalidPath]);
 
             // Act
             const signer = await ethers.provider.getSigner(account1);
             const operation = registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.address, 0, calldata);
+                .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
             if (REVERT_MODE)
             {
                 await expect(operation).to.be
-                    .revertedWithCustomError(mapInstance, "PathInvalid");
+                    .revertedWithCustomError(mapsInstance, "PathInvalid");
             } else 
             {
                 await expect(operation).to
@@ -566,20 +567,20 @@ describe("Maps Contract", function () {
             
             // Setup
             const invalidPath = [0];
-            const calldata = mapInstance.interface
+            const calldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [invalidPath]);
 
             // Act
             const signer = await ethers.provider.getSigner(account1);
             const operation = registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.address, 0, calldata);
+                .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
             if (REVERT_MODE)
             {
                 await expect(operation).to.be
-                    .revertedWithCustomError(mapInstance, "PathInvalid");
+                    .revertedWithCustomError(mapsInstance, "PathInvalid");
             } else 
             {
                 await expect(operation).to
@@ -591,20 +592,20 @@ describe("Maps Contract", function () {
             
             // Setup
             const invalidPath = [1, 2, 3];
-            const calldata = mapInstance.interface
+            const calldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [invalidPath]);
 
             // Act
             const signer = await ethers.provider.getSigner(account1);
             const operation = registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.address, 0, calldata);
+                .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
             if (REVERT_MODE)
             {
                 await expect(operation).to.be
-                    .revertedWithCustomError(mapInstance, "PathInvalid");
+                    .revertedWithCustomError(mapsInstance, "PathInvalid");
             } else 
             {
                 await expect(operation).to
@@ -616,20 +617,20 @@ describe("Maps Contract", function () {
 
             // Setup
             const brokenPath = [0, 1, 3];
-            const calldata = mapInstance.interface
+            const calldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [brokenPath]);
 
             // Act
             const signer = await ethers.provider.getSigner(account1);
             const operation = registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.address, 0, calldata);
+                .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
             if (REVERT_MODE)
             {
                 await expect(operation).to.be
-                    .revertedWithCustomError(mapInstance, "PathInvalid");
+                    .revertedWithCustomError(mapsInstance, "PathInvalid");
             } else 
             {
                 await expect(operation).to
@@ -641,20 +642,20 @@ describe("Maps Contract", function () {
 
             // Setup
             const invalidPath = [0, 1, 6];
-            const calldata = mapInstance.interface
+            const calldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [invalidPath]);
 
             // Act
             const signer = await ethers.provider.getSigner(account1);
             const operation = registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.address, 0, calldata);
+                .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
             if (REVERT_MODE)
             {
                 await expect(operation).to.be
-                    .revertedWithCustomError(mapInstance, "PathInvalid");
+                    .revertedWithCustomError(mapsInstance, "PathInvalid");
             } else 
             {
                 await expect(operation).to
@@ -666,20 +667,20 @@ describe("Maps Contract", function () {
 
             // Setup
             const invalidPath = [0, 1, 2, 7, 12];
-            const calldata = mapInstance.interface
+            const calldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [invalidPath]);
 
             // Act
             const signer = await ethers.provider.getSigner(account1);
             const operation = registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.address, 0, calldata);
+                .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
             if (REVERT_MODE)
             {
                 await expect(operation).to.be
-                    .revertedWithCustomError(mapInstance, "PathInvalid");
+                    .revertedWithCustomError(mapsInstance, "PathInvalid");
             } else 
             {
                 await expect(operation).to
@@ -691,20 +692,20 @@ describe("Maps Contract", function () {
 
             // Setup
             const path = [0, 1, 2, 3];
-            const calldata = mapInstance.interface
+            const calldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [path]);
 
             // Act
             const signer = await ethers.provider.getSigner(other);
             const operation = unregisteredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.address, 0, calldata);
+                .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
             if (REVERT_MODE)
             {
                 await expect(operation).to.be
-                    .revertedWithCustomError(mapInstance, "PlayerNotEnteredMap")
+                    .revertedWithCustomError(mapsInstance, "PlayerNotEnteredMap")
                     .withArgs(await unregisteredAccountInstance.address);
             } else 
             {
@@ -724,21 +725,21 @@ describe("Maps Contract", function () {
                 0, 1, 2, 7, 13, 14, 13, 7, 2, 1, 
                 0, 1, 2]; 
 
-            const calldata = mapInstance.interface
+            const calldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [path]);
 
             // Act
             const signer = await ethers.provider.getSigner(account1);
             const receipt = await registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.address, 0, calldata);
+                .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
             const expectedArrivalTime = await time.latest() + (expectedTurns * MapConfig.MOVEMENT_TURN_DURATION);
             await time.increaseTo(expectedArrivalTime);
 
             await expect(receipt).to
-                .emit(mapInstance, "PlayerMove")
+                .emit(mapsInstance, "PlayerMove")
                 .withArgs(await registeredAccountInstance.address, path[0], path[path.length - 1], anyValue, expectedArrivalTime);
         });  
 
@@ -764,21 +765,21 @@ describe("Maps Contract", function () {
                 tiles: [2, 14, 2],
             };
 
-            const calldata = mapInstance.interface
+            const calldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [path]);
 
             // Act
             const signer = await ethers.provider.getSigner(account1);
             const transaction = await registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.address, 0, calldata);
+                .submitTransaction(await mapsInstance.address, 0, calldata);
             const receipt = await transaction.wait();
 
-            const player = getParamFromEvent(mapInstance, receipt, "player", "PlayerMove");
-            const origin = getParamFromEvent(mapInstance, receipt, "origin", "PlayerMove");
-            const destination = getParamFromEvent(mapInstance, receipt, "destination", "PlayerMove");
-            const route = getParamFromEvent(mapInstance, receipt, "route", "PlayerMove");
-            const arrival = getParamFromEvent(mapInstance, receipt, "arrival", "PlayerMove");
+            const player = getParamFromEvent(mapsInstance, receipt, "player", "PlayerMove");
+            const origin = getParamFromEvent(mapsInstance, receipt, "origin", "PlayerMove");
+            const destination = getParamFromEvent(mapsInstance, receipt, "destination", "PlayerMove");
+            const route = getParamFromEvent(mapsInstance, receipt, "route", "PlayerMove");
+            const arrival = getParamFromEvent(mapsInstance, receipt, "arrival", "PlayerMove");
             
             const expectedArrivalTime = await time.latest() + (expectedRoute.totalTurns * MapConfig.MOVEMENT_TURN_DURATION);
             await time.increaseTo(arrival);
@@ -835,25 +836,25 @@ describe("Maps Contract", function () {
          */
         before(async () => {
             
-            const calldata = mapInstance.interface
+            const calldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [path]);
             const signer = await ethers.provider.getSigner(account1);
             const transaction = await registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapInstance.address, 0, calldata);
+                .submitTransaction(await mapsInstance.address, 0, calldata);
             const receipt = await transaction.wait();
 
-            player = getParamFromEvent(mapInstance, receipt, "player", "PlayerMove");
-            origin = getParamFromEvent(mapInstance, receipt, "origin", "PlayerMove");
-            destination = getParamFromEvent(mapInstance, receipt, "destination", "PlayerMove");
-            route = getParamFromEvent(mapInstance, receipt, "route", "PlayerMove");
-            arrival = getParamFromEvent(mapInstance, receipt, "arrival", "PlayerMove");
+            player = getParamFromEvent(mapsInstance, receipt, "player", "PlayerMove");
+            origin = getParamFromEvent(mapsInstance, receipt, "origin", "PlayerMove");
+            destination = getParamFromEvent(mapsInstance, receipt, "destination", "PlayerMove");
+            route = getParamFromEvent(mapsInstance, receipt, "route", "PlayerMove");
+            arrival = getParamFromEvent(mapsInstance, receipt, "arrival", "PlayerMove");
         });
 
         it ("Should be in traveling state", async function () {
 
             // Act
-            const traveldata = await mapInstance.getPlayerTravelData(player);
+            const traveldata = await mapsInstance.getPlayerTravelData(player);
 
             // Assert
             expect(traveldata.isTraveling).to.equal(true);
@@ -869,7 +870,7 @@ describe("Maps Contract", function () {
             const routeIndex = 0; // Where the tile is packed in the route
             
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex, 
                 route, 
                 routeIndex, 
@@ -890,7 +891,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighborsOfOrigin)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex, 
                     route, 
                     routeIndex, 
@@ -910,7 +911,7 @@ describe("Maps Contract", function () {
             const routeIndex = 2; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex, 
                 route, 
                 routeIndex, 
@@ -932,7 +933,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighborsOfTile)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex, 
                     route, 
                     routeIndex, 
@@ -952,7 +953,7 @@ describe("Maps Contract", function () {
             const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
             
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex, 
                 route, 
                 routeIndex, 
@@ -973,7 +974,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighborsOfDestination)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex, 
                     route, 
                     routeIndex, 
@@ -993,7 +994,7 @@ describe("Maps Contract", function () {
             const routeIndex = 0; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex, 
                 route, 
                 routeIndex, 
@@ -1012,7 +1013,7 @@ describe("Maps Contract", function () {
             const routeIndex = 1; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex, 
                 route, 
                 routeIndex, 
@@ -1033,7 +1034,7 @@ describe("Maps Contract", function () {
             const routeIndex = 0; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex, 
                 route, 
                 routeIndex, 
@@ -1054,7 +1055,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex, 
                     route, 
                     routeIndex, 
@@ -1074,7 +1075,7 @@ describe("Maps Contract", function () {
             const routeIndex = 0; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex, 
                 route, 
                 routeIndex, 
@@ -1095,7 +1096,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex, 
                     route, 
                     routeIndex, 
@@ -1115,7 +1116,7 @@ describe("Maps Contract", function () {
             const routeIndex = 0; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex, 
                 route, 
                 routeIndex, 
@@ -1136,7 +1137,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex, 
                     route, 
                     routeIndex, 
@@ -1156,7 +1157,7 @@ describe("Maps Contract", function () {
             const routeIndex = 2; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex, 
                 route, 
                 routeIndex, 
@@ -1177,7 +1178,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex, 
                     route, 
                     routeIndex, 
@@ -1197,7 +1198,7 @@ describe("Maps Contract", function () {
             const routeIndex = 2; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex, 
                 route, 
                 routeIndex, 
@@ -1218,7 +1219,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex, 
                     route, 
                     routeIndex, 
@@ -1238,7 +1239,7 @@ describe("Maps Contract", function () {
             const routeIndex = 2; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex, 
                 route, 
                 routeIndex, 
@@ -1259,7 +1260,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex, 
                     route, 
                     routeIndex, 
@@ -1279,7 +1280,7 @@ describe("Maps Contract", function () {
             const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
             
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex, 
                 route, 
                 routeIndex, 
@@ -1300,7 +1301,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex, 
                     route, 
                     routeIndex, 
@@ -1320,7 +1321,7 @@ describe("Maps Contract", function () {
             const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
             
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex, 
                 route, 
                 routeIndex, 
@@ -1341,7 +1342,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex, 
                     route, 
                     routeIndex, 
@@ -1361,7 +1362,7 @@ describe("Maps Contract", function () {
             const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
             
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex, 
                 route, 
                 routeIndex, 
@@ -1382,7 +1383,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex, 
                     route, 
                     routeIndex, 
@@ -1417,7 +1418,7 @@ describe("Maps Contract", function () {
             const routeIndex = 0; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex, 
                 route, 
                 routeIndex,
@@ -1438,7 +1439,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route, 
                     routeIndex,
@@ -1458,7 +1459,7 @@ describe("Maps Contract", function () {
             const routeIndex = 0; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -1479,7 +1480,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route, 
                     routeIndex,
@@ -1499,7 +1500,7 @@ describe("Maps Contract", function () {
             const routeIndex = 0; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -1520,7 +1521,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route, 
                     routeIndex,
@@ -1540,7 +1541,7 @@ describe("Maps Contract", function () {
             const routeIndex = 2; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -1561,7 +1562,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route, 
                     routeIndex,
@@ -1581,7 +1582,7 @@ describe("Maps Contract", function () {
             const routeIndex = 2; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -1602,7 +1603,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route, 
                     routeIndex,
@@ -1622,7 +1623,7 @@ describe("Maps Contract", function () {
             const routeIndex = 2; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -1643,7 +1644,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route, 
                     routeIndex,
@@ -1663,7 +1664,7 @@ describe("Maps Contract", function () {
             const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
             
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -1684,7 +1685,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route, 
                     routeIndex,
@@ -1704,7 +1705,7 @@ describe("Maps Contract", function () {
             const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
             
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -1725,7 +1726,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route, 
                     routeIndex,
@@ -1745,7 +1746,7 @@ describe("Maps Contract", function () {
             const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
             
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -1766,7 +1767,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route, 
                     routeIndex,
@@ -1798,7 +1799,7 @@ describe("Maps Contract", function () {
             const routeIndex = 0; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -1819,7 +1820,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route, 
                     routeIndex,
@@ -1839,7 +1840,7 @@ describe("Maps Contract", function () {
             const routeIndex = 0; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -1860,7 +1861,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route, 
                     routeIndex,
@@ -1880,7 +1881,7 @@ describe("Maps Contract", function () {
             const routeIndex = 0; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -1901,7 +1902,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route, 
                     routeIndex,
@@ -1921,7 +1922,7 @@ describe("Maps Contract", function () {
             const routeIndex = 2; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -1942,7 +1943,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route, 
                     routeIndex,
@@ -1962,7 +1963,7 @@ describe("Maps Contract", function () {
             const routeIndex = 2; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -1983,7 +1984,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route, 
                     routeIndex,
@@ -2003,7 +2004,7 @@ describe("Maps Contract", function () {
             const routeIndex = 2; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -2024,7 +2025,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route, 
                     routeIndex,
@@ -2044,7 +2045,7 @@ describe("Maps Contract", function () {
             const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -2065,7 +2066,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route,
                     routeIndex,
@@ -2085,7 +2086,7 @@ describe("Maps Contract", function () {
             const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route,
                 routeIndex,
@@ -2106,7 +2107,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route,
                     routeIndex,
@@ -2126,7 +2127,7 @@ describe("Maps Contract", function () {
             const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route,
                 routeIndex,
@@ -2147,7 +2148,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route,
                     routeIndex,
@@ -2182,7 +2183,7 @@ describe("Maps Contract", function () {
             const routeIndex = 0; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -2203,7 +2204,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route, 
                     routeIndex,
@@ -2223,7 +2224,7 @@ describe("Maps Contract", function () {
             const routeIndex = 0; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -2244,7 +2245,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route, 
                     routeIndex,
@@ -2264,7 +2265,7 @@ describe("Maps Contract", function () {
             const routeIndex = 0; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -2285,7 +2286,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route, 
                     routeIndex,
@@ -2305,7 +2306,7 @@ describe("Maps Contract", function () {
             const routeIndex = 2; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -2326,7 +2327,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route, 
                     routeIndex,
@@ -2346,7 +2347,7 @@ describe("Maps Contract", function () {
             const routeIndex = 2; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -2367,7 +2368,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route, 
                     routeIndex,
@@ -2387,7 +2388,7 @@ describe("Maps Contract", function () {
             const routeIndex = 2; // Where the tile is packed in the route
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -2408,7 +2409,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route, 
                     routeIndex,
@@ -2428,7 +2429,7 @@ describe("Maps Contract", function () {
             const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route, 
                 routeIndex,
@@ -2449,7 +2450,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route,
                     routeIndex,
@@ -2469,7 +2470,7 @@ describe("Maps Contract", function () {
             const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route,
                 routeIndex,
@@ -2490,7 +2491,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route,
                     routeIndex,
@@ -2510,7 +2511,7 @@ describe("Maps Contract", function () {
             const routeIndex = 4; // Setting it to the total amount of packed tiles indicates the destination tile
 
             // Act
-            const isAlongRoute = await mapInstance.tileIsAlongRoute(
+            const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                 tileIndex,
                 route,
                 routeIndex,
@@ -2531,7 +2532,7 @@ describe("Maps Contract", function () {
             // Act
             for (let neighbor of neighbors)
             {
-                const isAlongRoute = await mapInstance.tileIsAlongRoute(
+                const isAlongRoute = await mapsInstance.tileIsAlongRoute(
                     neighbor.tileIndex,
                     route,
                     routeIndex,
@@ -2613,14 +2614,14 @@ describe("Maps Contract", function () {
 
             // Setup
             const tileIndex = 0;
-            const calldata = mapInstance.interface
+            const calldata = mapsInstance.interface
                 .encodeFunctionData("playerEnter");
 
             // Act
             const signer = await ethers.provider.getSigner(account1);
             await accountInstance1
                 .connect(signer)
-                .submitTransaction(await mapInstance.address, 0, calldata);
+                .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
             const data = await mapsExtensionsInstance.getTileDataDynamic(tileIndex, 1);
@@ -2635,14 +2636,14 @@ describe("Maps Contract", function () {
 
             // Setup
             const tileIndex = 0;
-            const calldata = mapInstance.interface
+            const calldata = mapsInstance.interface
                 .encodeFunctionData("playerEnter");
 
             // Act
             const signer = await ethers.provider.getSigner(account2);
             await accountInstance2
                 .connect(signer)
-                .submitTransaction(await mapInstance.address, 0, calldata);
+                .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
             const data = await mapsExtensionsInstance.getTileDataDynamic(tileIndex, 1);
@@ -2657,24 +2658,24 @@ describe("Maps Contract", function () {
 
             // Setup
             const tileIndex = 0;
-            const calldata = mapInstance.interface
+            const calldata = mapsInstance.interface
                 .encodeFunctionData("playerEnter");
 
             // Act
             const signer3 = await ethers.provider.getSigner(account3);
             await accountInstance3
                 .connect(signer3)
-                .submitTransaction(await mapInstance.address, 0, calldata);
+                .submitTransaction(await mapsInstance.address, 0, calldata);
 
             const signer4 = await ethers.provider.getSigner(account4);
             await accountInstance4
                 .connect(signer4)
-                .submitTransaction(await mapInstance.address, 0, calldata);
+                .submitTransaction(await mapsInstance.address, 0, calldata);
 
             const signer5 = await ethers.provider.getSigner(account5);
             await accountInstance5
                 .connect(signer5)
-                .submitTransaction(await mapInstance.address, 0, calldata);
+                .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
             const data = await mapsExtensionsInstance.getTileDataDynamic(tileIndex, 1);
@@ -2691,14 +2692,14 @@ describe("Maps Contract", function () {
             const tileIndex = 0;
             const path = [0, 1]; 
 
-            const calldata = mapInstance.interface
+            const calldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [path]);
 
             // Act
             const signer = await ethers.provider.getSigner(account5);
             await accountInstance5
                 .connect(signer)
-                .submitTransaction(await mapInstance.address, 0, calldata);
+                .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
             const data = await mapsExtensionsInstance.getTileDataDynamic(tileIndex, 1);
@@ -2715,14 +2716,14 @@ describe("Maps Contract", function () {
             const tileIndex = 0;
             const path = [0, 1]; 
 
-            const calldata = mapInstance.interface
+            const calldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [path]);
 
             // Act
             const signer = await ethers.provider.getSigner(account3);
             await accountInstance3
                 .connect(signer)
-                .submitTransaction(await mapInstance.address, 0, calldata);
+                .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
             const data = await mapsExtensionsInstance.getTileDataDynamic(tileIndex, 1);
@@ -2739,14 +2740,14 @@ describe("Maps Contract", function () {
             const tileIndex = 0;
             const path = [0, 1]; 
 
-            const calldata = mapInstance.interface
+            const calldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [path]);
 
             // Act
             const signer = await ethers.provider.getSigner(account1);
             await accountInstance1
                 .connect(signer)
-                .submitTransaction(await mapInstance.address, 0, calldata);
+                .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
             const data = await mapsExtensionsInstance.getTileDataDynamic(tileIndex, 1);

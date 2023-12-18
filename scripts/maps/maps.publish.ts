@@ -18,8 +18,8 @@ const MIN_TIME = 1000;
 
 // Default values
 const DEFAULT_BASE_PATH = './data/game/maps/';
-const DEFAULT_FILE = 'genesis';
-const DEFAULT_BATCH_SIZE = 25;
+const DEFAULT_FILE = 'skale';
+const DEFAULT_BATCH_SIZE = 100;
 
 const deploymentManager = new DeploymentManager(hre.network.name);
 

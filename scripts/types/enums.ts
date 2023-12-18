@@ -56,13 +56,14 @@ export enum Terrain
     Seastead
 }
 
-export enum Biome
+export enum Biome 
 {
-    None, // Seastead only
+    None, 
     Plains,
     Grassland,
     Forest, // Allows minting of wood
     RainForest, // Allows minting of wood
+    Mangrove, // Allows minting of wood
     Desert,
     Tundra,
     Swamp,

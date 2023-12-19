@@ -6,25 +6,27 @@ const config : NethereumConfig =
     lang: 0, // CSharp 0, Vb.Net 1, FSharp 3
     autoCodeGen: true,
     contracts: [
-        "CryptopiaInventories",
-        "Whitelist",
-        "CryptopiaToken",
+        "CryptopiaERC20",
+        "CryptopiaERC721",
+        "CryptopiaAccount",
         "CryptopiaAccountRegister",
-        "CryptopiaAssetRegister",
-        "CryptopiaShipToken", 
-        "CryptopiaCrafting",
         "CryptopiaPlayerRegister", 
+        "CryptopiaAvatarRegister",
+        "CryptopiaAssetRegister",
+        "CryptopiaToken",
+        "CryptopiaAssetToken", 
+        "CryptopiaShipToken", 
         "CryptopiaToolToken", 
         "CryptopiaTitleDeedToken", 
-        "CryptopiaMaps", 
-        "CryptopiaMapsExtensions", 
-        "CryptopiaTitleDeedToken",
         "CryptopiaQuestToken", 
+        "CryptopiaMaps",
+        "CryptopiaMapsExtensions", 
+        "CryptopiaInventories",
         "CryptopiaQuests", 
+        "CryptopiaCrafting",
         "CryptopiaResourceGathering", 
-        "CryptopiaAssetToken", 
-        "CryptopiaNavalBattleMechanics", 
-        "CryptopiaPirateMechanics"
+        "CryptopiaPirateMechanics",
+        "CryptopiaNavalBattleMechanics"
     ]
 }
 

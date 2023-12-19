@@ -26,8 +26,17 @@ async function main() {
 
         const loader = ora("Porting..").start();
 
+        const abi: any[] = [];
+        for (let j = 0; j < contractArtifact.abi.length; j++)
+        {
+            if (contractArtifact.abi[j].type !== "function" || !contractArtifact.abi[j].name.startsWith('__'))
+            {
+                abi.push(contractArtifact.abi[j]);
+            }
+        }
+
         codegen.generateAllClasses(
-            JSON.stringify(contractArtifact.abi),
+            JSON.stringify(abi),
             contractArtifact.bytecode,
             contractName,
             nethereumConfig.namespace,

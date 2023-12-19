@@ -96,6 +96,14 @@ async function main() {
 
 
     //////////////////////////////////
+    ///// Deploy Avatar Register /////
+    //////////////////////////////////
+    const [avatarRegisterProxy, avatarRegisterDeploymentStatus] = await ensureDeployed(
+        "CryptopiaAvatarRegister", []);
+    const avatarRegisterAddress = await avatarRegisterProxy.address;
+
+
+    //////////////////////////////////
     ////// Deploy Asset Register /////
     //////////////////////////////////
     const [assetRegisterProxy, assetRegisterDeploymentStatus] = await ensureDeployed(

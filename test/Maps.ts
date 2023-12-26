@@ -2600,7 +2600,7 @@ describe("Maps Contract", function () {
             const tileIndex = 0;
 
             // Act
-            const data = await mapsExtensionsInstance.getTileDataDynamic(tileIndex, 1);
+            const data = await mapsExtensionsInstance["getTileDataDynamic(uint16,uint16)"](tileIndex, 1);
 
             // Assert
             expect(data[0].lastEnteredPlayers[0]).to.equal(ZERO_ADDRESS);
@@ -2624,7 +2624,7 @@ describe("Maps Contract", function () {
                 .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
-            const data = await mapsExtensionsInstance.getTileDataDynamic(tileIndex, 1);
+            const data = await mapsExtensionsInstance["getTileDataDynamic(uint16,uint16)"](tileIndex, 1);
             expect(data[0].lastEnteredPlayers[0]).to.equal(await accountInstance1.address);
             expect(data[0].lastEnteredPlayers[1]).to.equal(ZERO_ADDRESS);
             expect(data[0].lastEnteredPlayers[2]).to.equal(ZERO_ADDRESS);
@@ -2646,7 +2646,7 @@ describe("Maps Contract", function () {
                 .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
-            const data = await mapsExtensionsInstance.getTileDataDynamic(tileIndex, 1);
+            const data = await mapsExtensionsInstance["getTileDataDynamic(uint16,uint16)"](tileIndex, 1);
             expect(data[0].lastEnteredPlayers[0]).to.equal(await accountInstance2.address);
             expect(data[0].lastEnteredPlayers[1]).to.equal(await accountInstance1.address);
             expect(data[0].lastEnteredPlayers[2]).to.equal(ZERO_ADDRESS);
@@ -2678,7 +2678,7 @@ describe("Maps Contract", function () {
                 .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
-            const data = await mapsExtensionsInstance.getTileDataDynamic(tileIndex, 1);
+            const data = await mapsExtensionsInstance["getTileDataDynamic(uint16,uint16)"](tileIndex, 1);
             expect(data[0].lastEnteredPlayers[0]).to.equal(await accountInstance5.address);
             expect(data[0].lastEnteredPlayers[1]).to.equal(await accountInstance4.address);
             expect(data[0].lastEnteredPlayers[2]).to.equal(await accountInstance3.address);
@@ -2702,7 +2702,7 @@ describe("Maps Contract", function () {
                 .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
-            const data = await mapsExtensionsInstance.getTileDataDynamic(tileIndex, 1);
+            const data = await mapsExtensionsInstance["getTileDataDynamic(uint16,uint16)"](tileIndex, 1);
             expect(data[0].lastEnteredPlayers[0]).to.equal(await accountInstance4.address);
             expect(data[0].lastEnteredPlayers[1]).to.equal(await accountInstance3.address);
             expect(data[0].lastEnteredPlayers[2]).to.equal(await accountInstance2.address);
@@ -2726,7 +2726,7 @@ describe("Maps Contract", function () {
                 .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
-            const data = await mapsExtensionsInstance.getTileDataDynamic(tileIndex, 1);
+            const data = await mapsExtensionsInstance["getTileDataDynamic(uint16,uint16)"](tileIndex, 1);
             expect(data[0].lastEnteredPlayers[0]).to.equal(await accountInstance4.address);
             expect(data[0].lastEnteredPlayers[1]).to.equal(await accountInstance2.address);
             expect(data[0].lastEnteredPlayers[2]).to.equal(await accountInstance1.address);
@@ -2750,7 +2750,7 @@ describe("Maps Contract", function () {
                 .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
-            const data = await mapsExtensionsInstance.getTileDataDynamic(tileIndex, 1);
+            const data = await mapsExtensionsInstance["getTileDataDynamic(uint16,uint16)"](tileIndex, 1);
             expect(data[0].lastEnteredPlayers[0]).to.equal(await accountInstance4.address);
             expect(data[0].lastEnteredPlayers[1]).to.equal(await accountInstance2.address);
             expect(data[0].lastEnteredPlayers[2]).to.equal(ZERO_ADDRESS);

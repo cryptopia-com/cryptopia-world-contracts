@@ -50,7 +50,7 @@ async function main(recipesFilePath: string, batchSize: number)
     }
 
     
-    const craftingAddress = deploymentManager.getDeployment("CryptopiaCrafting")?.address;
+    const craftingAddress = deploymentManager.getContractDeployment("CryptopiaCrafting")?.address;
 
     console.log(`\nFound ${chalk.bold(recipes.length.toString())} recipes to deploy on ${chalk.yellow(hre.network.name)}`);
     console.log(`Found ${chalk.green("CryptopiaCrafting")} at ${chalk.cyan(craftingAddress)}\n`);
@@ -105,12 +105,12 @@ function resolve(data: RecipeJsonData[]): CraftingRecipeStruct[]
         resolvedRecipes.push({
             level: recipeData.level,
             learnable: recipeData.learnable,
-            asset: deploymentManager.getDeployment(recipeData.asset).address,
+            asset: deploymentManager.getContractDeployment(recipeData.asset).address,
             item: recipeData.item.toBytes32(), 
             craftingTime: recipeData.craftingTime,
             ingredients: recipeData.ingredients.map((ingredient: IngredientJsonData) => {
                 return {
-                    asset: deploymentManager.getDeployment(ingredient.asset).address,
+                    asset: deploymentManager.getContractDeployment(ingredient.asset).address,
                     amount: ingredient.amount.toWei()
                 };
             })

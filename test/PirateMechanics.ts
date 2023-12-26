@@ -1164,7 +1164,7 @@ describe("PirateMechanics Contract", function () {
             
             // Act
             const mapPlayerData = await mapsInstance
-                .getPlayerData(anotherTargetAccountAddress);
+                .getPlayerNavigationData(anotherTargetAccountAddress);
             
             const confrontationData = await pirateMechanicsInstance
                 .getConfrontation(anotherTargetAccountAddress);
@@ -1181,7 +1181,7 @@ describe("PirateMechanics Contract", function () {
             
             // Act
             const mapPlayerData = await mapsInstance
-                .getPlayerData(anotherPirateAccountAddress);
+                .getPlayerNavigationData(anotherPirateAccountAddress);
             
             const confrontationData = await pirateMechanicsInstance
                 .getConfrontation(anotherTargetAccountAddress);
@@ -1651,7 +1651,7 @@ describe("PirateMechanics Contract", function () {
             
             // Act
             const mapPlayerData = await mapsInstance
-                .getPlayerData(targetAccountAddress);
+                .getPlayerNavigationData(targetAccountAddress);
  
             // Assert 
             expect(mapPlayerData.frozenUntil).to.equal(0);
@@ -1664,7 +1664,7 @@ describe("PirateMechanics Contract", function () {
             
             // Act
             const mapPlayerData = await mapsInstance
-                .getPlayerData(pirateAccountAddress);
+                .getPlayerNavigationData(pirateAccountAddress);
 
             // Assert 
             expect(mapPlayerData.frozenUntil).to.equal(0);

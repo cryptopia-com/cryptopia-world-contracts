@@ -50,7 +50,7 @@ async function main(questsFilePath: string, batchSize: number)
     }
 
     
-    const questTokenAddress = deploymentManager.getDeployment("CryptopiaQuestToken").address;
+    const questTokenAddress = deploymentManager.getContractDeployment("CryptopiaQuestToken").address;
 
     console.log(`\nFound ${chalk.bold(questItems.length.toString())} quests items to deploy on ${chalk.yellow(hre.network.name)}`);
     console.log(`Found ${chalk.green("CryptopiaQuestToken")} at ${chalk.cyan(questTokenAddress)}\n`);

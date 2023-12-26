@@ -51,7 +51,7 @@ async function main(toolsFilePath: string, batchSize: number)
         return;
     }
 
-    const toolTokenAddress = deploymentManager.getDeployment(
+    const toolTokenAddress = deploymentManager.getContractDeployment(
         "CryptopiaToolToken")?.address;
 
     console.log(`\nFound ${chalk.bold(tools.length.toString())} tools to deploy on ${chalk.yellow(hre.network.name)}`);

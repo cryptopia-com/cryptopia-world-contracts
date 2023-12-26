@@ -2,13 +2,20 @@ import fs from 'fs';
 import path from 'path';
 
 /**
- * Interface for deployment information.
+ * Interface for contract deployment information.
  */
-interface DeploymentInfo {
+interface ContractDeploymentInfo {
     address: string; // The address at which the contract is deployed
     contractName: string; // The name of the contract
     bytecode: string; // The bytecode of the contract
     verified: boolean; // Whether the contract has been verified on Etherscan
+}
+
+/**
+ * Interface for map deployment information.
+ */
+interface MapDeploymentInfo {
+    name: string;
 }
 
 /**
@@ -17,7 +24,8 @@ interface DeploymentInfo {
 export class DeploymentManager 
 {
     private networkName: string; // Name of the blockchain network.
-    private deploymentFilePath: string; // File path for the deployment JSON.
+    private contactDeploymentFilePath: string; // File path for the deployment JSON.
+    private mapDeploymentFilePath: string; // File path for the map deployment JSON.
 
     /**
      * Constructor: Initializes the DeploymentManager with a specific network name.
@@ -26,17 +34,22 @@ export class DeploymentManager
     constructor(networkName: string) 
     {
         this.networkName = networkName;
-        this.deploymentFilePath = path.join(__dirname, '../../.deployments', `${networkName}.json`);
+        this.contactDeploymentFilePath = path.join(__dirname, '../../.deployments', `${networkName}.contracts.json`);
+        this.mapDeploymentFilePath = path.join(__dirname, '../../.deployments', `${networkName}.maps.json`);
     }
+
+    //////////////////////////
+    // Contract Deployments //
+    //////////////////////////
 
     /**
      * Reads deployment information from the file system.
      * @returns An object mapping contract names to their deployment information.
      */
-    private readDeployments(): { [contractName: string]: DeploymentInfo } 
+    private readContractDeployments(): { [contractName: string]: ContractDeploymentInfo } 
     {
-        if (fs.existsSync(this.deploymentFilePath)) {
-            return JSON.parse(fs.readFileSync(this.deploymentFilePath, 'utf8'));
+        if (fs.existsSync(this.contactDeploymentFilePath)) {
+            return JSON.parse(fs.readFileSync(this.contactDeploymentFilePath, 'utf8'));
         }
         return {};
     }
@@ -45,15 +58,15 @@ export class DeploymentManager
      * Writes deployment information to the file system.
      * @param deployments - An object mapping contract names to their deployment information.
      */
-    private writeDeployments(deployments: { [contractName: string]: DeploymentInfo }): void 
+    private writeContractDeployments(deployments: { [contractName: string]: ContractDeploymentInfo }): void 
     {
-        const dirPath = path.dirname(this.deploymentFilePath);
+        const dirPath = path.dirname(this.contactDeploymentFilePath);
         if (!fs.existsSync(dirPath)) 
         {
             fs.mkdirSync(dirPath, { recursive: true });
         }
 
-        fs.writeFileSync(this.deploymentFilePath, JSON.stringify(deployments, null, 2));
+        fs.writeFileSync(this.contactDeploymentFilePath, JSON.stringify(deployments, null, 2));
     }
 
     /**
@@ -64,9 +77,9 @@ export class DeploymentManager
      * @param bytecode - The bytecode of the contract.
      * @param verified - Whether the contract has been verified on Etherscan.
      */
-    public saveDeployment(deploymentKey: string, contractName: string, contractAddress: string, bytecode: string, verified: boolean): void 
+    public saveContractDeployment(deploymentKey: string, contractName: string, contractAddress: string, bytecode: string, verified: boolean): void 
     {
-        const deployments = this.readDeployments();
+        const deployments = this.readContractDeployments();
         deployments[deploymentKey] = { 
             address: contractAddress,
             contractName: contractName,
@@ -74,7 +87,7 @@ export class DeploymentManager
             verified: verified
         };
 
-        this.writeDeployments(deployments);
+        this.writeContractDeployments(deployments);
     }
 
     /**
@@ -82,11 +95,11 @@ export class DeploymentManager
      * @param deploymentKey - The key to use for the deployment.
      * @param verified - Whether the contract has been verified on Etherscan.
      */
-    public setVerified(deploymentKey: string, verified: boolean): void
+    public setContractVerified(deploymentKey: string, verified: boolean): void
     {
-        const deployments = this.readDeployments();
+        const deployments = this.readContractDeployments();
         deployments[deploymentKey].verified = verified;
-        this.writeDeployments(deployments);
+        this.writeContractDeployments(deployments);
     }
 
     /**
@@ -94,9 +107,9 @@ export class DeploymentManager
      * @param deploymentKey - The key to use for the deployment.
      * @returns True if the contract is deployed, false otherwise.
      */
-    public isDeployed(deploymentKey: string): boolean 
+    public isContractDeployed(deploymentKey: string): boolean 
     {
-        const deployments = this.readDeployments();
+        const deployments = this.readContractDeployments();
         return !!deployments[deploymentKey];
     }
 
@@ -105,9 +118,9 @@ export class DeploymentManager
      * @param deploymentKey - The key to use for the deployment.
      * @returns DeploymentInfo if the contract is found, null otherwise.
      */
-    public getDeployment(deploymentKey: string): DeploymentInfo 
+    public getContractDeployment(deploymentKey: string): ContractDeploymentInfo 
     {
-        const deployments = this.readDeployments();
+        const deployments = this.readContractDeployments();
         if (deployments[deploymentKey]) {
             return deployments[deploymentKey];
         }
@@ -119,9 +132,9 @@ export class DeploymentManager
      * Retrieves all deployments' information.
      * @returns An object mapping contract names to their deployment information.
      */
-    public getDeployments(): { [contractName: string]: DeploymentInfo }
+    public getContractDeployments(): { [contractName: string]: ContractDeploymentInfo }
     {
-        return this.readDeployments();
+        return this.readContractDeployments();
     }
 
     /**
@@ -129,9 +142,9 @@ export class DeploymentManager
      * @param deploymentKey - The key to use for the deployment.
      * @returns True if the contract is verified, false otherwise.
      */
-    public isVerified(deploymentKey: string): boolean
+    public isContractVerified(deploymentKey: string): boolean
     {
-        const deployments = this.readDeployments();
+        const deployments = this.readContractDeployments();
         if (deployments[deploymentKey]) {
             return deployments[deploymentKey].verified;
         }
@@ -139,4 +152,80 @@ export class DeploymentManager
         throw `No deployment found for ${deploymentKey} on ${this.networkName}`;
     }
 
+    /////////////////////
+    // Map Deployments //
+    /////////////////////
+
+    /**
+     * Reads map deployment information from the file system.
+     * @returns An object mapping map names to their deployment information.
+     */
+    private readMapDeployments(): { [mapName: string]: MapDeploymentInfo }
+    {
+        if (fs.existsSync(this.mapDeploymentFilePath)) {
+            return JSON.parse(fs.readFileSync(this.mapDeploymentFilePath, 'utf8'));
+        }
+        return {};
+    }
+
+    /**
+     * Writes map deployment information to the file system.
+     * @param deployments - An object mapping map names to their deployment information.
+     */
+    private writeMapDeployments(deployments: { [mapName: string]: MapDeploymentInfo }): void
+    {
+        const dirPath = path.dirname(this.mapDeploymentFilePath);
+        if (!fs.existsSync(dirPath)) 
+        {
+            fs.mkdirSync(dirPath, { recursive: true });
+        }
+
+        fs.writeFileSync(this.mapDeploymentFilePath, JSON.stringify(deployments, null, 2));
+    }
+
+    /**
+     * Saves a map deployment to the deployment file.
+     * @param mapName - The name of the map.
+     */
+    public saveMapDeployment(mapName: string): void
+    {
+        const deployments = this.readMapDeployments();
+        deployments[mapName] = { name: mapName };
+        this.writeMapDeployments(deployments);
+    }
+
+    /**
+     * Checks if a map deployment exists.
+     * @param mapName - The name of the map.
+     * @returns True if the map is deployed, false otherwise.
+     */
+    public isMapDeployed(mapName: string): boolean
+    {
+        const deployments = this.readMapDeployments();
+        return !!deployments[mapName];
+    }
+
+    /**
+     * Retrieves a specific map deployment's information.
+     * @param mapName - The name of the map.
+     * @returns MapDeploymentInfo if the map is found, null otherwise.
+     */
+    public getMapDeployment(mapName: string): MapDeploymentInfo
+    {
+        const deployments = this.readMapDeployments();
+        if (deployments[mapName]) {
+            return deployments[mapName];
+        }
+        
+        throw `No deployment found for ${mapName} on ${this.networkName}`;
+    }
+
+    /**
+     * Retrieves all map deployments' information.
+     * @returns An object mapping map names to their deployment information.
+     */
+    public getMapDeployments(): { [mapName: string]: MapDeploymentInfo }
+    {
+        return this.readMapDeployments();
+    }
 }

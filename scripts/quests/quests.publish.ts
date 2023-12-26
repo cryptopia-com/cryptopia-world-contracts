@@ -52,7 +52,7 @@ async function main(questsFilePath: string, batchSize: number)
     }
 
     
-    const questsAddress = deploymentManager.getDeployment("CryptopiaQuests")?.address;
+    const questsAddress = deploymentManager.getContractDeployment("CryptopiaQuests")?.address;
 
     console.log(`\nFound ${chalk.bold(quests.length.toString())} quests to deploy on ${chalk.yellow(hre.network.name)}`);
     console.log(`Found ${chalk.green("CryptopiaQuests")} at ${chalk.cyan(questsAddress)}\n`);
@@ -121,22 +121,22 @@ function resolve(data: QuestJsonData[]): QuestStruct[] {
                 hasTileConstraint: step.hasTileConstraint,
                 tile: step.tile,
                 takeFungible: step.takeFungible.map((tf) => ({
-                    asset: deploymentManager.getDeployment(tf.asset).address,
+                    asset: deploymentManager.getContractDeployment(tf.asset).address,
                     amount: tf.amount,
                     allowWallet: tf.allowWallet,
                 })),
                 takeNonFungible: step.takeNonFungible.map((nft) => ({
-                    asset: deploymentManager.getDeployment(nft.asset).address,
+                    asset: deploymentManager.getContractDeployment(nft.asset).address,
                     item: nft.item.toBytes32(),
                     allowWallet: nft.allowWallet,
                 })),
                 giveFungible: step.giveFungible.map((fungibleItem) => ({
-                    asset: deploymentManager.getDeployment(fungibleItem.asset).address,
+                    asset: deploymentManager.getContractDeployment(fungibleItem.asset).address,
                     amount: fungibleItem.amount,
                     allowWallet: fungibleItem.allowWallet,
                 })),
                 giveNonFungible: step.giveNonFungible.map((nft) => ({
-                    asset: deploymentManager.getDeployment(nft.asset).address,
+                    asset: deploymentManager.getContractDeployment(nft.asset).address,
                     item: nft.item.toBytes32(),
                     allowWallet: nft.allowWallet,
                 })),
@@ -146,12 +146,12 @@ function resolve(data: QuestJsonData[]): QuestStruct[] {
                 xp: reward.xp,
                 karma: reward.karma,
                 fungible: reward.fungible.map((fungibleItem) => ({
-                    asset: deploymentManager.getDeployment(fungibleItem.asset).address,
+                    asset: deploymentManager.getContractDeployment(fungibleItem.asset).address,
                     amount: fungibleItem.amount,
                     allowWallet: fungibleItem.allowWallet,
                 })),
                 nonFungible: reward.nonFungible.map((nft) => ({
-                    asset: deploymentManager.getDeployment(nft.asset).address,
+                    asset: deploymentManager.getContractDeployment(nft.asset).address,
                     item: nft.item.toBytes32(),
                     allowWallet: nft.allowWallet,
                 })),

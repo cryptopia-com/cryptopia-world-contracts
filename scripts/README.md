@@ -4,7 +4,7 @@ Port:
 npx hardhat run ./scripts/port.ts
 
 Deploy:
-npx hardhat run --network skaleChaos ./scripts/deploy.ts
+npx hardhat run --network localhost ./scripts/deploy.ts
 
 Verify:
 npx hardhat run --network skaleChaos ./scripts/verify.ts

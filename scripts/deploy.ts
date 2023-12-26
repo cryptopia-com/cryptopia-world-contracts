@@ -99,7 +99,7 @@ async function main() {
     ///// Deploy Avatar Register /////
     //////////////////////////////////
     const [avatarRegisterProxy, avatarRegisterDeploymentStatus] = await ensureDeployed(
-        "CryptopiaAvatarRegister", []);
+        "CryptopiaAvatarRegister", [accountRegisterAddress]);
     const avatarRegisterAddress = await avatarRegisterProxy.address;
 
 
@@ -465,10 +465,10 @@ async function ensureDeployed(contractName: string, args?: unknown[], deployment
         deploymentKey = contractName;
     }
 
-    if (deploymentManager.isDeployed(deploymentKey))
+    if (deploymentManager.isContractDeployed(deploymentKey))
     {
         const factory = await ethers.getContractFactory(contractName);
-        const deploymentInfo = deploymentManager.getDeployment(deploymentKey);
+        const deploymentInfo = deploymentManager.getContractDeployment(deploymentKey);
 
         // Skip
         if (deploymentInfo.bytecode == factory.bytecode)
@@ -560,7 +560,7 @@ async function _deployContract(contractName: string, deploymentKey: string, args
     const contractAddress = await instance.address;
 
     // Save deployment
-    deploymentManager.saveDeployment(deploymentKey, contractName, contractAddress, factory.bytecode, false);
+    deploymentManager.saveContractDeployment(deploymentKey, contractName, contractAddress, factory.bytecode, false);
 
     await waitForMinimumTime(confirmationLoaderStartTime, MIN_TIME);
     deploymentLoader.succeed(`Contract deployed at ${chalk.cyan(contractAddress)} in block ${chalk.cyan(receipt.blockNumber)}`);
@@ -612,7 +612,7 @@ async function _upgradeContract(contractName: string, contractAddress: string, d
     }
 
     // Save deployment
-    deploymentManager.saveDeployment(deploymentKey, contractName, contractAddress, factory.bytecode, false);
+    deploymentManager.saveContractDeployment(deploymentKey, contractName, contractAddress, factory.bytecode, false);
 
     await waitForMinimumTime(confirmationLoaderStartTime, MIN_TIME);
     deploymentLoader.succeed(`Contract upgraded at ${chalk.cyan(contractAddress)} in block ${chalk.cyan(receipt.blockNumber)}`);
@@ -639,8 +639,8 @@ async function grantSystemRole(granter: string, granterDeploymentStatus: Deploym
     const transactionLoader = ora(`Granting ${chalk.blue("SYSTEM")} role..`).start();
     const transactionStartTime = Date.now();
 
-    const granterDeploymentInfo = deploymentManager.getDeployment(granter);
-    const systemDeploymentInfo = deploymentManager.getDeployment(system);
+    const granterDeploymentInfo = deploymentManager.getContractDeployment(granter);
+    const systemDeploymentInfo = deploymentManager.getContractDeployment(system);
 
     const granterInstance = await ethers.getContractAt(granterDeploymentInfo.contractName, granterDeploymentInfo.address);
     await granterInstance.grantRole(SYSTEM_ROLE, systemDeploymentInfo.address);

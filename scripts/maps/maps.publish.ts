@@ -18,42 +18,41 @@ const MIN_TIME = 1000;
 
 // Default values
 const DEFAULT_BASE_PATH = './data/game/maps/';
-const DEFAULT_FILE = 'skale';
 const DEFAULT_BATCH_SIZE = 100;
 
 const deploymentManager = new DeploymentManager(hre.network.name);
 
 /**
- * Main deployment function.
+ * Map deployment function.
  * 
  * npx hardhat run --network localhost ./scripts/maps/maps.publish.ts
  * 
- * @param {string} mapsFilePath - Path to the recipes data file.
+ * @param {string} filePath - Path to the map data file.
  * @param {number} batchSize - Size of the deployment batch.
  */
-async function main(mapsFilePath: string, batchSize: number) 
+async function publishMap(filePath: string, batchSize: number) 
 {
-    if (!fs.existsSync(mapsFilePath)) {
-        console.error(chalk.red(`Maps file not found: ${mapsFilePath}`));
+    if (!fs.existsSync(filePath)) {
+        console.error(chalk.red(`Maps file not found: ${filePath}`));
         return;
     }
 
-    const map: MapJsonData = require(mapsFilePath);
+    const map: MapJsonData = require(filePath);
     let tiles: CryptopiaMaps.TileInputStruct[];
     try {
         tiles = resolve(map);
     } catch (error) {
         if (error instanceof Error) {
             // Now 'error' is typed as 'Error'
-            console.error(chalk.red(`Error loading maps data from ${mapsFilePath}: ${error.message}`));
+            console.error(chalk.red(`Error loading maps data from ${filePath}: ${error.message}`));
         } else {
             // Handle non-Error objects
-            console.error(chalk.red(`An unexpected error occurred while loading maps data from ${mapsFilePath}`));
+            console.error(chalk.red(`An unexpected error occurred while loading maps data from ${filePath}`));
         }
         return;
     }
 
-    const mapsAddress = deploymentManager.getDeployment("CryptopiaMaps")?.address;
+    const mapsAddress = deploymentManager.getContractDeployment("CryptopiaMaps")?.address;
 
     console.log(`\nFound ${map.name} map with ${chalk.bold(tiles.length.toString())} tiles to deploy on ${chalk.yellow(hre.network.name)}`);
     console.log(`Found ${chalk.green("CryptopiaMaps")} at ${chalk.cyan(mapsAddress)}\n`);
@@ -210,12 +209,37 @@ function resolve(data: MapJsonData): CryptopiaMaps.TileInputStruct[]
     return resolvedTiles;
 }
 
+async function main(basePath: string, batchSize: number) 
+{
+    const files = fs.readdirSync(basePath);
+    let count = 0;
+    for (const file of files) 
+    {
+        if (file.endsWith('.json')) 
+        {
+            // get file name without extension
+            const name = file.split('.').slice(0, -1).join('.');
+            if (deploymentManager.isContractDeployed(name))
+            {
+                continue;
+            }
+
+            await publishMap(path.join(basePath, file), batchSize);
+            deploymentManager.saveMapDeployment(file);
+            count++;
+        }
+    }
+
+    if (0 == count)
+    {
+        console.log(`\nNo maps to deploy on ${chalk.yellow(hre.network.name)}!\n\n`);
+    }
+}
+
 const basePath = path.resolve(DEFAULT_BASE_PATH);
 const batchSize = DEFAULT_BATCH_SIZE;
-const fileName = DEFAULT_FILE;
-const filePath = path.resolve(basePath, `${fileName}.json`);
 
-main(filePath, batchSize).catch((error) => 
+main(basePath, batchSize).catch((error) => 
 {
     console.error(`\n${chalk.redBright('Error during deployment:')} ${chalk.white(error.message)}\n`);
     process.exitCode = 1;

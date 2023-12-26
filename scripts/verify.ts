@@ -18,9 +18,9 @@ async function main() {
 
     console.log(`\n\nStarting verification on ${chalk.yellow(hre.network.name)}..`);
 
-    for (const deploymentKey of Object.keys(deploymentManager.getDeployments())) 
+    for (const deploymentKey of Object.keys(deploymentManager.getContractDeployments())) 
     {
-        const deployment = deploymentManager.getDeployment(deploymentKey);
+        const deployment = deploymentManager.getContractDeployment(deploymentKey);
 
         // Skip if already verified
         if (deployment.verified) 
@@ -49,7 +49,7 @@ async function main() {
             continue;
         }
 
-        deploymentManager.setVerified(deploymentKey, true);
+        deploymentManager.setContractVerified(deploymentKey, true);
         verifyCounter++;
     }
 

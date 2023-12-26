@@ -25,9 +25,9 @@ interface ICrafting {
 
     /// @dev Returns a single `asset` recipe by `name`
     /// @param asset The contract address of the asset to which the recipe applies
-    /// @param name The name of the asset recipe
+    /// @param item The name of the asset recipe
     /// @return recipe The recipe
-    function getRecipe(address asset, bytes32 name)
+    function getRecipe(address asset, bytes32 item)
         external view 
         returns (CraftingRecipe memory recipe);
 

@@ -55,6 +55,18 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
         Resource[] mintingIndex;
     }
 
+    /// @dev Represents an instance of a tool, linked to a specific ERC721 token
+    struct ToolInstanceData
+    {
+        /// @dev Name of the tool, linking it to its template in the tools mapping
+        bytes32 name;
+
+        /// @dev The current amount of damage of the tool
+        /// @notice Damage affects the tool's effectiveness and is a result of regular use
+        /// @notice Represented as a percentage (0-100), with 100 indicating maximum damage
+        uint24 damage;
+    }
+
     /**
      * Storage
      */
@@ -71,7 +83,7 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
 
     /// @dev Mapping from token ID to ToolInstance
     /// @notice Stores individual instances of tools each reffering to ToolData
-    mapping (uint => ToolInstance) public toolInstances;
+    mapping (uint => ToolInstanceData) public toolInstances;
 
     // Refs
     address public playerRegisterContract;
@@ -217,7 +229,7 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
         public virtual override view 
         returns (ToolInstance memory instance)
     {
-        instance = toolInstances[tokenId];
+        instance = _getToolInstance(tokenId);
     }
 
 
@@ -231,7 +243,7 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
         instances = new ToolInstance[](tokenIds.length);
         for (uint i = 0; i < tokenIds.length; i++)
         {
-            instances[i] = toolInstances[tokenIds[i]];
+            instances[i] = _getToolInstance(tokenIds[i]);
         }
     }
 
@@ -461,6 +473,42 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
         {
             tool.mintingIndex.push(tool_.minting[i].resource);
             tool.minting[tool_.minting[i].resource] = tool_.minting[i].amount; 
+        }
+    }
+
+
+    /// @dev Retreive a tools by token id
+    /// @param tokenId The id of the tool to retreive
+    /// @return instance a single tool instance
+    function _getToolInstance(uint tokenId) 
+        internal virtual view 
+        returns (ToolInstance memory instance)
+    {
+        ToolInstanceData storage toolInstanceData = toolInstances[tokenId];
+        ToolData storage toolData = tools[toolInstanceData.name];
+        
+        instance = ToolInstance({
+            tokenId: tokenId,
+            name: toolInstanceData.name,
+            rarity: toolData.rarity,
+            level: toolData.level,
+            durability: toolData.durability,
+            damage: toolInstanceData.damage,
+            multiplier_cooldown: toolData.multiplier_cooldown,
+            multiplier_xp: toolData.multiplier_xp,
+            multiplier_effectiveness: toolData.multiplier_effectiveness,
+            value1: toolData.value1,
+            value2: toolData.value2,
+            value3: toolData.value3,
+            minting: new ToolMinting[](toolData.mintingIndex.length)
+        });
+
+        for (uint i = 0; i < toolData.mintingIndex.length; i++)
+        {
+            instance.minting[i] = ToolMinting({
+                resource: toolData.mintingIndex[i],
+                amount: toolData.minting[toolData.mintingIndex[i]] 
+            });
         }
     }
 }

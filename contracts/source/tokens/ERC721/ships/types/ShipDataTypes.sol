@@ -72,7 +72,7 @@ struct ShipInstance
     /// @dev Effects on health of any equipped modules
     uint16 health;
 
-    /// @dev Effects on damage of any equipped modules
+    /// @dev Total damage taken
     uint16 damage;
 
     /// @dev Effects on defence of any equipped modules

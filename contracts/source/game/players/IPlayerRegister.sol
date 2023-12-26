@@ -44,18 +44,18 @@ interface IPlayerRegister {
 
     /// @dev Check if an account was created and registered 
     /// @param account Account address
-    /// @return true if account is registered
+    /// @return if account is registered
     function isRegistered(address account)
         external view 
         returns (bool);
 
 
-    /// @dev Returns player data for `player`
-    /// @param player CryptopiaAccount address (registered as a player)
+    /// @dev Returns player data for `account`
+    /// @param account CryptopiaAccount address (registered as a player)
     /// @return data Player data
-    function getPlayerData(address player) 
+    function getPlayerData(address account) 
         external view 
-        returns (PlayerData memory);
+        returns (PlayerData memory data);
 
     
     /// @dev Returns true if `player` is a pirate

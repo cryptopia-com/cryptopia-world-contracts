@@ -49,6 +49,22 @@ contract CryptopiaMapsExtensions is Initializable {
     }
 
 
+    /// @dev Retrieve a range of static data 
+    /// @param tileIndices The indices of the tiles to retrieve
+    /// @return tileData The static tile data
+    function getTileDataStatic(uint16[] memory tileIndices) 
+        public virtual view  
+        returns (TileStatic[] memory tileData)
+    { 
+        tileData = new TileStatic[](tileIndices.length);
+        for (uint16 i = 0; i < tileIndices.length; i++)
+        {
+            tileData[i] = IMaps(mapsContract)
+                .getTileDataStatic(tileIndices[i]);
+        }
+    }
+
+
     /// @dev Retrieve dynamic data for a range of tiles
     /// @param skip Starting index
     /// @param take Amount of tiles
@@ -66,17 +82,33 @@ contract CryptopiaMapsExtensions is Initializable {
     }
 
 
+    /// @dev Retrieve dynamic data for a range of tiles
+    /// @param tileIndices The indices of the tiles to retrieve
+    /// @return tileData The dynamic tile data
+    function getTileDataDynamic(uint16[] memory tileIndices) 
+        public virtual view  
+        returns (TileDynamic[] memory tileData)
+    { 
+        tileData = new TileDynamic[](tileIndices.length);
+        for (uint16 i = 0; i < tileIndices.length; i++)
+        {
+            tileData[i] = IMaps(mapsContract)
+                .getTileDataDynamic(tileIndices[i]);
+        }
+    }
+
+
     /// @dev Retrieve data that's attached to players
     /// @param accounts The players to retreive player data for
-    /// @return playerData The player data
-    function getPlayerDatas(address[] memory accounts)
+    /// @return playerData The player data 
+    function getPlayerNavigationData(address[] memory accounts)
         public virtual view 
-        returns (PlayerNavigationData[] memory playerData)
+        returns (PlayerNavigation[] memory playerData)
     {
         for (uint i = 0; i < accounts.length; i++)
         {
             playerData[i] = IMaps(mapsContract)
-                .getPlayerData(accounts[i]);
+                .getPlayerNavigationData(accounts[i]);
         }
     }
 }

@@ -239,51 +239,55 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     }
 
 
-    /// @dev Returns player data for `player`
-    /// @param player CryptopiaAccount address (registered as a player)
+    /// @dev Returns player data for `account`
+    /// @param account CryptopiaAccount address (registered as a player)
     /// @return data Player data
-    function getPlayerData(address player) 
+    function getPlayerData(address account) 
         public virtual override view 
-        returns (PlayerData memory)
+        returns (PlayerData memory data)
     {
-        return playerDatas[player];
+        data = playerDatas[account];
     }
 
 
-    /// @dev Returns player data for `player`
-    /// @param player CryptopiaAccount address (registered as a player)
-    /// @return username Player username (fetched from account)
-    /// @return data Player data
-    function getPlayerDataAndUsername(address payable player) 
+    /// @dev Returns player data for `account`
+    /// @param account CryptopiaAccount address (registered as a player)
+    /// @return player Player data
+    function getPlayer(address payable account) 
         public virtual view 
-        returns (
-            bytes32 username,
-            PlayerData memory data
-        )
+        returns (Player memory player)
     {
-        (username,) = IAccountRegister(accountRegisterContract)
-            .getAccountData(player);
-        data = playerDatas[player];
+        (bytes32 username,) = IAccountRegister(accountRegisterContract)
+            .getAccountData(account);
+        player = Player({
+            username: username,
+            faction: playerDatas[account].faction,
+            subFaction: playerDatas[account].subFaction,
+            level: playerDatas[account].level,
+            karma: playerDatas[account].karma,
+            xp: playerDatas[account].xp,
+            luck: playerDatas[account].luck,
+            charisma: playerDatas[account].charisma,
+            intelligence: playerDatas[account].intelligence,
+            strength: playerDatas[account].strength,
+            speed: playerDatas[account].speed,
+            ship: playerDatas[account].ship
+        }); 
     }
 
 
-    /// @dev Returns player datas for `players`
-    /// @param players CryptopiaAccount addresses (registered as a players)
-    /// @return usernames Player usernames (fetched from account)
-    /// @return data Player datas
-    function getPlayerDatasAndUsernames(address payable[] memory players) 
+    /// @dev Returns player datas for `accounts`
+    /// @param accounts CryptopiaAccount addresses (registered as a players)
+    /// @return players Player datas
+    function getPlayers(address payable[] memory accounts) 
         public virtual view 
-        returns (
-            bytes32[] memory usernames,
-            PlayerData[] memory data
-        )
+        returns (Player[] memory players)
     {
-        usernames = new bytes32[](players.length);
-        data = new PlayerData[](players.length);
+        players = new Player[](accounts.length);
 
-        for (uint i = 0; i < players.length; i++)
+        for (uint i = 0; i < accounts.length; i++)
         {
-            (usernames[i], data[i]) = getPlayerDataAndUsername(players[i]);
+            players[i] = getPlayer(accounts[i]);
         }
     }
 

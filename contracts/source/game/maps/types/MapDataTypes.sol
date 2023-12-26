@@ -103,7 +103,7 @@ struct TileResourceStatic
     /// @dev The type of resource
     Resource resource;
 
-    /// @dev The initial size of the `asset` deposit
+    /// @dev The initial size of the `resource` deposit
     uint initialAmount;
 }
 
@@ -113,24 +113,24 @@ struct TileResourceDynamic
     /// @dev The type of resource
     Resource resource;
 
-    /// @dev The amount of `asset` that if left
+    /// @dev The amount of `resource` that if left
     uint amount;
 }
 
-/// @dev Player navigation data
-struct PlayerNavigationData {
-
-    /// @dev Ordered iterating - Account that entered the tile after us (above us in the list)
-    address chain_next;
-
-    /// @dev Ordered iterating - Account that entered the tile before us (below us in the list)
-    address chain_prev;
+/// @dev Player navigation 
+struct PlayerNavigation {
 
     /// @dev Player movement budget
     uint16 movement;
 
     /// @dev The datetime at which the player is no longer frozen
     uint64 frozenUntil;
+
+    /// @dev The name of the map that the player is currently on
+    bytes32 location_mapName;
+
+    /// @dev Index of the map that the player is currently on
+    uint16 location_mapIndex;
 
     /// @dev Tile that the player is currently on
     uint16 location_tileIndex;

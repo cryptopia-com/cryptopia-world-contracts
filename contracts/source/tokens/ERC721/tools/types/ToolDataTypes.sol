@@ -53,11 +53,41 @@ struct ToolMinting
 /// @dev Represents an instance of a tool, linked to a specific ERC721 token
 struct ToolInstance
 {
+    /// @dev The ERC721 token id of the tool
+    uint tokenId;
+
     /// @dev Name of the tool, linking it to its template in the tools mapping
     bytes32 name;
+
+    /// @dev Rarity level of the tool
+    Rarity rarity;
+
+    /// @dev Minimum player level required to use the tool
+    uint8 level;
+
+    /// @dev Durability of the tool
+    /// @notice Represents the rate at which the tool takes damage
+    uint24 durability;
+
+    /// @dev Multiplier affecting the cooldown period for actions using the tool
+    uint24 multiplier_cooldown;
+
+    /// @dev Multiplier for experience points gained while using the tool
+    uint24 multiplier_xp;
+
+    /// @dev Multiplier impacting the effectiveness of the tool in various game scenarios
+    uint24 multiplier_effectiveness;
 
     /// @dev The current amount of damage of the tool
     /// @notice Damage affects the tool's effectiveness and is a result of regular use
     /// @notice Represented as a percentage (0-100), with 100 indicating maximum damage
     uint24 damage;
+
+    // Generic values
+    uint24 value1;
+    uint24 value2;
+    uint24 value3;
+
+    /// @dev Tool minting data
+    ToolMinting[] minting;
 }

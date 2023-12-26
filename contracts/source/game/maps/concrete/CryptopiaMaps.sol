@@ -148,9 +148,38 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         mapping (Resource => uint) resources;
     }
 
+    /// @dev Player navigation data
+    struct PlayerNavigationData {
+
+        /// @dev Ordered iterating - Account that entered the tile after us (above us in the list)
+        address chain_next;
+
+        /// @dev Ordered iterating - Account that entered the tile before us (below us in the list)
+        address chain_prev;
+
+        /// @dev Player movement budget
+        uint16 movement;
+
+        /// @dev The datetime at which the player is no longer frozen
+        uint64 frozenUntil;
+
+        /// @dev Tile that the player is currently on
+        uint16 location_tileIndex;
+
+        /// @dev When the player arrives at `tileIndex`
+        uint64 location_arrival;
+
+        /// @dev Tiles that make up the route that the player is currently traveling or last traveled
+        bytes32 location_route;
+    }
+
+    /// @dev Movement penalty cache key
     struct TileMovementPenaltyCacheKey
     {
+        /// @dev true if the cache is initialized
         bool initialized;
+
+        /// @dev The penalty
         uint16 penalty;
     }
 
@@ -714,12 +743,20 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     
     /// @dev Retrieve player data for `account`
     /// @param account The account to retreive player data for
-    /// @return PlayerData data
-    function getPlayerData(address account)
+    /// @return data PlayerNavigation 
+    function getPlayerNavigationData(address account)
         public virtual override view 
-        returns (PlayerNavigationData memory)
+        returns (PlayerNavigation memory data)
     {
-        return playerData[account];
+        TileStaticData storage tileData = tileDataStatic[playerData[account].location_tileIndex];
+        return PlayerNavigation(
+            playerData[account].movement,
+            playerData[account].frozenUntil,
+            maps[mapsIndex[tileData.mapIndex]].name,
+            tileData.mapIndex,
+            playerData[account].location_tileIndex,
+            playerData[account].location_arrival,
+            playerData[account].location_route);
     }
 
 

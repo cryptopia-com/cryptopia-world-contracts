@@ -59,10 +59,10 @@ interface IMaps {
     
     /// @dev Retrieve player data for `account`
     /// @param account The account to retreive player data for
-    /// @return PlayerData data
-    function getPlayerData(address account)
+    /// @return data PlayerNavigation
+    function getPlayerNavigationData(address account)
         external view 
-        returns (PlayerNavigationData memory); 
+        returns (PlayerNavigation memory data); 
 
     
     /// @dev Retrieve data that's attached to player

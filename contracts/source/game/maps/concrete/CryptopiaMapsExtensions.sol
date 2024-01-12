@@ -105,6 +105,7 @@ contract CryptopiaMapsExtensions is Initializable {
         public virtual view 
         returns (PlayerNavigation[] memory playerData)
     {
+        playerData = new PlayerNavigation[](accounts.length);
         for (uint i = 0; i < accounts.length; i++)
         {
             playerData[i] = IMaps(mapsContract)

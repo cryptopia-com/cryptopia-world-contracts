@@ -121,18 +121,7 @@ export function encodeVegetationData(binaryInput: string): string {
  * console.log(encodedData); // Outputs the encoded data in `bytes4` format
  */
 export function encodeWildlifeData(inputBinary: string): string {
-    const NUM_WILDLIFE_SPECIES: number = 10;
-    let inputBigInt: bigint = BigInt(inputBinary);
-    let result: number = 0;
-  
-    for (let i = 0; i < NUM_WILDLIFE_SPECIES; i++) 
-    {
-        result <<= 2;
-        result += Number(0b11n & inputBigInt);
-        inputBigInt >>= 2n;
-    }
-  
-     // Convert to hexadecimal string and format as bytes4
-     let hexString = BigInt(result).toString(16);
-     return '0x' + hexString.padStart(8, '0');
-  }
+    // Convert to hexadecimal string and format as bytes4
+    let hexString = BigInt(inputBinary).toString(16);
+    return '0x' + hexString.padStart(8, '0');
+ }

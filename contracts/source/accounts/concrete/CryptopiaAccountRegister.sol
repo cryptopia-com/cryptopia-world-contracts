@@ -1,17 +1,27 @@
 // SPDX-License-Identifier: ISC
 pragma solidity ^0.8.20 < 0.9.0;
 
-import "@openzeppelin/contracts/utils/Create2.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts/proxy/Clones.sol";
 
 import "../types/AccountEnums.sol";
 import "../errors/AccountErrors.sol";
 import "../IAccountRegister.sol";
 import "./CryptopiaAccount.sol";
 
-/// @title Cryptopia Account Register
-/// @notice Creates and registers accountDatas
+/// @title CryptopiaAccountRegister
+/// @notice This contract is essential for managing player profiles in Cryptopia, 
+/// providing mechanisms for account creation and player development. It tracks and manages key player 
+/// data, including usernames, gender, and social connections. The contract is designed to ensure 
+/// a seamless and engaging player experience, facilitating social interactions within the game through 
+/// friend requests and relationship management.
+/// @dev Inherits from Initializable and AccessControlUpgradeable, implementing the IAccountRegister interface.
+/// It follows an upgradable pattern to support future expansions and modifications. The contract focuses on 
+/// detailed player data management, crucial for maintaining the integrity of player interactions and 
+/// the overall game dynamics. This includes maintaining friendships, handling friend requests, and 
+/// supporting diverse player interactions.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-contract CryptopiaAccountRegister is IAccountRegister {
+contract CryptopiaAccountRegister is Initializable, IAccountRegister {
 
     struct AccountData
     {
@@ -32,6 +42,9 @@ contract CryptopiaAccountRegister is IAccountRegister {
      * Storage
      */
     uint constant private USERNAME_MIN_LENGTH = 3;
+
+    // Account implementation
+    address public accountImplementation;
 
     mapping(bytes32 => address) public usernameToAccount;
     mapping (address => AccountData) public accountDatas;
@@ -134,6 +147,15 @@ contract CryptopiaAccountRegister is IAccountRegister {
         _;
     }
 
+    /// @dev Initialize
+    /// @notice Initialize contract with `accountImplementation` as account implementation
+    function initialize() 
+        public initializer 
+    {
+       accountImplementation = address(
+        new CryptopiaAccount()); 
+    }
+
 
     /** 
      * Public functions
@@ -150,8 +172,8 @@ contract CryptopiaAccountRegister is IAccountRegister {
         onlyValidUsername(username)
         returns (address payable account)
     {
-        account = payable(Create2.deploy(
-            0, username, type(CryptopiaAccount).creationCode));
+        account = payable(Clones.cloneDeterministic(
+            accountImplementation, username));
 
         CryptopiaAccount(account).initialize(
             owners, required, dailyLimit, username);

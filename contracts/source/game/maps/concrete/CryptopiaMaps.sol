@@ -210,7 +210,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     uint16 constant private MOVEMENT_PENALTY_LAKE = 10;
     uint16 constant private MOVEMENT_PENALTY_RIVER = 5;
 
-     // Rock data packing
+    // Rock data packing
     uint8 constant private ROCK_PACKING_SECTION_BIT_LENGTH = 4;
     uint8 constant private ROCK_PACKING_LEVEL_MASK = 0x3;
 
@@ -1283,7 +1283,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
                 return (false, 0); // Can't embark from cliffs
             }
 
-            movementCost += MOVEMENT_COST_WATER_EMBARK_DISEMBARK;
+            movementCost += MOVEMENT_COST_WATER_EMBARK_DISEMBARK; 
         }
 
         // Add movement penalty

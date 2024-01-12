@@ -7,7 +7,7 @@ const config : AppConfig = {
                 address: "0x37eEf262526Fc4895A632b44d6e430918c67a58A"
             },
             CryptopiaAccount: {
-                outputBytecode: false,
+                outputBytecode: true,
             },
             ERC721: {
                 CryptopiaTitleDeedToken: {
@@ -339,7 +339,7 @@ const config : AppConfig = {
                 address: "0xee27be821e9b6ec58f0ec73feb0723124181a676"
             },
             CryptopiaAccount: {
-                outputBytecode: false,
+                outputBytecode: true,
             },
             ERC721: {
                 CryptopiaTitleDeedToken: {

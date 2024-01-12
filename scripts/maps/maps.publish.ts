@@ -219,13 +219,13 @@ async function main(basePath: string, batchSize: number)
         {
             // get file name without extension
             const name = file.split('.').slice(0, -1).join('.');
-            if (deploymentManager.isContractDeployed(name))
+            if (deploymentManager.isMapDeployed(name))
             {
                 continue;
             }
 
             await publishMap(path.join(basePath, file), batchSize);
-            deploymentManager.saveMapDeployment(file);
+            deploymentManager.saveMapDeployment(name);
             count++;
         }
     }

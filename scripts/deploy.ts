@@ -433,17 +433,6 @@ async function main() {
         "CryptopiaMaps", mapsDeploymentStatus, 
         "CryptopiaPirateMechanics", pirateMechanicsDeploymentStatus);
 
-
-    // Output bytecode
-    if (config.CryptopiaAccount.outputBytecode)
-    {
-        const AccountFactory = await ethers.getContractFactory("CryptopiaAccount");
-        const bytecodeHash = "" + ethers.utils.keccak256(AccountFactory.bytecode);
-        console.log("------ UPDATE BELOW BYTECODE OF CryptopiaAccount IN THE GAME CLIENT -----");
-        console.log("bytecodeHash1: " + bytecodeHash);
-        console.log((AccountFactory as any).bytecode);
-    }
-
     console.log(`\n\nFinished deployment to ${chalk.yellow(hre.network.name)}:`);
     console.log(`  ${chalk.bold(deployCounter)} deployed`);
     console.log(`  ${chalk.bold(upgradeCounter)} upgraded`);

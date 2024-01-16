@@ -149,11 +149,11 @@ contract CryptopiaAccountRegister is Initializable, IAccountRegister {
 
     /// @dev Initialize
     /// @notice Initialize contract with `accountImplementation` as account implementation
-    function initialize() 
-        public initializer 
+    function initializeManually() 
+        public 
     {
-       accountImplementation = address(
-        new CryptopiaAccount()); 
+        accountImplementation = address(
+            new CryptopiaAccount()); 
     }
 
 

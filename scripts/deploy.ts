@@ -92,7 +92,21 @@ async function main() {
     //////////////////////////////////
     const [accountRegisterProxy, accountRegisterDeploymentStatus] = await ensureDeployed(
         "CryptopiaAccountRegister", []);
+
     const accountRegisterAddress = await accountRegisterProxy.address;
+    const accountRegisterInstance = await ethers.getContractAt(
+        "CryptopiaAccountRegister", accountRegisterAddress);
+
+    // SKALE workaround (manual initialization)
+    if (accountRegisterDeploymentStatus == DeploymentStatus.Deployed)
+    {
+        const accountRegisterManualInitializeTransactionLoader =  ora(`Initializing manually..`).start();
+        const accountRegisterManualInitializeTransactionStartTime = Date.now();
+        await accountRegisterInstance.initializeManually();
+        await waitForMinimumTime(accountRegisterManualInitializeTransactionStartTime, MIN_TIME);
+        accountRegisterManualInitializeTransactionLoader.succeed(`Initialized manually`);
+        lastDeploymentStatus = DeploymentStatus.None;
+    }
 
 
     //////////////////////////////////
@@ -155,6 +169,8 @@ async function main() {
         ]);
 
     const playerRegisterAddress = await playerRegisterProxy.address;
+    const playerRegisterInstance = await ethers.getContractAt(
+        "CryptopiaPlayerRegister", playerRegisterAddress);
 
     // Grant roles
     await grantSystemRole(
@@ -232,7 +248,7 @@ async function main() {
             cryptopiaTokenAddress
         ]);
 
-    const mapsAddress = await mapsProxy.address;
+    const mapsAddress = await mapsProxy.address;    
     const [mapsExtensionsProxy, mapsExtensionsDeploymentStatus] = await ensureDeployed(
         "CryptopiaMapsExtensions", 
         [
@@ -240,12 +256,27 @@ async function main() {
             titleDeedTokenAddress, 
         ]);
 
+    // Register with player register
+    if (mapsDeploymentStatus == DeploymentStatus.Deployed || playerRegisterDeploymentStatus == DeploymentStatus.Deployed)
+    {
+        const registerPlayerRegisterWithMapsTransactionLoader =  ora(`Registering..`).start();
+        const registerPlayerRegisterWithMapsTransactionStartTime = Date.now();
+        await playerRegisterInstance.setMapsContract(mapsAddress);
+        await waitForMinimumTime(registerPlayerRegisterWithMapsTransactionStartTime, MIN_TIME);
+        registerPlayerRegisterWithMapsTransactionLoader.succeed(`Registered with ${chalk.green("CryptopiaPlayerRegister")}`);
+        lastDeploymentStatus = DeploymentStatus.None;
+    }
+
     // Grant roles
     await grantSystemRole(
         "CryptopiaTitleDeedToken", titleDeedTokenDeploymentStatus, 
         "CryptopiaMaps", mapsDeploymentStatus);
 
+    await grantSystemRole(
+        "CryptopiaMaps", mapsDeploymentStatus, 
+        "CryptopiaPlayerRegister", playerRegisterDeploymentStatus);
 
+        
     //////////////////////////////////
     /////// Deploy Quest Items ///////
     //////////////////////////////////

@@ -1,23 +1,23 @@
 ## Scripts
 
 Port:
-npx hardhat run --network skaleChaos ./scripts/port.ts
+npx hardhat run --network skaleNebulaTestnet ./scripts/port.ts
 
 Deploy:
-npx hardhat run --network skaleChaos ./scripts/deploy.ts
+npx hardhat run --network skaleNebulaTestnet ./scripts/deploy.ts
 
 Verify:
-npx hardhat run --network skaleChaos ./scripts/verify.ts
+npx hardhat run --network skaleNebulaTestnet ./scripts/verify.ts
 
 Tools: 
-npx hardhat run --network skaleChaos ./scripts/tools/tools.publish.ts
+npx hardhat run --network skaleNebulaTestnet ./scripts/tools/tools.publish.ts
 
 Quests:
-npx hardhat run --network skaleChaos ./scripts/quests/items.publish.ts
-npx hardhat run --network skaleChaos ./scripts/quests/quests.publish.ts
+npx hardhat run --network skaleNebulaTestnet ./scripts/quests/items.publish.ts
+npx hardhat run --network skaleNebulaTestnet ./scripts/quests/quests.publish.ts
 
 Crafting:
-npx hardhat run --network skaleChaos ./scripts/crafting/recipes.publish.ts
+npx hardhat run --network skaleNebulaTestnet ./scripts/crafting/recipes.publish.ts
 
 Maps:
-npx hardhat run --network skaleChaos ./scripts/maps/maps.publish.ts
+npx hardhat run --network skaleNebulaTestnet ./scripts/maps/maps.publish.ts

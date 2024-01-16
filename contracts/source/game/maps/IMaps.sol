@@ -101,4 +101,10 @@ interface IMaps {
     function playerHasEntered(address account) 
         external view 
         returns (bool);
+
+
+    /// @dev Player entry point that adds the player to the Genesis map
+    /// @param account The account to add to the map
+    function __playerEnter(address account)
+        external;
 }

@@ -13,6 +13,7 @@ import "../../../tokens/ERC721/ships/types/ShipDataTypes.sol";
 import "../../../tokens/ERC721/ships/errors/ShipErrors.sol";
 import "../../inventories/IInventories.sol";
 import "../../crafting/ICrafting.sol";
+import "../../maps/IMaps.sol";
 import "../../types/GameEnums.sol";
 import "../../errors/FactionErrors.sol";
 import "../errors/PlayerErrors.sol";
@@ -68,6 +69,7 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     address public inventoriesContract;
     address public craftingContract;
     address public shipTokenContract;
+    address public mapsContract;
 
     // Global stats
     uint public totalPlayerCount;
@@ -179,6 +181,17 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     }
 
 
+    /// @dev Set the maps contract as part of the initialization process
+    /// @param _mapsContract Contract responsible for maps
+    function setMapsContract(address _mapsContract) 
+        public 
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
+        require(_mapsContract != address(0));
+        mapsContract = _mapsContract;
+    }
+
+
     /**
      * Public functions
      */
@@ -204,7 +217,7 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
 
     /// @dev Register `account` as a player
     /// @param faction The choosen faction (immutable)
-    function register(Faction faction)
+    function register(Faction faction) 
         public virtual override 
     {
         // Check if account is registered already as a player
@@ -645,6 +658,10 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
         // Setup crafting
         ICrafting(craftingContract)
             .__setCraftingSlots(account, CRAFTING_SLOTS_BASE);
+
+        // Enter world
+        IMaps(mapsContract)
+            .__playerEnter(account);
 
         // Add to global stats
         totalPlayerCount++;

@@ -520,7 +520,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         TileDynamicData storage dynamicData = tileDataDynamic[tileIndex];
 
         // Add owener
-        try IERC721(titleDeedContract).ownerOf(tileIndex) 
+        try IERC721(titleDeedContract).ownerOf(tileIndex + 1) 
             returns (address owner)
         {
             tileData.owner = owner;
@@ -832,13 +832,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
             revert PlayerNotRegistered(msg.sender);
         }
 
-        // Setup player
-        playerData[msg.sender].movement = PLAYER_START_MOVEMENT;
-        _playerEnterTile(msg.sender, PLAYER_START_POSITION, uint64(block.timestamp));
-
-        // Emit
-        emit PlayerEnterMap(
-            msg.sender, mapsIndex[0], PLAYER_START_POSITION, uint64(block.timestamp));
+        _playerEnter(msg.sender);
     }
 
 
@@ -915,6 +909,19 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     {
         playerData[account1].frozenUntil = 0;
         playerData[account2].frozenUntil = 0;
+    }
+
+
+    /// @dev Player entry point that adds the player to the Genesis map
+    /// @notice This function is only callable by the system
+    /// - Assumes that the block timestamp is set
+    /// - Assumes that the player is registered
+    /// @param account The account to add to the map
+    function __playerEnter(address account) 
+        public override virtual 
+        onlyRole(SYSTEM_ROLE)
+    {
+        _playerEnter(account);
     }
 
 
@@ -1462,6 +1469,21 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     {
         return playerData[account].location_arrival > 0;
     } 
+
+
+    /// @dev  Player entry point that adds the player to the Genesis map
+    /// @param account The account to add to the map
+    function _playerEnter(address account) 
+        internal 
+    {
+        // Setup player
+        playerData[account].movement = PLAYER_START_MOVEMENT;
+        _playerEnterTile(account, PLAYER_START_POSITION, uint64(block.timestamp));
+
+        // Emit
+        emit PlayerEnterMap(
+            account, mapsIndex[0], PLAYER_START_POSITION, uint64(block.timestamp));
+    }
 
 
     /// @dev Move `account` to `tileIndex` by exiting the previous tile and entering the next

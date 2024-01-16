@@ -191,6 +191,10 @@ describe("PirateMechanics Contract", function () {
             AccountRegisterFactory);
 
         const accountRegisterAddress = await accountRegisterProxy.address;
+        const accountRegisterInstance = await ethers.getContractAt("CryptopiaAccountRegister", accountRegisterAddress);
+
+        // SKALE workaround
+        await accountRegisterInstance.initializeManually();
 
 
         // Deploy Asset Register
@@ -282,7 +286,9 @@ describe("PirateMechanics Contract", function () {
 
         // Grant roles
         await titleDeedTokenInstance.grantRole(SYSTEM_ROLE, mapsAddress);
-        
+        await playerRegisterInstance.setMapsContract(mapsAddress);
+        await mapsInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
+
         
         // Deploy assets
         for (let asset of assets)
@@ -419,42 +425,8 @@ describe("PirateMechanics Contract", function () {
             const createAnotherTargetAccountReceipt = await createAnotherTargetAccountTransaction.wait();
             const targetAnotherAccount = getParamFromEvent(playerRegisterInstance, createAnotherTargetAccountReceipt, "account", "RegisterPlayer");
             anotherTargetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAnotherAccount);
-
-            // Add another pirate and target to the map
-            const playerEnterCalldata = mapsInstance.interface
-                .encodeFunctionData("playerEnter");
-
-            await anotherPirateAccountInstance
-                .connect(await ethers.provider.getSigner(account3))
-                .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
-
-            await anotherTargetAccountInstance
-                .connect(await ethers.provider.getSigner(account4))
-                .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
         });
         
-        it ("Should not allow a pirate to intercept while entered the map", async function () {
-
-            // Setup
-            const pirateMechanicsAddress = await pirateMechanicsInstance.address;
-            const pirateAccountSigner = await ethers.provider.getSigner(account1);
-            const pirateAccountAddress = await pirateAccountInstance.address;
-            const targetAccountAddress = await targetAccountInstance.address;
-
-            // Act
-            const calldata = pirateMechanicsInstance.interface
-                .encodeFunctionData("intercept", [targetAccountAddress, 0]);
-
-            const operation =  pirateAccountInstance
-                .connect(pirateAccountSigner)
-                .submitTransaction(pirateMechanicsAddress, 0, calldata);
-
-            // Assert
-            await expect(operation).to.be
-                .revertedWithCustomError(pirateMechanicsInstance, "AttackerNotInMap")
-                .withArgs(pirateAccountAddress);
-        }); 
-
         it ("Should not allow a pirate to intercept while traveling", async function () {
 
             // Setup 
@@ -469,13 +441,6 @@ describe("PirateMechanics Contract", function () {
             const pirateAccountSigner = await ethers.provider.getSigner(account1);
             const pirateAccountAddress = await pirateAccountInstance.address;
             const targetAccountAddress = await targetAccountInstance.address;
-
-            const playerEnterCalldata = mapsInstance.interface
-                .encodeFunctionData("playerEnter");
-
-            await pirateAccountInstance
-                .connect(pirateAccountSigner)
-                .submitTransaction(mapContractAddress, 0, playerEnterCalldata);
 
             const playerMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [path]);
@@ -573,27 +538,6 @@ describe("PirateMechanics Contract", function () {
             await time.increaseTo(revertArrival);   
         });
 
-        it ("Should not allow a pirate to intercept a target that did not enter the map", async function () {
-
-            // Setup
-            const pirateMechanicsAddress = await pirateMechanicsInstance.address;
-            const pirateAccountSigner = await ethers.provider.getSigner(account1);
-            const targetAccountAddress = await targetAccountInstance.address;
-
-            // Act
-            const calldata = pirateMechanicsInstance.interface
-                .encodeFunctionData("intercept", [targetAccountAddress, 0]);
-
-            const operation =  pirateAccountInstance
-                .connect(pirateAccountSigner)
-                .submitTransaction(pirateMechanicsAddress, 0, calldata);
-
-            // Assert
-            await expect(operation).to.be
-                .revertedWithCustomError(pirateMechanicsInstance, "TargetNotInMap")
-                .withArgs(targetAccountAddress);
-        });
-
         it ("Should not allow a pirate to intercept a target that's not on the water", async function () {
 
             // Setup
@@ -609,13 +553,6 @@ describe("PirateMechanics Contract", function () {
             const pirateAccountSigner = await ethers.provider.getSigner(account1);
             const targetAccountSigner = await ethers.provider.getSigner(account2);
             const targetAccountAddress = await targetAccountInstance.address;
-
-            const playerEnterCalldata = mapsInstance.interface
-                .encodeFunctionData("playerEnter");
-
-            await targetAccountInstance
-                .connect(targetAccountSigner)
-                .submitTransaction(mapContractAddress, 0, playerEnterCalldata);
 
             const playerMoveCalldata = mapsInstance.interface
                 .encodeFunctionData("playerMove", [path]);
@@ -1278,18 +1215,6 @@ describe("PirateMechanics Contract", function () {
             const createTargetAccountReceipt = await createTargetAccountTransaction.wait();
             const targetAccount = getParamFromEvent(playerRegisterInstance, createTargetAccountReceipt, "account", "RegisterPlayer");
             targetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAccount);
-
-            // Add another pirate and target to the map
-            const playerEnterCalldata = mapsInstance.interface
-                .encodeFunctionData("playerEnter");
-
-            await pirateAccountInstance
-                .connect(await ethers.provider.getSigner(account1))
-                .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
-
-            await targetAccountInstance
-                .connect(await ethers.provider.getSigner(account2))
-                .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
         });
 
         it ("Should not accept an offer when the target was not intercepted", async function () {
@@ -1696,18 +1621,6 @@ describe("PirateMechanics Contract", function () {
             const createTargetAccountReceipt = await createTargetAccountTransaction.wait();
             const targetAccount = getParamFromEvent(playerRegisterInstance, createTargetAccountReceipt, "account", "RegisterPlayer");
             targetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAccount);
-
-            // Add another pirate and target to the map
-            const playerEnterCalldata = mapsInstance.interface
-                .encodeFunctionData("playerEnter");
-
-            await pirateAccountInstance
-                .connect(await ethers.provider.getSigner(account1))
-                .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
-
-            await targetAccountInstance
-                .connect(await ethers.provider.getSigner(account2))
-                .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
         });
 
         it ("Should not allow a target to attempt an escape when the target was not intercepted", async function () {
@@ -1945,18 +1858,6 @@ describe("PirateMechanics Contract", function () {
                 const targetAccountAddress = getParamFromEvent(playerRegisterInstance, createTargetAccountReceipt, "account", "RegisterPlayer");
                 targetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAccountAddress);
 
-                // Add another pirate and target to the map
-                const playerEnterCalldata = mapsInstance.interface
-                    .encodeFunctionData("playerEnter");
-
-                await pirateAccountInstance
-                    .connect(await ethers.provider.getSigner(account1))
-                    .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
-
-                await targetAccountInstance
-                    .connect(await ethers.provider.getSigner(account2))
-                    .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
-
                 const interceptCalldata = pirateMechanicsInstance.interface
                     .encodeFunctionData("intercept", [targetAccountAddress, 0]);
     
@@ -2032,19 +1933,7 @@ describe("PirateMechanics Contract", function () {
                 const targetAccountAddress = getParamFromEvent(playerRegisterInstance, createTargetAccountReceipt, "account", "RegisterPlayer");
                 targetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAccountAddress);
 
-                // Add another pirate and target to the map
-                const playerEnterCalldata = mapsInstance.interface
-                    .encodeFunctionData("playerEnter");
-
-                await pirateAccountInstance
-                    .connect(await ethers.provider.getSigner(account1))
-                    .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
-
-                await targetAccountInstance
-                    .connect(await ethers.provider.getSigner(account2))
-                    .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
-
-                    const interceptCalldata = pirateMechanicsInstance.interface
+                const interceptCalldata = pirateMechanicsInstance.interface
                     .encodeFunctionData("intercept", [targetAccountAddress, 0]);
     
                 await pirateAccountInstance
@@ -2151,18 +2040,6 @@ describe("PirateMechanics Contract", function () {
             const createTargetAccountReceipt = await createTargetAccountTransaction.wait();
             const targetAccountAddress = getParamFromEvent(playerRegisterInstance, createTargetAccountReceipt, "account", "RegisterPlayer");
             targetAccountInstance = await ethers.getContractAt("CryptopiaAccount", targetAccountAddress);
-
-            // Add another pirate and target to the map
-            const playerEnterCalldata = mapsInstance.interface
-                .encodeFunctionData("playerEnter");
-
-            await pirateAccountInstance
-                .connect(await ethers.provider.getSigner(account1))
-                .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
-
-            await targetAccountInstance
-                .connect(await ethers.provider.getSigner(account2))
-                .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
 
             const interceptCalldata = pirateMechanicsInstance.interface
                 .encodeFunctionData("intercept", [targetAccountAddress, 0]);
@@ -2542,18 +2419,6 @@ describe("PirateMechanics Contract", function () {
 
                 const pirateAccountSigner = await ethers.provider.getSigner(account1);
                 const targetAccountSigner = await ethers.provider.getSigner(account2);
-                
-                // Add pirate and target to the map
-                const playerEnterCalldata = mapsInstance.interface
-                    .encodeFunctionData("playerEnter");
-
-                await pirateAccountInstance
-                    .connect(pirateAccountSigner)
-                    .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
-
-                await targetAccountInstance
-                    .connect(targetAccountSigner)
-                    .submitTransaction(await mapsInstance.address, 0, playerEnterCalldata);
 
                 const interceptCalldata = pirateMechanicsInstance.interface
                     .encodeFunctionData("intercept", [targetAccountAddress, 0]);

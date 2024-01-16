@@ -1,0 +1,3234 @@
+{
+  "manifestVersion": "3.2",
+  "admin": {
+    "address": "0x86dFc7e4974e2E249fcB36e1108d2a367BdABC9b",
+    "txHash": "0x4da8838e9b95bffe54cf5eb064f9eff4b0ae63f4ff54af17ffb7076f783941d7"
+  },
+  "proxies": [
+    {
+      "address": "0x8700AAb7fCfCEF6EC9747b743f28396446F4c2aF",
+      "txHash": "0x06a6fc84a2c6a1224e80833e9ddd902c8396b957fb596177e8f6a1057467cffb",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x6A2df5D25Ea5742F489C25044D2d4f2A0772C85b",
+      "txHash": "0x47cfafbc1e789c45e34fb214170a2a288759f53d611c09796ff470e9a3c6a51d",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x8c56f8804825ae2ce2c7c36B97f714Bd5a385B07",
+      "txHash": "0x2c92d22beac4bd7a93d68e52ab1d3dc58fdcc9ccfcd5229ee8bfbb4ab3a109a3",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xcA7F3BA7a188E94436E0370E82c646D6C31e4ED6",
+      "txHash": "0x8b9e651053d792a08336779c023ed6bd543375c3fb1dcc0ad9a0d50a10d438e1",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x66b35e1f0F186504c650754c031fD6fD5D762Ddf",
+      "txHash": "0xb4e381aec2b917d8091b6921fa64cd402394f1b6ab0621e9fb00e29740281d55",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x5174664DFCCf5CFA682D81013637Ca99BC3A23FB",
+      "txHash": "0xca60808d2201a803d5fc65a148ea127a47535664d38c117f0a2841033def9ee7",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xD0A8fE2f2413d5741487Ce652eE729c0344F1A1B",
+      "txHash": "0xd20bdb9202d8c80ecc40618d92db3f3a8db785be317603de5e8dea987a9a6f42",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x449fBd2340458BeEEa952201cb99333085029154",
+      "txHash": "0x5bff522356af46d12b6b0b99ee1200d36c21d7e76b99ceb7dd904bc59ab214ff",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x6e470b8bF20fa18F091372AE42B0d2fB9478206C",
+      "txHash": "0x45a45160b5fb3b664b22d5a81b8f802ef674943c53bfed77738d2784a8c9190e",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xa958fda3b95710CeE5Fa0A544C1A67e89CaAA8d2",
+      "txHash": "0x980855d53f669493692efb29a1d13c343235f1d28c029dbdeaab98748cece0cb",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x5074872662868Cce07acc73b8294d333406533Ad",
+      "txHash": "0x1ce2ae1679131d87dd00ff85e65a14f0911510b7e0116bab1abe9fe90d1460ae",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x095D318C64097a75cE6361A808239C9BDFf19669",
+      "txHash": "0x5677cc44a824891e076c42c34bcc88d092710126dbd6ded764da3b7befb4d90f",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x1f60951df66caeeAFDbF42CfdCeDd1aEe4E53560",
+      "txHash": "0x7b26e55a97a290d44106f89568c7ffe746e396db1dd2f5e5f79c222fb201127e",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xC9A1c724Da34cB64cDFeF01143FEE1E21cFF7D37",
+      "txHash": "0x2cef6385c45b4e594d53561755595e79188991410829d285ca1d9f8417f1e48f",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x0DAfdb307939e647Cb4D00404C88d1A0c1DB6A0c",
+      "txHash": "0x08410f18a5e00f6dd1c894e1bd46fbfa1778e17de7cbaf0cbe97d7024081db11",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x6fFDA51452648996AC54C4f1E739bE80f691dBaF",
+      "txHash": "0x007a1198c637db7304f80a60d43201137059217e8d2f8fad1c033a0ef981e559",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xb07b91645b568F5Cf6403Ab5873DB8ccB53AcE38",
+      "txHash": "0xa57093266bdce9c88768d479e0156d335eec608460ad676b3b37fe5f764cf468",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xE73390C0b011D66Ef8e774Ea45dAe0f6744Bf15e",
+      "txHash": "0xefd26be680c1e313589aebfa3140d382029ff3ae5739667675c4ffa19be46e0d",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x8281744847164Eb74dA72A20555Fa349507E2d2E",
+      "txHash": "0x1d730f8688e70d403ae3bb75559aacf8b5c1ee33f1d324cfd67fbb59995819e7",
+      "kind": "transparent"
+    }
+  ],
+  "impls": {
+    "c07aa870fa12a0d634ef22b50878e414340448e56e184fdae62b1f43c3af54f4": {
+      "address": "0xDEC61c699cDAAeB0965cDFA727f01c71341e8dCb",
+      "txHash": "0x40e2f4b6eb5bc632bae909c63916edab2e176549dead6305e0c45a29deb60663",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "fungible",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_struct(Asset)1454_storage)",
+            "contract": "CryptopiaInventories",
+            "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:93"
+          },
+          {
+            "label": "fungibleIndex",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_address)dyn_storage",
+            "contract": "CryptopiaInventories",
+            "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:94"
+          },
+          {
+            "label": "nonFungible",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_address,t_struct(Asset)1454_storage)",
+            "contract": "CryptopiaInventories",
+            "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:97"
+          },
+          {
+            "label": "nonFungibleIndex",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_array(t_address)dyn_storage",
+            "contract": "CryptopiaInventories",
+            "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:98"
+          },
+          {
+            "label": "playerToShip",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "CryptopiaInventories",
+            "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:101"
+          },
+          {
+            "label": "nonFungibleTokenDatas",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(NonFungibleTokenData)1492_storage))",
+            "contract": "CryptopiaInventories",
+            "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:104"
+          },
+          {
+            "label": "shipInventories",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_uint256,t_struct(InventorySpaceData)1473_storage)",
+            "contract": "CryptopiaInventories",
+            "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:107"
+          },
+          {
+            "label": "playerInventories",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_mapping(t_address,t_struct(InventorySpaceData)1473_storage)",
+            "contract": "CryptopiaInventories",
+            "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:110"
+          },
+          {
+            "label": "playerData",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_mapping(t_address,t_struct(PlayerInventoryData)1497_storage)",
+            "contract": "CryptopiaInventories",
+            "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:113"
+          },
+          {
+            "label": "treasury",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_address",
+            "contract": "CryptopiaInventories",
+            "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:116"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_enum(Inventory)4668": {
+            "label": "enum Inventory",
+            "members": [
+              "Wallet",
+              "Backpack",
+              "Ship"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(NonFungibleTokenData)1492_storage))": {
+            "label": "mapping(address => mapping(uint256 => struct CryptopiaInventories.NonFungibleTokenData))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(Asset)1454_storage)": {
+            "label": "mapping(address => struct CryptopiaInventories.Asset)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(InventorySpaceData)1473_storage)": {
+            "label": "mapping(address => struct CryptopiaInventories.InventorySpaceData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(NonFungibleTokenInventorySpaceData)1483_storage)": {
+            "label": "mapping(address => struct CryptopiaInventories.NonFungibleTokenInventorySpaceData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(PlayerInventoryData)1497_storage)": {
+            "label": "mapping(address => struct CryptopiaInventories.PlayerInventoryData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(InventorySpaceData)1473_storage)": {
+            "label": "mapping(uint256 => struct CryptopiaInventories.InventorySpaceData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(NonFungibleTokenData)1492_storage)": {
+            "label": "mapping(uint256 => struct CryptopiaInventories.NonFungibleTokenData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Asset)1454_storage": {
+            "label": "struct CryptopiaInventories.Asset",
+            "members": [
+              {
+                "label": "index",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "weight",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(InventorySpaceData)1473_storage": {
+            "label": "struct CryptopiaInventories.InventorySpaceData",
+            "members": [
+              {
+                "label": "weight",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "maxWeight",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "fungible",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "nonFungible",
+                "type": "t_mapping(t_address,t_struct(NonFungibleTokenInventorySpaceData)1483_storage)",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_struct(NonFungibleTokenData)1492_storage": {
+            "label": "struct CryptopiaInventories.NonFungibleTokenData",
+            "members": [
+              {
+                "label": "owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "inventory",
+                "type": "t_enum(Inventory)4668",
+                "offset": 20,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(NonFungibleTokenInventorySpaceData)1483_storage": {
+            "label": "struct CryptopiaInventories.NonFungibleTokenInventorySpaceData",
+            "members": [
+              {
+                "label": "tokens",
+                "type": "t_mapping(t_uint256,t_uint256)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "tokensIndex",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(PlayerInventoryData)1497_storage": {
+            "label": "struct CryptopiaInventories.PlayerInventoryData",
+            "members": [
+              {
+                "label": "frozenUntil",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)25_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_struct(RoleData)25_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)25_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "3edfde00eb6b6429e4d51e13fc3747d0d25ec9f9dd8c4045881cff332838aa54": {
+      "address": "0x6953321aE95a58489cF0ACe25325FA48851947f4",
+      "txHash": "0x6a88697e20792b05c3d27704b9a0398ac30ebe525c73bda5ad9844acd5aa1883",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "list",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "Whitelist",
+            "src": "contracts\\source\\authentication\\whitelist\\Whitelist.sol:14"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:24"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "b53930ae59e52795390c63b9736400ccd9547ceaee3be9a62e4154ef98e99d3c": {
+      "address": "0x8C40E0A0bC9aBDA1b7943602C784ba770782eE4F",
+      "txHash": "0xddab5614b25f624c83c37abc645dfcb2404c0dd9c104cc8d2fafdb54018947ae",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [],
+        "types": {
+          "t_mapping(t_bytes32,t_struct(RoleData)25_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_struct(RoleData)25_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))"
+          },
+          "t_string_storage": {
+            "label": "string"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)25_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61"
+            }
+          ],
+          "erc7201:openzeppelin.storage.ERC20": [
+            {
+              "contract": "ERC20Upgradeable",
+              "label": "_balances",
+              "type": "t_mapping(t_address,t_uint256)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC20\\ERC20Upgradeable.sol:38"
+            },
+            {
+              "contract": "ERC20Upgradeable",
+              "label": "_allowances",
+              "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC20\\ERC20Upgradeable.sol:40"
+            },
+            {
+              "contract": "ERC20Upgradeable",
+              "label": "_totalSupply",
+              "type": "t_uint256",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC20\\ERC20Upgradeable.sol:42"
+            },
+            {
+              "contract": "ERC20Upgradeable",
+              "label": "_name",
+              "type": "t_string_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC20\\ERC20Upgradeable.sol:44"
+            },
+            {
+              "contract": "ERC20Upgradeable",
+              "label": "_symbol",
+              "type": "t_string_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC20\\ERC20Upgradeable.sol:45"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "b4cfd8f22ddfb11e9acd4723e2026ce6fdcfeeaff10f4d6ecce1af4501e0e6cf": {
+      "address": "0x43f642B37fEE6b31A058cBe8236Ffad7f2923D50",
+      "txHash": "0x3372830c9887c3143ac0c8252a9c33b7fa97d8ee5654cf0e1bb4cb98c378f594",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "accountImplementation",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "CryptopiaAccountRegister",
+            "src": "contracts\\source\\accounts\\concrete\\CryptopiaAccountRegister.sol:47"
+          },
+          {
+            "label": "usernameToAccount",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_bytes32,t_address)",
+            "contract": "CryptopiaAccountRegister",
+            "src": "contracts\\source\\accounts\\concrete\\CryptopiaAccountRegister.sol:49"
+          },
+          {
+            "label": "accountDatas",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_address,t_struct(AccountData)3589_storage)",
+            "contract": "CryptopiaAccountRegister",
+            "src": "contracts\\source\\accounts\\concrete\\CryptopiaAccountRegister.sol:50"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_enum(Relationship)6505": {
+            "label": "enum Relationship",
+            "members": [
+              "None",
+              "Friend",
+              "Family",
+              "Spouse"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(Sex)6499": {
+            "label": "enum Sex",
+            "members": [
+              "Undefined",
+              "Male",
+              "Female"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_enum(Relationship)6505)": {
+            "label": "mapping(address => enum Relationship)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(AccountData)3589_storage)": {
+            "label": "mapping(address => struct CryptopiaAccountRegister.AccountData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_address)": {
+            "label": "mapping(bytes32 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AccountData)3589_storage": {
+            "label": "struct CryptopiaAccountRegister.AccountData",
+            "members": [
+              {
+                "label": "username",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "sex",
+                "type": "t_enum(Sex)6499",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "friends",
+                "type": "t_mapping(t_address,t_enum(Relationship)6505)",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "friendsIndex",
+                "type": "t_array(t_address)dyn_storage",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "friendRequests",
+                "type": "t_mapping(t_address,t_enum(Relationship)6505)",
+                "offset": 0,
+                "slot": "4"
+              }
+            ],
+            "numberOfBytes": "160"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "b9d01cf58d7bc75dac83ccdbaca712fecc2798ecf6fcfba1526ee79f2585f5cf": {
+      "address": "0x616EfA9606D4Fa3019567De7E6934833f21193a7",
+      "txHash": "0x6b734fe95a0a485f21095c771dcb64e2f00594cbdef09d27426d01303e9ed35f",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "accountImplementation",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "CryptopiaAccountRegister",
+            "src": "contracts\\source\\accounts\\concrete\\CryptopiaAccountRegister.sol:47"
+          },
+          {
+            "label": "usernameToAccount",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_bytes32,t_address)",
+            "contract": "CryptopiaAccountRegister",
+            "src": "contracts\\source\\accounts\\concrete\\CryptopiaAccountRegister.sol:49"
+          },
+          {
+            "label": "accountDatas",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_address,t_struct(AccountData)2928_storage)",
+            "contract": "CryptopiaAccountRegister",
+            "src": "contracts\\source\\accounts\\concrete\\CryptopiaAccountRegister.sol:50"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_enum(Relationship)5842": {
+            "label": "enum Relationship",
+            "members": [
+              "None",
+              "Friend",
+              "Family",
+              "Spouse"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(Sex)5836": {
+            "label": "enum Sex",
+            "members": [
+              "Undefined",
+              "Male",
+              "Female"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_enum(Relationship)5842)": {
+            "label": "mapping(address => enum Relationship)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(AccountData)2928_storage)": {
+            "label": "mapping(address => struct CryptopiaAccountRegister.AccountData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_address)": {
+            "label": "mapping(bytes32 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AccountData)2928_storage": {
+            "label": "struct CryptopiaAccountRegister.AccountData",
+            "members": [
+              {
+                "label": "username",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "sex",
+                "type": "t_enum(Sex)5836",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "friends",
+                "type": "t_mapping(t_address,t_enum(Relationship)5842)",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "friendsIndex",
+                "type": "t_array(t_address)dyn_storage",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "friendRequests",
+                "type": "t_mapping(t_address,t_enum(Relationship)5842)",
+                "offset": 0,
+                "slot": "4"
+              }
+            ],
+            "numberOfBytes": "160"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "2adbcc660cfa8a96d619222b807980c8434fac56f1c2d7b5709e0b53648391a1": {
+      "address": "0x6102E7CB00A01c79bf5b8fc204e8b1233F4CAcEe",
+      "txHash": "0x5827cf764f1cc679091b258bfffddf8c7e94469b8fd60f3e0e3adea244af87e1",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "accountImplementation",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "CryptopiaAccountRegister",
+            "src": "contracts\\source\\accounts\\concrete\\CryptopiaAccountRegister.sol:47"
+          },
+          {
+            "label": "usernameToAccount",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_bytes32,t_address)",
+            "contract": "CryptopiaAccountRegister",
+            "src": "contracts\\source\\accounts\\concrete\\CryptopiaAccountRegister.sol:49"
+          },
+          {
+            "label": "accountDatas",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_address,t_struct(AccountData)2928_storage)",
+            "contract": "CryptopiaAccountRegister",
+            "src": "contracts\\source\\accounts\\concrete\\CryptopiaAccountRegister.sol:50"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_enum(Relationship)5842": {
+            "label": "enum Relationship",
+            "members": [
+              "None",
+              "Friend",
+              "Family",
+              "Spouse"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(Sex)5836": {
+            "label": "enum Sex",
+            "members": [
+              "Undefined",
+              "Male",
+              "Female"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_enum(Relationship)5842)": {
+            "label": "mapping(address => enum Relationship)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(AccountData)2928_storage)": {
+            "label": "mapping(address => struct CryptopiaAccountRegister.AccountData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_address)": {
+            "label": "mapping(bytes32 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AccountData)2928_storage": {
+            "label": "struct CryptopiaAccountRegister.AccountData",
+            "members": [
+              {
+                "label": "username",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "sex",
+                "type": "t_enum(Sex)5836",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "friends",
+                "type": "t_mapping(t_address,t_enum(Relationship)5842)",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "friendsIndex",
+                "type": "t_array(t_address)dyn_storage",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "friendRequests",
+                "type": "t_mapping(t_address,t_enum(Relationship)5842)",
+                "offset": 0,
+                "slot": "4"
+              }
+            ],
+            "numberOfBytes": "160"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "fd5942822369b68434a96e618c6916e8385a5a8fa5d693241f50762ebd6fc371": {
+      "address": "0xA082f04AD09673e399cAcB80Bb20fEb84C4c5E8b",
+      "txHash": "0xb4220febe2322c9da98bca4da1f79944e91a5fc361f7349edf56bdf15a892863",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "accountRegisterContract",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "CryptopiaAvatarRegister",
+            "src": "contracts\\source\\avatars\\concrete\\CryptopiaAvatarRegister.sol:27"
+          },
+          {
+            "label": "avatarDatas",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_bytes32)",
+            "contract": "CryptopiaAvatarRegister",
+            "src": "contracts\\source\\avatars\\concrete\\CryptopiaAvatarRegister.sol:71"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bytes32)": {
+            "label": "mapping(address => bytes32)",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "4b302d008d21166ae99d2ccc44c61ecba31f6ff479d17b8ef015eba604da9950": {
+      "address": "0x50F6cAa680f1ED64FedD53627527D4cBc0565136",
+      "txHash": "0xf4e2f0926edc4cf13937778ff0b894108944952ce394df7214f8c0c55843de4e",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "assets",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_bytes32,t_address)",
+            "contract": "CryptopiaAssetRegister",
+            "src": "contracts\\source\\game\\assets\\concrete\\CryptopiaAssetRegister.sol:22"
+          },
+          {
+            "label": "assetsIndex",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_bytes32)dyn_storage",
+            "contract": "CryptopiaAssetRegister",
+            "src": "contracts\\source\\game\\assets\\concrete\\CryptopiaAssetRegister.sol:23"
+          },
+          {
+            "label": "resources",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_enum(Resource)10819,t_address)",
+            "contract": "CryptopiaAssetRegister",
+            "src": "contracts\\source\\game\\assets\\concrete\\CryptopiaAssetRegister.sol:26"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]",
+            "numberOfBytes": "32"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_enum(Resource)10819": {
+            "label": "enum Resource",
+            "members": [
+              "Fish",
+              "Meat",
+              "Fruit",
+              "Wood",
+              "Stone",
+              "Sand",
+              "Uranium",
+              "Iron",
+              "Diamond",
+              "Copper",
+              "Silver",
+              "Gold",
+              "Carbon",
+              "Oil",
+              "Glass",
+              "Steel",
+              "Fuel"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_bytes32,t_address)": {
+            "label": "mapping(bytes32 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_enum(Resource)10819,t_address)": {
+            "label": "mapping(enum Resource => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)25_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)"
+          },
+          "t_struct(RoleData)25_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)25_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "93c99f3d1dad5f3c08467708aafe13ffd6ebf7bc78cd4d5400a61c10768b6668": {
+      "address": "0x18f3AebaF4d1533A3FfeD9e35276975C51CFcA30",
+      "txHash": "0xcfbb0e7e73731cac5f1c8897e954b3d8f0aaf0470be984fbe59b6fb936a3c9bf",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "_contractURI",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_string_storage",
+            "contract": "CryptopiaERC721",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\CryptopiaERC721.sol:27"
+          },
+          {
+            "label": "_baseTokenURI",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_string_storage",
+            "contract": "CryptopiaERC721",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\CryptopiaERC721.sol:28"
+          },
+          {
+            "label": "authenticator",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_contract(IAuthenticator)5179",
+            "contract": "CryptopiaERC721",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\CryptopiaERC721.sol:31"
+          },
+          {
+            "label": "_currentTokenId",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256",
+            "contract": "CryptopiaShipToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\ships\\CryptopiaShipToken.sol:75"
+          },
+          {
+            "label": "ships",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_bytes32,t_struct(ShipData)17999_storage)",
+            "contract": "CryptopiaShipToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\ships\\CryptopiaShipToken.sol:78"
+          },
+          {
+            "label": "shipsIndex",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_array(t_bytes32)dyn_storage",
+            "contract": "CryptopiaShipToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\ships\\CryptopiaShipToken.sol:79"
+          },
+          {
+            "label": "shipInstances",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_uint256,t_struct(ShipInstance)19812_storage)",
+            "contract": "CryptopiaShipToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\ships\\CryptopiaShipToken.sol:82"
+          },
+          {
+            "label": "starterShips",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_mapping(t_enum(Faction)17462,t_bytes32)",
+            "contract": "CryptopiaShipToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\ships\\CryptopiaShipToken.sol:85"
+          }
+        ],
+        "types": {
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IAuthenticator)5179": {
+            "label": "contract IAuthenticator",
+            "numberOfBytes": "20"
+          },
+          "t_enum(Faction)17462": {
+            "label": "enum Faction",
+            "members": [
+              "Eco",
+              "Tech",
+              "Industrial",
+              "Traditional"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(Rarity)17475": {
+            "label": "enum Rarity",
+            "members": [
+              "Common",
+              "Rare",
+              "Legendary",
+              "Master"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(SubFaction)17467": {
+            "label": "enum SubFaction",
+            "members": [
+              "None",
+              "Pirate",
+              "BountyHunter"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_bytes32,t_struct(ShipData)17999_storage)": {
+            "label": "mapping(bytes32 => struct CryptopiaShipToken.ShipData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_enum(Faction)17462,t_bytes32)": {
+            "label": "mapping(enum Faction => bytes32)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(ShipInstance)19812_storage)": {
+            "label": "mapping(uint256 => struct ShipInstance)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(ShipData)17999_storage": {
+            "label": "struct CryptopiaShipToken.ShipData",
+            "members": [
+              {
+                "label": "index",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "generic",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "faction",
+                "type": "t_enum(Faction)17462",
+                "offset": 1,
+                "slot": "1"
+              },
+              {
+                "label": "subFaction",
+                "type": "t_enum(SubFaction)17467",
+                "offset": 2,
+                "slot": "1"
+              },
+              {
+                "label": "rarity",
+                "type": "t_enum(Rarity)17475",
+                "offset": 3,
+                "slot": "1"
+              },
+              {
+                "label": "modules",
+                "type": "t_uint8",
+                "offset": 4,
+                "slot": "1"
+              },
+              {
+                "label": "co2",
+                "type": "t_uint16",
+                "offset": 5,
+                "slot": "1"
+              },
+              {
+                "label": "base_speed",
+                "type": "t_uint16",
+                "offset": 7,
+                "slot": "1"
+              },
+              {
+                "label": "base_attack",
+                "type": "t_uint16",
+                "offset": 9,
+                "slot": "1"
+              },
+              {
+                "label": "base_health",
+                "type": "t_uint16",
+                "offset": 11,
+                "slot": "1"
+              },
+              {
+                "label": "base_defence",
+                "type": "t_uint16",
+                "offset": 13,
+                "slot": "1"
+              },
+              {
+                "label": "base_inventory",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "base_fuelConsumption",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "pirateVersion",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "4"
+              }
+            ],
+            "numberOfBytes": "160"
+          },
+          "t_struct(ShipInstance)19812_storage": {
+            "label": "struct ShipInstance",
+            "members": [
+              {
+                "label": "name",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "locked",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "skin",
+                "type": "t_uint16",
+                "offset": 1,
+                "slot": "1"
+              },
+              {
+                "label": "speed",
+                "type": "t_uint16",
+                "offset": 3,
+                "slot": "1"
+              },
+              {
+                "label": "attack",
+                "type": "t_uint16",
+                "offset": 5,
+                "slot": "1"
+              },
+              {
+                "label": "health",
+                "type": "t_uint16",
+                "offset": 7,
+                "slot": "1"
+              },
+              {
+                "label": "damage",
+                "type": "t_uint16",
+                "offset": 9,
+                "slot": "1"
+              },
+              {
+                "label": "defence",
+                "type": "t_uint16",
+                "offset": 11,
+                "slot": "1"
+              },
+              {
+                "label": "inventory",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "fuelConsumption",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)25_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)"
+          },
+          "t_struct(RoleData)25_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_bool))": {
+            "label": "mapping(address => mapping(address => bool))"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)25_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61"
+            }
+          ],
+          "erc7201:openzeppelin.storage.ERC721Enumerable": [
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_ownedTokens",
+              "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:21"
+            },
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_ownedTokensIndex",
+              "type": "t_mapping(t_uint256,t_uint256)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:22"
+            },
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_allTokens",
+              "type": "t_array(t_uint256)dyn_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:24"
+            },
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_allTokensIndex",
+              "type": "t_mapping(t_uint256,t_uint256)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:25"
+            }
+          ],
+          "erc7201:openzeppelin.storage.ERC721": [
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_name",
+              "type": "t_string_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:27"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_symbol",
+              "type": "t_string_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:30"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_owners",
+              "type": "t_mapping(t_uint256,t_address)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:32"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_balances",
+              "type": "t_mapping(t_address,t_uint256)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:34"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_tokenApprovals",
+              "type": "t_mapping(t_uint256,t_address)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:36"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_operatorApprovals",
+              "type": "t_mapping(t_address,t_mapping(t_address,t_bool))",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:38"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "5cf126882f783d6e892da9e5f5e003fd6e263253c6bce4feb4bb5c24957f4c81": {
+      "address": "0x36e9e242e15A0c7525b3692FA118f0d1CCE6cB5b",
+      "txHash": "0x08cdb3b778ca0e69a1c290c2c54b09d64bf654581a4146883ff894e4c3455ba8",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "recipes",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_mapping(t_bytes32,t_struct(CraftingRecipeData)2791_storage))",
+            "contract": "CryptopiaCrafting",
+            "src": "contracts\\source\\game\\crafting\\concrete\\CryptopiaCrafting.sol:77"
+          },
+          {
+            "label": "recipesIndex",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_array(t_bytes32)dyn_storage)",
+            "contract": "CryptopiaCrafting",
+            "src": "contracts\\source\\game\\crafting\\concrete\\CryptopiaCrafting.sol:78"
+          },
+          {
+            "label": "playerData",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_address,t_struct(CraftingPlayerData)2814_storage)",
+            "contract": "CryptopiaCrafting",
+            "src": "contracts\\source\\game\\crafting\\concrete\\CryptopiaCrafting.sol:81"
+          },
+          {
+            "label": "inventoriesContract",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_address",
+            "contract": "CryptopiaCrafting",
+            "src": "contracts\\source\\game\\crafting\\concrete\\CryptopiaCrafting.sol:84"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_array(t_bytes32)dyn_storage)": {
+            "label": "mapping(address => bytes32[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_bytes32,t_bool))": {
+            "label": "mapping(address => mapping(bytes32 => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_bytes32,t_struct(CraftingRecipeData)2791_storage))": {
+            "label": "mapping(address => mapping(bytes32 => struct CryptopiaCrafting.CraftingRecipeData))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(CraftingPlayerData)2814_storage)": {
+            "label": "mapping(address => struct CryptopiaCrafting.CraftingPlayerData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(CraftingRecipeData)2791_storage)": {
+            "label": "mapping(bytes32 => struct CryptopiaCrafting.CraftingRecipeData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(CraftingSlot)4206_storage)": {
+            "label": "mapping(uint256 => struct CraftingSlot)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(CraftingPlayerData)2814_storage": {
+            "label": "struct CryptopiaCrafting.CraftingPlayerData",
+            "members": [
+              {
+                "label": "slotCount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "slots",
+                "type": "t_mapping(t_uint256,t_struct(CraftingSlot)4206_storage)",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "learned",
+                "type": "t_mapping(t_address,t_mapping(t_bytes32,t_bool))",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "learnedIndex",
+                "type": "t_mapping(t_address,t_array(t_bytes32)dyn_storage)",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_struct(CraftingRecipeData)2791_storage": {
+            "label": "struct CryptopiaCrafting.CraftingRecipeData",
+            "members": [
+              {
+                "label": "index",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "level",
+                "type": "t_uint8",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "learnable",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "1"
+              },
+              {
+                "label": "craftingTime",
+                "type": "t_uint64",
+                "offset": 2,
+                "slot": "1"
+              },
+              {
+                "label": "ingredients",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "ingredientsIndex",
+                "type": "t_array(t_address)dyn_storage",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_struct(CraftingSlot)4206_storage": {
+            "label": "struct CraftingSlot",
+            "members": [
+              {
+                "label": "asset",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "recipe",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "finished",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)25_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)"
+          },
+          "t_struct(RoleData)25_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)25_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "2e6ac9e52ada7dc9f3043df1bf642995a652db80516ef3668a984db87acfb6cd": {
+      "address": "0xB34E651D19b0481C3bA6D113D30Ea8b61A129F0a",
+      "txHash": "0x5b563777e80eb946abd5e01ba52b43ed2854f39ff2cf5a47e964fc874366c190",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "accountRegisterContract",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "CryptopiaPlayerRegister",
+            "src": "contracts\\source\\game\\players\\concrete\\CryptopiaPlayerRegister.sol:68"
+          },
+          {
+            "label": "inventoriesContract",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address",
+            "contract": "CryptopiaPlayerRegister",
+            "src": "contracts\\source\\game\\players\\concrete\\CryptopiaPlayerRegister.sol:69"
+          },
+          {
+            "label": "craftingContract",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_address",
+            "contract": "CryptopiaPlayerRegister",
+            "src": "contracts\\source\\game\\players\\concrete\\CryptopiaPlayerRegister.sol:70"
+          },
+          {
+            "label": "shipTokenContract",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_address",
+            "contract": "CryptopiaPlayerRegister",
+            "src": "contracts\\source\\game\\players\\concrete\\CryptopiaPlayerRegister.sol:71"
+          },
+          {
+            "label": "mapsContract",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_address",
+            "contract": "CryptopiaPlayerRegister",
+            "src": "contracts\\source\\game\\players\\concrete\\CryptopiaPlayerRegister.sol:72"
+          },
+          {
+            "label": "totalPlayerCount",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_uint256",
+            "contract": "CryptopiaPlayerRegister",
+            "src": "contracts\\source\\game\\players\\concrete\\CryptopiaPlayerRegister.sol:75"
+          },
+          {
+            "label": "totalPlayerProgression",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_uint256",
+            "contract": "CryptopiaPlayerRegister",
+            "src": "contracts\\source\\game\\players\\concrete\\CryptopiaPlayerRegister.sol:76"
+          },
+          {
+            "label": "playerDatas",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_mapping(t_address,t_struct(PlayerData)5151_storage)",
+            "contract": "CryptopiaPlayerRegister",
+            "src": "contracts\\source\\game\\players\\concrete\\CryptopiaPlayerRegister.sol:79"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_enum(Faction)5168": {
+            "label": "enum Faction",
+            "members": [
+              "Eco",
+              "Tech",
+              "Industrial",
+              "Traditional"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(SubFaction)5173": {
+            "label": "enum SubFaction",
+            "members": [
+              "None",
+              "Pirate",
+              "BountyHunter"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_int16": {
+            "label": "int16",
+            "numberOfBytes": "2"
+          },
+          "t_mapping(t_address,t_struct(PlayerData)5151_storage)": {
+            "label": "mapping(address => struct PlayerData)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(PlayerData)5151_storage": {
+            "label": "struct PlayerData",
+            "members": [
+              {
+                "label": "faction",
+                "type": "t_enum(Faction)5168",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "subFaction",
+                "type": "t_enum(SubFaction)5173",
+                "offset": 1,
+                "slot": "0"
+              },
+              {
+                "label": "level",
+                "type": "t_uint8",
+                "offset": 2,
+                "slot": "0"
+              },
+              {
+                "label": "karma",
+                "type": "t_int16",
+                "offset": 3,
+                "slot": "0"
+              },
+              {
+                "label": "xp",
+                "type": "t_uint24",
+                "offset": 5,
+                "slot": "0"
+              },
+              {
+                "label": "luck",
+                "type": "t_uint24",
+                "offset": 8,
+                "slot": "0"
+              },
+              {
+                "label": "charisma",
+                "type": "t_uint24",
+                "offset": 11,
+                "slot": "0"
+              },
+              {
+                "label": "intelligence",
+                "type": "t_uint24",
+                "offset": 14,
+                "slot": "0"
+              },
+              {
+                "label": "strength",
+                "type": "t_uint24",
+                "offset": 17,
+                "slot": "0"
+              },
+              {
+                "label": "speed",
+                "type": "t_uint24",
+                "offset": 20,
+                "slot": "0"
+              },
+              {
+                "label": "ship",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint24": {
+            "label": "uint24",
+            "numberOfBytes": "3"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)25_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_struct(RoleData)25_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)25_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "d8e91e11a84f670b8802c42c6bcdb01da239766b3715281d4cf3bf56c46755c1": {
+      "address": "0xC3E193F8b263155765663bEfAcD0E997dfDF09f8",
+      "txHash": "0xbff05c000da55cdbe5798c9275b48649c09217e8e8008d91590670dad1adf97c",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "_contractURI",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_string_storage",
+            "contract": "CryptopiaERC721",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\CryptopiaERC721.sol:27"
+          },
+          {
+            "label": "_baseTokenURI",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_string_storage",
+            "contract": "CryptopiaERC721",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\CryptopiaERC721.sol:28"
+          },
+          {
+            "label": "authenticator",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_contract(IAuthenticator)4842",
+            "contract": "CryptopiaERC721",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\CryptopiaERC721.sol:31"
+          },
+          {
+            "label": "_currentTokenId",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256",
+            "contract": "CryptopiaToolToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\tools\\CryptopiaToolToken.sol:77"
+          },
+          {
+            "label": "tools",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_bytes32,t_struct(ToolData)7047_storage)",
+            "contract": "CryptopiaToolToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\tools\\CryptopiaToolToken.sol:81"
+          },
+          {
+            "label": "toolsIndex",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_array(t_bytes32)dyn_storage",
+            "contract": "CryptopiaToolToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\tools\\CryptopiaToolToken.sol:82"
+          },
+          {
+            "label": "toolInstances",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_uint256,t_struct(ToolInstanceData)7055_storage)",
+            "contract": "CryptopiaToolToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\tools\\CryptopiaToolToken.sol:86"
+          },
+          {
+            "label": "playerRegisterContract",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_address",
+            "contract": "CryptopiaToolToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\tools\\CryptopiaToolToken.sol:89"
+          },
+          {
+            "label": "inventoriesContract",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_address",
+            "contract": "CryptopiaToolToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\tools\\CryptopiaToolToken.sol:90"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_enum(Resource)4942)dyn_storage": {
+            "label": "enum Resource[]",
+            "numberOfBytes": "32"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IAuthenticator)4842": {
+            "label": "contract IAuthenticator",
+            "numberOfBytes": "20"
+          },
+          "t_enum(Rarity)6635": {
+            "label": "enum Rarity",
+            "members": [
+              "Common",
+              "Rare",
+              "Legendary",
+              "Master"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(Resource)4942": {
+            "label": "enum Resource",
+            "members": [
+              "Fish",
+              "Meat",
+              "Fruit",
+              "Wood",
+              "Stone",
+              "Sand",
+              "Uranium",
+              "Iron",
+              "Diamond",
+              "Copper",
+              "Silver",
+              "Gold",
+              "Carbon",
+              "Oil",
+              "Glass",
+              "Steel",
+              "Fuel"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_bytes32,t_struct(ToolData)7047_storage)": {
+            "label": "mapping(bytes32 => struct CryptopiaToolToken.ToolData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_enum(Resource)4942,t_uint256)": {
+            "label": "mapping(enum Resource => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(ToolInstanceData)7055_storage)": {
+            "label": "mapping(uint256 => struct CryptopiaToolToken.ToolInstanceData)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(ToolData)7047_storage": {
+            "label": "struct CryptopiaToolToken.ToolData",
+            "members": [
+              {
+                "label": "index",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "rarity",
+                "type": "t_enum(Rarity)6635",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "level",
+                "type": "t_uint8",
+                "offset": 1,
+                "slot": "1"
+              },
+              {
+                "label": "durability",
+                "type": "t_uint24",
+                "offset": 2,
+                "slot": "1"
+              },
+              {
+                "label": "multiplier_cooldown",
+                "type": "t_uint24",
+                "offset": 5,
+                "slot": "1"
+              },
+              {
+                "label": "multiplier_xp",
+                "type": "t_uint24",
+                "offset": 8,
+                "slot": "1"
+              },
+              {
+                "label": "multiplier_effectiveness",
+                "type": "t_uint24",
+                "offset": 11,
+                "slot": "1"
+              },
+              {
+                "label": "value1",
+                "type": "t_uint24",
+                "offset": 14,
+                "slot": "1"
+              },
+              {
+                "label": "value2",
+                "type": "t_uint24",
+                "offset": 17,
+                "slot": "1"
+              },
+              {
+                "label": "value3",
+                "type": "t_uint24",
+                "offset": 20,
+                "slot": "1"
+              },
+              {
+                "label": "minting",
+                "type": "t_mapping(t_enum(Resource)4942,t_uint256)",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "mintingIndex",
+                "type": "t_array(t_enum(Resource)4942)dyn_storage",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_struct(ToolInstanceData)7055_storage": {
+            "label": "struct CryptopiaToolToken.ToolInstanceData",
+            "members": [
+              {
+                "label": "name",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "damage",
+                "type": "t_uint24",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint24": {
+            "label": "uint24",
+            "numberOfBytes": "3"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)25_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)"
+          },
+          "t_struct(RoleData)25_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_bool))": {
+            "label": "mapping(address => mapping(address => bool))"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)25_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61"
+            }
+          ],
+          "erc7201:openzeppelin.storage.ERC721Enumerable": [
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_ownedTokens",
+              "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:21"
+            },
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_ownedTokensIndex",
+              "type": "t_mapping(t_uint256,t_uint256)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:22"
+            },
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_allTokens",
+              "type": "t_array(t_uint256)dyn_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:24"
+            },
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_allTokensIndex",
+              "type": "t_mapping(t_uint256,t_uint256)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:25"
+            }
+          ],
+          "erc7201:openzeppelin.storage.ERC721": [
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_name",
+              "type": "t_string_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:27"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_symbol",
+              "type": "t_string_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:30"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_owners",
+              "type": "t_mapping(t_uint256,t_address)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:32"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_balances",
+              "type": "t_mapping(t_address,t_uint256)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:34"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_tokenApprovals",
+              "type": "t_mapping(t_uint256,t_address)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:36"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_operatorApprovals",
+              "type": "t_mapping(t_address,t_mapping(t_address,t_bool))",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:38"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "6c514454f33356373f2ece0d1e841845ed3cc81bb9c35ef4996026dbbcfdbd5e": {
+      "address": "0x9A469a5223E8d599011a178485c21eD44089dACE",
+      "txHash": "0x52caa2c9de6577e94793217bb9af5f503121780e2c4dd1b4fd293e8f330dd52a",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "_contractURI",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_string_storage",
+            "contract": "CryptopiaERC721",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\CryptopiaERC721.sol:27"
+          },
+          {
+            "label": "_baseTokenURI",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_string_storage",
+            "contract": "CryptopiaERC721",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\CryptopiaERC721.sol:28"
+          },
+          {
+            "label": "authenticator",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_contract(IAuthenticator)9944",
+            "contract": "CryptopiaERC721",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\CryptopiaERC721.sol:31"
+          },
+          {
+            "label": "maxTokenId",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256",
+            "contract": "CryptopiaTitleDeedToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\deeds\\CryptopiaTitleDeedToken.sol:16"
+          }
+        ],
+        "types": {
+          "t_contract(IAuthenticator)9944": {
+            "label": "contract IAuthenticator",
+            "numberOfBytes": "20"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)25_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_struct(RoleData)25_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_bool))": {
+            "label": "mapping(address => mapping(address => bool))"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)25_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61"
+            }
+          ],
+          "erc7201:openzeppelin.storage.ERC721Enumerable": [
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_ownedTokens",
+              "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:21"
+            },
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_ownedTokensIndex",
+              "type": "t_mapping(t_uint256,t_uint256)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:22"
+            },
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_allTokens",
+              "type": "t_array(t_uint256)dyn_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:24"
+            },
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_allTokensIndex",
+              "type": "t_mapping(t_uint256,t_uint256)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:25"
+            }
+          ],
+          "erc7201:openzeppelin.storage.ERC721": [
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_name",
+              "type": "t_string_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:27"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_symbol",
+              "type": "t_string_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:30"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_owners",
+              "type": "t_mapping(t_uint256,t_address)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:32"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_balances",
+              "type": "t_mapping(t_address,t_uint256)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:34"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_tokenApprovals",
+              "type": "t_mapping(t_uint256,t_address)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:36"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_operatorApprovals",
+              "type": "t_mapping(t_address,t_mapping(t_address,t_bool))",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:38"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "5b4cc39ce55ee3b9d0109e822e582dde4a32e10f3bd59d8370fc45b1449122a8": {
+      "address": "0x213c53DA85F799c98c149C40bb13A6DE18762c95",
+      "txHash": "0xa247f07a6fd8b564e6aa0171d5ca73ab2775542a4bb265d444bb9d672ad737f4",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "playerRegisterContract",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:230"
+          },
+          {
+            "label": "assetRegisterContract",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:231"
+          },
+          {
+            "label": "titleDeedContract",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_address",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:232"
+          },
+          {
+            "label": "shipContract",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_address",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:233"
+          },
+          {
+            "label": "maps",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_bytes32,t_struct(Map)4535_storage)",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:236"
+          },
+          {
+            "label": "mapsIndex",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_array(t_bytes32)dyn_storage",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:237"
+          },
+          {
+            "label": "tileDataStatic",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_uint16,t_struct(TileStaticData)1190_storage)",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:240"
+          },
+          {
+            "label": "tileDataDynamic",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_mapping(t_uint16,t_struct(TileDynamicData)1213_storage)",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:241"
+          },
+          {
+            "label": "initializedTileCount",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_uint256",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:242"
+          },
+          {
+            "label": "playerData",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_mapping(t_address,t_struct(PlayerNavigationData)1236_storage)",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:245"
+          },
+          {
+            "label": "pathCache",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_mapping(t_uint32,t_uint256)",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:248"
+          },
+          {
+            "label": "movementPenaltyCache",
+            "offset": 0,
+            "slot": "11",
+            "type": "t_mapping(t_uint16,t_struct(TileMovementPenaltyCacheKey)1244_storage)",
+            "contract": "CryptopiaMaps",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMaps.sol:251"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_enum(Resource)957)dyn_storage": {
+            "label": "enum Resource[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_bytes4": {
+            "label": "bytes4",
+            "numberOfBytes": "4"
+          },
+          "t_bytes8": {
+            "label": "bytes8",
+            "numberOfBytes": "8"
+          },
+          "t_enum(Biome)4678": {
+            "label": "enum Biome",
+            "members": [
+              "None",
+              "Plains",
+              "Grassland",
+              "Forest",
+              "RainForest",
+              "Mangrove",
+              "Desert",
+              "Tundra",
+              "Swamp",
+              "Reef",
+              "Vulcanic"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(Resource)957": {
+            "label": "enum Resource",
+            "members": [
+              "Fish",
+              "Meat",
+              "Fruit",
+              "Wood",
+              "Stone",
+              "Sand",
+              "Uranium",
+              "Iron",
+              "Diamond",
+              "Copper",
+              "Silver",
+              "Gold",
+              "Carbon",
+              "Oil",
+              "Glass",
+              "Steel",
+              "Fuel"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(Terrain)4665": {
+            "label": "enum Terrain",
+            "members": [
+              "Flat",
+              "Hills",
+              "Mountains",
+              "Water",
+              "Seastead"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_struct(PlayerNavigationData)1236_storage)": {
+            "label": "mapping(address => struct CryptopiaMaps.PlayerNavigationData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(Map)4535_storage)": {
+            "label": "mapping(bytes32 => struct Map)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_enum(Resource)957,t_uint256)": {
+            "label": "mapping(enum Resource => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_struct(TileDynamicData)1213_storage)": {
+            "label": "mapping(uint16 => struct CryptopiaMaps.TileDynamicData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_struct(TileMovementPenaltyCacheKey)1244_storage)": {
+            "label": "mapping(uint16 => struct CryptopiaMaps.TileMovementPenaltyCacheKey)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_struct(TileStaticData)1190_storage)": {
+            "label": "mapping(uint16 => struct CryptopiaMaps.TileStaticData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint32,t_uint256)": {
+            "label": "mapping(uint32 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Map)4535_storage": {
+            "label": "struct Map",
+            "members": [
+              {
+                "label": "name",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "initialized",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "finalized",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "1"
+              },
+              {
+                "label": "sizeX",
+                "type": "t_uint16",
+                "offset": 2,
+                "slot": "1"
+              },
+              {
+                "label": "sizeZ",
+                "type": "t_uint16",
+                "offset": 4,
+                "slot": "1"
+              },
+              {
+                "label": "tileStartIndex",
+                "type": "t_uint16",
+                "offset": 6,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(PlayerNavigationData)1236_storage": {
+            "label": "struct CryptopiaMaps.PlayerNavigationData",
+            "members": [
+              {
+                "label": "chain_next",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "chain_prev",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "movement",
+                "type": "t_uint16",
+                "offset": 20,
+                "slot": "1"
+              },
+              {
+                "label": "frozenUntil",
+                "type": "t_uint64",
+                "offset": 22,
+                "slot": "1"
+              },
+              {
+                "label": "location_tileIndex",
+                "type": "t_uint16",
+                "offset": 30,
+                "slot": "1"
+              },
+              {
+                "label": "location_arrival",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "location_route",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_struct(TileDynamicData)1213_storage": {
+            "label": "struct CryptopiaMaps.TileDynamicData",
+            "members": [
+              {
+                "label": "hasRoad",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "rockData",
+                "type": "t_bytes4",
+                "offset": 1,
+                "slot": "0"
+              },
+              {
+                "label": "vegetationData",
+                "type": "t_bytes8",
+                "offset": 5,
+                "slot": "0"
+              },
+              {
+                "label": "wildlifeData",
+                "type": "t_bytes4",
+                "offset": 13,
+                "slot": "0"
+              },
+              {
+                "label": "lastEnteredPlayer",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "resources",
+                "type": "t_mapping(t_enum(Resource)957,t_uint256)",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_struct(TileMovementPenaltyCacheKey)1244_storage": {
+            "label": "struct CryptopiaMaps.TileMovementPenaltyCacheKey",
+            "members": [
+              {
+                "label": "initialized",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "penalty",
+                "type": "t_uint16",
+                "offset": 1,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(TileStaticData)1190_storage": {
+            "label": "struct CryptopiaMaps.TileStaticData",
+            "members": [
+              {
+                "label": "initialized",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "mapIndex",
+                "type": "t_uint16",
+                "offset": 1,
+                "slot": "0"
+              },
+              {
+                "label": "group",
+                "type": "t_uint16",
+                "offset": 3,
+                "slot": "0"
+              },
+              {
+                "label": "safety",
+                "type": "t_uint8",
+                "offset": 5,
+                "slot": "0"
+              },
+              {
+                "label": "biome",
+                "type": "t_enum(Biome)4678",
+                "offset": 6,
+                "slot": "0"
+              },
+              {
+                "label": "terrain",
+                "type": "t_enum(Terrain)4665",
+                "offset": 7,
+                "slot": "0"
+              },
+              {
+                "label": "elevationLevel",
+                "type": "t_uint8",
+                "offset": 8,
+                "slot": "0"
+              },
+              {
+                "label": "waterLevel",
+                "type": "t_uint8",
+                "offset": 9,
+                "slot": "0"
+              },
+              {
+                "label": "hasLake",
+                "type": "t_bool",
+                "offset": 10,
+                "slot": "0"
+              },
+              {
+                "label": "riverFlags",
+                "type": "t_uint8",
+                "offset": 11,
+                "slot": "0"
+              },
+              {
+                "label": "resources",
+                "type": "t_mapping(t_enum(Resource)957,t_uint256)",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "resourcesIndex",
+                "type": "t_array(t_enum(Resource)957)dyn_storage",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint32": {
+            "label": "uint32",
+            "numberOfBytes": "4"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)25_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)"
+          },
+          "t_struct(RoleData)25_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)25_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "19815538aea2d00cdbc8fe5a91d9c876f0c14fb1bf1667abc2c4621c8c515d77": {
+      "address": "0xf0D844705cD363cEFE6Bf20Cc2D62D9155916317",
+      "txHash": "0x03ffbba1ff1d883c770d600ec2efd22e7b8034b22a29507358bec0074c290b57",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "mapsContract",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "CryptopiaMapsExtensions",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMapsExtensions.sol:18"
+          },
+          {
+            "label": "titleDeedContract",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address",
+            "contract": "CryptopiaMapsExtensions",
+            "src": "contracts\\source\\game\\maps\\concrete\\CryptopiaMapsExtensions.sol:19"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

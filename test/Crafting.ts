@@ -3,8 +3,10 @@ import { expect } from "chai";
 import { ethers, upgrades} from "hardhat";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { getParamFromEvent} from '../scripts/helpers/events';
+import { encodeRockData, encodeVegetationData, encodeWildlifeData } from '../scripts/maps/helpers/encoders';
 import { resolveEnum } from "../scripts/helpers/enums";
-import { Resource } from '../scripts/types/enums';
+import { Resource, Terrain, Biome } from '../scripts/types/enums';
+import { Map } from "../scripts/types/input";
 import { REVERT_MODE } from "./settings/config";
 import { SYSTEM_ROLE } from "./settings/roles";   
 
@@ -168,6 +170,18 @@ describe("Crafting Contract", function () {
         }
     ];
 
+    const map: Map = {
+        name: "Map 1".toBytes32(),
+        sizeX: 2,
+        sizeZ: 2,
+        tiles: [
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Water, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+        ]
+    };
+
 
     /**
      * Deploy Crafting Contracts
@@ -191,6 +205,8 @@ describe("Crafting Contract", function () {
         const ToolTokenFactory = await ethers.getContractFactory("CryptopiaToolToken");
         const InventoriesFactory = await ethers.getContractFactory("CryptopiaInventories");
         const CraftingFactory = await ethers.getContractFactory("CryptopiaCrafting");
+        const TitleDeedTokenFactory = await ethers.getContractFactory("CryptopiaTitleDeedToken");
+        const MapsFactory = await ethers.getContractFactory("CryptopiaMaps");
         
         // Deploy Inventories
         const inventoriesProxy = await upgrades.deployProxy(
@@ -201,6 +217,7 @@ describe("Crafting Contract", function () {
 
         const inventoriesAddress = await inventoriesProxy.address;
         inventoriesInstance = await ethers.getContractAt("CryptopiaInventories", inventoriesAddress);
+
 
         // Deploy Whitelist
         const whitelistProxy = await upgrades.deployProxy(
@@ -213,12 +230,17 @@ describe("Crafting Contract", function () {
 
         const whitelistAddress = await whitelistProxy.address;
 
-        // Deploy Account register
+
+        // Deploy AccountRegister 
         const accountRegisterProxy = await upgrades.deployProxy(
             AccountRegisterFactory);
 
         const accountRegisterAddress = await accountRegisterProxy.address;
         accountRegisterInstance = await ethers.getContractAt("CryptopiaAccountRegister", accountRegisterAddress);
+
+        // SKALE workaround
+        await accountRegisterInstance.initializeManually();
+
 
         // Deploy Asset Register
         const assetRegisterProxy = await upgrades.deployProxy(
@@ -226,6 +248,7 @@ describe("Crafting Contract", function () {
 
         const assetRegisterAddress = await assetRegisterProxy.address;
         const assetRegisterInstance = await ethers.getContractAt("CryptopiaAssetRegister", assetRegisterAddress);
+
 
         // Deploy Ships
         const shipTokenProxy = await upgrades.deployProxy(
@@ -239,6 +262,7 @@ describe("Crafting Contract", function () {
         const shipTokenAddress = await shipTokenProxy.address;
         shipTokenInstance = await ethers.getContractAt("CryptopiaShipToken", shipTokenAddress);
 
+
         // Deploy Crafting
         const craftingProxy = await upgrades.deployProxy(
             CraftingFactory, 
@@ -248,6 +272,7 @@ describe("Crafting Contract", function () {
 
         const craftingAddress = await craftingProxy.address;
         craftingInstance = await ethers.getContractAt("CryptopiaCrafting", craftingAddress);
+
 
         // Deploy Player Register
         const playerRegisterProxy = await upgrades.deployProxy(
@@ -264,6 +289,39 @@ describe("Crafting Contract", function () {
 
         const playerRegisterAddress = await playerRegisterProxy.address;
         playerRegisterInstance = await ethers.getContractAt("CryptopiaPlayerRegister", playerRegisterAddress);
+
+
+        // Deploy title deed token
+        const titleDeedTokenProxy = await upgrades.deployProxy(
+            TitleDeedTokenFactory, 
+            [
+                whitelistAddress,
+                "", 
+                ""
+            ]);
+
+        const titleDeedTokenAddress = await titleDeedTokenProxy.address;
+        const titleDeedTokenInstance = await ethers.getContractAt("CryptopiaTitleDeedToken", titleDeedTokenAddress);
+
+        
+        // Deploy Maps
+        const mapsProxy = await upgrades.deployProxy(
+            MapsFactory, 
+            [
+                playerRegisterAddress,
+                assetRegisterAddress,
+                titleDeedTokenAddress,
+                shipTokenAddress
+            ]);
+
+        const mapsAddress = await mapsProxy.address;
+        const mapsInstance = await ethers.getContractAt("CryptopiaMaps", mapsAddress);
+
+        // Grant roles
+        await titleDeedTokenInstance.grantRole(SYSTEM_ROLE, mapsAddress);
+        await playerRegisterInstance.setMapsContract(mapsAddress);
+        await mapsInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
+
 
         // Deploy Tools
         const toolTokenProxy = await upgrades.deployProxy(
@@ -290,6 +348,7 @@ describe("Crafting Contract", function () {
         await inventoriesInstance.grantRole(SYSTEM_ROLE, craftingAddress);
         await inventoriesInstance.grantRole(SYSTEM_ROLE, toolTokenAddress);
 
+
         // Deploy assets
         for (let asset of assets)
         {
@@ -314,6 +373,37 @@ describe("Crafting Contract", function () {
             await inventoriesInstance
                 .setFungibleAsset(asset.contractAddress, asset.weight);
         }
+
+
+        // Create map 
+        await mapsInstance.createMap(
+            map.name, map.sizeX, map.sizeZ);
+
+        await mapsInstance.setTiles(
+            map.tiles.map((_, index) => index), 
+            map.tiles.map(tile => ({
+                initialized: true, 
+                mapIndex: 0,
+                group: tile.group,
+                safety: tile.safety,
+                biome: tile.biome,
+                terrain: tile.terrain,
+                elevationLevel: tile.elevationLevel,
+                waterLevel: tile.waterLevel,
+                hasRoad: tile.hasRoad,
+                hasLake: tile.hasLake,
+                riverFlags: tile.riverFlags,
+                rockData: encodeRockData(tile.rockData),
+                vegetationData: encodeVegetationData(tile.vegetationData),
+                wildlifeData: encodeWildlifeData(tile.wildlifeData),
+                resources: tile.resources.map(resource => ({    
+                    resource: resource.resource,
+                    initialAmount: resource.amount
+                }))
+            })));
+        
+        await mapsInstance.finalizeMap();
+
 
         // Setup Tools
         await inventoriesInstance.setNonFungibleAsset(
@@ -360,6 +450,7 @@ describe("Crafting Contract", function () {
                 };
             }));
 
+            
         // Create registered account
         const createRegisteredAccountTransaction = await playerRegisterInstance.create([account1], 1, 0, "Registered_Username".toBytes32(), 0, 0);
         const createRegisteredAccountReceipt = await createRegisteredAccountTransaction.wait();

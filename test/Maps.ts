@@ -185,6 +185,9 @@ describe("Maps Contract", function () {
         const accountRegisterAddress = await accountRegisterProxy.address;
         accountRegisterInstance = await ethers.getContractAt("CryptopiaAccountRegister", accountRegisterAddress);
 
+        // SKALE workaround
+        await accountRegisterInstance.initializeManually();
+
 
         // Deploy Asset Register
         const assetRegisterProxy = await upgrades.deployProxy(
@@ -275,7 +278,8 @@ describe("Maps Contract", function () {
 
         // Grant roles
         await titleDeedTokenInstance.grantRole(SYSTEM_ROLE, mapsAddress);
-
+        await playerRegisterInstance.setMapsContract(mapsAddress);
+        await mapsInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
 
         // Deploy Maps Extensions
         const mapsExtensionsProxy = await upgrades.deployProxy(
@@ -315,9 +319,9 @@ describe("Maps Contract", function () {
         }
 
         // Create registered account
-        const createRegisteredAccountTransaction = await playerRegisterInstance.create([account1], 1, 0, "Registered_Username".toBytes32(), 0, 0);
+        const createRegisteredAccountTransaction = await accountRegisterInstance.create([account1], 1, 0, "Registered_Username".toBytes32(), 0);
         const createRegisteredAccountReceipt = await createRegisteredAccountTransaction.wait();
-        const registeredAccount = getParamFromEvent(playerRegisterInstance, createRegisteredAccountReceipt, "account", "RegisterPlayer");
+        const registeredAccount = getParamFromEvent(accountRegisterInstance, createRegisteredAccountReceipt, "account", "CreateAccount");
         registeredAccountInstance = await ethers.getContractAt("CryptopiaAccount", registeredAccount);
 
         // Create unregistered account
@@ -491,14 +495,14 @@ describe("Maps Contract", function () {
             // Setup
             const expectedTileIndex = 0;
 
-            const calldata = mapsInstance.interface
-                .encodeFunctionData("playerEnter");
+            const calldata = playerRegisterInstance.interface
+                .encodeFunctionData("register", [0]);
 
             // Act
             const signer = await ethers.provider.getSigner(account1);
             const receipt = await registeredAccountInstance
                 .connect(signer)
-                .submitTransaction(await mapsInstance.address, 0, calldata);
+                .submitTransaction(await playerRegisterInstance.address, 0, calldata);
 
             // Assert
             const expectedArrivalTime = await time.latest();
@@ -2594,7 +2598,7 @@ describe("Maps Contract", function () {
             accountInstance5 = await ethers.getContractAt("CryptopiaAccount", createAccount5Address);
         });
 
-        it ("Should not contain any players initially", async function () {
+        it ("Should contain players initially", async function () {
         
             // Setup
             const tileIndex = 0;
@@ -2603,79 +2607,17 @@ describe("Maps Contract", function () {
             const data = await mapsExtensionsInstance["getTileDataDynamic(uint16,uint16)"](tileIndex, 1);
 
             // Assert
-            expect(data[0].lastEnteredPlayers[0]).to.equal(ZERO_ADDRESS);
-            expect(data[0].lastEnteredPlayers[1]).to.equal(ZERO_ADDRESS);
-            expect(data[0].lastEnteredPlayers[2]).to.equal(ZERO_ADDRESS);
-            expect(data[0].lastEnteredPlayers[3]).to.equal(ZERO_ADDRESS);
-            expect(data[0].lastEnteredPlayers[4]).to.equal(ZERO_ADDRESS);
-        });
-
-        it ("Should add the first player to the head of the chain", async function () {
-
-            // Setup
-            const tileIndex = 0;
-            const calldata = mapsInstance.interface
-                .encodeFunctionData("playerEnter");
-
-            // Act
-            const signer = await ethers.provider.getSigner(account1);
-            await accountInstance1
-                .connect(signer)
-                .submitTransaction(await mapsInstance.address, 0, calldata);
-
-            // Assert
-            const data = await mapsExtensionsInstance["getTileDataDynamic(uint16,uint16)"](tileIndex, 1);
-            expect(data[0].lastEnteredPlayers[0]).to.equal(await accountInstance1.address);
-            expect(data[0].lastEnteredPlayers[1]).to.equal(ZERO_ADDRESS);
-            expect(data[0].lastEnteredPlayers[2]).to.equal(ZERO_ADDRESS);
-            expect(data[0].lastEnteredPlayers[3]).to.equal(ZERO_ADDRESS);
-            expect(data[0].lastEnteredPlayers[4]).to.equal(ZERO_ADDRESS);
-        });
-
-        it ("Should replace the first player with the second player as the head of the chain", async function () {
-
-            // Setup
-            const tileIndex = 0;
-            const calldata = mapsInstance.interface
-                .encodeFunctionData("playerEnter");
-
-            // Act
-            const signer = await ethers.provider.getSigner(account2);
-            await accountInstance2
-                .connect(signer)
-                .submitTransaction(await mapsInstance.address, 0, calldata);
-
-            // Assert
-            const data = await mapsExtensionsInstance["getTileDataDynamic(uint16,uint16)"](tileIndex, 1);
-            expect(data[0].lastEnteredPlayers[0]).to.equal(await accountInstance2.address);
-            expect(data[0].lastEnteredPlayers[1]).to.equal(await accountInstance1.address);
-            expect(data[0].lastEnteredPlayers[2]).to.equal(ZERO_ADDRESS);
-            expect(data[0].lastEnteredPlayers[3]).to.equal(ZERO_ADDRESS);
-            expect(data[0].lastEnteredPlayers[4]).to.equal(ZERO_ADDRESS);
+            expect(data[0].lastEnteredPlayers[0]).to.equal(await accountInstance5.address);
+            expect(data[0].lastEnteredPlayers[1]).to.equal(await accountInstance4.address);
+            expect(data[0].lastEnteredPlayers[2]).to.equal(await accountInstance3.address);
+            expect(data[0].lastEnteredPlayers[3]).to.equal(await accountInstance2.address);
+            expect(data[0].lastEnteredPlayers[4]).to.equal(await accountInstance1.address);
         });
 
         it ("Should return five players in the chain in LIFO order", async function () {
 
             // Setup
             const tileIndex = 0;
-            const calldata = mapsInstance.interface
-                .encodeFunctionData("playerEnter");
-
-            // Act
-            const signer3 = await ethers.provider.getSigner(account3);
-            await accountInstance3
-                .connect(signer3)
-                .submitTransaction(await mapsInstance.address, 0, calldata);
-
-            const signer4 = await ethers.provider.getSigner(account4);
-            await accountInstance4
-                .connect(signer4)
-                .submitTransaction(await mapsInstance.address, 0, calldata);
-
-            const signer5 = await ethers.provider.getSigner(account5);
-            await accountInstance5
-                .connect(signer5)
-                .submitTransaction(await mapsInstance.address, 0, calldata);
 
             // Assert
             const data = await mapsExtensionsInstance["getTileDataDynamic(uint16,uint16)"](tileIndex, 1);

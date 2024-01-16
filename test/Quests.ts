@@ -269,6 +269,9 @@ describe("Quests Contract", function () {
         const accountRegisterAddress = await accountRegisterProxy.address;
         accountRegisterInstance = await ethers.getContractAt("CryptopiaAccountRegister", accountRegisterAddress);
 
+        // SKALE workaround
+        await accountRegisterInstance.initializeManually();
+
 
         // Deploy Asset Register
         const assetRegisterProxy = await upgrades.deployProxy(
@@ -360,6 +363,8 @@ describe("Quests Contract", function () {
 
         // Grant roles
         await titleDeedTokenInstance.grantRole(SYSTEM_ROLE, mapsAddress);
+        await playerRegisterInstance.setMapsContract(mapsAddress);
+        await mapsInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
 
 
         // Deploy Tools
@@ -699,14 +704,6 @@ describe("Quests Contract", function () {
             const createUnregisteredAccountReceipt = await createUnregisteredAccountTransaction.wait();
             unregisteredAccountAddress = getParamFromEvent(accountRegisterInstance, createUnregisteredAccountReceipt, "account", "CreateAccount");
             unregisteredAccountInstance = await ethers.getContractAt("CryptopiaAccount", unregisteredAccountAddress);
-
-            // Add registered player to the map
-            const playerEnterCalldata = mapsInstance.interface
-                .encodeFunctionData("playerEnter");
-
-            await registeredAccountInstance
-                .connect(await ethers.provider.getSigner(account1))
-                .submitTransaction(mapsAddress, 0, playerEnterCalldata);
 
             createPlayersCounter++;
         };
@@ -1150,14 +1147,6 @@ describe("Quests Contract", function () {
             const createUnregisteredAccountReceipt = await createUnregisteredAccountTransaction.wait();
             unregisteredAccountAddress = getParamFromEvent(accountRegisterInstance, createUnregisteredAccountReceipt, "account", "CreateAccount");
             unregisteredAccountInstance = await ethers.getContractAt("CryptopiaAccount", unregisteredAccountAddress);
-
-            // Add registered player to the map
-            const playerEnterCalldata = mapsInstance.interface
-                .encodeFunctionData("playerEnter");
-
-            await registeredAccountInstance
-                .connect(await ethers.provider.getSigner(account1))
-                .submitTransaction(mapsAddress, 0, playerEnterCalldata);
 
             createPlayersCounter++;
         };

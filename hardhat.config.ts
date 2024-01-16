@@ -78,6 +78,8 @@ const config: HardhatUserConfig = {
     apiKey: {
       polygonMumbai: secret.polygonMumbai.etherscan,
       skaleChaos: secret.skaleChaos.etherscan,
+      skaleNebulaTestnet: secret.skaleNebulaTestnet.etherscan,
+      skaleNebulaMainnet: secret.skaleNebulaMainnet.etherscan
     },
     customChains: [
       {

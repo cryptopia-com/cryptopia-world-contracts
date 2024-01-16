@@ -45,7 +45,7 @@ async function main() {
         }
         catch (error)
         {
-            console.log(`\n\nFailed to verify ${chalk.red(deploymentKey)}..`);
+            console.log(`\n\nFailed to verify ${chalk.red(deploymentKey)}: ${error}`);
             continue;
         }
 

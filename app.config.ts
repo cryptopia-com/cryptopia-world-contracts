@@ -501,6 +501,9 @@ const config : AppConfig = {
             confirmations: 2,
             pollingInterval: 5000,
             pollingTimeout: 300000,
+            defaultSystem: [
+                "0x77e5ce811c764a89bf313ece7133050bf9cf8df3"
+            ],
             CryptopiaTreasury: {
                 address: "0xee27be821e9b6ec58f0ec73feb0723124181a676"
             },
@@ -872,6 +875,7 @@ export interface NetworkConfig {
     confirmations?: number;
     pollingInterval?: number;
     pollingTimeout?: number;
+    defaultSystem?: string[];
     CryptopiaTreasury: CryptopiaTreasury;
     CryptopiaAccount: CryptopiaAccount;
     ERC721: ERC721Config;

@@ -66,6 +66,15 @@ async function main() {
     const inventoriesInstance = await ethers.getContractAt(
         "CryptopiaInventories", inventoriesAddress);
 
+    if (config.defaultSystem)
+    {
+        for (let system of config.defaultSystem)
+        {
+            await ensureSystemRoleGranted(
+                "CryptopiaInventories", system);
+        }
+    }
+
 
     //////////////////////////////////
     //////// Deploy Whitelist ////////
@@ -354,10 +363,19 @@ async function main() {
         await ensureSystemRoleGranted(`CryptopiaAssetToken:${asset.name}`,"CryptopiaQuests");
         await ensureSystemRoleGranted("CryptopiaInventories",`CryptopiaAssetToken:${asset.name}`);
 
-        if (asset.system.includes("CryptopiaResourceGathering"))
+        for (let system of asset.system)
         {
             await ensureSystemRoleGranted(
-                `CryptopiaAssetToken:${asset.name}`, "CryptopiaResourceGathering");
+                `CryptopiaAssetToken:${asset.name}`, system);
+        }
+
+        if (config.defaultSystem)
+        {
+            for (let system of config.defaultSystem)
+            {
+                await ensureSystemRoleGranted(
+                    `CryptopiaAssetToken:${asset.name}`, system);
+            }
         }
 
         if (asset.resource == Resource.Fuel)
@@ -603,10 +621,20 @@ async function ensureSystemRoleGranted(granter: string, system: string): Promise
     const transactionStartTime = Date.now();
 
     const granterDeploymentInfo = deploymentManager.getContractDeployment(granter);
-    const systemDeploymentInfo = deploymentManager.getContractDeployment(system);
 
+    let systemAddress = "";
+    if (system.startsWith("0x"))
+    {
+        systemAddress = system;
+    }
+    else 
+    {
+        const systemDeploymentInfo = deploymentManager.getContractDeployment(system);
+        systemAddress = systemDeploymentInfo.address;
+    }
+    
     const granterInstance = await ethers.getContractAt(granterDeploymentInfo.contractName, granterDeploymentInfo.address);
-    await granterInstance.grantRole(SYSTEM_ROLE, systemDeploymentInfo.address);
+    await granterInstance.grantRole(SYSTEM_ROLE, systemAddress);
 
     await waitForMinimumTime(transactionStartTime, MIN_TIME);
     transactionLoader.succeed(`Granted ${chalk.blue("SYSTEM")} role to ${chalk.green(system)} on ${chalk.green(granter)}`);

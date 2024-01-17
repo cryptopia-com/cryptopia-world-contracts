@@ -118,13 +118,40 @@ const config: HardhatUserConfig = {
 
 export default config;
 
-// Tasks
-task("account", "Prints account info", async function (taskArguments, hre) 
-{
-  const deploymentManager = new DeploymentManager(hre.network.name);
-  const deployment = await deploymentManager.getContractDeployment("CryptopiaMapsExtensions");
-  const instance = await hre.ethers.getContractAt("CryptopiaMapsExtensions", deployment.address);
-  
-  const info = await instance.getPlayerNavigationData(["0x2b169fcE71699D801DC57e2883766957aaC99C5F"]);
-  console.log(JSON.stringify(info, null, 2));
-});
+/**
+ * Mint resources
+ * 
+ * npx hardhat resource --network skaleNebulaTestnet  --resource "Wood" --to 0x64005111B525279E69D13EE70f9B70980911ccE9 --amount 10000000000000000000 --inventory "Backpack"
+ * npx hardhat resource --network skaleNebulaTestnet  --resource "Wood" --to 0x64005111B525279E69D13EE70f9B70980911ccE9 --amount 10000000000000000000 --inventory "Wallet"
+ */
+task("resource", "Mint resources")
+  .addParam("resource", "The resource to mint")
+  .addParam("to", "The address to mint to")
+  .addParam("amount", "The amount to mint")
+  .addParam("inventory", "The inventory to assign to")
+  .setAction(async (taskArguments, hre) =>
+  {
+    const deploymentManager = new DeploymentManager(hre.network.name);
+
+    let to = "";
+    if (taskArguments.inventory == "Backpack" || taskArguments.inventory == "Ship")
+    {
+      const inventoriesDeployment = await deploymentManager.getContractDeployment("CryptopiaInventories");
+      to = inventoriesDeployment.address;
+    }
+    else
+    {
+      to = taskArguments.to;
+    }
+
+    const tokenDeployment = await deploymentManager.getContractDeployment("CryptopiaAssetToken:" + taskArguments.resource);
+    const tokenInstance = await hre.ethers.getContractAt("CryptopiaAssetToken", tokenDeployment.address);
+    await tokenInstance.__mintTo(to, taskArguments.amount);
+
+    if (taskArguments.inventory == "Backpack" || taskArguments.inventory == "Ship")
+    {
+      const inventoriesDeployment = await deploymentManager.getContractDeployment("CryptopiaInventories");
+      const inventoriesInstance = await hre.ethers.getContractAt("CryptopiaInventories", inventoriesDeployment.address);
+      await inventoriesInstance.__assignFungibleToken(taskArguments.to, taskArguments.inventory == "Backpack" ? 1 : 2, tokenInstance.address, taskArguments.amount);
+    }
+  });

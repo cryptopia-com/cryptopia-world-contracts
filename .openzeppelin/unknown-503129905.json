@@ -4622,6 +4622,126 @@
           ]
         }
       }
+    },
+    "31dbd62165963fcc0d24cac4f398b135ab6cdf827fdea6c758b701b623728bf8": {
+      "address": "0xdf36349BD512fE7E9ce3857e651273e3731b3765",
+      "txHash": "0x07eb9669ee7a3353cb20573a94a9833d9149d9c6a01e833e2ed0bbefc23ea2ef",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "mapContract",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "CryptopiaResourceGathering",
+            "src": "contracts\\source\\game\\players\\concrete\\interactions\\CryptopiaResourceGathering.sol:32"
+          },
+          {
+            "label": "assetRegisterContract",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address",
+            "contract": "CryptopiaResourceGathering",
+            "src": "contracts\\source\\game\\players\\concrete\\interactions\\CryptopiaResourceGathering.sol:33"
+          },
+          {
+            "label": "playerRegisterContract",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_address",
+            "contract": "CryptopiaResourceGathering",
+            "src": "contracts\\source\\game\\players\\concrete\\interactions\\CryptopiaResourceGathering.sol:34"
+          },
+          {
+            "label": "inventoriesContract",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_address",
+            "contract": "CryptopiaResourceGathering",
+            "src": "contracts\\source\\game\\players\\concrete\\interactions\\CryptopiaResourceGathering.sol:35"
+          },
+          {
+            "label": "toolTokenContract",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_address",
+            "contract": "CryptopiaResourceGathering",
+            "src": "contracts\\source\\game\\players\\concrete\\interactions\\CryptopiaResourceGathering.sol:36"
+          },
+          {
+            "label": "playerCooldown",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_address,t_mapping(t_enum(Resource)1069,t_uint256))",
+            "contract": "CryptopiaResourceGathering",
+            "src": "contracts\\source\\game\\players\\concrete\\interactions\\CryptopiaResourceGathering.sol:39"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_enum(Resource)1069": {
+            "label": "enum Resource",
+            "members": [
+              "Fish",
+              "Meat",
+              "Fruit",
+              "Wood",
+              "Stone",
+              "Sand",
+              "Uranium",
+              "Iron",
+              "Diamond",
+              "Copper",
+              "Silver",
+              "Gold",
+              "Carbon",
+              "Oil",
+              "Glass",
+              "Steel",
+              "Fuel"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_mapping(t_enum(Resource)1069,t_uint256))": {
+            "label": "mapping(address => mapping(enum Resource => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_enum(Resource)1069,t_uint256)": {
+            "label": "mapping(enum Resource => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
     }
   }
 }

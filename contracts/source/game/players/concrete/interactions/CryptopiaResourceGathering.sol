@@ -24,7 +24,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
      * Storage
      */
     uint24 constant private XP_BASE = 50;
-    uint constant private COOLDOWN_BASE = 60 seconds;
+    uint constant private COOLDOWN_BASE = 5 seconds;
     uint24 constant private MULTIPLIER_PRECISION = 100;
     uint constant private RESOURCE_PRECISION = 1_000_000_000_000_000_000;
 

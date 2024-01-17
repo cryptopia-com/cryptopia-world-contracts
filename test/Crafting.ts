@@ -218,6 +218,9 @@ describe("Crafting Contract", function () {
         const inventoriesAddress = await inventoriesProxy.address;
         inventoriesInstance = await ethers.getContractAt("CryptopiaInventories", inventoriesAddress);
 
+        // Grant roles
+        await inventoriesInstance.grantRole(SYSTEM_ROLE, system);
+
 
         // Deploy Whitelist
         const whitelistProxy = await upgrades.deployProxy(
@@ -249,6 +252,9 @@ describe("Crafting Contract", function () {
         const assetRegisterAddress = await assetRegisterProxy.address;
         const assetRegisterInstance = await ethers.getContractAt("CryptopiaAssetRegister", assetRegisterAddress);
 
+        // Grant roles
+        await assetRegisterInstance.grantRole(SYSTEM_ROLE, system);
+
 
         // Deploy Ships
         const shipTokenProxy = await upgrades.deployProxy(
@@ -273,6 +279,10 @@ describe("Crafting Contract", function () {
         const craftingAddress = await craftingProxy.address;
         craftingInstance = await ethers.getContractAt("CryptopiaCrafting", craftingAddress);
 
+        // Grant roles
+        await craftingInstance.grantRole(SYSTEM_ROLE, system);
+        await inventoriesInstance.grantRole(SYSTEM_ROLE, craftingAddress);
+
 
         // Deploy Player Register
         const playerRegisterProxy = await upgrades.deployProxy(
@@ -289,6 +299,12 @@ describe("Crafting Contract", function () {
 
         const playerRegisterAddress = await playerRegisterProxy.address;
         playerRegisterInstance = await ethers.getContractAt("CryptopiaPlayerRegister", playerRegisterAddress);
+
+        // Grant roles
+        await playerRegisterInstance.grantRole(SYSTEM_ROLE, system);    
+        await shipTokenInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
+        await inventoriesInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
+        await craftingInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
 
 
         // Deploy title deed token
@@ -338,14 +354,7 @@ describe("Crafting Contract", function () {
         toolTokenInstance = await ethers.getContractAt("CryptopiaToolToken", toolTokenAddress);
 
         // Grant roles
-        await assetRegisterInstance.grantRole(SYSTEM_ROLE, system);
-        await shipTokenInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
         await toolTokenInstance.grantRole(SYSTEM_ROLE, craftingAddress);
-        await craftingInstance.grantRole(SYSTEM_ROLE, system);
-        await craftingInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
-        await inventoriesInstance.grantRole(SYSTEM_ROLE, system);
-        await inventoriesInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
-        await inventoriesInstance.grantRole(SYSTEM_ROLE, craftingAddress);
         await inventoriesInstance.grantRole(SYSTEM_ROLE, toolTokenAddress);
 
 

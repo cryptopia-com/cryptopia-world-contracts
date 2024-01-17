@@ -4103,7 +4103,7 @@
             "label": "playerCooldown",
             "offset": 0,
             "slot": "5",
-            "type": "t_mapping(t_address,t_mapping(t_enum(Resource)3445,t_uint256))",
+            "type": "t_mapping(t_address,t_mapping(t_enum(Resource)1069,t_uint256))",
             "contract": "CryptopiaResourceGathering",
             "src": "contracts\\source\\game\\players\\concrete\\interactions\\CryptopiaResourceGathering.sol:39"
           }
@@ -4113,7 +4113,7 @@
             "label": "address",
             "numberOfBytes": "20"
           },
-          "t_enum(Resource)3445": {
+          "t_enum(Resource)1069": {
             "label": "enum Resource",
             "members": [
               "Fish",
@@ -4136,11 +4136,11 @@
             ],
             "numberOfBytes": "1"
           },
-          "t_mapping(t_address,t_mapping(t_enum(Resource)3445,t_uint256))": {
+          "t_mapping(t_address,t_mapping(t_enum(Resource)1069,t_uint256))": {
             "label": "mapping(address => mapping(enum Resource => uint256))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_enum(Resource)3445,t_uint256)": {
+          "t_mapping(t_enum(Resource)1069,t_uint256)": {
             "label": "mapping(enum Resource => uint256)",
             "numberOfBytes": "32"
           },

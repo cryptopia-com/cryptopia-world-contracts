@@ -88,7 +88,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
 
 
     /// @dev Mint `asset` to sender's inventory
-    /// @param resource The {AssetEnums} to mint 
+    /// @param resource The {AssetEnums} to mint
     /// @param tool The token ID of the tool used to mint the resource (0 means no tool)
     /// @param limit The maximum amount of tokens to mint (limit to prevent full backpack)
     function mint(Resource resource, uint tool, uint limit) 

@@ -150,9 +150,8 @@ async function main() {
     const craftingAddress = await craftingProxy.address;
 
     // Grant roles
-    await grantSystemRole(
-        "CryptopiaInventories", inventoriesDeploymentStatus, 
-        "CryptopiaCrafting", craftingDeploymentStatus);
+    await ensureSystemRoleGranted(
+        "CryptopiaInventories", "CryptopiaCrafting");
 
 
     //////////////////////////////////
@@ -173,17 +172,9 @@ async function main() {
         "CryptopiaPlayerRegister", playerRegisterAddress);
 
     // Grant roles
-    await grantSystemRole(
-        "CryptopiaInventories", inventoriesDeploymentStatus, 
-        "CryptopiaPlayerRegister", playerRegisterDeploymentStatus);
-
-    await grantSystemRole(
-        "CryptopiaShipToken", shipTokenDeploymentStatus, 
-        "CryptopiaPlayerRegister", playerRegisterDeploymentStatus);
-
-    await grantSystemRole(
-        "CryptopiaCrafting", craftingDeploymentStatus, 
-        "CryptopiaPlayerRegister", playerRegisterDeploymentStatus);
+    await ensureSystemRoleGranted("CryptopiaInventories", "CryptopiaPlayerRegister");
+    await ensureSystemRoleGranted("CryptopiaShipToken", "CryptopiaPlayerRegister");
+    await ensureSystemRoleGranted("CryptopiaCrafting", "CryptopiaPlayerRegister");
 
 
     //////////////////////////////////
@@ -213,13 +204,8 @@ async function main() {
     }
 
     // Grant tool roles
-    await grantSystemRole(
-        "CryptopiaInventories", inventoriesDeploymentStatus, 
-        "CryptopiaCrafting", craftingDeploymentStatus);
-
-    await grantSystemRole(
-        "CryptopiaToolToken", toolTokenDeploymentStatus, 
-        "CryptopiaCrafting", craftingDeploymentStatus);
+    await ensureSystemRoleGranted("CryptopiaInventories", "CryptopiaCrafting");
+    await ensureSystemRoleGranted("CryptopiaToolToken", "CryptopiaCrafting");
 
 
     //////////////////////////////////
@@ -268,13 +254,8 @@ async function main() {
     }
 
     // Grant roles
-    await grantSystemRole(
-        "CryptopiaTitleDeedToken", titleDeedTokenDeploymentStatus, 
-        "CryptopiaMaps", mapsDeploymentStatus);
-
-    await grantSystemRole(
-        "CryptopiaMaps", mapsDeploymentStatus, 
-        "CryptopiaPlayerRegister", playerRegisterDeploymentStatus);
+    await ensureSystemRoleGranted("CryptopiaTitleDeedToken", "CryptopiaMaps");
+    await ensureSystemRoleGranted("CryptopiaMaps", "CryptopiaPlayerRegister");
 
         
     //////////////////////////////////
@@ -290,9 +271,8 @@ async function main() {
         ]);
 
     // Grant roles
-    await grantSystemRole(
-        "CryptopiaInventories", inventoriesDeploymentStatus, 
-        "CryptopiaQuestToken", questTokenDeploymentStatus);
+    await ensureSystemRoleGranted(
+        "CryptopiaInventories", "CryptopiaQuestToken");
 
 
     //////////////////////////////////
@@ -307,17 +287,9 @@ async function main() {
         ]);
 
     // Grant roles
-    await grantSystemRole(
-        "CryptopiaToolToken", toolTokenDeploymentStatus, 
-        "CryptopiaQuests", questsDeploymentStatus);
-
-    await grantSystemRole(
-        "CryptopiaPlayerRegister", playerRegisterDeploymentStatus, 
-        "CryptopiaQuests", questsDeploymentStatus);
-
-    await grantSystemRole(
-        "CryptopiaQuestToken", questTokenDeploymentStatus, 
-        "CryptopiaQuests", questsDeploymentStatus);
+    await ensureSystemRoleGranted("CryptopiaToolToken", "CryptopiaQuests");
+    await ensureSystemRoleGranted("CryptopiaPlayerRegister", "CryptopiaQuests");
+    await ensureSystemRoleGranted("CryptopiaQuestToken", "CryptopiaQuests");
 
 
     //////////////////////////////////
@@ -334,17 +306,9 @@ async function main() {
         ]);
 
     // Grant roles
-    await grantSystemRole(
-        "CryptopiaToolToken", toolTokenDeploymentStatus, 
-        "CryptopiaResourceGathering", resourceGatheringDeploymentStatus);
-
-    await grantSystemRole(
-        "CryptopiaInventories", inventoriesDeploymentStatus, 
-        "CryptopiaResourceGathering", resourceGatheringDeploymentStatus);
-
-    await grantSystemRole(
-        "CryptopiaPlayerRegister", playerRegisterDeploymentStatus, 
-        "CryptopiaResourceGathering", resourceGatheringDeploymentStatus);
+    await ensureSystemRoleGranted("CryptopiaToolToken", "CryptopiaResourceGathering");
+    await ensureSystemRoleGranted("CryptopiaInventories", "CryptopiaResourceGathering");
+    await ensureSystemRoleGranted("CryptopiaPlayerRegister", "CryptopiaResourceGathering");
 
 
     //////////////////////////////////
@@ -387,19 +351,13 @@ async function main() {
         }
 
         // Grant roles
-        await grantSystemRole(
-            `CryptopiaAssetToken:${asset.name}`, assetTokenDeploymentStatus,
-             "CryptopiaQuests", questsDeploymentStatus);
-
-        await grantSystemRole(
-            "CryptopiaInventories", inventoriesDeploymentStatus,
-            `CryptopiaAssetToken:${asset.name}`, assetTokenDeploymentStatus);
+        await ensureSystemRoleGranted(`CryptopiaAssetToken:${asset.name}`,"CryptopiaQuests");
+        await ensureSystemRoleGranted("CryptopiaInventories",`CryptopiaAssetToken:${asset.name}`);
 
         if (asset.system.includes("CryptopiaResourceGathering"))
         {
-            await grantSystemRole(
-                `CryptopiaAssetToken:${asset.name}`, assetTokenDeploymentStatus,
-                "CryptopiaResourceGathering", resourceGatheringDeploymentStatus);
+            await ensureSystemRoleGranted(
+                `CryptopiaAssetToken:${asset.name}`, "CryptopiaResourceGathering");
         }
 
         if (asset.resource == Resource.Fuel)
@@ -423,9 +381,8 @@ async function main() {
     const navalBattleMechanicsAddress = await navalBattleMechanicsProxy.address;
 
     // Grant roles
-    await grantSystemRole(
-        "CryptopiaShipToken", shipTokenDeploymentStatus,
-        "CryptopiaNavalBattleMechanics", navalBattleMechanicsDeploymentStatus);
+    await ensureSystemRoleGranted(
+        "CryptopiaShipToken","CryptopiaNavalBattleMechanics");
 
 
     //////////////////////////////////
@@ -444,25 +401,11 @@ async function main() {
         ]);
 
     // Grant roles
-    await grantSystemRole(
-        "CryptopiaNavalBattleMechanics", navalBattleMechanicsDeploymentStatus,
-        "CryptopiaPirateMechanics", pirateMechanicsDeploymentStatus);
-
-    await grantSystemRole(
-        "CryptopiaPlayerRegister", playerRegisterDeploymentStatus,
-        "CryptopiaPirateMechanics", pirateMechanicsDeploymentStatus);
-
-    await grantSystemRole(
-        "CryptopiaInventories", inventoriesDeploymentStatus, 
-        "CryptopiaPirateMechanics", pirateMechanicsDeploymentStatus);
-
-    await grantSystemRole(
-        "CryptopiaShipToken", shipTokenDeploymentStatus,
-        "CryptopiaPirateMechanics", pirateMechanicsDeploymentStatus);
-
-    await grantSystemRole(
-        "CryptopiaMaps", mapsDeploymentStatus, 
-        "CryptopiaPirateMechanics", pirateMechanicsDeploymentStatus);
+    await ensureSystemRoleGranted("CryptopiaNavalBattleMechanics","CryptopiaPirateMechanics");
+    await ensureSystemRoleGranted("CryptopiaPlayerRegister","CryptopiaPirateMechanics");
+    await ensureSystemRoleGranted("CryptopiaInventories", "CryptopiaPirateMechanics");
+    await ensureSystemRoleGranted("CryptopiaShipToken","CryptopiaPirateMechanics");
+    await ensureSystemRoleGranted("CryptopiaMaps", "CryptopiaPirateMechanics");
 
     console.log(`\n\nFinished deployment to ${chalk.yellow(hre.network.name)}:`);
     console.log(`  ${chalk.bold(deployCounter)} deployed`);
@@ -649,9 +592,9 @@ async function _upgradeContract(contractName: string, contractAddress: string, d
  * @param {string} system - Name of the contract that receives the role.
  * @param {string} systemDeploymentStatus - Deployment status of the system.
  */
-async function grantSystemRole(granter: string, granterDeploymentStatus: DeploymentStatus, system: string, systemDeploymentStatus: DeploymentStatus): Promise<void>
+async function ensureSystemRoleGranted(granter: string, system: string): Promise<void>
 {
-    if (granterDeploymentStatus != DeploymentStatus.Deployed || systemDeploymentStatus != DeploymentStatus.Deployed)
+    if (deploymentManager.isSystemRoleGranted(granter, system))
     {
         return Promise.resolve();
     }
@@ -667,6 +610,8 @@ async function grantSystemRole(granter: string, granterDeploymentStatus: Deploym
 
     await waitForMinimumTime(transactionStartTime, MIN_TIME);
     transactionLoader.succeed(`Granted ${chalk.blue("SYSTEM")} role to ${chalk.green(system)} on ${chalk.green(granter)}`);
+    deploymentManager.saveSystemRoleGrant(granter, system);
+
     lastDeploymentStatus = DeploymentStatus.None;
 } 
 

@@ -4,17 +4,20 @@ import path from 'path';
 /**
  * Interface for contract deployment information.
  */
-interface ContractDeploymentInfo {
+interface ContractDeploymentInfo 
+{
     address: string; // The address at which the contract is deployed
     contractName: string; // The name of the contract
     bytecode: string; // The bytecode of the contract
     verified: boolean; // Whether the contract has been verified on Etherscan
+    systemRoleGrants?: string[]; // The system role grants for the contract
 }
 
 /**
  * Interface for map deployment information.
  */
-interface MapDeploymentInfo {
+interface MapDeploymentInfo 
+{
     name: string;
 }
 
@@ -37,6 +40,7 @@ export class DeploymentManager
         this.contactDeploymentFilePath = path.join(__dirname, '../../.deployments', `${networkName}.contracts.json`);
         this.mapDeploymentFilePath = path.join(__dirname, '../../.deployments', `${networkName}.maps.json`);
     }
+
 
     //////////////////////////
     // Contract Deployments //
@@ -103,6 +107,23 @@ export class DeploymentManager
     }
 
     /**
+     * Saves system role grants to the deployment file.
+     * @param deploymentKey - Grantee contract key.
+     * @param grantedToDeploymentKey - The keys of the contracts that are granted the system role.
+     */
+    public saveSystemRoleGrant(deploymentKey: string, grantedToDeploymentKey: string): void
+    {
+        const deployments = this.readContractDeployments();
+        if (!deployments[deploymentKey].systemRoleGrants) 
+        {
+            deployments[deploymentKey].systemRoleGrants = [];
+        }
+
+        deployments[deploymentKey].systemRoleGrants?.push(grantedToDeploymentKey);
+        this.writeContractDeployments(deployments);
+    }
+
+    /**
      * Checks if a deployment exists.
      * @param deploymentKey - The key to use for the deployment.
      * @returns True if the contract is deployed, false otherwise.
@@ -151,6 +172,23 @@ export class DeploymentManager
         
         throw `No deployment found for ${deploymentKey} on ${this.networkName}`;
     }
+
+    /**
+     * Checks if a deployment has been granted a system role.
+     * @param deploymentKey - The key to use for the deployment.
+     * @param grantedToDeploymentKey - The keys of the contracts that are granted the system role.
+     * @returns True if the contract is granted the system role, false otherwise.
+     */
+    public isSystemRoleGranted(deploymentKey: string, grantedToDeploymentKey: string): boolean
+    {
+        const deployments = this.readContractDeployments();
+        if (deployments[deploymentKey]) {
+            return deployments[deploymentKey].systemRoleGrants?.includes(grantedToDeploymentKey) ?? false;
+        }
+        
+        throw `No deployment found for ${deploymentKey} on ${this.networkName}`;
+    }
+    
 
     /////////////////////
     // Map Deployments //

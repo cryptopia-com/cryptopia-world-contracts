@@ -139,9 +139,9 @@ interface ICrafting {
         external;
 
 
-    /// @dev Empties a slot without claiming the crafted item (without refunding ingredients, if any)
-    /// @param slotId The number (non-zero based) of the slot to empty
-    function empty(uint slotId) 
+    /// @dev Discards the item in a slot without claiming it (without refunding ingredients, if any)
+    /// @param slotId The number (non-zero based) of the item to discard
+    function discard(uint slotId) 
         external;
 
     /**

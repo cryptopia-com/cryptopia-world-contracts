@@ -213,7 +213,7 @@ async function main() {
     }
 
     // Grant tool roles
-    await ensureSystemRoleGranted("CryptopiaInventories", "CryptopiaCrafting");
+    await ensureSystemRoleGranted("CryptopiaInventories", "CryptopiaToolToken");
     await ensureSystemRoleGranted("CryptopiaToolToken", "CryptopiaCrafting");
 
 

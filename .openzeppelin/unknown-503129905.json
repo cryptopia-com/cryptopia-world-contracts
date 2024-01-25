@@ -1721,7 +1721,7 @@
             "label": "recipes",
             "offset": 0,
             "slot": "0",
-            "type": "t_mapping(t_address,t_mapping(t_bytes32,t_struct(CraftingRecipeData)2791_storage))",
+            "type": "t_mapping(t_address,t_mapping(t_bytes32,t_struct(CraftingRecipeData)1159_storage))",
             "contract": "CryptopiaCrafting",
             "src": "contracts\\source\\game\\crafting\\concrete\\CryptopiaCrafting.sol:77"
           },
@@ -1737,7 +1737,7 @@
             "label": "playerData",
             "offset": 0,
             "slot": "2",
-            "type": "t_mapping(t_address,t_struct(CraftingPlayerData)2814_storage)",
+            "type": "t_mapping(t_address,t_struct(CraftingPlayerData)1182_storage)",
             "contract": "CryptopiaCrafting",
             "src": "contracts\\source\\game\\crafting\\concrete\\CryptopiaCrafting.sol:81"
           },
@@ -1779,11 +1779,11 @@
             "label": "mapping(address => mapping(bytes32 => bool))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_mapping(t_bytes32,t_struct(CraftingRecipeData)2791_storage))": {
+          "t_mapping(t_address,t_mapping(t_bytes32,t_struct(CraftingRecipeData)1159_storage))": {
             "label": "mapping(address => mapping(bytes32 => struct CryptopiaCrafting.CraftingRecipeData))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_struct(CraftingPlayerData)2814_storage)": {
+          "t_mapping(t_address,t_struct(CraftingPlayerData)1182_storage)": {
             "label": "mapping(address => struct CryptopiaCrafting.CraftingPlayerData)",
             "numberOfBytes": "32"
           },
@@ -1795,15 +1795,15 @@
             "label": "mapping(bytes32 => bool)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_bytes32,t_struct(CraftingRecipeData)2791_storage)": {
+          "t_mapping(t_bytes32,t_struct(CraftingRecipeData)1159_storage)": {
             "label": "mapping(bytes32 => struct CryptopiaCrafting.CraftingRecipeData)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_struct(CraftingSlot)4206_storage)": {
+          "t_mapping(t_uint256,t_struct(CraftingSlot)2574_storage)": {
             "label": "mapping(uint256 => struct CraftingSlot)",
             "numberOfBytes": "32"
           },
-          "t_struct(CraftingPlayerData)2814_storage": {
+          "t_struct(CraftingPlayerData)1182_storage": {
             "label": "struct CryptopiaCrafting.CraftingPlayerData",
             "members": [
               {
@@ -1814,7 +1814,7 @@
               },
               {
                 "label": "slots",
-                "type": "t_mapping(t_uint256,t_struct(CraftingSlot)4206_storage)",
+                "type": "t_mapping(t_uint256,t_struct(CraftingSlot)2574_storage)",
                 "offset": 0,
                 "slot": "1"
               },
@@ -1833,7 +1833,7 @@
             ],
             "numberOfBytes": "128"
           },
-          "t_struct(CraftingRecipeData)2791_storage": {
+          "t_struct(CraftingRecipeData)1159_storage": {
             "label": "struct CryptopiaCrafting.CraftingRecipeData",
             "members": [
               {
@@ -1875,7 +1875,7 @@
             ],
             "numberOfBytes": "128"
           },
-          "t_struct(CraftingSlot)4206_storage": {
+          "t_struct(CraftingSlot)2574_storage": {
             "label": "struct CraftingSlot",
             "members": [
               {
@@ -2023,7 +2023,7 @@
             "label": "playerDatas",
             "offset": 0,
             "slot": "7",
-            "type": "t_mapping(t_address,t_struct(PlayerData)5151_storage)",
+            "type": "t_mapping(t_address,t_struct(PlayerData)6660_storage)",
             "contract": "CryptopiaPlayerRegister",
             "src": "contracts\\source\\game\\players\\concrete\\CryptopiaPlayerRegister.sol:79"
           }
@@ -2033,7 +2033,7 @@
             "label": "address",
             "numberOfBytes": "20"
           },
-          "t_enum(Faction)5168": {
+          "t_enum(Faction)6677": {
             "label": "enum Faction",
             "members": [
               "Eco",
@@ -2043,7 +2043,7 @@
             ],
             "numberOfBytes": "1"
           },
-          "t_enum(SubFaction)5173": {
+          "t_enum(SubFaction)6682": {
             "label": "enum SubFaction",
             "members": [
               "None",
@@ -2056,22 +2056,22 @@
             "label": "int16",
             "numberOfBytes": "2"
           },
-          "t_mapping(t_address,t_struct(PlayerData)5151_storage)": {
+          "t_mapping(t_address,t_struct(PlayerData)6660_storage)": {
             "label": "mapping(address => struct PlayerData)",
             "numberOfBytes": "32"
           },
-          "t_struct(PlayerData)5151_storage": {
+          "t_struct(PlayerData)6660_storage": {
             "label": "struct PlayerData",
             "members": [
               {
                 "label": "faction",
-                "type": "t_enum(Faction)5168",
+                "type": "t_enum(Faction)6677",
                 "offset": 0,
                 "slot": "0"
               },
               {
                 "label": "subFaction",
-                "type": "t_enum(SubFaction)5173",
+                "type": "t_enum(SubFaction)6682",
                 "offset": 1,
                 "slot": "0"
               },
@@ -4726,6 +4726,498 @@
           }
         },
         "namespaces": {
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "57c30786247cac31a769ed5f8bbd278fabda956bcc40a4857db9acdccb14ebae": {
+      "address": "0x75B51529D4abee775637676ACbbbA9dA51Fa77De",
+      "txHash": "0x901e0fb337098b4199399dd820f2006f0d7ca75a236e194b44b879e3f6d79e49",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "recipes",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_mapping(t_bytes32,t_struct(CraftingRecipeData)1159_storage))",
+            "contract": "CryptopiaCrafting",
+            "src": "contracts\\source\\game\\crafting\\concrete\\CryptopiaCrafting.sol:77"
+          },
+          {
+            "label": "recipesIndex",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_array(t_bytes32)dyn_storage)",
+            "contract": "CryptopiaCrafting",
+            "src": "contracts\\source\\game\\crafting\\concrete\\CryptopiaCrafting.sol:78"
+          },
+          {
+            "label": "playerData",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_address,t_struct(CraftingPlayerData)1182_storage)",
+            "contract": "CryptopiaCrafting",
+            "src": "contracts\\source\\game\\crafting\\concrete\\CryptopiaCrafting.sol:81"
+          },
+          {
+            "label": "inventoriesContract",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_address",
+            "contract": "CryptopiaCrafting",
+            "src": "contracts\\source\\game\\crafting\\concrete\\CryptopiaCrafting.sol:84"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_array(t_bytes32)dyn_storage)": {
+            "label": "mapping(address => bytes32[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_bytes32,t_bool))": {
+            "label": "mapping(address => mapping(bytes32 => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_bytes32,t_struct(CraftingRecipeData)1159_storage))": {
+            "label": "mapping(address => mapping(bytes32 => struct CryptopiaCrafting.CraftingRecipeData))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(CraftingPlayerData)1182_storage)": {
+            "label": "mapping(address => struct CryptopiaCrafting.CraftingPlayerData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(CraftingRecipeData)1159_storage)": {
+            "label": "mapping(bytes32 => struct CryptopiaCrafting.CraftingRecipeData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(CraftingSlot)2576_storage)": {
+            "label": "mapping(uint256 => struct CraftingSlot)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(CraftingPlayerData)1182_storage": {
+            "label": "struct CryptopiaCrafting.CraftingPlayerData",
+            "members": [
+              {
+                "label": "slotCount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "slots",
+                "type": "t_mapping(t_uint256,t_struct(CraftingSlot)2576_storage)",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "learned",
+                "type": "t_mapping(t_address,t_mapping(t_bytes32,t_bool))",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "learnedIndex",
+                "type": "t_mapping(t_address,t_array(t_bytes32)dyn_storage)",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_struct(CraftingRecipeData)1159_storage": {
+            "label": "struct CryptopiaCrafting.CraftingRecipeData",
+            "members": [
+              {
+                "label": "index",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "level",
+                "type": "t_uint8",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "learnable",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "1"
+              },
+              {
+                "label": "craftingTime",
+                "type": "t_uint64",
+                "offset": 2,
+                "slot": "1"
+              },
+              {
+                "label": "ingredients",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "ingredientsIndex",
+                "type": "t_array(t_address)dyn_storage",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_struct(CraftingSlot)2576_storage": {
+            "label": "struct CraftingSlot",
+            "members": [
+              {
+                "label": "asset",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "recipe",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "finished",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)25_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)"
+          },
+          "t_struct(RoleData)25_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)25_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "2c8afb94ea8f5d9d769cd0486f1e30672fab99723618c0d1f45527be14d5e076": {
+      "address": "0x8A00A7b49830404fbA60b6047e370A050a8c0Cf3",
+      "txHash": "0x8d6932deb816745be71962cbab112d2812f02f936bfd335bc82979b296b225d7",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "recipes",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_mapping(t_bytes32,t_struct(CraftingRecipeData)2791_storage))",
+            "contract": "CryptopiaCrafting",
+            "src": "contracts\\source\\game\\crafting\\concrete\\CryptopiaCrafting.sol:77"
+          },
+          {
+            "label": "recipesIndex",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_array(t_bytes32)dyn_storage)",
+            "contract": "CryptopiaCrafting",
+            "src": "contracts\\source\\game\\crafting\\concrete\\CryptopiaCrafting.sol:78"
+          },
+          {
+            "label": "playerData",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_address,t_struct(CraftingPlayerData)2814_storage)",
+            "contract": "CryptopiaCrafting",
+            "src": "contracts\\source\\game\\crafting\\concrete\\CryptopiaCrafting.sol:81"
+          },
+          {
+            "label": "inventoriesContract",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_address",
+            "contract": "CryptopiaCrafting",
+            "src": "contracts\\source\\game\\crafting\\concrete\\CryptopiaCrafting.sol:84"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_array(t_bytes32)dyn_storage)": {
+            "label": "mapping(address => bytes32[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_bytes32,t_bool))": {
+            "label": "mapping(address => mapping(bytes32 => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_bytes32,t_struct(CraftingRecipeData)2791_storage))": {
+            "label": "mapping(address => mapping(bytes32 => struct CryptopiaCrafting.CraftingRecipeData))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(CraftingPlayerData)2814_storage)": {
+            "label": "mapping(address => struct CryptopiaCrafting.CraftingPlayerData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(CraftingRecipeData)2791_storage)": {
+            "label": "mapping(bytes32 => struct CryptopiaCrafting.CraftingRecipeData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(CraftingSlot)4252_storage)": {
+            "label": "mapping(uint256 => struct CraftingSlot)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(CraftingPlayerData)2814_storage": {
+            "label": "struct CryptopiaCrafting.CraftingPlayerData",
+            "members": [
+              {
+                "label": "slotCount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "slots",
+                "type": "t_mapping(t_uint256,t_struct(CraftingSlot)4252_storage)",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "learned",
+                "type": "t_mapping(t_address,t_mapping(t_bytes32,t_bool))",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "learnedIndex",
+                "type": "t_mapping(t_address,t_array(t_bytes32)dyn_storage)",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_struct(CraftingRecipeData)2791_storage": {
+            "label": "struct CryptopiaCrafting.CraftingRecipeData",
+            "members": [
+              {
+                "label": "index",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "level",
+                "type": "t_uint8",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "learnable",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "1"
+              },
+              {
+                "label": "craftingTime",
+                "type": "t_uint64",
+                "offset": 2,
+                "slot": "1"
+              },
+              {
+                "label": "ingredients",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "ingredientsIndex",
+                "type": "t_array(t_address)dyn_storage",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_struct(CraftingSlot)4252_storage": {
+            "label": "struct CraftingSlot",
+            "members": [
+              {
+                "label": "asset",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "recipe",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "finished",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)25_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)"
+          },
+          "t_struct(RoleData)25_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)25_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61"
+            }
+          ],
           "erc7201:openzeppelin.storage.Initializable": [
             {
               "contract": "Initializable",

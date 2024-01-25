@@ -103,6 +103,13 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     /// @param tokenId The token ID of the crafted item
     event CraftingClaim(address indexed player, address indexed asset, bytes32 indexed item, uint slot, uint tokenId);
 
+    /// @dev Called when an item in `slot` was discarded by `player`
+    /// @param player The player that crafted the item
+    /// @param asset The address of the ERC721 contract
+    /// @param item The item (recipe) that was crafted
+    /// @param slot The slot used to craft the item
+    event CraftingDiscard(address indexed player, address indexed asset, bytes32 indexed item, uint slot);
+
     /// @dev Called when the crafting `slotCount` of `player` was updated
     /// @param player The player whos slot count was modified
     /// @param slotCount the new slot count
@@ -391,7 +398,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         slots = new CraftingSlot[](playerData[player].slotCount);
         for (uint i = 0; i < playerData[player].slotCount; i++)
         {
-            slots[i] = playerData[player].slots[i];
+            slots[i] = playerData[player].slots[i + 1];
         }
 
         return slots;
@@ -492,12 +499,22 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     }
 
 
-    /// @dev Empties a slot without claiming the crafted item (without refunding ingredients, if any)
-    /// @param slotId The number (non-zero based) of the slot to empty
-    function empty(uint slotId) 
+    /// @dev Discards the item in a slot without claiming it (without refunding ingredients, if any)
+    /// @param slotId The number (non-zero based) of the item to discard
+    function discard(uint slotId) 
         public virtual override 
     {
+        // Require slot occupied
+        CraftingSlot memory slot = playerData[msg.sender].slots[slotId];
+        if (slot.finished == 0)
+        {
+            revert CraftingSlotIsEmpty(msg.sender, slotId);
+        }
+
         _resetSlot(msg.sender, slotId);
+
+        // Emit
+        emit CraftingDiscard(msg.sender, slot.asset, slot.recipe, slotId);
     }
 
 

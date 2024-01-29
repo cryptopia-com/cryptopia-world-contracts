@@ -689,7 +689,7 @@ describe("Crafting Contract", function () {
     
             // Act
             const signer = await ethers.provider.getSigner(account1);
-            const transaction = registeredAccountInstance
+            const transaction = await registeredAccountInstance
                 .connect(signer)
                 .submitTransaction(craftingAddress, 0, calldata);
 
@@ -697,7 +697,7 @@ describe("Crafting Contract", function () {
             const timeStamp = await time.latest();
             const caftingFinishTime = timeStamp + craftable.recipe.craftingTime;
 
-            expect(transaction).to
+            await expect(transaction).to
                 .emit(craftingInstance, "CraftingStart")
                 .withArgs(playerAddress, craftableTokenAddress, recipeName, slot, caftingFinishTime);
         });
@@ -726,7 +726,7 @@ describe("Crafting Contract", function () {
                 .submitTransaction(craftingAddress, 0, calldata);
 
             // Assert
-            expect(transaction).to
+            await expect(transaction).to
                 .emit(craftingInstance, "CraftingClaim")
                 .withArgs(playerAddress, craftableTokenAddress, recipeName, slot, expectedTokenId);
         });

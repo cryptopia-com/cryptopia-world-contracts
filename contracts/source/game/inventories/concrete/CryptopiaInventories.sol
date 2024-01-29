@@ -7,6 +7,8 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
+import "hardhat/console.sol";
+
 import "../IInventories.sol";
 import "../types/InventoryEnums.sol";
 import "../errors/InventoryErrors.sol";
@@ -443,13 +445,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         address player_from = _msgSender();
         for (uint i = 0; i < player_to.length; i++)
         {
-            if (0 != amount[i])
-            {
-                // Fungible
-                _transferFungible(
-                    player_from, player_to[i], inventory_from[i], inventory_to[i], asset[i], amount[i]);
-            }
-            else if (0 != tokenIds[i].length)
+            if (0 != tokenIds[i].length)
             {
                 for (uint j = 0; j < tokenIds[i].length; j++)
                 {
@@ -457,6 +453,12 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
                     _transferNonFungible(
                         player_from, player_to[i], inventory_from[i], inventory_to[i], asset[i], tokenIds[i][j]);
                 }
+            }
+            else if (0 != amount[i])
+            {
+                // Fungible
+                _transferFungible(
+                    player_from, player_to[i], inventory_from[i], inventory_to[i], asset[i], amount[i]);
             }
             else 
             {
@@ -1079,7 +1081,12 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
             // Deduct from backpack
             inventory.weight -= INVENTORY_SLOT_SIZE;
             nonFungibleTokenData.owner = address(0);
-            nonFungibleInventory.tokensIndex[nonFungibleInventory.tokens[tokenId]] = nonFungibleInventory.tokensIndex[nonFungibleInventory.tokensIndex.length - 1];
+
+            uint tokenIndex = nonFungibleInventory.tokens[tokenId];
+            nonFungibleInventory.tokensIndex[tokenIndex] = nonFungibleInventory.tokensIndex[nonFungibleInventory.tokensIndex.length - 1];
+            nonFungibleInventory.tokens[nonFungibleInventory.tokensIndex[tokenIndex]] = tokenIndex;
+
+            delete nonFungibleInventory.tokens[tokenId];
             nonFungibleInventory.tokensIndex.pop();
         }
         else if (inventory_from == Inventory.Ship)
@@ -1105,7 +1112,12 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
             // Deduct from ship
             inventory.weight -= INVENTORY_SLOT_SIZE;
             nonFungibleTokenData.owner = address(0);
-            nonFungibleInventory.tokensIndex[nonFungibleInventory.tokens[tokenId]] = nonFungibleInventory.tokensIndex[nonFungibleInventory.tokensIndex.length - 1];
+
+            uint tokenIndex = nonFungibleInventory.tokens[tokenId];
+            nonFungibleInventory.tokensIndex[tokenIndex] = nonFungibleInventory.tokensIndex[nonFungibleInventory.tokensIndex.length - 1];
+            nonFungibleInventory.tokens[nonFungibleInventory.tokensIndex[tokenIndex]] = tokenIndex;
+
+            delete nonFungibleInventory.tokens[tokenId];
             nonFungibleInventory.tokensIndex.pop();
         }
         else 
@@ -1355,7 +1367,12 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
             // Deduct from ship
             inventorySpace.weight -= INVENTORY_SLOT_SIZE;
             nonFungibleTokenData.owner = address(0);
-            nonFungibleInventory.tokensIndex[nonFungibleInventory.tokens[tokenId]] = nonFungibleInventory.tokensIndex[nonFungibleInventory.tokensIndex.length - 1];
+
+            uint tokenIndex = nonFungibleInventory.tokens[tokenId];
+            nonFungibleInventory.tokensIndex[tokenIndex] = nonFungibleInventory.tokensIndex[nonFungibleInventory.tokensIndex.length - 1];
+            nonFungibleInventory.tokens[nonFungibleInventory.tokensIndex[tokenIndex]] = tokenIndex;
+
+            delete nonFungibleInventory.tokens[tokenId];
             nonFungibleInventory.tokensIndex.pop();
         }
         else 
@@ -1381,7 +1398,12 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
             // Deduct from backpack
             inventorySpace.weight -= INVENTORY_SLOT_SIZE;
             nonFungibleTokenData.owner = address(0);
-            nonFungibleInventory.tokensIndex[nonFungibleInventory.tokens[tokenId]] = nonFungibleInventory.tokensIndex[nonFungibleInventory.tokensIndex.length - 1];
+            
+            uint tokenIndex = nonFungibleInventory.tokens[tokenId];
+            nonFungibleInventory.tokensIndex[tokenIndex] = nonFungibleInventory.tokensIndex[nonFungibleInventory.tokensIndex.length - 1];
+            nonFungibleInventory.tokens[nonFungibleInventory.tokensIndex[tokenIndex]] = tokenIndex;
+
+            delete nonFungibleInventory.tokens[tokenId];
             nonFungibleInventory.tokensIndex.pop();
         }
 

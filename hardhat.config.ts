@@ -121,7 +121,7 @@ export default config;
 /**
  * Mint resources
  * 
- * npx hardhat resource --network skaleNebulaTestnet  --resource "Wood" --to YOUR_REMOTE_ADDRESS --amount 10000000000000000000 --inventory "Backpack"
+ * npx hardhat resource --network skaleNebulaTestnet  --resource "Wood" --to 0xcf9Ef9068e0Ee0884309764B65C9cC82C6547096 --amount 10000000000000000000 --inventory "Backpack"
  * npx hardhat resource --network skaleNebulaTestnet  --resource "Stone" --to YOUR_REMOTE_ADDRESS --amount 10000000000000000000 --inventory "Backpack"
  * npx hardhat resource --network skaleNebulaTestnet  --resource "Gold" --to YOUR_REMOTE_ADDRESS --amount 10000000000000000000 --inventory "Backpack"
  */

@@ -222,7 +222,7 @@
             "label": "fungible",
             "offset": 0,
             "slot": "0",
-            "type": "t_mapping(t_address,t_struct(Asset)1454_storage)",
+            "type": "t_mapping(t_address,t_struct(Asset)12926_storage)",
             "contract": "CryptopiaInventories",
             "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:93"
           },
@@ -238,7 +238,7 @@
             "label": "nonFungible",
             "offset": 0,
             "slot": "2",
-            "type": "t_mapping(t_address,t_struct(Asset)1454_storage)",
+            "type": "t_mapping(t_address,t_struct(Asset)12926_storage)",
             "contract": "CryptopiaInventories",
             "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:97"
           },
@@ -262,7 +262,7 @@
             "label": "nonFungibleTokenDatas",
             "offset": 0,
             "slot": "5",
-            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(NonFungibleTokenData)1492_storage))",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(NonFungibleTokenData)12964_storage))",
             "contract": "CryptopiaInventories",
             "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:104"
           },
@@ -270,7 +270,7 @@
             "label": "shipInventories",
             "offset": 0,
             "slot": "6",
-            "type": "t_mapping(t_uint256,t_struct(InventorySpaceData)1473_storage)",
+            "type": "t_mapping(t_uint256,t_struct(InventorySpaceData)12945_storage)",
             "contract": "CryptopiaInventories",
             "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:107"
           },
@@ -278,7 +278,7 @@
             "label": "playerInventories",
             "offset": 0,
             "slot": "7",
-            "type": "t_mapping(t_address,t_struct(InventorySpaceData)1473_storage)",
+            "type": "t_mapping(t_address,t_struct(InventorySpaceData)12945_storage)",
             "contract": "CryptopiaInventories",
             "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:110"
           },
@@ -286,7 +286,7 @@
             "label": "playerData",
             "offset": 0,
             "slot": "8",
-            "type": "t_mapping(t_address,t_struct(PlayerInventoryData)1497_storage)",
+            "type": "t_mapping(t_address,t_struct(PlayerInventoryData)12969_storage)",
             "contract": "CryptopiaInventories",
             "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:113"
           },
@@ -312,7 +312,7 @@
             "label": "uint256[]",
             "numberOfBytes": "32"
           },
-          "t_enum(Inventory)4668": {
+          "t_enum(Inventory)16140": {
             "label": "enum Inventory",
             "members": [
               "Wallet",
@@ -321,23 +321,23 @@
             ],
             "numberOfBytes": "1"
           },
-          "t_mapping(t_address,t_mapping(t_uint256,t_struct(NonFungibleTokenData)1492_storage))": {
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(NonFungibleTokenData)12964_storage))": {
             "label": "mapping(address => mapping(uint256 => struct CryptopiaInventories.NonFungibleTokenData))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_struct(Asset)1454_storage)": {
+          "t_mapping(t_address,t_struct(Asset)12926_storage)": {
             "label": "mapping(address => struct CryptopiaInventories.Asset)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_struct(InventorySpaceData)1473_storage)": {
+          "t_mapping(t_address,t_struct(InventorySpaceData)12945_storage)": {
             "label": "mapping(address => struct CryptopiaInventories.InventorySpaceData)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_struct(NonFungibleTokenInventorySpaceData)1483_storage)": {
+          "t_mapping(t_address,t_struct(NonFungibleTokenInventorySpaceData)12955_storage)": {
             "label": "mapping(address => struct CryptopiaInventories.NonFungibleTokenInventorySpaceData)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_struct(PlayerInventoryData)1497_storage)": {
+          "t_mapping(t_address,t_struct(PlayerInventoryData)12969_storage)": {
             "label": "mapping(address => struct CryptopiaInventories.PlayerInventoryData)",
             "numberOfBytes": "32"
           },
@@ -345,11 +345,11 @@
             "label": "mapping(address => uint256)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_struct(InventorySpaceData)1473_storage)": {
+          "t_mapping(t_uint256,t_struct(InventorySpaceData)12945_storage)": {
             "label": "mapping(uint256 => struct CryptopiaInventories.InventorySpaceData)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_struct(NonFungibleTokenData)1492_storage)": {
+          "t_mapping(t_uint256,t_struct(NonFungibleTokenData)12964_storage)": {
             "label": "mapping(uint256 => struct CryptopiaInventories.NonFungibleTokenData)",
             "numberOfBytes": "32"
           },
@@ -357,7 +357,7 @@
             "label": "mapping(uint256 => uint256)",
             "numberOfBytes": "32"
           },
-          "t_struct(Asset)1454_storage": {
+          "t_struct(Asset)12926_storage": {
             "label": "struct CryptopiaInventories.Asset",
             "members": [
               {
@@ -375,7 +375,7 @@
             ],
             "numberOfBytes": "64"
           },
-          "t_struct(InventorySpaceData)1473_storage": {
+          "t_struct(InventorySpaceData)12945_storage": {
             "label": "struct CryptopiaInventories.InventorySpaceData",
             "members": [
               {
@@ -398,14 +398,14 @@
               },
               {
                 "label": "nonFungible",
-                "type": "t_mapping(t_address,t_struct(NonFungibleTokenInventorySpaceData)1483_storage)",
+                "type": "t_mapping(t_address,t_struct(NonFungibleTokenInventorySpaceData)12955_storage)",
                 "offset": 0,
                 "slot": "3"
               }
             ],
             "numberOfBytes": "128"
           },
-          "t_struct(NonFungibleTokenData)1492_storage": {
+          "t_struct(NonFungibleTokenData)12964_storage": {
             "label": "struct CryptopiaInventories.NonFungibleTokenData",
             "members": [
               {
@@ -416,14 +416,14 @@
               },
               {
                 "label": "inventory",
-                "type": "t_enum(Inventory)4668",
+                "type": "t_enum(Inventory)16140",
                 "offset": 20,
                 "slot": "0"
               }
             ],
             "numberOfBytes": "32"
           },
-          "t_struct(NonFungibleTokenInventorySpaceData)1483_storage": {
+          "t_struct(NonFungibleTokenInventorySpaceData)12955_storage": {
             "label": "struct CryptopiaInventories.NonFungibleTokenInventorySpaceData",
             "members": [
               {
@@ -441,7 +441,7 @@
             ],
             "numberOfBytes": "64"
           },
-          "t_struct(PlayerInventoryData)1497_storage": {
+          "t_struct(PlayerInventoryData)12969_storage": {
             "label": "struct CryptopiaInventories.PlayerInventoryData",
             "members": [
               {
@@ -5207,6 +5207,307 @@
           },
           "t_mapping(t_address,t_bool)": {
             "label": "mapping(address => bool)"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)25_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "e95a35c32c3e0ca86941805faea5c313840ee1a5201011a9d70ba3ef3adbd109": {
+      "address": "0xE80a1DEf3D4A3f3E0CB9490f821bD1b116DcB238",
+      "txHash": "0x1a147396e71d2c3c350b70ed2659b21031ad9638e1411335972729d772dd22c1",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "fungible",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_struct(Asset)1455_storage)",
+            "contract": "CryptopiaInventories",
+            "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:95"
+          },
+          {
+            "label": "fungibleIndex",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_address)dyn_storage",
+            "contract": "CryptopiaInventories",
+            "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:96"
+          },
+          {
+            "label": "nonFungible",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_address,t_struct(Asset)1455_storage)",
+            "contract": "CryptopiaInventories",
+            "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:99"
+          },
+          {
+            "label": "nonFungibleIndex",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_array(t_address)dyn_storage",
+            "contract": "CryptopiaInventories",
+            "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:100"
+          },
+          {
+            "label": "playerToShip",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "CryptopiaInventories",
+            "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:103"
+          },
+          {
+            "label": "nonFungibleTokenDatas",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(NonFungibleTokenData)1493_storage))",
+            "contract": "CryptopiaInventories",
+            "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:106"
+          },
+          {
+            "label": "shipInventories",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_uint256,t_struct(InventorySpaceData)1474_storage)",
+            "contract": "CryptopiaInventories",
+            "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:109"
+          },
+          {
+            "label": "playerInventories",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_mapping(t_address,t_struct(InventorySpaceData)1474_storage)",
+            "contract": "CryptopiaInventories",
+            "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:112"
+          },
+          {
+            "label": "playerData",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_mapping(t_address,t_struct(PlayerInventoryData)1498_storage)",
+            "contract": "CryptopiaInventories",
+            "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:115"
+          },
+          {
+            "label": "treasury",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_address",
+            "contract": "CryptopiaInventories",
+            "src": "contracts\\source\\game\\inventories\\concrete\\CryptopiaInventories.sol:118"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_enum(Inventory)4753": {
+            "label": "enum Inventory",
+            "members": [
+              "Wallet",
+              "Backpack",
+              "Ship"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(NonFungibleTokenData)1493_storage))": {
+            "label": "mapping(address => mapping(uint256 => struct CryptopiaInventories.NonFungibleTokenData))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(Asset)1455_storage)": {
+            "label": "mapping(address => struct CryptopiaInventories.Asset)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(InventorySpaceData)1474_storage)": {
+            "label": "mapping(address => struct CryptopiaInventories.InventorySpaceData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(NonFungibleTokenInventorySpaceData)1484_storage)": {
+            "label": "mapping(address => struct CryptopiaInventories.NonFungibleTokenInventorySpaceData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(PlayerInventoryData)1498_storage)": {
+            "label": "mapping(address => struct CryptopiaInventories.PlayerInventoryData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(InventorySpaceData)1474_storage)": {
+            "label": "mapping(uint256 => struct CryptopiaInventories.InventorySpaceData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(NonFungibleTokenData)1493_storage)": {
+            "label": "mapping(uint256 => struct CryptopiaInventories.NonFungibleTokenData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Asset)1455_storage": {
+            "label": "struct CryptopiaInventories.Asset",
+            "members": [
+              {
+                "label": "index",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "weight",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(InventorySpaceData)1474_storage": {
+            "label": "struct CryptopiaInventories.InventorySpaceData",
+            "members": [
+              {
+                "label": "weight",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "maxWeight",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "fungible",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "nonFungible",
+                "type": "t_mapping(t_address,t_struct(NonFungibleTokenInventorySpaceData)1484_storage)",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_struct(NonFungibleTokenData)1493_storage": {
+            "label": "struct CryptopiaInventories.NonFungibleTokenData",
+            "members": [
+              {
+                "label": "owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "inventory",
+                "type": "t_enum(Inventory)4753",
+                "offset": 20,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(NonFungibleTokenInventorySpaceData)1484_storage": {
+            "label": "struct CryptopiaInventories.NonFungibleTokenInventorySpaceData",
+            "members": [
+              {
+                "label": "tokens",
+                "type": "t_mapping(t_uint256,t_uint256)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "tokensIndex",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(PlayerInventoryData)1498_storage": {
+            "label": "struct CryptopiaInventories.PlayerInventoryData",
+            "members": [
+              {
+                "label": "frozenUntil",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)25_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_struct(RoleData)25_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
           }
         },
         "namespaces": {

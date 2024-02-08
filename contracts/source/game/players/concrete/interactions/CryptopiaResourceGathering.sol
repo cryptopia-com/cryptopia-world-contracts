@@ -24,7 +24,6 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
      * Storage
      */
     uint24 constant private XP_BASE = 50;
-    uint constant private COOLDOWN_BASE = 5 seconds;
     uint24 constant private MULTIPLIER_PRECISION = 100;
     uint constant private RESOURCE_PRECISION = 1_000_000_000_000_000_000;
 
@@ -34,9 +33,6 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
     address public playerRegisterContract;
     address public inventoriesContract;
     address public toolTokenContract;
-
-    // Player => resource => cooldown
-    mapping (address => mapping (Resource => uint)) playerCooldown;
 
 
     /**
@@ -75,18 +71,6 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
     }
 
 
-    /// @dev Returns the timestamp at which `player` can mint `resource` again
-    /// @param player the account to retrieve the cooldown timestamp for
-    /// @param resource the resource to retrieve the cooldown timestamp for
-    /// @return uint cooldown timestamp at which `player` can mint `resource` again
-    function getCooldown(address player, Resource resource) 
-        public virtual override view 
-        returns (uint) 
-    {
-        return playerCooldown[player][resource];
-    }
-
-
     /// @dev Mint `asset` to sender's inventory
     /// @param resource The {AssetEnums} to mint
     /// @param tool The token ID of the tool used to mint the resource (0 means no tool)
@@ -104,7 +88,6 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
         }
 
         uint24 xp;
-        uint cooldown;
 
         // Use tool
         if (_requiresTool(resource))
@@ -125,26 +108,21 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
             }
 
             // Apply tool effects
-            (uint24 multiplier_cooldown, uint24 multiplier_xp, uint24 multiplier_effectiveness) = ITools(toolTokenContract)
+            (uint24 multiplier_xp, uint24 multiplier_effectiveness) = ITools(toolTokenContract)
                 .__useForMinting(player, tool, resource, limit < amount ? limit : amount);
+
+            if (0 == multiplier_effectiveness)
+            {
+                revert ToolIsBroken(tool);
+            }
 
             xp = uint24(XP_BASE * (limit < amount ? limit : amount) / RESOURCE_PRECISION * multiplier_xp / MULTIPLIER_PRECISION);
             amount = amount * multiplier_effectiveness / MULTIPLIER_PRECISION;
-            cooldown = COOLDOWN_BASE * multiplier_cooldown / MULTIPLIER_PRECISION;
         }
         else 
         {
             xp = uint24(XP_BASE * (limit < amount ? limit : amount) / RESOURCE_PRECISION);
-            cooldown = COOLDOWN_BASE;
         }
-
-        // Cooldown
-        if (playerCooldown[player][resource] > block.timestamp) 
-        {
-            revert CooldownActive(player, playerCooldown[player][resource]);
-        }
-
-        playerCooldown[player][resource] = block.timestamp + cooldown;
 
         // Resolve resource
         address asset = IAssetRegister(assetRegisterContract)

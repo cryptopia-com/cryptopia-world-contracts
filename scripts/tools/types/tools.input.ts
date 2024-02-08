@@ -9,7 +9,6 @@ export interface ToolJsonData {
     rarity: string; 
     level: number;
     durability: number;
-    multiplier_cooldown: number;
     multiplier_xp: number;
     multiplier_effectiveness: number;
     value1: number;

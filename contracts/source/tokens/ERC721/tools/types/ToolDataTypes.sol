@@ -20,9 +20,6 @@ struct Tool
     /// @notice Represents the rate at which the tool takes damage
     uint24 durability;
 
-    /// @dev Multiplier affecting the cooldown period for actions using the tool
-    uint24 multiplier_cooldown;
-
     /// @dev Multiplier for experience points gained while using the tool
     uint24 multiplier_xp;
 
@@ -68,9 +65,6 @@ struct ToolInstance
     /// @dev Durability of the tool
     /// @notice Represents the rate at which the tool takes damage
     uint24 durability;
-
-    /// @dev Multiplier affecting the cooldown period for actions using the tool
-    uint24 multiplier_cooldown;
 
     /// @dev Multiplier for experience points gained while using the tool
     uint24 multiplier_xp;

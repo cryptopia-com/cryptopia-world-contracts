@@ -36,9 +36,6 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
         /// @notice Represents the rate at which the tool takes damage
         uint24 durability;
 
-        /// @dev Multiplier affecting the cooldown period for actions using the tool
-        uint24 multiplier_cooldown;
-
         /// @dev Multiplier for experience points gained while using the tool
         uint24 multiplier_xp;
 
@@ -251,16 +248,17 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
     /**
      * System functions
      */
-    /// @dev Applies tool effects to the `cooldown` period and the `amount` of `resource` that's being minted by `player`
+    /// @dev Applies tool effects to the `amount` of `resource` that's being minted by `player`
     /// @param player The account that's using the tool for minting
     /// @param toolId The token ID of the tool being used to mint 
     /// @param resource The resource {Resource} that's being minted
     /// @param amount The amount of tokens to be minted
+    /// @return multiplier_xp The multiplier for experience points gained while using the tool
+    /// @return multiplier_effectiveness The multiplier impacting the effectiveness of the tool in various game scenarios
     function __useForMinting(address player, uint toolId, Resource resource, uint amount) 
         public virtual override 
         onlyRole(SYSTEM_ROLE) 
         returns (
-            uint24 multiplier_cooldown,
             uint24 multiplier_xp,
             uint24 multiplier_effectiveness
         )
@@ -287,12 +285,17 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
         }
 
         // Apply effects
-        multiplier_cooldown = tools[toolName].multiplier_cooldown;
-        multiplier_xp = MAX_DAMAGE == toolInstances[toolId].damage 
-            ? 0 : tools[toolName].multiplier_xp * (MAX_DAMAGE - toolInstances[toolId].damage) / MAX_DAMAGE;
-        multiplier_effectiveness = MAX_DAMAGE == toolInstances[toolId].damage 
-            ? 0 : tools[toolName].multiplier_effectiveness * (MAX_DAMAGE - toolInstances[toolId].damage) / MAX_DAMAGE;
-
+        if (MAX_DAMAGE == toolInstances[toolId].damage)
+        {
+            multiplier_xp = 0;
+            multiplier_effectiveness = 0;
+        }
+        else 
+        {
+            multiplier_xp = tools[toolName].multiplier_xp;
+            multiplier_effectiveness = tools[toolName].multiplier_effectiveness;
+        }
+        
         // Apply damage
         uint24 damage = MAX_DURABILITY - tools[toolName].durability;
         if (damage > 0)
@@ -411,7 +414,6 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
             rarity: data.rarity,
             level: data.level,
             durability: data.durability,
-            multiplier_cooldown: data.multiplier_cooldown,
             multiplier_xp: data.multiplier_xp,
             multiplier_effectiveness: data.multiplier_effectiveness,
             value1: data.value1,
@@ -461,7 +463,6 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
         tool.rarity = tool_.rarity;
         tool.level = tool_.level;
         tool.durability = tool_.durability;
-        tool.multiplier_cooldown = tool_.multiplier_cooldown;
         tool.multiplier_xp = tool_.multiplier_xp;
         tool.multiplier_effectiveness = tool_.multiplier_effectiveness;
         tool.value1 = tool_.value1;
@@ -494,7 +495,6 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
             level: toolData.level,
             durability: toolData.durability,
             damage: toolInstanceData.damage,
-            multiplier_cooldown: toolData.multiplier_cooldown,
             multiplier_xp: toolData.multiplier_xp,
             multiplier_effectiveness: toolData.multiplier_effectiveness,
             value1: toolData.value1,

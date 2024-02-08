@@ -58,15 +58,16 @@ interface ITools {
     /**
      * System functions
      */
-    /// @dev Applies tool effects to the `cooldown` period and the `amount` of `resource` that's being minted by `player`
+    /// @dev Applies tool effects to the `amount` of `resource` that's being minted by `player`
     /// @param player The account that's using the tool for minting
     /// @param toolId The token ID of the tool being used to mint 
     /// @param resource The resource {Resource} that's being minted
     /// @param amount The amount of tokens to be minted; checked against value1
+    /// @return multiplier_xp The multiplier for experience points gained while using the tool
+    /// @return multiplier_effectiveness The multiplier impacting the effectiveness of the tool in various game scenarios
     function __useForMinting(address player, uint toolId, Resource resource, uint amount) 
         external  
         returns (
-            uint24 multiplier_cooldown,
             uint24 multiplier_xp,
             uint24 multiplier_effectiveness
         );

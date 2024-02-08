@@ -116,7 +116,6 @@ describe("Quests Contract", function () {
             rarity: 1,
             level: 1,
             durability: 90, 
-            multiplier_cooldown: 100, 
             multiplier_xp: 100, 
             multiplier_effectiveness: 100, 
             value1: 10, 

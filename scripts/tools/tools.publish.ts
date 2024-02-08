@@ -110,7 +110,6 @@ function resolve(data: ToolJsonData[]): ToolStruct[]
             rarity: resolveEnum(Rarity, toolData.rarity), 
             level: toolData.level,
             durability: toolData.durability,
-            multiplier_cooldown: toolData.multiplier_cooldown,
             multiplier_xp: toolData.multiplier_xp,
             multiplier_effectiveness: toolData.multiplier_effectiveness,
             value1: toolData.value1,

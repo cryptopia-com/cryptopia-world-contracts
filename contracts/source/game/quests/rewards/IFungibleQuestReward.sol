@@ -8,9 +8,9 @@ import "../../inventories/types/InventoryEnums.sol";
 interface IFungibleQuestReward {
 
     /// @dev Mint quest reward
-    /// @param amount The amount of tokens to mint
     /// @param player The player that completed the quest
     /// @param inventory The inventory to mint the reward to
-    function __mintQuestReward(uint amount, address player, Inventory inventory) 
+    /// @param amount The amount of tokens to mint
+    function __mintQuestReward(address player, Inventory inventory, uint amount) 
         external;
 }

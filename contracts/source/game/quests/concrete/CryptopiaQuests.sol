@@ -1000,7 +1000,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
 
             // Reward player
             IFungibleQuestReward(reward.asset)
-                .__mintQuestReward(reward.amount, msg.sender, inventory); 
+                .__mintQuestReward(msg.sender, inventory, reward.amount); 
 
             // Emit event
             emit QuestRewardClaim(msg.sender, questName, rewardIndex, reward.asset, reward.amount, 0);
@@ -1017,7 +1017,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
 
             // Reward player
             uint tokenId = INonFungibleQuestReward(reward.asset)
-                .__mintQuestReward(reward.item, msg.sender, inventory);
+                .__mintQuestReward(msg.sender, inventory, reward.item);
 
             // Emit event
             emit QuestRewardClaim(msg.sender, questName, rewardIndex, reward.asset, 1, tokenId); 

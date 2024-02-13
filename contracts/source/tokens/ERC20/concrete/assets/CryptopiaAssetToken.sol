@@ -12,7 +12,6 @@ import "../../../../game/quests/rewards/IFungibleQuestReward.sol";
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaAssetToken is CryptopiaERC20, IAssetToken, IFungibleQuestReward {
 
-
     /**
      * Storage
      */
@@ -50,11 +49,11 @@ contract CryptopiaAssetToken is CryptopiaERC20, IAssetToken, IFungibleQuestRewar
     }
 
 
-    /// @dev Mint quest reward
-    /// @param amount The amount of tokens to mint
+    /// @dev Mints 'amount' of tokens to 'player' and assigns them to 'inventory'
     /// @param player The player that completed the quest
-    /// @param inventory The inventory to mint the reward to
-    function __mintQuestReward(uint amount, address player, Inventory inventory) 
+    /// @param inventory The inventory to mint the tokens to
+    /// @param amount The amount of tokens to mint
+    function __mintToInventory(address player, Inventory inventory, uint amount) 
         public override 
         onlyRole(SYSTEM_ROLE) 
     {
@@ -64,5 +63,16 @@ contract CryptopiaAssetToken is CryptopiaERC20, IAssetToken, IFungibleQuestRewar
         // Assign
         IInventories(inventoriesContract)
             .__assignFungibleToken(player, inventory, address(this), amount);
+    }
+
+
+    /// @dev Mint quest reward
+    /// @param player The player that completed the quest
+    /// @param inventory The inventory to mint the reward to
+    /// @param amount The amount of tokens to mint
+    function __mintQuestReward(address player, Inventory inventory, uint amount) 
+        public override 
+    {
+        __mintToInventory(player, inventory, amount);
     }
 }

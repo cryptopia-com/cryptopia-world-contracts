@@ -431,8 +431,8 @@ describe("Gathering Contract", function () {
             asset.contractInstance = await ethers
                 .getContractAt("CryptopiaAssetToken", asset.contractAddress);
 
-            await asset.contractInstance.grantRole(
-                SYSTEM_ROLE, minter);
+            await asset.contractInstance.grantRole(SYSTEM_ROLE, minter);
+            await inventoriesInstance.grantRole(SYSTEM_ROLE, asset.contractAddress);
             
             if (asset.system.includes("CryptopiaResourceGathering"))
             {

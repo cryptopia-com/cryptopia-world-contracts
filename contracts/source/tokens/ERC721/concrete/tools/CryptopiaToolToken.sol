@@ -346,10 +346,10 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
 
 
     /// @dev Mint a quest reward
-    /// @param tool The item to mint
     /// @param player The player to mint the item to
     /// @param inventory The inventory to mint the item to
-    function __mintQuestReward(bytes32 tool, address player, Inventory inventory)
+    /// @param tool The item to mint
+    function __mintQuestReward(address player, Inventory inventory, bytes32 tool)
         public virtual override 
         onlyRole(SYSTEM_ROLE) 
         onlyExisting(tool) 

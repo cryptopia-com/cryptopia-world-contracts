@@ -8,10 +8,10 @@ import "../../inventories/types/InventoryEnums.sol";
 interface INonFungibleQuestReward {
 
     /// @dev Mint a quest reward
-    /// @param item The item to mint
     /// @param player The player to mint the item to
     /// @param inventory The inventory to mint the item to
-    function __mintQuestReward(bytes32 item, address player, Inventory inventory)
+    /// @param item The item to mint
+    function __mintQuestReward(address player, Inventory inventory, bytes32 item)
         external
         returns (uint tokenId);
 }

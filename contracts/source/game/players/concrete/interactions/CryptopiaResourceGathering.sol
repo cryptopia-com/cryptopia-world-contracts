@@ -130,11 +130,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
 
         // Mint tokens to inventory
         IAssetToken(asset)
-            .__mintTo(inventoriesContract, (limit < amount ? limit : amount));
-
-        // Assign tokens to player
-        IInventories(inventoriesContract)
-            .__assignFungibleToken(player, Inventory.Backpack, asset, (limit < amount ? limit : amount));
+            .__mintToInventory(player, Inventory.Backpack, limit < amount ? limit : amount);
 
         // Award XP
         IPlayerRegister(playerRegisterContract)

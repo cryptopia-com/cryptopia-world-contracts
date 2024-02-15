@@ -45,8 +45,8 @@ const config: HardhatUserConfig = {
       }
     },
     skaleNebulaTestnet: {
-      url: "https://staging-v3.skalenodes.com/v1/staging-faint-slimy-achird",
-      chainId: 503129905,
+      url: "https://testnet.skalenodes.com/v1/lanky-ill-funny-testnet",
+      chainId: 37084624,
       accounts: {
         mnemonic: secret.skaleNebulaTestnet.mnemonic,
         path: "m/44'/60'/0'/0",
@@ -92,10 +92,10 @@ const config: HardhatUserConfig = {
       },
       {
         network: "skaleNebulaTestnet",
-        chainId: 503129905,
+        chainId: 37084624,
         urls: {
-            apiURL: "https://staging-faint-slimy-achird.explorer.staging-v3.skalenodes.com/api",
-            browserURL: "https://staging-faint-slimy-achird.explorer.staging-v3.skalenodes.com"
+            apiURL: "https://lanky-ill-funny-testnet.explorer.testnet.skalenodes.com/api",
+            browserURL: "https://lanky-ill-funny-testnet.explorer.testnet.skalenodes.com/"
         }
       },
       {
@@ -121,8 +121,8 @@ export default config;
 /**
  * Mint resources
  * 
- * npx hardhat resource --network skaleNebulaTestnet  --resource "Wood" --to 0x0E1834d42B7Ade4d0FcD2768945BF2f8CA800cCf --amount 10000000000000000000 --inventory "Backpack"
- * npx hardhat resource --network skaleNebulaTestnet  --resource "Stone" --to 0x0E1834d42B7Ade4d0FcD2768945BF2f8CA800cCf --amount 10000000000000000000 --inventory "Backpack"
+ * npx hardhat resource --network skaleNebulaTestnet  --resource "Wood" --to 0x90A15e1E218b3353191E3f9140F4Da6944A73909 --amount 10000000000000000000 --inventory "Backpack"
+ * npx hardhat resource --network skaleNebulaTestnet  --resource "Stone" --to 0x90A15e1E218b3353191E3f9140F4Da6944A73909 --amount 10000000000000000000 --inventory "Backpack"
  * npx hardhat resource --network skaleNebulaTestnet  --resource "Gold" --to YOUR_REMOTE_ADDRESS --amount 10000000000000000000 --inventory "Backpack"
  */
 task("resource", "Mint resources")

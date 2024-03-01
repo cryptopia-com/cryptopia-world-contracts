@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 import "../../types/boxes/uint24/Uint24Box2.sol";
 import "../../tokens/ERC721/types/ERC721DataTypes.sol";

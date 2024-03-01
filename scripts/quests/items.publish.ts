@@ -3,6 +3,7 @@ import ora from 'ora-classic';
 import path from 'path';
 import fs from 'fs';
 import hre, { ethers } from "hardhat";
+import appConfig, { NetworkConfig } from "../../app.config";
 import { DeploymentManager } from "../helpers/deployments";
 import { waitForMinimumTime } from "../helpers/timers";
 import { ItemJsonData } from './types/items.input';
@@ -18,7 +19,8 @@ const DEFAULT_BASE_PATH = './data/game/quests/';
 const DEFAULT_FILE = 'items';
 const DEFAULT_BATCH_SIZE = 20;
 
-const deploymentManager = new DeploymentManager(hre.network.name);
+let config: NetworkConfig;
+let deploymentManager: DeploymentManager;
 
 /**
  * Main deployment function
@@ -30,6 +32,16 @@ const deploymentManager = new DeploymentManager(hre.network.name);
  */
 async function main(questsFilePath: string, batchSize: number) 
 {
+    // Config
+    const isDevEnvironment = hre.network.name == "hardhat" 
+        || hre.network.name == "ganache" 
+        || hre.network.name == "localhost";
+    config = appConfig.networks[
+        isDevEnvironment ? "development" : hre.network.name];
+
+    deploymentManager = new DeploymentManager(
+        hre.network.name, config.development);
+
     if (!fs.existsSync(questsFilePath)) {
         console.error(chalk.red(`Quest item file not found: ${questsFilePath}`));
         return;
@@ -50,12 +62,14 @@ async function main(questsFilePath: string, batchSize: number)
     }
 
     
-    const questTokenAddress = deploymentManager.getContractDeployment("CryptopiaQuestToken").address;
+    const questTokenAddress = deploymentManager.getContractDeployment(
+        deploymentManager.resolveContractName("QuestToken")).address;
 
     console.log(`\nFound ${chalk.bold(questItems.length.toString())} quests items to deploy on ${chalk.yellow(hre.network.name)}`);
-    console.log(`Found ${chalk.green("CryptopiaQuestToken")} at ${chalk.cyan(questTokenAddress)}\n`);
+    console.log(`Found ${chalk.green(deploymentManager.resolveContractName("QuestToken"))} at ${chalk.cyan(questTokenAddress)}\n`);
 
-    const questTokenInstance = await ethers.getContractAt("CryptopiaQuestToken", questTokenAddress);
+    const questTokenInstance = await ethers.getContractAt(
+        deploymentManager.resolveContractName("QuestToken"), questTokenAddress);
 
     // Deploy quest items in batches
     for (let i = 0; i < questItems.length; i += batchSize) 

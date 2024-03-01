@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
@@ -15,7 +15,7 @@ import "./CryptopiaAccount.sol";
 /// data, including usernames, gender, and social connections. The contract is designed to ensure 
 /// a seamless and engaging player experience, facilitating social interactions within the game through 
 /// friend requests and relationship management.
-/// @dev Inherits from Initializable and AccessControlUpgradeable, implementing the IAccountRegister interface.
+/// @dev Inherits from Initializable, implementing the IAccountRegister interface.
 /// It follows an upgradable pattern to support future expansions and modifications. The contract focuses on 
 /// detailed player data management, crucial for maintaining the integrity of player interactions and 
 /// the overall game dynamics. This includes maintaining friendships, handling friend requests, and 

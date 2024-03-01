@@ -141,7 +141,7 @@ describe("Maps Contract", function () {
         const systemSigner = await ethers.provider.getSigner(system);
 
         // Factories
-        const WhitelistFactory = await ethers.getContractFactory("Whitelist");
+        const WhitelistFactory = await ethers.getContractFactory("CryptopiaWhitelist");
         const AccountRegisterFactory = await ethers.getContractFactory("CryptopiaAccountRegister");
         const PlayerRegisterFactory = await ethers.getContractFactory("CryptopiaPlayerRegister");
         const AssetRegisterFactory = await ethers.getContractFactory("CryptopiaAssetRegister");

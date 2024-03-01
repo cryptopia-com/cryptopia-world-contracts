@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 /// @dev Emitted when `account` is not a player
 /// @param account The account that is not a player

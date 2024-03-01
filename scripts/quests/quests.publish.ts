@@ -3,6 +3,7 @@ import ora from 'ora-classic';
 import path from 'path';
 import fs from 'fs';
 import hre, { ethers } from "hardhat";
+import appConfig, { NetworkConfig } from "../../app.config";
 import { DeploymentManager } from "../helpers/deployments";
 import { waitForMinimumTime } from "../helpers/timers";
 import { resolveEnum } from "../helpers/enums";
@@ -20,7 +21,8 @@ const DEFAULT_BASE_PATH = './data/game/quests/';
 const DEFAULT_FILE = 'quests';
 const DEFAULT_BATCH_SIZE = 20;
 
-const deploymentManager = new DeploymentManager(hre.network.name);
+let config: NetworkConfig;
+let deploymentManager: DeploymentManager;
 
 /**
  * Main deployment function.
@@ -32,6 +34,16 @@ const deploymentManager = new DeploymentManager(hre.network.name);
  */
 async function main(questsFilePath: string, batchSize: number) 
 {
+    // Config
+    const isDevEnvironment = hre.network.name == "hardhat" 
+        || hre.network.name == "ganache" 
+        || hre.network.name == "localhost";
+    config = appConfig.networks[
+        isDevEnvironment ? "development" : hre.network.name];
+
+    deploymentManager = new DeploymentManager(
+        hre.network.name, config.development);
+
     if (!fs.existsSync(questsFilePath)) {
         console.error(chalk.red(`Quests file not found: ${questsFilePath}`));
         return;
@@ -52,12 +64,14 @@ async function main(questsFilePath: string, batchSize: number)
     }
 
     
-    const questsAddress = deploymentManager.getContractDeployment("CryptopiaQuests")?.address;
+    const questsAddress = deploymentManager.getContractDeployment(
+        deploymentManager.resolveContractName("Quests"))?.address;
 
     console.log(`\nFound ${chalk.bold(quests.length.toString())} quests to deploy on ${chalk.yellow(hre.network.name)}`);
-    console.log(`Found ${chalk.green("CryptopiaQuests")} at ${chalk.cyan(questsAddress)}\n`);
+    console.log(`Found ${chalk.green(deploymentManager.resolveContractName("Quests"))} at ${chalk.cyan(questsAddress)}\n`);
 
-    const questsInstance = await ethers.getContractAt("CryptopiaQuests", questsAddress);
+    const questsInstance = await ethers.getContractAt(
+        deploymentManager.resolveContractName("Quests"), questsAddress);
 
     // Deploy quests in batches
     for (let i = 0; i < quests.length; i += batchSize) 
@@ -110,8 +124,8 @@ function resolve(data: QuestJsonData[]): QuestStruct[] {
             faction: jsonData.hasFactionConstraint ? resolveEnum(Faction, jsonData.faction) : 0,
             hasSubFactionConstraint: jsonData.hasSubFactionConstraint,
             subFaction: jsonData.hasSubFactionConstraint ? resolveEnum(SubFaction, jsonData.subFaction) : 0,
-            hasRecurrenceConstraint: jsonData.hasRecurrenceConstraint,
-            maxRecurrences: jsonData.maxRecurrences,
+            hasCompletionConstraint: jsonData.hasCompletionConstraint,
+            maxCompletions: jsonData.maxCompletions,
             hasCooldownConstraint: jsonData.hasCooldownConstraint,
             cooldown: jsonData.cooldown,
             hasTimeConstraint: jsonData.hasTimeConstraint,
@@ -121,22 +135,26 @@ function resolve(data: QuestJsonData[]): QuestStruct[] {
                 hasTileConstraint: step.hasTileConstraint,
                 tile: step.tile,
                 takeFungible: step.takeFungible.map((tf) => ({
-                    asset: deploymentManager.getContractDeployment(tf.asset).address,
+                    asset: deploymentManager.getContractDeployment(
+                        deploymentManager.resolveDeploymentKey(tf.asset)).address,
                     amount: tf.amount,
                     allowWallet: tf.allowWallet,
                 })),
                 takeNonFungible: step.takeNonFungible.map((nft) => ({
-                    asset: deploymentManager.getContractDeployment(nft.asset).address,
+                    asset: deploymentManager.getContractDeployment(
+                        deploymentManager.resolveDeploymentKey(nft.asset)).address,
                     item: nft.item.toBytes32(),
                     allowWallet: nft.allowWallet,
                 })),
                 giveFungible: step.giveFungible.map((fungibleItem) => ({
-                    asset: deploymentManager.getContractDeployment(fungibleItem.asset).address,
+                    asset: deploymentManager.getContractDeployment(
+                        deploymentManager.resolveDeploymentKey(fungibleItem.asset)).address,
                     amount: fungibleItem.amount,
                     allowWallet: fungibleItem.allowWallet,
                 })),
                 giveNonFungible: step.giveNonFungible.map((nft) => ({
-                    asset: deploymentManager.getContractDeployment(nft.asset).address,
+                    asset: deploymentManager.getContractDeployment(
+                        deploymentManager.resolveDeploymentKey(nft.asset)).address,
                     item: nft.item.toBytes32(),
                     allowWallet: nft.allowWallet,
                 })),
@@ -146,12 +164,14 @@ function resolve(data: QuestJsonData[]): QuestStruct[] {
                 xp: reward.xp,
                 karma: reward.karma,
                 fungible: reward.fungible.map((fungibleItem) => ({
-                    asset: deploymentManager.getContractDeployment(fungibleItem.asset).address,
+                    asset: deploymentManager.getContractDeployment(
+                        deploymentManager.resolveDeploymentKey(fungibleItem.asset)).address,
                     amount: fungibleItem.amount,
                     allowWallet: fungibleItem.allowWallet,
                 })),
                 nonFungible: reward.nonFungible.map((nft) => ({
-                    asset: deploymentManager.getContractDeployment(nft.asset).address,
+                    asset: deploymentManager.getContractDeployment(
+                        deploymentManager.resolveDeploymentKey(nft.asset)).address,
                     item: nft.item.toBytes32(),
                     allowWallet: nft.allowWallet,
                 })),

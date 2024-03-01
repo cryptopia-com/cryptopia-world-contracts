@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 /// @dev Emitted when `asset` is not a supported asset
 /// @param asset The asset that is not supported

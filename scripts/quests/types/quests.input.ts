@@ -48,8 +48,8 @@ export interface QuestJsonData {
     faction: string;
     hasSubFactionConstraint: boolean;
     subFaction: string;
-    hasRecurrenceConstraint: boolean;
-    maxRecurrences: number;
+    hasCompletionConstraint: boolean;
+    maxCompletions: number;
     hasCooldownConstraint: boolean;
     cooldown: number;
     hasTimeConstraint: boolean;

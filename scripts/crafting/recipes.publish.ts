@@ -3,6 +3,7 @@ import ora from 'ora-classic';
 import path from 'path';
 import fs from 'fs';
 import hre, { ethers } from "hardhat";
+import appConfig, { NetworkConfig } from "../../app.config";
 import { DeploymentManager } from "../helpers/deployments";
 import { waitForMinimumTime } from "../helpers/timers";
 import { IngredientJsonData, RecipeJsonData } from './types/recipes.input';
@@ -18,7 +19,8 @@ const DEFAULT_BASE_PATH = './data/game/crafting/';
 const DEFAULT_FILE = 'recipes';
 const DEFAULT_BATCH_SIZE = 20;
 
-const deploymentManager = new DeploymentManager(hre.network.name);
+let config: NetworkConfig;
+let deploymentManager: DeploymentManager;
 
 /**
  * Main deployment function.
@@ -30,6 +32,16 @@ const deploymentManager = new DeploymentManager(hre.network.name);
  */
 async function main(recipesFilePath: string, batchSize: number) 
 {
+    // Config
+    const isDevEnvironment = hre.network.name == "hardhat" 
+        || hre.network.name == "ganache" 
+        || hre.network.name == "localhost";
+    config = appConfig.networks[
+        isDevEnvironment ? "development" : hre.network.name];
+
+    deploymentManager = new DeploymentManager(
+        hre.network.name, config.development);
+
     if (!fs.existsSync(recipesFilePath)) {
         console.error(chalk.red(`Recipes file not found: ${recipesFilePath}`));
         return;
@@ -50,12 +62,14 @@ async function main(recipesFilePath: string, batchSize: number)
     }
 
     
-    const craftingAddress = deploymentManager.getContractDeployment("CryptopiaCrafting")?.address;
+    const craftingAddress = deploymentManager.getContractDeployment(
+        deploymentManager.resolveContractName("Crafting"))?.address;
 
     console.log(`\nFound ${chalk.bold(recipes.length.toString())} recipes to deploy on ${chalk.yellow(hre.network.name)}`);
-    console.log(`Found ${chalk.green("CryptopiaCrafting")} at ${chalk.cyan(craftingAddress)}\n`);
+    console.log(`Found ${chalk.green(deploymentManager.resolveContractName("Crafting"))} at ${chalk.cyan(craftingAddress)}\n`);
 
-    const craftingInstance = await ethers.getContractAt("CryptopiaCrafting", craftingAddress);
+    const craftingInstance = await ethers.getContractAt(
+        deploymentManager.resolveContractName("Crafting"), craftingAddress);
 
     // Deploy recipes in batches
     for (let i = 0; i < recipes.length; i += batchSize) 
@@ -105,12 +119,14 @@ function resolve(data: RecipeJsonData[]): CraftingRecipeStruct[]
         resolvedRecipes.push({
             level: recipeData.level,
             learnable: recipeData.learnable,
-            asset: deploymentManager.getContractDeployment(recipeData.asset).address,
+            asset: deploymentManager.getContractDeployment(
+                deploymentManager.resolveDeploymentKey(recipeData.asset)).address,
             item: recipeData.item.toBytes32(), 
             craftingTime: recipeData.craftingTime,
             ingredients: recipeData.ingredients.map((ingredient: IngredientJsonData) => {
                 return {
-                    asset: deploymentManager.getContractDeployment(ingredient.asset).address,
+                    asset: deploymentManager.getContractDeployment(
+                        deploymentManager.resolveDeploymentKey(ingredient.asset)).address,
                     amount: ingredient.amount.toWei()
                 };
             })

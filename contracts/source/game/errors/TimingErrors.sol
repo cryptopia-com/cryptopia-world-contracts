@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 /// @dev Emitted when an operation is attempted but a cooldown is still active
 /// @param player The player with the active cooldown

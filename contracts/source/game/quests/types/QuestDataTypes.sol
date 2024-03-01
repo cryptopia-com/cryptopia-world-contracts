@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 import "../../inventories/types/InventoryDataTypes.sol";
 import "../../types/FactionEnums.sol";
@@ -27,10 +27,10 @@ struct Quest {
     /// @dev Specific sub-faction required to start the quest, effective if hasSubFactionConstraint is true
     SubFaction subFaction;
 
-    /// @dev Indicates if there's a limit on how many times the quest can be repeated
-    bool hasRecurrenceConstraint;
-    /// @dev Maximum number of times the quest can be repeated, effective if hasRecurrenceConstraint is true
-    uint maxRecurrences;
+    /// @dev Indicates if there's a limit on how many times the quest can be completed
+    bool hasCompletionConstraint;
+    /// @dev Maximum number of times the quest can be completed, effective if hasCompletionConstraint is true
+    uint maxCompletions;
 
     /// @dev Indicates if there's a cooldown period between quest repetitions
     bool hasCooldownConstraint;

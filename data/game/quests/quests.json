@@ -7,8 +7,8 @@
         "faction": "",
         "hasSubFactionConstraint": true,
         "subFaction": "None",
-        "hasRecurrenceConstraint": true,
-        "maxRecurrences": 1,
+        "hasCompletionConstraint": true,
+        "maxCompletions": 1,
         "hasCooldownConstraint": false,
         "cooldown": 0,
         "hasTimeConstraint": false,
@@ -32,7 +32,7 @@
                 "fungible": [],
                 "nonFungible": [
                     {
-                        "asset": "CryptopiaToolToken",
+                        "asset": "ToolToken",
                         "item": "Stone Axe",
                         "allowWallet": false
                     }
@@ -44,14 +44,14 @@
                 "karma": -5,
                 "fungible": [
                     {
-                        "asset": "CryptopiaAssetToken:Wood",
+                        "asset": "AssetToken:Wood",
                         "amount": "5",
                         "allowWallet": false
                     }
                 ],
                 "nonFungible": [
                     {
-                        "asset": "CryptopiaToolToken",
+                        "asset": "ToolToken",
                         "item": "Stone Axe",
                         "allowWallet": false
                     }

@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-
-import "hardhat/console.sol";
 
 import "../IMaps.sol";
 import "../types/MapEnums.sol";
@@ -234,7 +232,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
 
     /// @dev Maps
     mapping(bytes32 => Map) public maps; 
-    bytes32[] private mapsIndex;
+    bytes32[] internal mapsIndex;
 
     /// @dev Tiles
     mapping(uint16 => TileStaticData) public tileDataStatic;
@@ -1315,13 +1313,13 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     }
 
 
-    /// @dev Pack the index of `a` and `b` into a single uint64
+    /// @dev Pack the index of `a` and `b` into a single uint32
     /// @param a Left hand tile index
     /// @param b Right hand tile index
-    /// @return Packed uint64
+    /// @return Packed uint32
     function _packPathSegment(uint16 a, uint16 b)
         internal pure 
-        returns (uint16)
+        returns (uint32)
     {
         return a < b ? a | (b << 16) : b | (a << 16);
     }

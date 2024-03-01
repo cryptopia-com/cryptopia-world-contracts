@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
@@ -56,10 +56,10 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         /// @dev Specific sub-faction required to start the quest, effective if hasSubFactionConstraint is true
         SubFaction subFaction;
 
-        /// @dev Indicates if there's a limit on how many times the quest can be repeated
-        bool hasRecurrenceConstraint;
-        /// @dev Maximum number of times the quest can be repeated, effective if hasRecurrenceConstraint is true
-        uint maxRecurrences;
+        /// @dev Indicates if there's a limit on how many times the quest can be completed
+        bool hasCompletionConstraint;
+        /// @dev Maximum number of times the quest can be repeated, effective if hasCompletionConstraint is true
+        uint maxCompletions;
 
         /// @dev Indicates if there's a cooldown period between quest repetitions
         bool hasCooldownConstraint;
@@ -118,8 +118,8 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
     uint8 constant private MAX_STEPS_PER_QUEST = 8;
 
     /// @dev Details of each quest, mapped by a unique quest identifier
-    mapping (bytes32 => QuestData) private quests;
-    bytes32[] private questsIndex;
+    mapping (bytes32 => QuestData) public quests;
+    bytes32[] internal questsIndex;
 
     /// @dev Tracks player-specific data for each quest, including progress and completion status
     mapping(address => mapping(bytes32 => QuestPlayerData)) public playerQuestData;
@@ -180,11 +180,11 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
     /// @param quest The quest that was not completed
     error QuestNotCompleted(address player, bytes32 quest);
 
-    /// @dev Emitted when `player` tries to start a quest more than `maxRecurrences` times
-    /// @param player The player that exceeded the max recurrences
+    /// @dev Emitted when `player` tries to start a quest more than `maxCompletions` times
+    /// @param player The player that exceeded the max completions
     /// @param quest The quest that was exceeded
-    /// @param maxRecurrences The max recurrences that was exceeded
-    error QuestRecurrenceExceeded(address player, bytes32 quest, uint maxRecurrences);
+    /// @param maxCompletions The max completions that was exceeded
+    error QuestCompletionExceeded(address player, bytes32 quest, uint maxCompletions);
 
     /// @dev Emitted when the cooldown of `player` for `quest` has not expired 
     /// @param player The player that has a cooldown
@@ -227,9 +227,8 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
     function initialize(
         address _playerRegisterContract,
         address _intentoriesContract,
-        address _mapsContract
-    ) 
-        public initializer 
+        address _mapsContract) 
+        public virtual initializer 
     {
         __AccessControl_init();
 
@@ -612,8 +611,8 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         data.faction = quest.faction;
         data.hasSubFactionConstraint = quest.hasSubFactionConstraint;
         data.subFaction = quest.subFaction;
-        data.hasRecurrenceConstraint = quest.hasRecurrenceConstraint;
-        data.maxRecurrences = quest.maxRecurrences;
+        data.hasCompletionConstraint = quest.hasCompletionConstraint;
+        data.maxCompletions = quest.maxCompletions;
         data.hasCooldownConstraint = quest.hasCooldownConstraint;
         data.cooldown = quest.cooldown;
         data.hasTimeConstraint = quest.hasTimeConstraint;
@@ -709,8 +708,8 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
             faction: data.faction,
             hasSubFactionConstraint: data.hasSubFactionConstraint,
             subFaction: data.subFaction,
-            hasRecurrenceConstraint: data.hasRecurrenceConstraint,
-            maxRecurrences: data.maxRecurrences,
+            hasCompletionConstraint: data.hasCompletionConstraint,
+            maxCompletions: data.maxCompletions,
             hasCooldownConstraint: data.hasCooldownConstraint,
             cooldown: data.cooldown,
             hasTimeConstraint: data.hasTimeConstraint,
@@ -746,7 +745,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
             revert QuestAlreadyStarted(msg.sender, name);
         }
 
-        // Check quest recurrence
+        // Check quest completion
         if (questPlayerData.stepsCompletedCount > 0)
         {
             // Quest in progress
@@ -756,12 +755,12 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
             }
 
             // Quest completed
-            else if (quest.hasRecurrenceConstraint)
+            else if (quest.hasCompletionConstraint)
             {
-                // Max recurrences reached
-                if (questPlayerData.completedCount >= quest.maxRecurrences)
+                // Max completions reached
+                if (questPlayerData.completedCount >= quest.maxCompletions)
                 {
-                    revert QuestRecurrenceExceeded(msg.sender, name, quest.maxRecurrences);
+                    revert QuestCompletionExceeded(msg.sender, name, quest.maxCompletions);
                 }
 
                 // Reset quest

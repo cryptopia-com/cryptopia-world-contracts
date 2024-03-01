@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 import "../../../../game/players/IPlayerRegister.sol";
 import "../../ships/IShips.sol";  
@@ -75,14 +75,14 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     uint private _currentTokenId; 
 
     /// @dev name => ShipData
-    mapping(bytes32 => ShipData) private ships;
-    bytes32[] private shipsIndex;
+    mapping(bytes32 => ShipData) public ships;
+    bytes32[] internal shipsIndex;
 
     /// @dev tokenId => ShipInstance
-    mapping (uint => ShipInstance) private shipInstances;
+    mapping (uint => ShipInstance) public shipInstances;
 
     /// @dev Faction => ship name
-    mapping (Faction => bytes32) private starterShips;
+    mapping (Faction => bytes32) public starterShips;
 
 
     /**
@@ -110,29 +110,29 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
      * Modifiers
      */
     /// @dev Requires that an item with `name` exists
-    /// @param name Unique token name
-    modifier onlyExisting(bytes32 name)
+    /// @param _name Unique token name
+    modifier onlyExisting(bytes32 _name)
     {
-        if (!_exists(name)) 
+        if (!_exists(_name)) 
         {
-            revert ShipNotFound(name);
+            revert ShipNotFound(_name);
         }
         _;
     }
 
 
     /// @dev Contract initializer sets shared base uri
-    /// @param authenticator Whitelist
+    /// @param _authenticator Whitelist
     /// @param initialContractURI Location to contract info
     /// @param initialBaseTokenURI Base of location where token data is stored. To be postfixed with tokenId
     function initialize(
-        address authenticator, 
+        address _authenticator, 
         string memory initialContractURI, 
         string memory initialBaseTokenURI) 
         public initializer 
     {
         __CryptopiaERC721_init(
-            "Cryptopia Ships", "SHIP", authenticator, initialContractURI, initialBaseTokenURI);
+            "Cryptopia Ships", "SHIP", _authenticator, initialContractURI, initialBaseTokenURI);
 
         // Grant admin role
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -172,13 +172,13 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
 
 
     /// @dev Retreive a ships by name
-    /// @param name Ship name (unique)
+    /// @param _name Ship name (unique)
     /// @return data a single ship 
-    function getShip(bytes32 name) 
+    function getShip(bytes32 _name) 
         public virtual override view 
         returns (Ship memory data)
     {
-        data = _getShip(name);
+        data = _getShip(_name);
     }
 
 
@@ -367,8 +367,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
         onlyRole(SYSTEM_ROLE) 
         returns (
             uint tokenId, 
-            uint inventory
-        ) 
+            uint inventory) 
     {
         tokenId = _getNextTokenId();
         _mint(player, tokenId);
@@ -381,16 +380,16 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
 
     /// @dev Mints a ship to an address
     /// @param to address of the owner of the ship
-    /// @param name Unique ship name
-    function __mintTo(address to, bytes32 name)  
+    /// @param _name Unique ship name
+    function __mintTo(address to, bytes32 _name)  
         public virtual override 
         onlyRole(SYSTEM_ROLE) 
-        onlyExisting(name) 
+        onlyExisting(_name) 
     {
         uint tokenId = _getNextTokenId();
         _mint(to, tokenId);
         _incrementTokenId();
-        shipInstances[tokenId].name = name;
+        shipInstances[tokenId].name = _name;
     }
 
 
@@ -458,10 +457,10 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
 
     
     /// @dev True if a ship with `name` exists
-    /// @param name of the ship
-    function _exists(bytes32 name) internal view returns (bool) 
+    /// @param _name of the ship
+    function _exists(bytes32 _name) internal view returns (bool) 
     {
-        return ships[name].base_speed != 0;
+        return ships[_name].base_speed != 0;
     }
 
 
@@ -502,15 +501,15 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
 
 
     /// @dev Retreive a ship by name
-    /// @param name Ship name (unique)
+    /// @param _name Ship name (unique)
     /// @return ship a single ship
-    function _getShip(bytes32 name) 
+    function _getShip(bytes32 _name) 
         internal virtual view 
         returns (Ship memory ship)
     {
-        ShipData memory data = ships[name];
+        ShipData memory data = ships[_name];
         ship = Ship({
-            name: name,
+            name: _name,
             generic: data.generic,
             rarity: data.rarity,
             faction: data.faction,

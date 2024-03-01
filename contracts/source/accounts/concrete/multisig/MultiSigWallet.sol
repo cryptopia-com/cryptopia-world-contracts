@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/interfaces/IERC1271.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
@@ -260,7 +260,7 @@ contract MultiSigWallet is Initializable, EIP712Upgradeable, ReentrancyGuard, IM
     {
         if (account == address(0)) 
         {
-            revert ArgumentZeroAddress(account);
+            revert ArgumentZeroAddress();
         }
         _;
     }

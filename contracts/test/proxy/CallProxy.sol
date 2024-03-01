@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 /**
  * Call proxy used to abstract low level calls used for testing purposes 

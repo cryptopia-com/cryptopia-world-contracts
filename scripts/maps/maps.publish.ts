@@ -3,6 +3,7 @@ import ora from 'ora-classic';
 import path from 'path';
 import fs from 'fs';
 import hre, { ethers } from "hardhat";
+import appConfig, { NetworkConfig } from "../../app.config";
 import { resolveEnum } from "../helpers/enums";
 import { encodeRockData, encodeVegetationData, encodeWildlifeData } from './helpers/encoders';
 import { Resource, Biome, Terrain } from '../types/enums';
@@ -20,7 +21,8 @@ const MIN_TIME = 1000;
 const DEFAULT_BASE_PATH = './data/game/maps/';
 const DEFAULT_BATCH_SIZE = 100;
 
-const deploymentManager = new DeploymentManager(hre.network.name);
+let config: NetworkConfig;
+let deploymentManager: DeploymentManager;
 
 /**
  * Map deployment function.
@@ -52,12 +54,14 @@ async function publishMap(filePath: string, batchSize: number)
         return;
     }
 
-    const mapsAddress = deploymentManager.getContractDeployment("CryptopiaMaps")?.address;
+    const mapsAddress = deploymentManager.getContractDeployment(
+        deploymentManager.resolveContractName("Maps"))?.address;
 
     console.log(`\nFound ${map.name} map with ${chalk.bold(tiles.length.toString())} tiles to deploy on ${chalk.yellow(hre.network.name)}`);
-    console.log(`Found ${chalk.green("CryptopiaMaps")} at ${chalk.cyan(mapsAddress)}\n`);
+    console.log(`Found ${chalk.green(deploymentManager.resolveContractName("Maps"))} at ${chalk.cyan(mapsAddress)}\n`);
 
-    const mapsInstance = await ethers.getContractAt("CryptopiaMaps", mapsAddress);
+    const mapsInstance = await ethers.getContractAt(
+        deploymentManager.resolveContractName("Maps"), mapsAddress);
 
     let createMap = false;
     let tileStartingIndex = 0;
@@ -211,6 +215,16 @@ function resolve(data: MapJsonData): CryptopiaMaps.TileInputStruct[]
 
 async function main(basePath: string, batchSize: number) 
 {
+    // Config
+    const isDevEnvironment = hre.network.name == "hardhat" 
+        || hre.network.name == "ganache" 
+        || hre.network.name == "localhost";
+    config = appConfig.networks[
+        isDevEnvironment ? "development" : hre.network.name];
+
+    deploymentManager = new DeploymentManager(
+        hre.network.name, config.development);
+
     const files = fs.readdirSync(basePath);
     let count = 0;
     for (const file of files) 

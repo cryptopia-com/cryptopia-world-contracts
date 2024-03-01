@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 import "../CryptopiaERC20.sol";
 import "../../assets/IAssetToken.sol";
@@ -26,7 +26,7 @@ contract CryptopiaAssetToken is CryptopiaERC20, IAssetToken, IFungibleQuestRewar
         string memory name, 
         string memory symbol, 
         address _inventoriesContract) 
-        public initializer 
+        public virtual initializer 
     {
         __CryptopiaERC20_init(name, symbol);
 

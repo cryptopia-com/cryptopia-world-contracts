@@ -221,7 +221,7 @@ describe("Quests Contract", function () {
         const systemSigner = await ethers.provider.getSigner(system);
 
         // Factories
-        const WhitelistFactory = await ethers.getContractFactory("Whitelist");
+        const WhitelistFactory = await ethers.getContractFactory("CryptopiaWhitelist");
         const AccountRegisterFactory = await ethers.getContractFactory("CryptopiaAccountRegister");
         const PlayerRegisterFactory = await ethers.getContractFactory("CryptopiaPlayerRegister");
         const AssetRegisterFactory = await ethers.getContractFactory("CryptopiaAssetRegister");
@@ -511,7 +511,7 @@ describe("Quests Contract", function () {
         let quest: QuestStruct;
 
         /**
-         * Deploy players
+         * Deploy Quests
          */
         before(async () => {
             
@@ -523,8 +523,8 @@ describe("Quests Contract", function () {
                 faction: 0, 
                 hasSubFactionConstraint: false,
                 subFaction: 0, 
-                hasRecurrenceConstraint: true,
-                maxRecurrences: 1,
+                hasCompletionConstraint: true,
+                maxCompletions: 1,
                 hasCooldownConstraint: false,
                 cooldown: 0,
                 hasTimeConstraint: false,
@@ -630,8 +630,8 @@ describe("Quests Contract", function () {
                 faction: 0, 
                 hasSubFactionConstraint: true,
                 subFaction: SubFaction.None, 
-                hasRecurrenceConstraint: true,
-                maxRecurrences: 1,
+                hasCompletionConstraint: true,
+                maxCompletions: 1,
                 hasCooldownConstraint: false,
                 cooldown: 0,
                 hasTimeConstraint: false,
@@ -866,7 +866,7 @@ describe("Quests Contract", function () {
 
             // Setup
             await travelToQuestLocation();
-            const questName = "Investigate the Ancient Ruins".toBytes32()
+            const questName = "Investigate the Ancient Ruins".toBytes32();
             const rewardIndex = 0;
             const rewardInventory = Inventory.Backpack;
             const rewardAsset = toolTokenAddress;
@@ -988,7 +988,7 @@ describe("Quests Contract", function () {
             if (REVERT_MODE)
             {
                 await expect(operation).to.be
-                    .revertedWithCustomError(questsInstance, "QuestRecurrenceExceeded")
+                    .revertedWithCustomError(questsInstance, "QuestCompletionExceeded")
                     .withArgs(registeredAccountAddress, questName, questRecrrenceLimit);
             }
             else
@@ -1025,8 +1025,8 @@ describe("Quests Contract", function () {
                 faction: 0, 
                 hasSubFactionConstraint: true,
                 subFaction: SubFaction.Pirate, 
-                hasRecurrenceConstraint: true,
-                maxRecurrences: 1,
+                hasCompletionConstraint: true,
+                maxCompletions: 1,
                 hasCooldownConstraint: false,
                 cooldown: 0,
                 hasTimeConstraint: false,

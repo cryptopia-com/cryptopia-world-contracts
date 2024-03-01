@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -76,7 +76,7 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     uint public totalPlayerProgression;
 
     // Player => PlayerData
-    mapping (address => PlayerData) private playerDatas;
+    mapping (address => PlayerData) public playerDatas;
 
 
     /**
@@ -160,7 +160,7 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
         address _craftingContract,
         address _shipTokenContract,
         address[] memory _systemContracts) 
-        public initializer 
+        public virtual initializer 
     {
         __AccessControl_init();
 

@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-import "./IWhitelist.sol";
+import "../IWhitelist.sol";
 
 /// @title Whitelist 
 /// @dev Whitelist authentication
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-contract Whitelist is OwnableUpgradeable, IWhitelist {
+contract CryptopiaWhitelist is OwnableUpgradeable, IWhitelist {
     
     /// Whitelist
     mapping (address => bool) internal list;

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -20,7 +20,7 @@ contract CryptopiaAssetRegister is Initializable, AccessControlUpgradeable, IAss
      */ 
     /// @dev Assets
     mapping(bytes32 => address) public assets;
-    bytes32[] private assetsIndex;
+    bytes32[] internal assetsIndex;
 
     /// @dev Resources
     mapping (Resource => address) public resources;

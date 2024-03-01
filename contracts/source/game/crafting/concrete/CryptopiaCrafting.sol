@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -75,10 +75,10 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
      */
     /// @dev asset (ERC721) => recipe item => CraftingRecipe
     mapping (address => mapping (bytes32 => CraftingRecipeData)) public recipes;
-    mapping (address => bytes32[]) private recipesIndex;
+    mapping (address => bytes32[]) internal recipesIndex;
 
     /// @dev player => PlayerCraftingData
-    mapping (address => CraftingPlayerData) private playerData;
+    mapping (address => CraftingPlayerData) public playerDatas;
 
     /// Refs
     address public inventoriesContract;
@@ -169,7 +169,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     /// @param player address to check
     modifier validPlayer(address player)
     {
-        if (playerData[player].slotCount == 0)
+        if (playerDatas[player].slotCount == 0)
         {
             revert PlayerNotRegistered(player);
         }
@@ -328,7 +328,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         public virtual override view 
         returns (uint count)
     {
-        count = playerData[player].learnedIndex[asset].length;
+        count = playerDatas[player].learnedIndex[asset].length;
     }
 
 
@@ -340,7 +340,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         public virtual override view 
         returns (bytes32 recipe)
     {
-        recipe = playerData[player].learnedIndex[asset][index];
+        recipe = playerDatas[player].learnedIndex[asset][index];
     }
 
 
@@ -357,9 +357,9 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         recipes_ = new bytes32[](take);
 
         uint index = skip;
-        for (uint i = 0; i < playerData[player].learnedIndex[asset].length; i++)
+        for (uint i = 0; i < playerDatas[player].learnedIndex[asset].length; i++)
         {
-            recipes_[i] = playerData[player].learnedIndex[asset][index];
+            recipes_[i] = playerDatas[player].learnedIndex[asset][index];
             index++;
         }
     }
@@ -372,7 +372,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         public virtual override view 
         returns (uint count)
     {
-        count = playerData[player].slotCount;
+        count = playerDatas[player].slotCount;
     }
 
 
@@ -384,7 +384,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         public virtual override view 
         returns (CraftingSlot memory slot)
     {
-        slot = playerData[player].slots[slotId];
+        slot = playerDatas[player].slots[slotId];
     }
 
 
@@ -395,10 +395,10 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         external view 
         returns (CraftingSlot[] memory slots)
     {
-        slots = new CraftingSlot[](playerData[player].slotCount);
-        for (uint i = 0; i < playerData[player].slotCount; i++)
+        slots = new CraftingSlot[](playerDatas[player].slotCount);
+        for (uint i = 0; i < playerDatas[player].slotCount; i++)
         {
-            slots[i] = playerData[player].slots[i + 1];
+            slots[i] = playerDatas[player].slots[i + 1];
         }
 
         return slots;
@@ -423,19 +423,19 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
 
         // Check recipe not learnable or learned
         if (recipes[asset][recipe].learnable && 
-            !playerData[msg.sender].learned[asset][recipe]) 
+            !playerDatas[msg.sender].learned[asset][recipe]) 
         {
             revert CraftingRecipeNotLearned(msg.sender, asset, recipe);
         }
 
         // Require a valid slot
-        if (slotId == 0 || slotId > playerData[msg.sender].slotCount)
+        if (slotId == 0 || slotId > playerDatas[msg.sender].slotCount)
         {
             revert CraftingSlotInvalid(msg.sender, slotId);
         }
 
         // Require free slot
-        if (playerData[msg.sender].slots[slotId].finished > 0)
+        if (playerDatas[msg.sender].slots[slotId].finished > 0)
         {
             revert CraftingSlotOccupied(msg.sender, slotId);
         }
@@ -453,12 +453,12 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         }
 
         // Add to slot
-        playerData[msg.sender].slots[slotId].asset = asset;
-        playerData[msg.sender].slots[slotId].recipe = recipe;
-        playerData[msg.sender].slots[slotId].finished = block.timestamp + recipes[asset][recipe].craftingTime;
+        playerDatas[msg.sender].slots[slotId].asset = asset;
+        playerDatas[msg.sender].slots[slotId].recipe = recipe;
+        playerDatas[msg.sender].slots[slotId].finished = block.timestamp + recipes[asset][recipe].craftingTime;
 
         // Emit
-        emit CraftingStart(msg.sender, asset, recipe, slotId, playerData[msg.sender].slots[slotId].finished);
+        emit CraftingStart(msg.sender, asset, recipe, slotId, playerDatas[msg.sender].slots[slotId].finished);
     }
 
 
@@ -470,19 +470,19 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         public virtual override 
     {
         // Require slot occupied
-        if (playerData[msg.sender].slots[slotId].finished == 0)
+        if (playerDatas[msg.sender].slots[slotId].finished == 0)
         {
             revert CraftingSlotIsEmpty(msg.sender, slotId);
         }
 
         // Require slot ready
-        if (playerData[msg.sender].slots[slotId].finished > block.timestamp)
+        if (playerDatas[msg.sender].slots[slotId].finished > block.timestamp)
         {
             revert CraftingSlotNotReady(msg.sender, slotId);
         }
 
-        address asset = playerData[msg.sender].slots[slotId].asset;
-        bytes32 item = playerData[msg.sender].slots[slotId].recipe;
+        address asset = playerDatas[msg.sender].slots[slotId].asset;
+        bytes32 item = playerDatas[msg.sender].slots[slotId].recipe;
 
         // Reset slot
         _resetSlot(msg.sender, slotId);
@@ -505,7 +505,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         public virtual override 
     {
         // Require slot occupied
-        CraftingSlot memory slot = playerData[msg.sender].slots[slotId];
+        CraftingSlot memory slot = playerDatas[msg.sender].slots[slotId];
         if (slot.finished == 0)
         {
             revert CraftingSlotIsEmpty(msg.sender, slotId);
@@ -528,7 +528,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         onlyRole(SYSTEM_ROLE) 
         public virtual 
     {
-        playerData[player].slotCount = slotCount;
+        playerDatas[player].slotCount = slotCount;
 
         // Emit
         emit CraftingSlotCountChange(player, slotCount);
@@ -544,8 +544,8 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
         public virtual
     {
         // System only
-        playerData[player].learned[asset][item] = true;
-        playerData[player].learnedIndex[asset].push(item);
+        playerDatas[player].learned[asset][item] = true;
+        playerDatas[player].learnedIndex[asset].push(item);
 
         // Emit
         emit CraftingRecipeLearn(player, asset, item);
@@ -641,8 +641,8 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     function _resetSlot(address player, uint slotId)
         internal 
     {
-        playerData[player].slots[slotId].asset = address(0);
-        playerData[player].slots[slotId].recipe = bytes32(0);
-        playerData[player].slots[slotId].finished = 0;
+        playerDatas[player].slots[slotId].asset = address(0);
+        playerDatas[player].slots[slotId].recipe = bytes32(0);
+        playerDatas[player].slots[slotId].finished = 0;
     }
 }

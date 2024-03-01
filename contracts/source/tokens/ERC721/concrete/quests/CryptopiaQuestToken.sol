@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 import "../../../../game/quests/items/INonFungibleQuestItem.sol";
 import "../../../../game/inventories/IInventories.sol";
@@ -31,7 +31,7 @@ contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestIt
 
     /// @dev Mapping of quest item names to their corresponding data
     mapping (bytes32 => QuestItemData) public items; 
-    bytes32[] private itemsIndex;
+    bytes32[] internal itemsIndex;
 
     /// @dev Mapping from each token ID to its associated quest item name
     mapping (uint => bytes32) public itemInstances;
@@ -64,19 +64,19 @@ contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestIt
 
 
     /// @dev Contract initializer sets shared base uri
-    /// @param authenticator Whitelist
+    /// @param _authenticator Whitelist
     /// @param initialContractURI Location to contract info
     /// @param initialBaseTokenURI Base of location where token data is stored. To be postfixed with tokenId
     /// @param _inventoriesContract Contract responsible for inventories
     function initialize(
-        address authenticator, 
+        address _authenticator, 
         string memory initialContractURI, 
         string memory initialBaseTokenURI,
         address _inventoriesContract) 
         public initializer 
     {
         __CryptopiaERC721_init(
-            "Cryptopia Quest Items", "QUEST", authenticator, initialContractURI, initialBaseTokenURI);
+            "Cryptopia Quest Items", "QUEST", _authenticator, initialContractURI, initialBaseTokenURI);
 
         inventoriesContract = _inventoriesContract;
 

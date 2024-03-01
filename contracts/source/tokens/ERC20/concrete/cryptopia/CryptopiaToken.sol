@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 import "../../cryptopia/ICryptopiaToken.sol";
 import "../CryptopiaERC20.sol";
@@ -12,10 +12,10 @@ contract CryptopiaToken is CryptopiaERC20, ICryptopiaToken {
 
     /// @dev Contract Initializer
     function initialize() 
-        public initializer 
+        public virtual initializer 
     {
         __CryptopiaERC20_init(
-            "Cryptopia Token", "CRT");
+            "Cryptos", "TOS");
     }
 
 

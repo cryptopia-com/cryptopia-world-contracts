@@ -6,11 +6,10 @@ import nethereumConfig from "../nethereum.config";
 import appConfig, { NetworkConfig } from "../app.config";
 import { DeploymentManager } from "./helpers/deployments";
 
-const deploymentManager = new DeploymentManager(hre.network.name);
 const codegen = require('nethereum-codegen');
 
-// Config
 let config: NetworkConfig;
+let deploymentManager: DeploymentManager;
 
 /**
  * Port contracts to C#
@@ -25,6 +24,9 @@ async function main() {
         || hre.network.name == "localhost";
     config = appConfig.networks[
         isDevEnvironment ? "development" : hre.network.name];
+
+    deploymentManager = new DeploymentManager(
+        hre.network.name, config.development);
 
     console.log(`\nFound ${nethereumConfig.contracts.length} contracts to port\n`);
 
@@ -71,27 +73,27 @@ async function main() {
     }
 
     // Get account implementation address
-    const accountRegisterAddress = deploymentManager.getContractDeployment("CryptopiaAccountRegister").address;
-    const AccountRegister = await ethers.getContractAt("CryptopiaAccountRegister", accountRegisterAddress);
+    const accountRegisterAddress = deploymentManager.getContractDeployment(deploymentManager.resolveContractName("AccountRegister")).address;
+    const AccountRegister = await ethers.getContractAt(deploymentManager.resolveContractName("AccountRegister"), accountRegisterAddress);
     const accountImplementationAddress = await AccountRegister.accountImplementation();
 
 
     console.log(`\nConfig:\n`);
-    console.log(`public const string CURRENCY_ASSET_ID = "${deploymentManager.getContractDeployment("CryptopiaToken").address}";\n`);
+    console.log(`public const string CURRENCY_ASSET_ID = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("Token")).address}";\n`);
     console.log(`public const string ACCOUNT_REGISTER_CONTRACT = "${accountRegisterAddress}";`);
     console.log(`public const string ACCOUNT_IMPLEMENTATION_CONTRACT = "${accountImplementationAddress}";`);
-    console.log(`public const string AVATAR_REGISTER_CONTRACT = "${deploymentManager.getContractDeployment("CryptopiaAvatarRegister").address}";`);
-    console.log(`public const string PLAYER_REGISTER_CONTRACT = "${deploymentManager.getContractDeployment("CryptopiaPlayerRegister").address}";`);
-    console.log(`public const string ASSET_REGISTER_CONTRACT = "${deploymentManager.getContractDeployment("CryptopiaAssetRegister").address}";`);
-    console.log(`public const string MAP_CONTRACT = "${deploymentManager.getContractDeployment("CryptopiaMaps").address}";`);
-    console.log(`public const string MAP_EXTENSIONS_CONTRACT = "${deploymentManager.getContractDeployment("CryptopiaMapsExtensions").address}";`);
-    console.log(`public const string TITLE_DEED_TOKEN_CONTRACT = "${deploymentManager.getContractDeployment("CryptopiaTitleDeedToken").address}";`);
-    console.log(`public const string INVENTROIES_CONTRACT = "${deploymentManager.getContractDeployment("CryptopiaInventories").address}";`);
-    console.log(`public const string RESOURCE_GATHERING_CONTRACT = "${deploymentManager.getContractDeployment("CryptopiaResourceGathering").address}";`);
+    console.log(`public const string AVATAR_REGISTER_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("AvatarRegister")).address}";`);
+    console.log(`public const string PLAYER_REGISTER_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("PlayerRegister")).address}";`);
+    console.log(`public const string ASSET_REGISTER_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("AssetRegister")).address}";`);
+    console.log(`public const string MAP_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("Maps")).address}";`);
+    console.log(`public const string MAP_EXTENSIONS_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("MapsExtensions")).address}";`);
+    console.log(`public const string TITLE_DEED_TOKEN_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("TitleDeedToken")).address}";`);
+    console.log(`public const string INVENTROIES_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("Inventories")).address}";`);
+    console.log(`public const string RESOURCE_GATHERING_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("ResourceGathering")).address}";`);
     console.log(`public const string LOYALTY_TOKEN_CONTRACT = "0x0000000000000000000000000000000000000001";`);
-    console.log(`public const string SHIP_TOKEN_CONTRACT = "${deploymentManager.getContractDeployment("CryptopiaShipToken").address}";`);
-    console.log(`public const string TOOL_TOKEN_CONTRACT = "${deploymentManager.getContractDeployment("CryptopiaToolToken").address}";`);
-    console.log(`public const string CRAFTING_CONTRACT = "${deploymentManager.getContractDeployment("CryptopiaCrafting").address}";`);
+    console.log(`public const string SHIP_TOKEN_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("ShipToken")).address}";`);
+    console.log(`public const string TOOL_TOKEN_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("ToolToken")).address}";`);
+    console.log(`public const string CRAFTING_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("Crafting")).address}";`);
     console.log(`\nFinished porting!\n`);
 }
 

@@ -9,9 +9,6 @@ import { DeploymentManager } from "./helpers/deployments";
 import { waitForMinimumTime } from "./helpers/timers";
 import { waitForTransaction } from "./helpers/transactions";
 
-// Config
-let config: NetworkConfig;
-
 // Settins
 const MIN_TIME = 100;
 
@@ -27,13 +24,14 @@ enum DeploymentStatus
     Skipped
 }
 
-const deploymentManager = new DeploymentManager(hre.network.name);
-
 // Internal
 let deployCounter = 0;
 let upgradeCounter = 0;
 let skipCounter = 0;
+
+let config: NetworkConfig;
 let lastDeploymentStatus = DeploymentStatus.None;
+let deploymentManager: DeploymentManager;
 
 
 /**
@@ -50,6 +48,9 @@ async function main() {
     config = appConfig.networks[
         isDevEnvironment ? "development" : hre.network.name];
 
+    deploymentManager = new DeploymentManager(
+        hre.network.name, config.development);
+
     upgrades.silenceWarnings(); // Prevents warnings from being printed to the console
     console.log(`\n\nStarting deployment to ${chalk.yellow(hre.network.name)}..`);
 
@@ -57,21 +58,21 @@ async function main() {
     /////// Deploy Inventories ///////
     //////////////////////////////////
     const [inventoriesProxy, inventoriesDeploymentStatus] = await ensureDeployed(
-        "CryptopiaInventories", 
+        "Inventories", 
         [
             config.CryptopiaTreasury.address
         ]);
 
     const inventoriesAddress = await inventoriesProxy.address;
     const inventoriesInstance = await ethers.getContractAt(
-        "CryptopiaInventories", inventoriesAddress);
+        deploymentManager.resolveContractName("Inventories"), inventoriesAddress);
 
     if (config.defaultSystem)
     {
         for (let system of config.defaultSystem)
         {
             await ensureSystemRoleGranted(
-                "CryptopiaInventories", system);
+                "Inventories", system);
         }
     }
 
@@ -91,20 +92,20 @@ async function main() {
     //////////////////////////////////
     //////// Deploy CRT Token ////////
     //////////////////////////////////
-    const [cryptopiaTokenProxy, cryptopiaTokenDeploymentStatus] = await ensureDeployed(
-        "CryptopiaToken", []);
-    const cryptopiaTokenAddress = await cryptopiaTokenProxy.address;
+    const [TokenProxy, TokenDeploymentStatus] = await ensureDeployed(
+        "Token", []);
+    const TokenAddress = await TokenProxy.address;
 
 
     //////////////////////////////////
     ///// Deploy Account Register ////
     //////////////////////////////////
     const [accountRegisterProxy, accountRegisterDeploymentStatus] = await ensureDeployed(
-        "CryptopiaAccountRegister", []);
+        "AccountRegister", []);
 
     const accountRegisterAddress = await accountRegisterProxy.address;
     const accountRegisterInstance = await ethers.getContractAt(
-        "CryptopiaAccountRegister", accountRegisterAddress);
+        deploymentManager.resolveContractName("AccountRegister"), accountRegisterAddress);
 
     // SKALE workaround (manual initialization)
     if (accountRegisterDeploymentStatus == DeploymentStatus.Deployed)
@@ -122,7 +123,7 @@ async function main() {
     ///// Deploy Avatar Register /////
     //////////////////////////////////
     const [avatarRegisterProxy, avatarRegisterDeploymentStatus] = await ensureDeployed(
-        "CryptopiaAvatarRegister", [accountRegisterAddress]);
+        "AvatarRegister", [accountRegisterAddress]);
     const avatarRegisterAddress = await avatarRegisterProxy.address;
 
 
@@ -130,22 +131,22 @@ async function main() {
     ////// Deploy Asset Register /////
     //////////////////////////////////
     const [assetRegisterProxy, assetRegisterDeploymentStatus] = await ensureDeployed(
-        "CryptopiaAssetRegister", []);
+        "AssetRegister", []);
 
     const assetRegisterAddress = await assetRegisterProxy.address;
     const assetRegisterInstance = await ethers.getContractAt(
-        "CryptopiaAssetRegister", assetRegisterAddress);
+        deploymentManager.resolveContractName("AssetRegister"), assetRegisterAddress);
 
 
     //////////////////////////////////
     ////////// Deploy Ships //////////
     //////////////////////////////////
     const [shipTokenProxy, shipTokenDeploymentStatus] = await ensureDeployed(
-        "CryptopiaShipToken", 
+        "ShipToken", 
         [
             whitelistAddress, 
-            config.ERC721.CryptopiaShipToken.contractURI, 
-            config.ERC721.CryptopiaShipToken.baseTokenURI
+            config.ERC721.ShipToken.contractURI, 
+            config.ERC721.ShipToken.baseTokenURI
         ]);
 
     const shipTokenAddress = await shipTokenProxy.address;
@@ -155,19 +156,19 @@ async function main() {
     ///////// Deploy Crafting ////////
     //////////////////////////////////
     const [craftingProxy, craftingDeploymentStatus] = await ensureDeployed(
-        "CryptopiaCrafting", [inventoriesAddress]);
+        "Crafting", [inventoriesAddress]);
     const craftingAddress = await craftingProxy.address;
 
     // Grant roles
     await ensureSystemRoleGranted(
-        "CryptopiaInventories", "CryptopiaCrafting");
+        "Inventories", "Crafting");
 
 
     //////////////////////////////////
     ///// Deploy Player Register /////
     //////////////////////////////////
     const [playerRegisterProxy, playerRegisterDeploymentStatus] = await ensureDeployed(
-        "CryptopiaPlayerRegister", 
+        "PlayerRegister", 
         [
             accountRegisterAddress, 
             inventoriesAddress, 
@@ -178,23 +179,23 @@ async function main() {
 
     const playerRegisterAddress = await playerRegisterProxy.address;
     const playerRegisterInstance = await ethers.getContractAt(
-        "CryptopiaPlayerRegister", playerRegisterAddress);
+        deploymentManager.resolveContractName("PlayerRegister"), playerRegisterAddress);
 
     // Grant roles
-    await ensureSystemRoleGranted("CryptopiaInventories", "CryptopiaPlayerRegister");
-    await ensureSystemRoleGranted("CryptopiaShipToken", "CryptopiaPlayerRegister");
-    await ensureSystemRoleGranted("CryptopiaCrafting", "CryptopiaPlayerRegister");
+    await ensureSystemRoleGranted("Inventories", "PlayerRegister");
+    await ensureSystemRoleGranted("ShipToken", "PlayerRegister");
+    await ensureSystemRoleGranted("Crafting", "PlayerRegister");
 
 
     //////////////////////////////////
     ////////// Deploy Tools //////////
     //////////////////////////////////
     const [toolTokenProxy, toolTokenDeploymentStatus] = await ensureDeployed(
-        "CryptopiaToolToken", 
+        "ToolToken", 
         [
             whitelistAddress, 
-            config.ERC721.CryptopiaToolToken.contractURI, 
-            config.ERC721.CryptopiaToolToken.baseTokenURI,
+            config.ERC721.ToolToken.contractURI, 
+            config.ERC721.ToolToken.baseTokenURI,
             playerRegisterAddress,
             inventoriesAddress
         ]);
@@ -208,24 +209,24 @@ async function main() {
         const registerToolsWithInventoriesTransactionStartTime = Date.now();
         await inventoriesInstance.setNonFungibleAsset(toolTokenAddress, true);
         await waitForMinimumTime(registerToolsWithInventoriesTransactionStartTime, MIN_TIME);
-        registerToolsWithInventoriesTransactionLoader.succeed(`Registered with ${chalk.green("CryptopiaInventories")}`);
+        registerToolsWithInventoriesTransactionLoader.succeed(`Registered with ${chalk.green("Inventories")}`);
         lastDeploymentStatus = DeploymentStatus.None;
     }
 
     // Grant tool roles
-    await ensureSystemRoleGranted("CryptopiaInventories", "CryptopiaToolToken");
-    await ensureSystemRoleGranted("CryptopiaToolToken", "CryptopiaCrafting");
+    await ensureSystemRoleGranted("Inventories", "ToolToken");
+    await ensureSystemRoleGranted("ToolToken", "Crafting");
 
 
     //////////////////////////////////
     /////// Deploy Title Deeds ///////
     //////////////////////////////////
     const [titleDeedTokenProxy, titleDeedTokenDeploymentStatus] = await ensureDeployed(
-        "CryptopiaTitleDeedToken", 
+        "TitleDeedToken", 
         [
             whitelistAddress, 
-            config.ERC721.CryptopiaTitleDeedToken.contractURI, 
-            config.ERC721.CryptopiaTitleDeedToken.baseTokenURI
+            config.ERC721.TitleDeedToken.contractURI, 
+            config.ERC721.TitleDeedToken.baseTokenURI
         ]);
 
     const titleDeedTokenAddress = await titleDeedTokenProxy.address;
@@ -235,17 +236,17 @@ async function main() {
     /////////// Deploy Maps //////////
     //////////////////////////////////
     const [mapsProxy, mapsDeploymentStatus] = await ensureDeployed(
-        "CryptopiaMaps", 
+        "Maps", 
         [
             playerRegisterAddress, 
             assetRegisterAddress, 
             titleDeedTokenAddress, 
-            cryptopiaTokenAddress
+            TokenAddress
         ]);
 
     const mapsAddress = await mapsProxy.address;    
     const [mapsExtensionsProxy, mapsExtensionsDeploymentStatus] = await ensureDeployed(
-        "CryptopiaMapsExtensions", 
+        "MapsExtensions", 
         [
             mapsAddress, 
             titleDeedTokenAddress, 
@@ -258,37 +259,37 @@ async function main() {
         const registerPlayerRegisterWithMapsTransactionStartTime = Date.now();
         await playerRegisterInstance.setMapsContract(mapsAddress);
         await waitForMinimumTime(registerPlayerRegisterWithMapsTransactionStartTime, MIN_TIME);
-        registerPlayerRegisterWithMapsTransactionLoader.succeed(`Registered with ${chalk.green("CryptopiaPlayerRegister")}`);
+        registerPlayerRegisterWithMapsTransactionLoader.succeed(`Registered with ${chalk.green(deploymentManager.resolveDeploymentKey("PlayerRegister"))}`);
         lastDeploymentStatus = DeploymentStatus.None;
     }
 
     // Grant roles
-    await ensureSystemRoleGranted("CryptopiaTitleDeedToken", "CryptopiaMaps");
-    await ensureSystemRoleGranted("CryptopiaMaps", "CryptopiaPlayerRegister");
+    await ensureSystemRoleGranted("TitleDeedToken", "Maps");
+    await ensureSystemRoleGranted("Maps", "PlayerRegister");
 
         
     //////////////////////////////////
     /////// Deploy Quest Items ///////
     //////////////////////////////////
     const [questTokenProxy, questTokenDeploymentStatus] = await ensureDeployed(
-        "CryptopiaQuestToken", 
+        "QuestToken", 
         [
             whitelistAddress, 
-            config.ERC721.CryptopiaQuestToken.contractURI, 
-            config.ERC721.CryptopiaQuestToken.baseTokenURI,
+            config.ERC721.QuestToken.contractURI, 
+            config.ERC721.QuestToken.baseTokenURI,
             inventoriesAddress
         ]);
 
     // Grant roles
     await ensureSystemRoleGranted(
-        "CryptopiaInventories", "CryptopiaQuestToken");
+        "Inventories", "QuestToken");
 
 
     //////////////////////////////////
     ////////// Deploy Quests /////////
     //////////////////////////////////
     const [questsProxy, questsDeploymentStatus] = await ensureDeployed(
-        "CryptopiaQuests", 
+        "Quests", 
         [
             playerRegisterAddress,
             inventoriesAddress,
@@ -296,16 +297,16 @@ async function main() {
         ]);
 
     // Grant roles
-    await ensureSystemRoleGranted("CryptopiaToolToken", "CryptopiaQuests");
-    await ensureSystemRoleGranted("CryptopiaPlayerRegister", "CryptopiaQuests");
-    await ensureSystemRoleGranted("CryptopiaQuestToken", "CryptopiaQuests");
+    await ensureSystemRoleGranted("ToolToken", "Quests");
+    await ensureSystemRoleGranted("PlayerRegister", "Quests");
+    await ensureSystemRoleGranted("QuestToken", "Quests");
 
 
     //////////////////////////////////
     //// Deploy Resource Gathering ///
     //////////////////////////////////
     const [resourceGatheringProxy, resourceGatheringDeploymentStatus] = await ensureDeployed(
-        "CryptopiaResourceGathering", 
+        "ResourceGathering", 
         [
             mapsAddress,
             assetRegisterAddress,
@@ -315,25 +316,25 @@ async function main() {
         ]);
 
     // Grant roles
-    await ensureSystemRoleGranted("CryptopiaToolToken", "CryptopiaResourceGathering");
-    await ensureSystemRoleGranted("CryptopiaInventories", "CryptopiaResourceGathering");
-    await ensureSystemRoleGranted("CryptopiaPlayerRegister", "CryptopiaResourceGathering");
+    await ensureSystemRoleGranted("ToolToken", "ResourceGathering");
+    await ensureSystemRoleGranted("Inventories", "ResourceGathering");
+    await ensureSystemRoleGranted("PlayerRegister", "ResourceGathering");
 
 
     //////////////////////////////////
     ////////// Deploy Assets /////////
     //////////////////////////////////
     let fuelTokenAddress = ""; 
-    for (let asset of config.ERC20.CryptopiaAssetToken.resources)
+    for (let asset of config.ERC20.AssetToken.resources)
     {
         const [assetTokenProxy, assetTokenDeploymentStatus] = await ensureDeployed(
-            "CryptopiaAssetToken", 
+            "AssetToken", 
             [
                 asset.name, 
                 asset.symbol,
                 inventoriesAddress
             ],
-            `CryptopiaAssetToken:${asset.name}`);
+            `AssetToken:${asset.name}`);
 
         const assetTokenAddress = await assetTokenProxy.address;
 
@@ -344,7 +345,7 @@ async function main() {
             const registerAssetTransactionStartTime = Date.now();
             await assetRegisterInstance.registerAsset(assetTokenAddress, true, asset.resource);
             await waitForMinimumTime(registerAssetTransactionStartTime, MIN_TIME);
-            registerAssetTransactionLoader.succeed(`Registered asset with ${chalk.green("CryptopiaAssetRegister")}`);
+            registerAssetTransactionLoader.succeed(`Registered asset with ${chalk.green(deploymentManager.resolveDeploymentKey("AssetRegister"))}`);
             lastDeploymentStatus = DeploymentStatus.None;
         }
 
@@ -355,18 +356,18 @@ async function main() {
             const registerInventoryTransactionStartTime = Date.now();
             await inventoriesInstance.setFungibleAsset(assetTokenAddress, asset.weight);
             await waitForMinimumTime(registerInventoryTransactionStartTime, MIN_TIME);
-            registerInventoryTransactionLoader.succeed(`Registered asset with ${chalk.green("CryptopiaInventories")}`);
+            registerInventoryTransactionLoader.succeed(`Registered asset with ${chalk.green(deploymentManager.resolveDeploymentKey("Inventories"))}`);
             lastDeploymentStatus = DeploymentStatus.None;
         }
 
         // Grant roles
-        await ensureSystemRoleGranted(`CryptopiaAssetToken:${asset.name}`,"CryptopiaQuests");
-        await ensureSystemRoleGranted("CryptopiaInventories",`CryptopiaAssetToken:${asset.name}`);
+        await ensureSystemRoleGranted(`AssetToken:${asset.name}`,"Quests");
+        await ensureSystemRoleGranted("Inventories",`AssetToken:${asset.name}`);
 
         for (let system of asset.system)
         {
             await ensureSystemRoleGranted(
-                `CryptopiaAssetToken:${asset.name}`, system);
+                `AssetToken:${asset.name}`, system);
         }
 
         if (config.defaultSystem)
@@ -374,7 +375,7 @@ async function main() {
             for (let system of config.defaultSystem)
             {
                 await ensureSystemRoleGranted(
-                    `CryptopiaAssetToken:${asset.name}`, system);
+                    `AssetToken:${asset.name}`, system);
             }
         }
 
@@ -389,7 +390,7 @@ async function main() {
     ///// Deploy Battle Mechanics ////
     //////////////////////////////////
     const [navalBattleMechanicsProxy, navalBattleMechanicsDeploymentStatus] = await ensureDeployed(
-        "CryptopiaNavalBattleMechanics", 
+        "NavalBattleMechanics", 
         [
             playerRegisterAddress,
             mapsAddress,
@@ -400,14 +401,14 @@ async function main() {
 
     // Grant roles
     await ensureSystemRoleGranted(
-        "CryptopiaShipToken","CryptopiaNavalBattleMechanics");
+        "ShipToken","NavalBattleMechanics");
 
 
     //////////////////////////////////
     ///// Deploy Pirate Mechanics ////
     //////////////////////////////////
     const [pirateMechanicsProxy, pirateMechanicsDeploymentStatus] = await ensureDeployed(
-        "CryptopiaPirateMechanics", 
+        "PirateMechanics", 
         [
             navalBattleMechanicsAddress,
             playerRegisterAddress,
@@ -419,11 +420,11 @@ async function main() {
         ]);
 
     // Grant roles
-    await ensureSystemRoleGranted("CryptopiaNavalBattleMechanics","CryptopiaPirateMechanics");
-    await ensureSystemRoleGranted("CryptopiaPlayerRegister","CryptopiaPirateMechanics");
-    await ensureSystemRoleGranted("CryptopiaInventories", "CryptopiaPirateMechanics");
-    await ensureSystemRoleGranted("CryptopiaShipToken","CryptopiaPirateMechanics");
-    await ensureSystemRoleGranted("CryptopiaMaps", "CryptopiaPirateMechanics");
+    await ensureSystemRoleGranted("NavalBattleMechanics","PirateMechanics");
+    await ensureSystemRoleGranted("PlayerRegister","PirateMechanics");
+    await ensureSystemRoleGranted("Inventories", "PirateMechanics");
+    await ensureSystemRoleGranted("ShipToken","PirateMechanics");
+    await ensureSystemRoleGranted("Maps", "PirateMechanics");
 
     console.log(`\n\nFinished deployment to ${chalk.yellow(hre.network.name)}:`);
     console.log(`  ${chalk.bold(deployCounter)} deployed`);
@@ -445,6 +446,9 @@ async function ensureDeployed(contractName: string, args?: unknown[], deployment
     {
         deploymentKey = contractName;
     }
+
+    contractName = deploymentManager.resolveContractName(contractName);
+    deploymentKey = deploymentManager.resolveDeploymentKey(deploymentKey);
 
     if (deploymentManager.isContractDeployed(deploymentKey))
     {
@@ -612,6 +616,9 @@ async function _upgradeContract(contractName: string, contractAddress: string, d
  */
 async function ensureSystemRoleGranted(granter: string, system: string): Promise<void>
 {
+    granter = deploymentManager.resolveContractName(granter);
+    system = deploymentManager.resolveContractName(system);
+
     if (deploymentManager.isSystemRoleGranted(granter, system))
     {
         return Promise.resolve();

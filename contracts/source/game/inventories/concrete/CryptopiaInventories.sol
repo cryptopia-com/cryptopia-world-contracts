@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-
-import "hardhat/console.sol";
 
 import "../IInventories.sol";
 import "../types/InventoryEnums.sol";
@@ -92,27 +90,27 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
     uint constant public INVENTORY_SLOT_SIZE = 1_000_000_000_000_000_000_000; // 10kg
 
     /// @dev Mapping of fungible assets (ERC20 tokens) to their corresponding asset data
-    mapping (address => Asset) fungible; 
-    address[] fungibleIndex;
+    mapping (address => Asset) public fungible; 
+    address[] internal fungibleIndex;
 
     /// @dev Mapping of non-fungible assets (ERC721 tokens) to their corresponding asset data
-    mapping (address => Asset) nonFungible; 
-    address[] nonFungibleIndex;
+    mapping (address => Asset) public nonFungible; 
+    address[] internal nonFungibleIndex;
 
     /// @dev Mapping from player address to the tokenId of their equipped ship
-    mapping (address => uint) playerToShip;
+    mapping (address => uint) public playerToShip;
 
     /// @dev Nested mapping for non-fungible token data, mapping asset addresses to tokenIds and their data
-    mapping (address => mapping (uint => NonFungibleTokenData)) nonFungibleTokenDatas;
+    mapping (address => mapping (uint => NonFungibleTokenData)) public nonFungibleTokenDatas;
 
     /// @dev Mapping of ship tokenIds to their inventory space data
-    mapping (uint => InventorySpaceData) shipInventories;
+    mapping (uint => InventorySpaceData) public shipInventories;
 
     /// @dev Mapping from player addresses to their inventory data, covering both starter ships and backpacks
-    mapping (address => InventorySpaceData) playerInventories;
+    mapping (address => InventorySpaceData) public playerInventories;
 
     /// @dev Mapping from player addresses to their inventory-specific data
-    mapping (address => PlayerInventoryData) playerData;
+    mapping (address => PlayerInventoryData) public playerData;
 
     // Refs
     address public treasury;
@@ -207,9 +205,8 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
 
     /// @dev Construct
     /// @param _treasury token (ERC20) receiver
-    function initialize(
-        address _treasury) 
-        public initializer 
+    function initialize(address _treasury) 
+        public virtual initializer 
     {
         __AccessControl_init();
 
@@ -1080,7 +1077,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
 
             // Deduct from backpack
             inventory.weight -= INVENTORY_SLOT_SIZE;
-            nonFungibleTokenData.owner = address(0);
+            delete nonFungibleTokenDatas[asset][tokenId];
 
             uint tokenIndex = nonFungibleInventory.tokens[tokenId];
             nonFungibleInventory.tokensIndex[tokenIndex] = nonFungibleInventory.tokensIndex[nonFungibleInventory.tokensIndex.length - 1];
@@ -1111,7 +1108,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
 
             // Deduct from ship
             inventory.weight -= INVENTORY_SLOT_SIZE;
-            nonFungibleTokenData.owner = address(0);
+            delete nonFungibleTokenDatas[asset][tokenId];
 
             uint tokenIndex = nonFungibleInventory.tokens[tokenId];
             nonFungibleInventory.tokensIndex[tokenIndex] = nonFungibleInventory.tokensIndex[nonFungibleInventory.tokensIndex.length - 1];
@@ -1366,7 +1363,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
 
             // Deduct from ship
             inventorySpace.weight -= INVENTORY_SLOT_SIZE;
-            nonFungibleTokenData.owner = address(0);
+            delete nonFungibleTokenDatas[asset][tokenId];
 
             uint tokenIndex = nonFungibleInventory.tokens[tokenId];
             nonFungibleInventory.tokensIndex[tokenIndex] = nonFungibleInventory.tokensIndex[nonFungibleInventory.tokensIndex.length - 1];
@@ -1397,7 +1394,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
 
             // Deduct from backpack
             inventorySpace.weight -= INVENTORY_SLOT_SIZE;
-            nonFungibleTokenData.owner = address(0);
+            delete nonFungibleTokenDatas[asset][tokenId];
             
             uint tokenIndex = nonFungibleInventory.tokens[tokenId];
             nonFungibleInventory.tokensIndex[tokenIndex] = nonFungibleInventory.tokensIndex[nonFungibleInventory.tokensIndex.length - 1];

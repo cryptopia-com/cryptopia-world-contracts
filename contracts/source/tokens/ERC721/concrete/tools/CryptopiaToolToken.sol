@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 import "../../../../game/types/GameEnums.sol";
 import "../../../../game/players/errors/PlayerErrors.sol";
@@ -120,25 +120,25 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
      * Modifiers
      */
     /// @dev Requires that an item with `name` exists
-    /// @param name Unique token name
-    modifier onlyExisting(bytes32 name)
+    /// @param _name Unique token name
+    modifier onlyExisting(bytes32 _name)
     {  
-        if (!_toolExists(name))
+        if (!_toolExists(_name))
         {
-            revert ToolNotFound(name);
+            revert ToolNotFound(_name);
         }
         _;
     }
 
 
     /// @dev Contract initializer sets shared base uri
-    /// @param authenticator Whitelist
+    /// @param _authenticator Whitelist
     /// @param initialContractURI Location to contract info
     /// @param initialBaseTokenURI Base of location where token data is stored. To be postfixed with tokenId
     /// @param _playerRegisterContract Contract responsible for players
     /// @param _inventoriesContract Contract responsible for inventories
     function initialize(
-        address authenticator, 
+        address _authenticator, 
         string memory initialContractURI, 
         string memory initialBaseTokenURI,
         address _playerRegisterContract,
@@ -146,7 +146,7 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
         public initializer 
     {
         __CryptopiaERC721_init(
-            "Cryptopia Tools", "TOOL", authenticator, initialContractURI, initialBaseTokenURI);
+            "Cryptopia Tools", "TOOL", _authenticator, initialContractURI, initialBaseTokenURI);
 
         playerRegisterContract = _playerRegisterContract;
         inventoriesContract = _inventoriesContract;

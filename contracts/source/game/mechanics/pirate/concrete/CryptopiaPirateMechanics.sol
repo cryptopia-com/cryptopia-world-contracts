@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/NoncesUpgradeable.sol";
@@ -201,9 +201,8 @@ contract CryptopiaPirateMechanics is Initializable, NoncesUpgradeable, PseudoRan
         address _mapsContract,
         address _shipContract,
         address _fuelContact,
-        address _intentoriesContract
-    ) 
-        initializer public 
+        address _intentoriesContract) 
+        public virtual initializer 
     {
         __Nonces_init();
         __PseudoRandomness_init();

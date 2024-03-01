@@ -3,6 +3,7 @@ import ora from 'ora-classic';
 import path from 'path';
 import fs from 'fs';
 import hre, { ethers } from "hardhat";
+import appConfig, { NetworkConfig } from "../../app.config";
 import { DeploymentManager } from "../helpers/deployments";
 import { waitForMinimumTime } from "../helpers/timers";
 import { resolveEnum } from "../helpers/enums";
@@ -12,6 +13,9 @@ import { ToolStruct } from "../../typechain-types/contracts/source/tokens/ERC721
 
 const chalk = require('chalk');
 
+// Config
+let config: NetworkConfig;
+
 // Settins
 const MIN_TIME = 1000;
 
@@ -20,7 +24,7 @@ const DEFAULT_BASE_PATH = './data/game/tools/';
 const DEFAULT_FILE = 'tools';
 const DEFAULT_BATCH_SIZE = 20;
 
-const deploymentManager = new DeploymentManager(hre.network.name);
+let deploymentManager: DeploymentManager;
 
 /**
  * Publish tools
@@ -32,6 +36,16 @@ const deploymentManager = new DeploymentManager(hre.network.name);
  */
 async function main(toolsFilePath: string, batchSize: number) 
 {
+    // Config
+    const isDevEnvironment = hre.network.name == "hardhat" 
+        || hre.network.name == "ganache" 
+        || hre.network.name == "localhost";
+    config = appConfig.networks[
+        isDevEnvironment ? "development" : hre.network.name];
+
+    deploymentManager = new DeploymentManager(
+        hre.network.name, config.development);
+
     if (!fs.existsSync(toolsFilePath)) {
         console.error(chalk.red(`Tools file not found: ${toolsFilePath}`));
         return;
@@ -52,12 +66,12 @@ async function main(toolsFilePath: string, batchSize: number)
     }
 
     const toolTokenAddress = deploymentManager.getContractDeployment(
-        "CryptopiaToolToken")?.address;
+        deploymentManager.resolveContractName("ToolToken"))?.address;
 
     console.log(`\nFound ${chalk.bold(tools.length.toString())} tools to deploy on ${chalk.yellow(hre.network.name)}`);
-    console.log(`Found ${chalk.green("CryptopiaToolToken")} at ${chalk.cyan(toolTokenAddress)}\n`);
+    console.log(`Found ${chalk.green(deploymentManager.resolveContractName("ToolToken"))} at ${chalk.cyan(toolTokenAddress)}\n`);
 
-    const toolTokenInstance = await ethers.getContractAt("CryptopiaToolToken", toolTokenAddress);
+    const toolTokenInstance = await ethers.getContractAt(deploymentManager.resolveContractName("ToolToken"), toolTokenAddress);
 
     // Deploy tools in batches
     for (let i = 0; i < tools.length; i += batchSize) 

@@ -27,16 +27,19 @@ interface MapDeploymentInfo
 export class DeploymentManager 
 {
     private networkName: string; // Name of the blockchain network.
+    private development: boolean; // Whether the deployment is for development purposes.
     private contactDeploymentFilePath: string; // File path for the deployment JSON.
     private mapDeploymentFilePath: string; // File path for the map deployment JSON.
 
     /**
      * Constructor: Initializes the DeploymentManager with a specific network name.
      * @param networkName - The name of the network (e.g., 'rinkeby', 'mainnet').
+     * @param development - Whether the deployment is for development purposes.
      */
-    constructor(networkName: string) 
+    constructor(networkName: string, development: boolean = false) 
     {
         this.networkName = networkName;
+        this.development = development;
         this.contactDeploymentFilePath = path.join(__dirname, '../../.deployments', `${networkName}.contracts.json`);
         this.mapDeploymentFilePath = path.join(__dirname, '../../.deployments', `${networkName}.maps.json`);
     }
@@ -45,6 +48,32 @@ export class DeploymentManager
     //////////////////////////
     // Contract Deployments //
     //////////////////////////
+
+    /**
+     * Switch contract name based on environment
+     * 
+     * @param contractName contract name to resolve
+     * @returns resolved contract name
+     */
+    public resolveContractName(contractName: string) : string
+    {
+        return this.development 
+            ? "Development" + contractName 
+            : "Cryptopia" + contractName;
+    }
+
+    /**
+     * Switch deployment key based on environment
+     * 
+     * @param deploymentKey deployment key to resolve
+     * @returns resolved deployment key
+     */
+    public resolveDeploymentKey(deploymentKey: string) : string
+    {
+        return this.development  
+            ? "Development" + deploymentKey 
+            : "Cryptopia" + deploymentKey;
+    }
 
     /**
      * Reads deployment information from the file system.

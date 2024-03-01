@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: ISC
-pragma solidity ^0.8.20 < 0.9.0;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 
@@ -82,10 +82,10 @@ contract CryptopiaAvatarRegister is IAvatarRegister, ContextUpgradeable {
     /** 
      * Public functions
      */
+    /// @dev Set the contract responsible for registering accounts
     /// @param _accountRegisterContract Contract responsible for accounts
-    function initialize(
-        address _accountRegisterContract) 
-        public initializer 
+    function initialize(address _accountRegisterContract) 
+        public virtual initializer 
     {
         __Context_init();
 

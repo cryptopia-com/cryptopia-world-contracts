@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import hre from "hardhat"; 
 import { DeploymentManager } from "./helpers/deployments";
 
-const deploymentManager = new DeploymentManager(hre.network.name);
+let deploymentManager = new DeploymentManager(hre.network.name);
 
 // Internal
 let verifyCounter = 0;

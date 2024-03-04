@@ -1,13 +1,11 @@
 import "../scripts/helpers/converters.ts";
 import { expect } from "chai";
 import { ethers, upgrades} from "hardhat";
-import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { getParamFromEvent} from '../scripts/helpers/events';
 import { encodeRockData, encodeVegetationData, encodeWildlifeData } from '../scripts/maps/helpers/encoders';
 import { resolveEnum } from "../scripts/helpers/enums";
 import { Resource, Terrain, Biome } from '../scripts/types/enums';
 import { Map } from "../scripts/types/input";
-import { REVERT_MODE } from "./settings/config";
 import { SYSTEM_ROLE } from "./settings/roles";   
 
 import { 

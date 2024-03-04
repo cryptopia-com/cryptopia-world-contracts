@@ -426,6 +426,14 @@ async function main() {
     await ensureSystemRoleGranted("ShipToken","PirateMechanics");
     await ensureSystemRoleGranted("Maps", "PirateMechanics");
 
+
+    //////////////////////////////////
+    /////// Deploy Entry Point ///////
+    //////////////////////////////////
+    const [entryPointProxy, entryPointDeploymentStatus] = await ensureDeployed(
+        "Entry", [config.version]);
+
+
     console.log(`\n\nFinished deployment to ${chalk.yellow(hre.network.name)}:`);
     console.log(`  ${chalk.bold(deployCounter)} deployed`);
     console.log(`  ${chalk.bold(upgradeCounter)} upgraded`);

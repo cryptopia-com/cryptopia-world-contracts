@@ -3,6 +3,11 @@ import { Resource } from "./scripts/types/enums";
 const config : AppConfig = {
     networks: {
         development: {
+            version: {
+                major: 0,
+                minor: 2,
+                patch: 0
+            },
             development: true,
             CryptopiaTreasury: {
                 address: "0x37eEf262526Fc4895A632b44d6e430918c67a58A"
@@ -167,6 +172,11 @@ const config : AppConfig = {
             }
         }, 
         polygonMumbai: {
+            version: {
+                major: 0,
+                minor: 2,
+                patch: 0
+            },
             development: false,
             confirmations: 2,
             pollingInterval: 5000,
@@ -334,6 +344,11 @@ const config : AppConfig = {
             }
         },
         skaleNebulaTestnet: {
+            version: {
+                major: 0,
+                minor: 2,
+                patch: 0
+            },
             development: true,
             confirmations: 2,
             pollingInterval: 5000,
@@ -675,6 +690,12 @@ const config : AppConfig = {
 
 export default config;
 
+interface Version {
+    major: number;
+    minor: number;
+    patch: number;
+}
+
 interface CryptopiaTreasury {
     address: string;
 }
@@ -710,6 +731,7 @@ interface ERC20Config {
 }
 
 export interface NetworkConfig {
+    version: Version;
     development: boolean;
     confirmations?: number;
     pollingInterval?: number;

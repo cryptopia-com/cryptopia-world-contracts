@@ -114,6 +114,15 @@ interface IInventories {
     function transfer(address[] memory player_to, Inventory[] memory inventory_from, Inventory[] memory inventory_to, address[] memory asset, uint[] memory amount, uint[][] memory tokenIds)
         external;
 
+
+    /// @dev Drop `asset` from `inventory`
+    /// @param inventory The inventory to drop the asset from {BackPack | Ship}
+    /// @param asset The address of the ERC20 or ERC721 contract
+    /// @param amount The amount of fungible tokens to drop (zero indicates non-fungible)
+    /// @param tokenId The token ID to drop (zero indicates fungible)
+    function drop(Inventory inventory, address asset, uint amount, uint tokenId)
+        external;
+
     
     /**
      * System functions

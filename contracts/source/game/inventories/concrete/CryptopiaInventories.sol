@@ -440,6 +440,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         notFrozen(_msgSender())
     {
         address player_from = _msgSender();
+        bool seenOtherPlayers = false;
         for (uint i = 0; i < player_to.length; i++)
         {
             if (0 != tokenIds[i].length)
@@ -462,6 +463,52 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
                 // Amount and token id zero
                 revert ArgumentInvalid();
             }
+
+            if (player_from != player_to[i])
+            {
+                seenOtherPlayers = true;
+            }
+        }
+
+        // Ensure inventory limits
+        if (!seenOtherPlayers)
+        {
+            _ensurePlayerInventoryWithinLimit(player_from);
+            _ensureShipInventoryWithinLimit(playerToShip[player_from]);
+        }
+        else 
+        {
+            for (uint i = 0; i < player_to.length; i++)
+            {
+                _ensureInventoryWithinLimit(player_to[i], inventory_to[i]);
+            }
+        }
+    }
+
+
+    /// @dev Drop `asset` from `inventory`
+    /// @param inventory The inventory to drop the asset from {BackPack | Ship}
+    /// @param asset The address of the ERC20 or ERC721 contract
+    /// @param amount The amount of fungible tokens to drop (zero indicates non-fungible)
+    /// @param tokenId The token ID to drop (zero indicates fungible)
+    function drop(Inventory inventory, address asset, uint amount, uint tokenId)
+        public virtual override 
+        notFrozen(_msgSender())
+    {
+        if (0 != tokenId)
+        {
+            // Non-Fungible
+            _deductNonFungibleToken(_msgSender(), inventory, asset, tokenId, false);
+        }
+        else if (0 != amount)
+        {
+            // Fungible
+            _deductFungibleToken(_msgSender(), inventory, asset, amount, false);
+        }
+        else 
+        {
+            // Amount and token id zero
+            revert ArgumentInvalid();
         }
     }
 
@@ -862,6 +909,10 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
                 revert ArgumentInvalid();
             }
         }
+
+        // Check inventory limits
+        _ensurePlayerInventoryWithinLimit(player_to);
+        _ensureShipInventoryWithinLimit(playerToShip[player_to]);
     }
 
 
@@ -897,6 +948,10 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
                     player_from, player_to, inventory_from[i], inventory_to[i], asset[i], amount[i]);
             }
         }
+
+        // Check inventory limits
+        _ensurePlayerInventoryWithinLimit(player_to);
+        _ensureShipInventoryWithinLimit(playerToShip[player_to]);
     }
 
 
@@ -1002,11 +1057,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         else if (inventory_to == Inventory.Backpack) 
         {
             InventorySpaceData storage inventory = playerInventories[player_to];
-            if (inventory.weight + weight > inventory.maxWeight)
-            {
-                revert PlayerInventoryTooHeavy(player_to);
-            }
-
+            
             // Add to backpack
             inventory.weight += weight;
             inventory.fungible[asset] += amount;
@@ -1014,11 +1065,7 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         else if (inventory_to == Inventory.Ship)
         {
             InventorySpaceData storage inventory = shipInventories[playerToShip[player_to]];
-            if (inventory.weight + weight > inventory.maxWeight)
-            {
-                revert ShipInventoryTooHeavy(playerToShip[player_to]);
-            }
-
+            
             // Add to ship
             inventory.weight += weight;
             inventory.fungible[asset] += amount;
@@ -1135,12 +1182,6 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
             NonFungibleTokenData storage nonFungibleTokenData = nonFungibleTokenDatas[asset][tokenId];
             NonFungibleTokenInventorySpaceData storage nonFungibleInventory = inventory.nonFungible[asset];
 
-            // Check if backpack not is too heavy
-            if (inventory.weight + INVENTORY_SLOT_SIZE > inventory.maxWeight)
-            {
-                revert PlayerInventoryTooHeavy(player_from);
-            }
-
             // Add to backpack
             inventory.weight += INVENTORY_SLOT_SIZE;
             nonFungibleTokenData.owner = player_to;
@@ -1153,12 +1194,6 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
             InventorySpaceData storage inventory = shipInventories[playerToShip[player_to]];
             NonFungibleTokenData storage nonFungibleTokenData = nonFungibleTokenDatas[asset][tokenId];
             NonFungibleTokenInventorySpaceData storage nonFungibleInventory = inventory.nonFungible[asset];
-
-            // Check if ship not is too heavy
-            if (inventory.weight + INVENTORY_SLOT_SIZE > inventory.maxWeight)
-            {
-                revert ShipInventoryTooHeavy(playerToShip[player_to]);
-            }
 
             // Add to ship
             inventory.weight += INVENTORY_SLOT_SIZE;
@@ -1417,5 +1452,54 @@ contract CryptopiaInventories is Initializable, AccessControlUpgradeable, IInven
         
         // Emit
         emit InventoryDeduct(player, inventory, asset, 1, tokenId);
+    }
+
+
+    /// @dev Ensures that the inventory does not exceed the maximum weight
+    /// @notice If the inventory exceeds the maximum weight an {Type}InventoryTooHeavy error is raised 
+    ///         and if the inventory is not supported an InventoryUnsupported error is raised
+    /// @param player The player to check
+    /// @param inventory The inventory to check
+    function _ensureInventoryWithinLimit(address player, Inventory inventory)
+        internal view
+    {
+        if (inventory == Inventory.Backpack)
+        {
+            _ensurePlayerInventoryWithinLimit(player);
+        }
+        else if (inventory == Inventory.Ship)
+        {
+            _ensureShipInventoryWithinLimit(playerToShip[player]);
+        }
+        else 
+        {
+            revert InventoryUnsupported(inventory);
+        }
+    }
+
+
+    /// @dev Ensures that the player's inventory does not exceed the maximum weight
+    /// @notice If the player's inventory exceeds the maximum weight a PlayerInventoryTooHeavy error is raised
+    /// @param player The player to check
+    function _ensurePlayerInventoryWithinLimit(address player)
+        internal view
+    {
+        if (playerInventories[player].weight > playerInventories[player].maxWeight)
+        {
+            revert PlayerInventoryTooHeavy(player);
+        }
+    }
+
+
+    /// @dev Ensures that the ship's inventory does not exceed the maximum weight
+    /// @notice If the ship's inventory exceeds the maximum weight a ShipInventoryTooHeavy error is raised
+    /// @param ship The tokenId of the ship to check
+    function _ensureShipInventoryWithinLimit(uint ship)
+        internal view
+    {
+        if (shipInventories[ship].weight > shipInventories[ship].maxWeight)
+        {
+            revert ShipInventoryTooHeavy(ship);
+        }
     }
 }

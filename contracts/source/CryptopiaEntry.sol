@@ -10,14 +10,14 @@ contract CryptopiaEntry is ContextUpgradeable {
     /**
      * Storage
      */
-    struct Version 
+    struct ContractVersion 
     {
         uint8 major;
         uint8 minor;
         uint8 patch;
     }
 
-    Version public version;
+    ContractVersion public version;
 
 
     /** 
@@ -25,7 +25,7 @@ contract CryptopiaEntry is ContextUpgradeable {
      */
     /// @dev Initialize the contract
     /// @param _version The version of the contract
-    function initialize(Version memory _version) 
+    function initialize(ContractVersion memory _version) 
         public virtual initializer 
     {
         __Context_init();

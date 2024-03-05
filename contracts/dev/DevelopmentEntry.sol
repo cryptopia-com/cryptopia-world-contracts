@@ -11,7 +11,7 @@ contract DevelopmentEntry is CryptopiaEntry, AccessControlUpgradeable {
 
     /// @dev Initializer
     /// @param _version The version of the contract
-    function initialize(Version memory _version)
+    function initialize(ContractVersion memory _version)
         public override initializer 
     {
         CryptopiaEntry.initialize(_version);
@@ -25,7 +25,7 @@ contract DevelopmentEntry is CryptopiaEntry, AccessControlUpgradeable {
 
     /// @dev Set the version of the contract
     /// @param _version The version of the contract
-    function setVersion(Version calldata _version) 
+    function setVersion(ContractVersion calldata _version) 
         external onlyRole(DEFAULT_ADMIN_ROLE) 
     {
         version = _version;

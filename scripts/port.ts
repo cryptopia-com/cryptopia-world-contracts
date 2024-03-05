@@ -80,6 +80,7 @@ async function main() {
 
     console.log(`\nConfig:\n`);
     console.log(`public const string CURRENCY_ASSET_ID = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("Token")).address}";\n`);
+    console.log(`public const string ENTRY_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("Entry")).address}";`);
     console.log(`public const string ACCOUNT_REGISTER_CONTRACT = "${accountRegisterAddress}";`);
     console.log(`public const string ACCOUNT_IMPLEMENTATION_CONTRACT = "${accountImplementationAddress}";`);
     console.log(`public const string AVATAR_REGISTER_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("AvatarRegister")).address}";`);

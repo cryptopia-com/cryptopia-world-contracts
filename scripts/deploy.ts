@@ -625,7 +625,10 @@ async function _upgradeContract(contractName: string, contractAddress: string, d
 async function ensureSystemRoleGranted(granter: string, system: string): Promise<void>
 {
     granter = deploymentManager.resolveContractName(granter);
-    system = deploymentManager.resolveContractName(system);
+    if (!system.startsWith("0x"))
+    {
+        system = deploymentManager.resolveContractName(system);
+    }
 
     if (deploymentManager.isSystemRoleGranted(granter, system))
     {

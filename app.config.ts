@@ -519,6 +519,11 @@ const config : AppConfig = {
             }
         },
         skaleNebulaMainnet: {
+            version: {
+                major: 0,
+                minor: 2,
+                patch: 0
+            },
             development: false,
             confirmations: 2,
             pollingInterval: 5000,

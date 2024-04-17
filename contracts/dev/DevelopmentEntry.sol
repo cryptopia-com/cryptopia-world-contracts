@@ -21,7 +21,7 @@ contract DevelopmentEntry is CryptopiaEntry, AccessControlUpgradeable {
         // Grant admin role
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
-
+    
 
     /// @dev Set the version of the contract
     /// @param _version The version of the contract

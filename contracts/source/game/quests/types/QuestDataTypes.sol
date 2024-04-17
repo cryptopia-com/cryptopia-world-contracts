@@ -12,35 +12,37 @@ struct Quest {
     /// @dev Unique identifier for the quest
     bytes32 name;
 
-    /// @dev Indicates if a level constraint is applied to start the quest
-    bool hasLevelConstraint;
-    /// @dev Minimum player level required to start the quest, effective if hasLevelConstraint is true
+    /// @dev Minimum player level required to start the quest
+    /// @notice Effective if level is greater than 0
     uint8 level;
 
     /// @dev Indicates if a faction constraint is applied to start the quest
     bool hasFactionConstraint;
-    /// @dev Specific faction required to start the quest, effective if hasFactionConstraint is true
+    /// @dev Specific faction required to start the quest
+    /// @notice Effective if hasFactionConstraint is true
     Faction faction;
 
     /// @dev Indicates if a sub-faction constraint is applied to start the quest
     bool hasSubFactionConstraint;
-    /// @dev Specific sub-faction required to start the quest, effective if hasSubFactionConstraint is true
+    /// @dev Specific sub-faction required to start the quest
+    /// @notice Effective if hasSubFactionConstraint is true
     SubFaction subFaction;
 
-    /// @dev Indicates if there's a limit on how many times the quest can be completed
-    bool hasCompletionConstraint;
-    /// @dev Maximum number of times the quest can be completed, effective if hasCompletionConstraint is true
-    uint maxCompletions;
-
-    /// @dev Indicates if there's a cooldown period between quest repetitions
-    bool hasCooldownConstraint;
-    /// @dev Cooldown duration in seconds before the quest can be started again, effective if hasCooldownConstraint is true
+    /// @dev Cooldown duration in seconds before the quest can be started again
+    /// @notice Effective if cooldown is greater than 0
     uint cooldown;
 
-    /// @dev Indicates if there's a time limit to complete the quest
-    bool hasTimeConstraint;
-    /// @dev Maximum duration in seconds to complete the quest, effective if hasTimeConstraint is true
+    /// @dev Maximum number of times the quest can be repeated
+    /// @notice Effective if maxCompletions is greater than 0
+    uint maxCompletions;
+
+    /// @dev Maximum duration in seconds to complete the quest
+    /// @notice Effective if maxDuration is greater than 0
     uint maxDuration;
+
+    /// @dev Unique identifier of the prerequisite quest that must be completed before starting this quest 
+    /// @notice Effective if prerequisiteQuest is not empty
+    bytes32 prerequisiteQuest;
 
     /// @dev Array of steps that need to be completed in order to finish the quest
     QuestStep[] steps;
@@ -59,7 +61,8 @@ struct QuestStep {
 
     /// @dev Indicates if the step requires the player to be at a specific location
     bool hasTileConstraint;
-    /// @dev Specific map tile where the step needs to be completed, effective if hasTileConstraint is true
+    /// @dev Specific map tile where the step needs to be completed
+    /// @notice Effective if hasTileConstraint is true
     uint16 tile;
 
     /// @dev Array of fungible tokens (like ERC20 tokens) that the player must give up to complete the step

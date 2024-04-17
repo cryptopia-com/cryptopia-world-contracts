@@ -12,7 +12,7 @@ let skipCounter = 0;
 /**
  * Verify contracts on Etherscan.
  * 
- * npx hardhat run --network localhost ./scripts/verify.ts
+ * npx hardhat run --network skaleNebulaTestnet ./scripts/verify.ts
  */
 async function main() {
 

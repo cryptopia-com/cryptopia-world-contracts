@@ -659,7 +659,7 @@ async function ensureSystemRoleGranted(granter: string, system: string): Promise
     deploymentManager.saveSystemRoleGrant(granter, system);
 
     lastDeploymentStatus = DeploymentStatus.None;
-} 
+}
 
 // Deploy
 main().catch((error) => 

@@ -517,18 +517,15 @@ describe("Quests Contract", function () {
             
             quest = {
                 name: "Investigate the Ancient Ruins".toBytes32(),
-                hasLevelConstraint: false,
                 level: 0,
                 hasFactionConstraint: false,
                 faction: 0, 
                 hasSubFactionConstraint: false,
                 subFaction: 0, 
-                hasCompletionConstraint: true,
-                maxCompletions: 1,
-                hasCooldownConstraint: false,
                 cooldown: 0,
-                hasTimeConstraint: false,
+                maxCompletions: 1,
                 maxDuration: 0,
+                prerequisiteQuest: "".toBytes32(),
                 steps: [
                     {
                         name: "Find Scientist".toBytes32(),
@@ -624,18 +621,15 @@ describe("Quests Contract", function () {
             
             quest = {
                 name: "Investigate the Ancient Ruins".toBytes32(),
-                hasLevelConstraint: false,
                 level: 0,
                 hasFactionConstraint: false,
                 faction: 0, 
                 hasSubFactionConstraint: true,
                 subFaction: SubFaction.None, 
-                hasCompletionConstraint: true,
-                maxCompletions: 1,
-                hasCooldownConstraint: false,
                 cooldown: 0,
-                hasTimeConstraint: false,
+                maxCompletions: 1,
                 maxDuration: 0,
+                prerequisiteQuest: "".toBytes32(),
                 steps: [
                     {
                         name: "Find Scientist".toBytes32(),
@@ -1019,18 +1013,15 @@ describe("Quests Contract", function () {
 
             quest = {
                 name: "Pirate Quest".toBytes32(),
-                hasLevelConstraint: false,
                 level: 0,
                 hasFactionConstraint: false,
                 faction: 0, 
                 hasSubFactionConstraint: true,
                 subFaction: SubFaction.Pirate, 
-                hasCompletionConstraint: true,
-                maxCompletions: 1,
-                hasCooldownConstraint: false,
                 cooldown: 0,
-                hasTimeConstraint: false,
+                maxCompletions: 1,
                 maxDuration: 0,
+                prerequisiteQuest: "".toBytes32(),
                 steps: [
                     {
                         name: "Step 1".toBytes32(),

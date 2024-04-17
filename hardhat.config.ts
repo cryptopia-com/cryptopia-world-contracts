@@ -1,6 +1,6 @@
 import { HardhatUserConfig, task } from "hardhat/config";
 import { DeploymentManager } from "./scripts/helpers/deployments";
-import appConfig, { NetworkConfig } from "./app.config";
+import appConfig from "./app.config";
 import "@nomicfoundation/hardhat-toolbox";
 import '@openzeppelin/hardhat-upgrades';
 
@@ -122,8 +122,8 @@ export default config;
 /**
  * Mint resources
  * 
- * npx hardhat resource --network skaleNebulaTestnet  --resource "Wood" --to 0xE43D7aCa7978f98Ab8edBc787Ce93a3015ea4d24 --amount 10000000000000000000 --inventory "Backpack"
- * npx hardhat resource --network skaleNebulaTestnet  --resource "Stone" --to 0x29f8e535781c87CEeBA2d4000bFCd75a246A98c0 --amount 10000000000000000000 --inventory "Backpack"
+ * npx hardhat resource --network skaleNebulaTestnet  --resource "Wood" --to 0xE43D7aCa7978f98Ab8edBc787Ce93a3015ea4d24 --amount 1000000000000000000 --inventory "Ship"
+ * npx hardhat resource --network skaleNebulaTestnet  --resource "Stone" --to 0xE43D7aCa7978f98Ab8edBc787Ce93a3015ea4d24 --amount 1000000000000000000 --inventory "Ship"
  * npx hardhat resource --network skaleNebulaTestnet  --resource "Gold" --to YOUR_REMOTE_ADDRESS --amount 10000000000000000000 --inventory "Backpack"
  */
 task("resource", "Mint resources")
@@ -143,25 +143,15 @@ task("resource", "Mint resources")
     const deploymentManager = new DeploymentManager(
         hre.network.name, config.development);
 
-    let to = "";
-    if (taskArguments.inventory == "Backpack" || taskArguments.inventory == "Ship")
-    {
-      const inventoriesDeployment = await deploymentManager.getContractDeployment(deploymentManager.resolveContractName("Inventories"));
-      to = inventoriesDeployment.address;
-    }
-    else
-    {
-      to = taskArguments.to;
-    }
-
     const tokenDeployment = await deploymentManager.getContractDeployment(deploymentManager.resolveDeploymentKey("AssetToken:" + taskArguments.resource));
     const tokenInstance = await hre.ethers.getContractAt(deploymentManager.resolveContractName("AssetToken"), tokenDeployment.address);
-    await tokenInstance.__mintTo(to, taskArguments.amount);
 
     if (taskArguments.inventory == "Backpack" || taskArguments.inventory == "Ship")
     {
-      const inventoriesDeployment = await deploymentManager.getContractDeployment(deploymentManager.resolveContractName("Inventories"));
-      const inventoriesInstance = await hre.ethers.getContractAt(deploymentManager.resolveContractName("Inventories"), inventoriesDeployment.address);
-      await inventoriesInstance.__assignFungibleToken(taskArguments.to, taskArguments.inventory == "Backpack" ? 1 : 2, tokenInstance.address, taskArguments.amount);
+      await tokenInstance.__mintToInventory(taskArguments.to, taskArguments.inventory == "Backpack" ? 1 : 2, taskArguments.amount);
+    }
+    else 
+    {
+      await tokenInstance.__mint(taskArguments.to, taskArguments.amount);
     }
   });

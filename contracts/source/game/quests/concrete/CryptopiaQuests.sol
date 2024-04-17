@@ -41,35 +41,37 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         /// @dev Index in the questsIndex array
         uint index;
 
-        /// @dev Indicates if a level constraint is applied to start the quest
-        bool hasLevelConstraint;
-        /// @dev Minimum player level required to start the quest, effective if hasLevelConstraint is true
+        /// @dev Minimum player level required to start the quest
+        /// @notice Effective if level is greater than 0
         uint8 level;
 
         /// @dev Indicates if a faction constraint is applied to start the quest
         bool hasFactionConstraint;
-        /// @dev Specific faction required to start the quest, effective if hasFactionConstraint is true
+        /// @dev Specific faction required to start the quest
+        /// @notice Effective if hasFactionConstraint is true
         Faction faction;
 
         /// @dev Indicates if a sub-faction constraint is applied to start the quest
         bool hasSubFactionConstraint;
-        /// @dev Specific sub-faction required to start the quest, effective if hasSubFactionConstraint is true
+        /// @dev Specific sub-faction required to start the quest
+        /// @notice Effective if hasSubFactionConstraint is true
         SubFaction subFaction;
 
-        /// @dev Indicates if there's a limit on how many times the quest can be completed
-        bool hasCompletionConstraint;
-        /// @dev Maximum number of times the quest can be repeated, effective if hasCompletionConstraint is true
-        uint maxCompletions;
-
-        /// @dev Indicates if there's a cooldown period between quest repetitions
-        bool hasCooldownConstraint;
-        /// @dev Cooldown duration in seconds before the quest can be started again, effective if hasCooldownConstraint is true
+        /// @dev Cooldown duration in seconds before the quest can be started again
+        /// @notice Effective if cooldown is greater than 0
         uint cooldown;
 
-        /// @dev Indicates if there's a time limit to complete the quest
-        bool hasTimeConstraint;
-        /// @dev Maximum duration in seconds to complete the quest, effective if hasTimeConstraint is true
+        /// @dev Maximum number of times the quest can be repeated
+        /// @notice Effective if maxCompletions is greater than 0
+        uint maxCompletions;
+
+        /// @dev Maximum duration in seconds to complete the quest
+        /// @notice Effective if maxDuration is greater than 0
         uint maxDuration;
+
+        /// @dev Unique identifier of the prerequisite quest that must be completed before starting this quest 
+        /// @notice Effective if prerequisiteQuest is not empty
+        bytes32 prerequisiteQuest;
 
         /// @dev Array of steps that need to be completed in order to finish the quest
         QuestStep[] steps;
@@ -191,6 +193,12 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
     /// @param quest The quest id that has a cooldown
     /// @param cooldown The cooldown that has not expired
     error QuestCooldownNotExpired(address player, bytes32 quest, uint cooldown);
+
+    /// @dev Emitted when `player` tries to start `quest` without completing the prerequisite quest
+    /// @param player The player that did not complete the prerequisite quest
+    /// @param quest The quest that has a prerequisite
+    /// @param prerequisiteQuest The prerequisite quest that was not completed
+    error PrerequisiteQuestNotCompleted(address player, bytes32 quest, bytes32 prerequisiteQuest);
 
     /// @dev Emitted when the time for `player` to complete `quest` has exceeded 
     /// @param player The player that exceeded the time
@@ -605,18 +613,15 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         }
 
         // Set quest data
-        data.hasLevelConstraint = quest.hasLevelConstraint;
         data.level = quest.level;
         data.hasFactionConstraint = quest.hasFactionConstraint;
         data.faction = quest.faction;
         data.hasSubFactionConstraint = quest.hasSubFactionConstraint;
         data.subFaction = quest.subFaction;
-        data.hasCompletionConstraint = quest.hasCompletionConstraint;
-        data.maxCompletions = quest.maxCompletions;
-        data.hasCooldownConstraint = quest.hasCooldownConstraint;
         data.cooldown = quest.cooldown;
-        data.hasTimeConstraint = quest.hasTimeConstraint;
+        data.maxCompletions = quest.maxCompletions;
         data.maxDuration = quest.maxDuration;
+        data.prerequisiteQuest = quest.prerequisiteQuest;
 
         // Set steps
         for (uint i = 0; i < quest.steps.length; i++) 
@@ -702,18 +707,15 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         QuestData storage data = quests[name];
         quest = Quest({
             name: name,
-            hasLevelConstraint: data.hasLevelConstraint,
             level: data.level,
             hasFactionConstraint: data.hasFactionConstraint,
             faction: data.faction,
             hasSubFactionConstraint: data.hasSubFactionConstraint,
             subFaction: data.subFaction,
-            hasCompletionConstraint: data.hasCompletionConstraint,
-            maxCompletions: data.maxCompletions,
-            hasCooldownConstraint: data.hasCooldownConstraint,
             cooldown: data.cooldown,
-            hasTimeConstraint: data.hasTimeConstraint,
+            maxCompletions: data.maxCompletions,
             maxDuration: data.maxDuration,
+            prerequisiteQuest: data.prerequisiteQuest,
             steps: data.steps,
             rewards: data.rewards
         });
@@ -745,35 +747,23 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
             revert QuestAlreadyStarted(msg.sender, name);
         }
 
-        // Check quest completion
-        if (questPlayerData.stepsCompletedCount > 0)
+        // Check quest in progress 
+        if (questPlayerData.stepsCompletedCount > 0 && questPlayerData.stepsCompletedCount < quest.steps.length)
         {
-            // Quest in progress
-            if (questPlayerData.stepsCompletedCount < quest.steps.length)
-            {
-                revert QuestAlreadyStarted(msg.sender, name);
-            }
+            revert QuestAlreadyStarted(msg.sender, name);
+        }
 
-            // Quest completed
-            else if (quest.hasCompletionConstraint)
+        // Check max completions constraint
+        if (quest.maxCompletions > 0)
+        {
+            if (questPlayerData.completedCount >= quest.maxCompletions)
             {
-                // Max completions reached
-                if (questPlayerData.completedCount >= quest.maxCompletions)
-                {
-                    revert QuestCompletionExceeded(msg.sender, name, quest.maxCompletions);
-                }
-
-                // Reset quest
-                else 
-                {
-                    questPlayerData.stepsCompletedCount = 0;
-                    questPlayerData.stepsCompleted = bytes8(0);
-                }
+                revert QuestCompletionExceeded(msg.sender, name, quest.maxCompletions);
             }
         }
 
         // Check level constraint
-        if (quest.hasLevelConstraint) 
+        if (quest.level > 0) 
         {
             // Check level
             if (playerData.level < quest.level) 
@@ -803,7 +793,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         }
 
         // Check cooldown constraint
-        if (quest.hasCooldownConstraint) 
+        if (quest.cooldown > 0) 
         {
             // Check cooldown
             if (questPlayerData.timestampCompleted + quest.cooldown > block.timestamp) 
@@ -812,6 +802,15 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
             }
         }
 
+        // Check prerequisite quest constraint
+        if (quest.prerequisiteQuest != bytes32(0))    
+        { 
+            // Check prerequisite quest
+            if (playerQuestData[msg.sender][quest.prerequisiteQuest].completedCount == 0) 
+            {
+                revert PrerequisiteQuestNotCompleted(msg.sender, name, quest.prerequisiteQuest);
+            }
+        }
 
         // Start quest
         questPlayerData.stepsCompletedCount = 0;
@@ -855,7 +854,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         }
 
         // Check time constraint
-        if (quest.hasTimeConstraint) 
+        if (quest.maxDuration > 0) 
         {
             // Check time
             if (questPlayerData.timestampStarted + quest.maxDuration < block.timestamp) 

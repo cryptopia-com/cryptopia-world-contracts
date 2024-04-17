@@ -325,6 +325,22 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
     }
 
 
+    /// @dev Get player progress for multiple quests
+    /// @param player Player address
+    /// @param quests_ Quests to get progress for
+    /// @return progress Player progress for each quest
+    function getPlayerProgress(address player, bytes32[] memory quests_) 
+        public view 
+        returns (QuestPlayerData[] memory progress) 
+    {
+        progress = new QuestPlayerData[](quests_.length);
+        for (uint i = 0; i < quests_.length; i++) 
+        {
+            progress[i] = playerQuestData[player][quests_[i]];
+        }
+    }
+
+
     /// @dev Start quest with `quest` and directly complete `stepIndices` if any
     /// @param quest Quest id to start
     /// @param stepIndices Steps to complete in the same transaction

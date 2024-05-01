@@ -4,7 +4,7 @@ const config : AppConfig = {
     networks: {
         development: {
             version: {
-                major: 0,
+                major: 1,
                 minor: 2,
                 patch: 0
             },
@@ -173,7 +173,7 @@ const config : AppConfig = {
         }, 
         polygonMumbai: {
             version: {
-                major: 0,
+                major: 1,
                 minor: 2,
                 patch: 0
             },
@@ -345,7 +345,7 @@ const config : AppConfig = {
         },
         skaleNebulaTestnet: {
             version: {
-                major: 0,
+                major: 1,
                 minor: 2,
                 patch: 0
             },
@@ -520,7 +520,7 @@ const config : AppConfig = {
         },
         skaleNebulaMainnet: {
             version: {
-                major: 0,
+                major: 1,
                 minor: 2,
                 patch: 0
             },

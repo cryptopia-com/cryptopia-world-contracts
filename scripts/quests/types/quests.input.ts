@@ -42,18 +42,15 @@ export interface RewardJsonData {
 
 export interface QuestJsonData {
     name: string;
-    hasLevelConstraint: boolean;
     level: number;
     hasFactionConstraint: boolean;
     faction: string;
     hasSubFactionConstraint: boolean;
     subFaction: string;
-    hasCompletionConstraint: boolean;
     maxCompletions: number;
-    hasCooldownConstraint: boolean;
     cooldown: number;
-    hasTimeConstraint: boolean;
     maxDuration: number;
+    prerequisiteQuest: string;
     steps: StepJsonData[];
     rewards: RewardJsonData[];
 }

@@ -118,18 +118,15 @@ function resolve(data: QuestJsonData[]): QuestStruct[] {
     const resolvedData: QuestStruct[] = data.map((jsonData) => {
         const quest: QuestStruct = {
             name: jsonData.name.toBytes32(),
-            hasLevelConstraint: jsonData.hasLevelConstraint,
             level: jsonData.level,
             hasFactionConstraint: jsonData.hasFactionConstraint,
             faction: jsonData.hasFactionConstraint ? resolveEnum(Faction, jsonData.faction) : 0,
             hasSubFactionConstraint: jsonData.hasSubFactionConstraint,
             subFaction: jsonData.hasSubFactionConstraint ? resolveEnum(SubFaction, jsonData.subFaction) : 0,
-            hasCompletionConstraint: jsonData.hasCompletionConstraint,
             maxCompletions: jsonData.maxCompletions,
-            hasCooldownConstraint: jsonData.hasCooldownConstraint,
             cooldown: jsonData.cooldown,
-            hasTimeConstraint: jsonData.hasTimeConstraint,
             maxDuration: jsonData.maxDuration,
+            prerequisiteQuest: jsonData.prerequisiteQuest.toBytes32(),
             steps: jsonData.steps.map((step) => ({
                 name: step.name.toBytes32(),
                 hasTileConstraint: step.hasTileConstraint,

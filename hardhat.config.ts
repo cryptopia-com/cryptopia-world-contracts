@@ -155,3 +155,44 @@ task("resource", "Mint resources")
       await tokenInstance.__mint(taskArguments.to, taskArguments.amount);
     }
   });
+
+  /**
+ * Set automatic node mining for local host
+ * 
+ * npx hardhat setAutomine --network localhost --state true
+ * npx hardhat setAutomine --network localhost --state false
+ */
+task("setAutomine", "Set Automatic Mining")
+.addParam("state", "allowAutoMining")
+.setAction(async (taskArguments, hre) =>
+{
+  await hre.network.provider.send("evm_setAutomine", [taskArguments.state == "true" ? true : false]);
+});
+
+  /**
+ * Set interval for automatic node mining for localhost
+ * 
+ * npx hardhat setIntervalMining --network localhost --interval 5000
+ */
+  task("setIntervalMining", "Set Interval Mining")
+  .addParam("interval", "intervalMining")
+  .setAction(async (taskArguments, hre) =>
+  {
+    await hre.network.provider.send("evm_setIntervalMining", [parseInt(taskArguments.interval)]);
+  });
+
+/**
+ * Send gas to localhost account
+ * 
+ * npx hardhat fundLocalhost --network localhost --address 0x56870EBd9128c9c43823448e3DE6Bf7Dd762a9d4
+ */
+    task("fundLocalhost", "Fund localhost with gas")
+    .addParam("address", "player address to send to")
+    .setAction(async (taskArguments, hre) =>
+    {
+      const [deployer] = await hre.ethers.getSigners();
+      await deployer.sendTransaction({
+        to: taskArguments.address,
+        value: hre.ethers.utils.parseEther("1.0")
+      });
+    });

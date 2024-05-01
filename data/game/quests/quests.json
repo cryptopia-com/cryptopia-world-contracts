@@ -1,23 +1,20 @@
 [
     {
-        "name": "Investigate the Ancient Ruins",
-        "hasLevelConstraint": false,
+        "name": "Gather log from the lumberjack",
         "level": 0,
         "hasFactionConstraint": false,
         "faction": "",
-        "hasSubFactionConstraint": true,
+        "hasSubFactionConstraint": false,
         "subFaction": "None",
-        "hasCompletionConstraint": true,
-        "maxCompletions": 1,
-        "hasCooldownConstraint": false,
-        "cooldown": 0,
-        "hasTimeConstraint": false,
-        "maxDuration": 0,
+        "cooldown": 86400,
+        "maxCompletions": 0,
+        "maxDuration": 86400,
+        "prerequisiteQuest": "",
         "steps": [
             {
-                "name": "Find Scientist",
+                "name": "Talk to the lumberjack",
                 "hasTileConstraint": true,
-                "tile": 7,
+                "tile": 107,
                 "takeFungible": [],
                 "takeNonFungible": [],
                 "giveFungible": [],
@@ -26,36 +23,55 @@
         ],
         "rewards": [
             {
-                "name": "Rescue",
-                "xp": 100,
-                "karma": 5,
-                "fungible": [],
-                "nonFungible": [
-                    {
-                        "asset": "ToolToken",
-                        "item": "Stone Axe",
-                        "allowWallet": false
-                    }
-                ]
-            },
-            {
-                "name": "Steal",
-                "xp": 100,
-                "karma": -5,
+                "name": "Lumberjack convinced",
+                "xp": 10,
+                "karma": 0,
                 "fungible": [
                     {
                         "asset": "AssetToken:Wood",
-                        "amount": "5",
+                        "amount": "100000000000000000",
                         "allowWallet": false
                     }
                 ],
-                "nonFungible": [
+                "nonFungible": []
+            }
+        ]
+    },
+    {
+        "name": "Gather stone from the miner",
+        "level": 0,
+        "hasFactionConstraint": false,
+        "faction": "",
+        "hasSubFactionConstraint": false,
+        "subFaction": "None",
+        "maxCompletions": 0,
+        "cooldown": 86400,
+        "maxDuration": 86400,
+        "prerequisiteQuest": "",
+        "steps": [
+            {
+                "name": "Talk to the miner",
+                "hasTileConstraint": true,
+                "tile": 94,
+                "takeFungible": [],
+                "takeNonFungible": [],
+                "giveFungible": [],
+                "giveNonFungible": []
+            }
+        ],
+        "rewards": [
+            {
+                "name": "Miner convinced",
+                "xp": 10,
+                "karma": 0,
+                "fungible": [
                     {
-                        "asset": "ToolToken",
-                        "item": "Stone Axe",
+                        "asset": "AssetToken:Stone",
+                        "amount": "100000000000000000",
                         "allowWallet": false
                     }
-                ]
+                ],
+                "nonFungible": []
             }
         ]
     }

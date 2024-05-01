@@ -938,7 +938,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         }
         
 
-        // Take quest items
+        // Take fungible quest items
         for (uint i = 0; i < questStep.takeFungible.length; i++) 
         {   
             FungibleTransactionData memory questItem = questStep.takeFungible[i];

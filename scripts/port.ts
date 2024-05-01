@@ -89,12 +89,14 @@ async function main() {
     console.log(`public const string MAP_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("Maps")).address}";`);
     console.log(`public const string MAP_EXTENSIONS_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("MapsExtensions")).address}";`);
     console.log(`public const string TITLE_DEED_TOKEN_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("TitleDeedToken")).address}";`);
-    console.log(`public const string INVENTROIES_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("Inventories")).address}";`);
+    console.log(`public const string INVENTORIES_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("Inventories")).address}";`);
     console.log(`public const string RESOURCE_GATHERING_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("ResourceGathering")).address}";`);
     console.log(`public const string LOYALTY_TOKEN_CONTRACT = "0x0000000000000000000000000000000000000001";`);
     console.log(`public const string SHIP_TOKEN_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("ShipToken")).address}";`);
     console.log(`public const string TOOL_TOKEN_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("ToolToken")).address}";`);
     console.log(`public const string CRAFTING_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("Crafting")).address}";`);
+    console.log(`public const string QUEST_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("Quests")).address}";`);
+    console.log(`public const string QUEST_TOKEN_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("QuestToken")).address}";`);
     console.log(`\nFinished porting!\n`);
 }
 

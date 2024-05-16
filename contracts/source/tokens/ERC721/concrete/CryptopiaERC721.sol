@@ -19,6 +19,7 @@ abstract contract CryptopiaERC721 is ERC721EnumerableUpgradeable, AccessControlU
      * Roles
      */
     bytes32 constant internal SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
+    bytes32 constant internal MINTER_ROLE = keccak256("MINTER_ROLE");
 
 
     /**

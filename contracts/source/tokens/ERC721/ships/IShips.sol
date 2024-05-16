@@ -121,6 +121,13 @@ interface IShips {
             ShipBattleData memory battleData2 
         );
 
+
+    /// @dev Apply a skin to a ship
+    /// @param tokenId The id of the ship to apply the skin to
+    /// @param skinTokenId The id of the skin to apply
+    function applySkin(uint tokenId, uint skinTokenId)
+        external;
+
     
     /**
      * System functions

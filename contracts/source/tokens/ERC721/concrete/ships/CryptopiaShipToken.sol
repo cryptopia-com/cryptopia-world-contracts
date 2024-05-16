@@ -3,8 +3,10 @@ pragma solidity 0.8.20;
 
 import "../../../../game/players/IPlayerRegister.sol";
 import "../../ships/IShips.sol";  
+import "../../ships/IShipSkins.sol";  
 import "../../ships/types/ShipDataTypes.sol";
 import "../../ships/errors/ShipErrors.sol";  
+import "../../ships/errors/ShipSkinErrors.sol";  
 import "../CryptopiaERC721.sol";
 
 /// @title Cryptopia Ship Token Contract
@@ -84,18 +86,28 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     /// @dev Faction => ship name
     mapping (Faction => bytes32) public starterShips;
 
+    // Refs
+    address public skinContract;
+
 
     /**
      * Events
      */
     /// @dev Emitted when the ship with `tokenId` took `damage`
-    /// @param tokenId The id of the ship that took damage
+    /// @param ship The token id of the ship that took damage
     /// @param damage The amount of damage that was taken
-    event ShipDamage(uint indexed tokenId, uint16 damage);
+    event ShipDamage(uint indexed ship, uint16 damage);
 
     /// @dev Update `ship` to it's pirate version
     /// @param ship The id of the ship to turn into a pirate
     event ShipTurnedPirate(uint indexed ship);
+
+    /// @dev Emitted when a skin is applied to a ship
+    /// @param ship The token id of the ship that the skin was applied to
+    /// @param skinTokenId The token id of the skin that was applied
+    /// @param skinIndex The index of the skin that was applied
+    /// @param skinName The name of the skin that was applied
+    event ShipSkinApplied(uint indexed ship, uint skinTokenId, uint16 skinIndex, bytes32 skinName);
 
 
     /**
@@ -128,11 +140,15 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     function initialize(
         address _authenticator, 
         string memory initialContractURI, 
-        string memory initialBaseTokenURI) 
+        string memory initialBaseTokenURI,
+        address _skinContract) 
         public initializer 
     {
         __CryptopiaERC721_init(
             "Cryptopia Ships", "SHIP", _authenticator, initialContractURI, initialBaseTokenURI);
+
+        // Set refs
+        skinContract = _skinContract;
 
         // Grant admin role
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -350,6 +366,48 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
             defence: ships[shipInstances[tokenIds.tokenId2].name].base_defence + shipInstances[tokenIds.tokenId2].defence,
             tileSafetyInverse: ships[shipInstances[tokenIds.tokenId2].name].subFaction == SubFaction.Pirate
         });
+    }
+
+
+    /// @dev Apply a skin to a ship
+    /// @param tokenId The id of the ship to apply the skin to
+    /// @param skinTokenId The id of the skin to apply
+    function applySkin(uint tokenId, uint skinTokenId)
+        public virtual override 
+    {
+        address sender = _msgSender();
+
+        // Check if ship is owned by the sender
+        if (ownerOf(tokenId) != sender) 
+        {
+            revert ShipNotOwned(tokenId, sender);
+        }
+
+        // Get skin data
+        ShipInstance memory ship = shipInstances[tokenId];
+        ShipSkinInstance memory skin = IShipSkins(skinContract)
+            .getSkinInstance(skinTokenId);
+
+        // Check if skin is owned by the sender
+        if (skin.owner != sender) 
+        {
+            revert ShipSkinNotOwned(skinTokenId, sender);
+        }
+
+        // Check if skin is applicable to ship
+        if (skin.ship != ship.name) 
+        {
+            revert ShipSkinNotApplicable(skinTokenId, skin.name, tokenId, ship.name);
+        }
+
+        // Burn skin
+        IShipSkins(skinContract).__burn(skinTokenId);
+
+        // Apply skin
+        shipInstances[tokenId].skinIndex = skin.index;
+
+        // Emit
+        emit ShipSkinApplied(tokenId, skinTokenId, skin.index, skin.name);
     }
 
 

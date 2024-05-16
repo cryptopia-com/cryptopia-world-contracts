@@ -61,7 +61,7 @@ struct ShipInstance
     bool locked;
 
     /// @dev Identifier for the ship's skin, defining its visual appearance
-    uint16 skin;
+    uint16 skinIndex;
 
     /// @dev Effects on speed of any equipped modules
     uint16 speed;

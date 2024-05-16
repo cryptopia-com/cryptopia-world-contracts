@@ -364,8 +364,6 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
         // Assign
         IInventories(inventoriesContract)
             .__assignNonFungibleToken(player, inventory, address(this), tokenId);
-
-        return tokenId;
     }
 
 

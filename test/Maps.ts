@@ -147,6 +147,7 @@ describe("Maps Contract", function () {
         const AssetRegisterFactory = await ethers.getContractFactory("CryptopiaAssetRegister");
         const AssetTokenFactory = await ethers.getContractFactory("CryptopiaAssetToken");
         const ShipTokenFactory = await ethers.getContractFactory("CryptopiaShipToken");
+        const ShipSkinTokenFactory = await ethers.getContractFactory("CryptopiaShipSkinToken");
         const TitleDeedTokenFactory = await ethers.getContractFactory("CryptopiaTitleDeedToken");
         const MapsFactory = await ethers.getContractFactory("CryptopiaMaps");
         const MapsExtensionsFactory = await ethers.getContractFactory("CryptopiaMapsExtensions");
@@ -200,13 +201,27 @@ describe("Maps Contract", function () {
         await assetRegisterInstance.grantRole(SYSTEM_ROLE, system);
 
 
+        // Deploy skins
+        const shipSkinTokenProxy = await upgrades.deployProxy(
+            ShipSkinTokenFactory, 
+            [
+                whitelistAddress,
+                "", 
+                "",
+                inventoriesAddress
+            ]);
+
+        const shipSkinTokenAddress = await shipSkinTokenProxy.address;
+
+
         // Deploy Ships
         const shipTokenProxy = await upgrades.deployProxy(
             ShipTokenFactory, 
             [
                 whitelistAddress,
                 "", 
-                ""
+                "",
+                shipSkinTokenAddress
             ]);
 
         const shipTokenAddress = await shipTokenProxy.address;

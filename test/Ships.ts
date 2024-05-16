@@ -2,23 +2,15 @@ import "../scripts/helpers/converters";
 import { expect } from "chai";
 import { ethers, upgrades } from "hardhat";
 import { MINTER_ROLE, SYSTEM_ROLE } from "./settings/roles";   
-import { Resource, Terrain, Biome, Inventory, SubFaction } from "../scripts/types/enums";
-import { Asset, Map } from "../scripts/types/input";
-import { getParamFromEvent} from '../scripts/helpers/events';
-import { encodeRockData, encodeVegetationData, encodeWildlifeData } from '../scripts/maps/helpers/encoders';
-import { resolveEnum } from "../scripts/helpers/enums";
-import { time } from "@nomicfoundation/hardhat-network-helpers";
 
 import { 
-    DevelopmentShipToken,
-    DevelopmentShipSkinToken,
+    CryptopiaShipToken,
+    CryptopiaShipSkinToken,
 } from "../typechain-types";
 
 import { 
     ShipSkinStruct 
 } from "../typechain-types/contracts/source/tokens/ERC721/ships/IShipSkins";
-
-import { ZERO_ADDRESS } from "./settings/constants";
 
 
 /**
@@ -70,18 +62,18 @@ describe("Ships", function () {
         ];
 
 
-        let shipTokenInstance: DevelopmentShipToken;
-        let shipSkinTokenInstance: DevelopmentShipSkinToken;
+        let shipTokenInstance: CryptopiaShipToken;
+        let shipSkinTokenInstance: CryptopiaShipSkinToken;
 
         /**
          * Setup
          */
         before(async () => {
 
-            const WhitelistFactory = await ethers.getContractFactory("DevelopmentWhitelist");
-            const InventoriesFactory = await ethers.getContractFactory("DevelopmentInventories");
-            const ShipTokenFactory = await ethers.getContractFactory("DevelopmentShipToken");
-            const ShipSkinTokenFactory = await ethers.getContractFactory("DevelopmentShipSkinToken");
+            const WhitelistFactory = await ethers.getContractFactory("CryptopiaWhitelist");
+            const InventoriesFactory = await ethers.getContractFactory("CryptopiaInventories");
+            const ShipTokenFactory = await ethers.getContractFactory("CryptopiaShipToken");
+            const ShipSkinTokenFactory = await ethers.getContractFactory("CryptopiaShipSkinToken");
 
             // Deploy Inventories
             const inventoriesProxy = await upgrades.deployProxy(
@@ -114,7 +106,7 @@ describe("Ships", function () {
                 ]);
 
             const shipSkinTokenAddress = await shipSkinTokenProxy.address;
-            shipSkinTokenInstance = await ethers.getContractAt("DevelopmentShipSkinToken", shipSkinTokenAddress);
+            shipSkinTokenInstance = await ethers.getContractAt("CryptopiaShipSkinToken", shipSkinTokenAddress);
 
             // Setup roles
             await shipSkinTokenInstance.grantRole(SYSTEM_ROLE, system);
@@ -132,7 +124,7 @@ describe("Ships", function () {
                 ]);
 
             const shipTokenAddress = await shipTokenProxy.address;
-            shipTokenInstance = await ethers.getContractAt("DevelopmentShipToken", shipTokenAddress);
+            shipTokenInstance = await ethers.getContractAt("CryptopiaShipToken", shipTokenAddress);
 
             // Setup roles
             shipTokenInstance.grantRole(SYSTEM_ROLE, system);

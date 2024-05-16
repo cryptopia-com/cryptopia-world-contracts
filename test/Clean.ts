@@ -24,6 +24,7 @@ import {
     DevelopmentPirateMechanics,
     DevelopmentToolToken,
     DevelopmentShipToken,
+    DevelopmentShipSkinToken
 } from "../typechain-types";
 
 import { 
@@ -276,6 +277,7 @@ describe("Clean Contracts", function () {
             const InventoriesFactory = await ethers.getContractFactory("DevelopmentInventories");
             const CraftingFactory = await ethers.getContractFactory("DevelopmentCrafting");
             const ShipTokenFactory = await ethers.getContractFactory("DevelopmentShipToken");
+            const ShipSkinTokenFactory = await ethers.getContractFactory("DevelopmentShipSkinToken");
             const AssetRegisterFactory = await ethers.getContractFactory("DevelopmentAssetRegister");
             const TitleDeedTokenFactory = await ethers.getContractFactory("DevelopmentTitleDeedToken");
             const MapsFactory = await ethers.getContractFactory("DevelopmentMaps");
@@ -319,13 +321,27 @@ describe("Clean Contracts", function () {
              const assetRegisterAddress = await assetRegisterProxy.address;
 
 
+            // Deploy skins
+            const shipSkinTokenProxy = await upgrades.deployProxy(
+                ShipSkinTokenFactory, 
+                [
+                    whitelistAddress,
+                    "", 
+                    "",
+                    inventoriesAddress
+                ]);
+
+            const shipSkinTokenAddress = await shipSkinTokenProxy.address;
+
+
             // Deploy Ships
             const shipTokenProxy = await upgrades.deployProxy(
                 ShipTokenFactory, 
                 [
                     whitelistAddress,
                     "", 
-                    ""
+                    "",
+                    shipSkinTokenAddress
                 ]);
 
             const shipTokenAddress = await shipTokenProxy.address;
@@ -665,6 +681,7 @@ describe("Clean Contracts", function () {
         let account2Address: string;
 
         let shipTokenInstance: DevelopmentShipToken;
+        let shipSkinTokenInstance: DevelopmentShipSkinToken;
 
         /**
          * Setup
@@ -677,6 +694,7 @@ describe("Clean Contracts", function () {
             const InventoriesFactory = await ethers.getContractFactory("DevelopmentInventories");
             const CraftingFactory = await ethers.getContractFactory("DevelopmentCrafting");
             const ShipTokenFactory = await ethers.getContractFactory("DevelopmentShipToken");
+            const ShipSkinTokenFactory = await ethers.getContractFactory("DevelopmentShipSkinToken");
             const AssetRegisterFactory = await ethers.getContractFactory("DevelopmentAssetRegister");
             const TitleDeedTokenFactory = await ethers.getContractFactory("DevelopmentTitleDeedToken");
             const MapsFactory = await ethers.getContractFactory("DevelopmentMaps");
@@ -720,13 +738,28 @@ describe("Clean Contracts", function () {
              const assetRegisterAddress = await assetRegisterProxy.address;
 
 
+            // Deploy skins
+            const shipSkinTokenProxy = await upgrades.deployProxy(
+                ShipSkinTokenFactory, 
+                [
+                    whitelistAddress,
+                    "", 
+                    "",
+                    inventoriesAddress
+                ]);
+
+            const shipSkinTokenAddress = await shipSkinTokenProxy.address;
+            shipSkinTokenInstance = await ethers.getContractAt("DevelopmentShipSkinToken", shipSkinTokenAddress);
+
+
             // Deploy Ships
             const shipTokenProxy = await upgrades.deployProxy(
                 ShipTokenFactory, 
                 [
                     whitelistAddress,
                     "", 
-                    ""
+                    "",
+                    shipSkinTokenAddress
                 ]);
 
             const shipTokenAddress = await shipTokenProxy.address;
@@ -1010,6 +1043,7 @@ describe("Clean Contracts", function () {
             const InventoriesFactory = await ethers.getContractFactory("DevelopmentInventories");
             const CraftingFactory = await ethers.getContractFactory("DevelopmentCrafting");
             const ShipTokenFactory = await ethers.getContractFactory("DevelopmentShipToken");
+            const ShipSkinTokenFactory = await ethers.getContractFactory("DevelopmentShipSkinToken");
             const AssetRegisterFactory = await ethers.getContractFactory("DevelopmentAssetRegister");
             const TitleDeedTokenFactory = await ethers.getContractFactory("DevelopmentTitleDeedToken");
             const MapsFactory = await ethers.getContractFactory("DevelopmentMaps");
@@ -1054,13 +1088,27 @@ describe("Clean Contracts", function () {
              const assetRegisterAddress = await assetRegisterProxy.address;
 
 
+            // Deploy skins
+            const shipSkinTokenProxy = await upgrades.deployProxy(
+                ShipSkinTokenFactory, 
+                [
+                    whitelistAddress,
+                    "", 
+                    "",
+                    inventoriesAddress
+                ]);
+
+            const shipSkinTokenAddress = await shipSkinTokenProxy.address;
+
+
             // Deploy Ships
             const shipTokenProxy = await upgrades.deployProxy(
                 ShipTokenFactory, 
                 [
                     whitelistAddress,
                     "", 
-                    ""
+                    "",
+                    shipSkinTokenAddress
                 ]);
 
             const shipTokenAddress = await shipTokenProxy.address;
@@ -1563,6 +1611,7 @@ describe("Clean Contracts", function () {
             const InventoriesFactory = await ethers.getContractFactory("DevelopmentInventories");
             const CraftingFactory = await ethers.getContractFactory("DevelopmentCrafting");
             const ShipTokenFactory = await ethers.getContractFactory("DevelopmentShipToken");
+            const ShipSkinTokenFactory = await ethers.getContractFactory("DevelopmentShipSkinToken");
             const AssetRegisterFactory = await ethers.getContractFactory("DevelopmentAssetRegister");
             const AssetTokenFactory = await ethers.getContractFactory("DevelopmentAssetToken");
             const TitleDeedTokenFactory = await ethers.getContractFactory("DevelopmentTitleDeedToken");
@@ -1612,13 +1661,27 @@ describe("Clean Contracts", function () {
             await assetRegisterInstance.grantRole(SYSTEM_ROLE, system);
 
 
+            // Deploy skins
+            const shipSkinTokenProxy = await upgrades.deployProxy(
+                ShipSkinTokenFactory, 
+                [
+                    whitelistAddress,
+                    "", 
+                    "",
+                    inventoriesAddress
+                ]);
+
+            const shipSkinTokenAddress = await shipSkinTokenProxy.address;
+
+
             // Deploy Ships
             const shipTokenProxy = await upgrades.deployProxy(
                 ShipTokenFactory, 
                 [
                     whitelistAddress,
                     "", 
-                    ""
+                    "",
+                    shipSkinTokenAddress
                 ]);
 
             const shipTokenAddress = await shipTokenProxy.address;
@@ -2184,6 +2247,7 @@ describe("Clean Contracts", function () {
             const InventoriesFactory = await ethers.getContractFactory("DevelopmentInventories");
             const CraftingFactory = await ethers.getContractFactory("DevelopmentCrafting");
             const ShipTokenFactory = await ethers.getContractFactory("DevelopmentShipToken");
+            const ShipSkinTokenFactory = await ethers.getContractFactory("DevelopmentShipSkinToken");
             const AssetRegisterFactory = await ethers.getContractFactory("DevelopmentAssetRegister");
             const AssetTokenFactory = await ethers.getContractFactory("DevelopmentAssetToken");
             const TitleDeedTokenFactory = await ethers.getContractFactory("DevelopmentTitleDeedToken");
@@ -2233,13 +2297,27 @@ describe("Clean Contracts", function () {
             await assetRegisterInstance.grantRole(SYSTEM_ROLE, system);
 
 
+            // Deploy skins
+            const shipSkinTokenProxy = await upgrades.deployProxy(
+                ShipSkinTokenFactory, 
+                [
+                    whitelistAddress,
+                    "", 
+                    "",
+                    inventoriesAddress
+                ]);
+
+            const shipSkinTokenAddress = await shipSkinTokenProxy.address;
+
+
             // Deploy Ships
             const shipTokenProxy = await upgrades.deployProxy(
                 ShipTokenFactory, 
                 [
                     whitelistAddress,
                     "", 
-                    ""
+                    "",
+                    shipSkinTokenAddress
                 ]);
 
             const shipTokenAddress = await shipTokenProxy.address;
@@ -2710,6 +2788,7 @@ describe("Clean Contracts", function () {
             const InventoriesFactory = await ethers.getContractFactory("DevelopmentInventories");
             const CraftingFactory = await ethers.getContractFactory("DevelopmentCrafting");
             const ShipTokenFactory = await ethers.getContractFactory("DevelopmentShipToken");
+            const ShipSkinTokenFactory = await ethers.getContractFactory("DevelopmentShipSkinToken");
             const AssetRegisterFactory = await ethers.getContractFactory("DevelopmentAssetRegister");
             const AssetTokenFactory = await ethers.getContractFactory("DevelopmentAssetToken");
             const TitleDeedTokenFactory = await ethers.getContractFactory("DevelopmentTitleDeedToken");
@@ -2760,13 +2839,27 @@ describe("Clean Contracts", function () {
             await assetRegisterInstance.grantRole(SYSTEM_ROLE, system);
 
 
+            // Deploy skins
+            const shipSkinTokenProxy = await upgrades.deployProxy(
+                ShipSkinTokenFactory, 
+                [
+                    whitelistAddress,
+                    "", 
+                    "",
+                    inventoriesAddress
+                ]);
+
+            const shipSkinTokenAddress = await shipSkinTokenProxy.address;
+
+
             // Deploy Ships
             const shipTokenProxy = await upgrades.deployProxy(
                 ShipTokenFactory, 
                 [
                     whitelistAddress,
                     "", 
-                    ""
+                    "",
+                    shipSkinTokenAddress
                 ]);
 
             const shipTokenAddress = await shipTokenProxy.address;
@@ -3173,6 +3266,7 @@ describe("Clean Contracts", function () {
             const InventoriesFactory = await ethers.getContractFactory("DevelopmentInventories");
             const CraftingFactory = await ethers.getContractFactory("DevelopmentCrafting");
             const ShipTokenFactory = await ethers.getContractFactory("DevelopmentShipToken");
+            const ShipSkinTokenFactory = await ethers.getContractFactory("DevelopmentShipSkinToken");
             const AssetRegisterFactory = await ethers.getContractFactory("DevelopmentAssetRegister");
             const AssetTokenFactory = await ethers.getContractFactory("DevelopmentAssetToken");
             const TitleDeedTokenFactory = await ethers.getContractFactory("DevelopmentTitleDeedToken");
@@ -3224,13 +3318,27 @@ describe("Clean Contracts", function () {
             await assetRegisterInstance.grantRole(SYSTEM_ROLE, system);
 
 
+            // Deploy skins
+            const shipSkinTokenProxy = await upgrades.deployProxy(
+                ShipSkinTokenFactory, 
+                [
+                    whitelistAddress,
+                    "", 
+                    "",
+                    inventoriesAddress
+                ]);
+
+            const shipSkinTokenAddress = await shipSkinTokenProxy.address;
+
+
             // Deploy Ships
             const shipTokenProxy = await upgrades.deployProxy(
                 ShipTokenFactory, 
                 [
                     whitelistAddress,
                     "", 
-                    ""
+                    "",
+                    shipSkinTokenAddress
                 ]);
 
             const shipTokenAddress = await shipTokenProxy.address;
@@ -3467,18 +3575,15 @@ describe("Clean Contracts", function () {
             // Deploy quests
             const quest = {
                 name: "Test Quest".toBytes32(),
-                hasLevelConstraint: false,
                 level: 0,
                 hasFactionConstraint: false,
                 faction: 0, 
                 hasSubFactionConstraint: false,
                 subFaction: SubFaction.None, 
-                hasCompletionConstraint: true,
                 maxCompletions: 1,
-                hasCooldownConstraint: false,
                 cooldown: 0,
-                hasTimeConstraint: false,
                 maxDuration: 0,
+                prerequisiteQuest: "".toBytes32(),
                 steps: [
                     {
                         name: "Step 1".toBytes32(),

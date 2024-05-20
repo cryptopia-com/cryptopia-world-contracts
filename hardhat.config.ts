@@ -103,7 +103,7 @@ const config: HardhatUserConfig = {
         network: "skaleNebulaMainnet",
         chainId: 1482601649,
         urls: {
-            apiURL: "https://green-giddy-denebola.explorer.mainnet.skalenodes.com//api",
+            apiURL: "https://green-giddy-denebola.explorer.mainnet.skalenodes.com/api",
             browserURL: "https://green-giddy-denebola.explorer.mainnet.skalenodes.com/"
         }
       }

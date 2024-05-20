@@ -557,6 +557,12 @@ describe("Quests Contract", function () {
                         name: "Resque".toBytes32(),
                         xp: 100,
                         karma: 5,
+                        probability: 10000,
+                        probabilityModifierSpeed: 0,
+                        probabilityModifierCharisma: 0,
+                        probabilityModifierLuck: 0,
+                        probabilityModifierIntelligence: 0,
+                        probabilityModifierStrength: 0,
                         fungible: [],
                         nonFungible: [
                             {
@@ -570,6 +576,12 @@ describe("Quests Contract", function () {
                         name: "Steal".toBytes32(),
                         xp: 100,
                         karma: -5,
+                        probability: 10000,
+                        probabilityModifierSpeed: 0,
+                        probabilityModifierCharisma: 0,
+                        probabilityModifierLuck: 0,
+                        probabilityModifierIntelligence: 0,
+                        probabilityModifierStrength: 0,
                         fungible: [
                             {
                                 asset: getAssetByResource(Resource.Wood).contractAddress,
@@ -661,6 +673,12 @@ describe("Quests Contract", function () {
                         name: "Resque".toBytes32(),
                         xp: 100,
                         karma: 5,
+                        probability: 10000,
+                        probabilityModifierSpeed: 0,
+                        probabilityModifierCharisma: 0,
+                        probabilityModifierLuck: 0,
+                        probabilityModifierIntelligence: 0,
+                        probabilityModifierStrength: 0,
                         fungible: [],
                         nonFungible: [
                             {
@@ -674,6 +692,12 @@ describe("Quests Contract", function () {
                         name: "Steal".toBytes32(),
                         xp: 100,
                         karma: -5,
+                        probability: 10000,
+                        probabilityModifierSpeed: 0,
+                        probabilityModifierCharisma: 0,
+                        probabilityModifierLuck: 0,
+                        probabilityModifierIntelligence: 0,
+                        probabilityModifierStrength: 0,
                         fungible: [
                             {
                                 asset: getAssetByResource(Resource.Wood).contractAddress,
@@ -1094,6 +1118,12 @@ describe("Quests Contract", function () {
                         name: "Right".toBytes32(),
                         xp: 100,
                         karma: 5,
+                        probability: 10000,
+                        probabilityModifierSpeed: 0,
+                        probabilityModifierCharisma: 0,
+                        probabilityModifierLuck: 0,
+                        probabilityModifierIntelligence: 0,
+                        probabilityModifierStrength: 0,
                         fungible: [],
                         nonFungible: [
                             {
@@ -1107,6 +1137,12 @@ describe("Quests Contract", function () {
                         name: "Wrong".toBytes32(),
                         xp: 100,
                         karma: -5,
+                        probability: 10000,
+                        probabilityModifierSpeed: 0,
+                        probabilityModifierCharisma: 0,
+                        probabilityModifierLuck: 0,
+                        probabilityModifierIntelligence: 0,
+                        probabilityModifierStrength: 0,
                         fungible: [
                             {
                                 asset: getAssetByResource(Resource.Wood).contractAddress,

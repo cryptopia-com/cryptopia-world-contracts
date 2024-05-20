@@ -80,3 +80,21 @@ struct PlayerData
     /// @dev Equipped ship
     uint ship; 
 }
+
+struct PlayerStats 
+{
+    /// @dev STATS_SPEED_BASE + (0 - MAX_LEVEL player choice when leveling up)
+    uint24 speed; 
+
+    /// @dev STATS_CHARISMA_BASE + (0 - MAX_LEVEL player choice when leveling up)
+    uint24 charisma; 
+
+    /// @dev STATS_BASE_LUCK + (0 - MAX_LEVEL player choice when leveling up)
+    uint24 luck; 
+
+    /// @dev STATS_INTELLIGENCE_BASE + (0 - MAX_LEVEL player choice when leveling up)
+    uint24 intelligence; 
+
+    /// @dev STATS_STRENGTH_BASE + (0 - MAX_LEVEL player choice when leveling up)
+    uint24 strength; 
+}

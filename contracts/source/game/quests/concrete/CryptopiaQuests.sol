@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
 import "../../../errors/ArgumentErrors.sol";
+import "../../utils/random/PseudoRandomness.sol";
 import "../../errors/FactionErrors.sol";
 import "../../players/IPlayerRegister.sol";
 import "../../players/types/PlayerDataTypes.sol";
@@ -26,12 +27,12 @@ import "../IQuests.sol";
 /// providing a dynamic and interactive gameplay experience. It integrates various aspects of the game, 
 /// such as player data, inventories, and maps, to offer quests that are not only challenging but also deeply 
 /// integrated with the game's lore and mechanics.
-/// @dev Inherits from Initializable and AccessControlUpgradeable and implements the IQuests interface. 
+/// @dev  Inherits from Initializable, AccessControlUpgradeable, and PseudoRandomness and implements the IQuests interface. 
 /// It manages a comprehensive set of quest-related data and provides a robust system for quest management, 
 /// including constraints, steps, and rewards. The contract is designed to be upgradable, ensuring future flexibility 
 /// and adaptability for the evolving needs of the game.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
+contract CryptopiaQuests is Initializable, AccessControlUpgradeable, PseudoRandomness, IQuests
 {
     /// @dev Quest within Cryptopia
     /// @notice Quests come with constraints (like level or faction requirements) that players must meet to start them
@@ -239,6 +240,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         public virtual initializer 
     {
         __AccessControl_init();
+        __PseudoRandomness_init();
 
         // Grant admin role
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -691,6 +693,12 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
             data.rewards[i].name = quest.rewards[i].name;
             data.rewards[i].karma = quest.rewards[i].karma;
             data.rewards[i].xp = quest.rewards[i].xp;
+            data.rewards[i].probability = quest.rewards[i].probability;
+            data.rewards[i].probabilityModifierSpeed = quest.rewards[i].probabilityModifierSpeed;
+            data.rewards[i].probabilityModifierCharisma = quest.rewards[i].probabilityModifierCharisma;
+            data.rewards[i].probabilityModifierLuck = quest.rewards[i].probabilityModifierLuck;
+            data.rewards[i].probabilityModifierIntelligence = quest.rewards[i].probabilityModifierIntelligence;
+            data.rewards[i].probabilityModifierStrength = quest.rewards[i].probabilityModifierStrength;
 
             // Fungible 
             for (uint j = 0; j < quest.rewards[i].fungible.length; j++) 
@@ -993,6 +1001,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         // Get quest
         QuestData storage quest = quests[questName];
         QuestPlayerData storage questPlayerData = playerQuestData[msg.sender][questName];
+        QuestReward storage reward = quest.rewards[rewardIndex];
 
         // Check reward index
         if (rewardIndex >= quest.rewards.length) 
@@ -1003,44 +1012,91 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, IQuests
         // Mark reward claimed
         questPlayerData.timestampClaimed = uint64(block.timestamp);
 
-        // Fungible rewards
-        for (uint i = 0; i < quest.rewards[rewardIndex].fungible.length; i++) 
-        {   
-            FungibleTransactionData memory reward = quest.rewards[rewardIndex].fungible[i];
-            if (inventory == Inventory.Wallet && !reward.allowWallet)
+        bool canClaimReward = reward.probability >= RANDOMNESS_PRECISION_FACTOR;
+        if (!canClaimReward)
+        {
+            uint combinedProbability = reward.probability;
+            PlayerStats memory playerStats = IPlayerRegister(playerRegisterContract)
+                .getPlayerStats(msg.sender);
+
+            // Apply speed/agility
+            if (playerStats.speed > 0 && reward.probabilityModifierSpeed > 0)
             {
-                revert ArgumentInvalid();
+                combinedProbability += playerStats.speed * reward.probabilityModifierSpeed;
             }
 
-            // Reward player
-            IFungibleQuestReward(reward.asset)
-                .__mintQuestReward(msg.sender, inventory, reward.amount); 
+            // Apply charisma
+            if (playerStats.charisma > 0 && reward.probabilityModifierCharisma > 0)
+            {
+                combinedProbability += playerStats.charisma * reward.probabilityModifierCharisma;
+            }
 
-            // Emit event
-            emit QuestRewardClaim(msg.sender, questName, rewardIndex, reward.asset, reward.amount, 0);
+            // Apply luck
+            if (playerStats.luck > 0 && reward.probabilityModifierLuck > 0)
+            {
+                combinedProbability += playerStats.luck * reward.probabilityModifierLuck;
+            }
+
+            // Apply intelligence
+            if (playerStats.intelligence > 0 && reward.probabilityModifierIntelligence > 0)
+            {
+                combinedProbability += playerStats.intelligence * reward.probabilityModifierIntelligence;
+            }
+
+            // Apply strength
+            if (playerStats.strength > 0 && reward.probabilityModifierStrength > 0)
+            {
+                combinedProbability += playerStats.strength * reward.probabilityModifierStrength;
+            }
+
+            // Generate (pseudo) randomness
+            uint randomness = _getRandomNumberAt(_generateRandomSeed(), 0);
+
+            // Check if reward can be claimed
+            canClaimReward = combinedProbability >= randomness;
         }
 
-        // Non-fungible rewards
-        for (uint i = 0; i < quest.rewards[rewardIndex].nonFungible.length; i++) 
-        {   
-            NonFungibleTransactionData memory reward = quest.rewards[rewardIndex].nonFungible[i];
-            if (inventory == Inventory.Wallet && !reward.allowWallet)
-            {
-                revert ArgumentInvalid();
+        if (canClaimReward)
+        {
+            // Fungible rewards
+            for (uint i = 0; i < reward.fungible.length; i++) 
+            {   
+                FungibleTransactionData memory fungible = reward.fungible[i];
+                if (inventory == Inventory.Wallet && !fungible.allowWallet)
+                {
+                    revert ArgumentInvalid();
+                }
+
+                // Reward player
+                IFungibleQuestReward(fungible.asset)
+                    .__mintQuestReward(msg.sender, inventory, fungible.amount); 
+
+                // Emit event
+                emit QuestRewardClaim(msg.sender, questName, rewardIndex, fungible.asset, fungible.amount, 0);
             }
 
-            // Reward player
-            uint tokenId = INonFungibleQuestReward(reward.asset)
-                .__mintQuestReward(msg.sender, inventory, reward.item);
+            // Non-fungible rewards
+            for (uint i = 0; i < reward.nonFungible.length; i++) 
+            {   
+                NonFungibleTransactionData memory nonFungible = reward.nonFungible[i];
+                if (inventory == Inventory.Wallet && !nonFungible.allowWallet)
+                {
+                    revert ArgumentInvalid();
+                }
 
-            // Emit event
-            emit QuestRewardClaim(msg.sender, questName, rewardIndex, reward.asset, 1, tokenId); 
+                // Reward player
+                uint tokenId = INonFungibleQuestReward(nonFungible.asset)
+                    .__mintQuestReward(msg.sender, inventory, nonFungible.item);
+
+                // Emit event
+                emit QuestRewardClaim(msg.sender, questName, rewardIndex, nonFungible.asset, 1, tokenId); 
+            }
         }
 
         // Award xp and karma
         IPlayerRegister(playerRegisterContract)
             .__award(msg.sender, 
-                quest.rewards[rewardIndex].xp, 
-                quest.rewards[rewardIndex].karma);
+                reward.xp, 
+                reward.karma);
     }
 }

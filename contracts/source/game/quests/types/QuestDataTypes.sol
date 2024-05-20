@@ -2,6 +2,7 @@
 pragma solidity 0.8.20;
 
 import "../../inventories/types/InventoryDataTypes.sol";
+import "../../players/types/PlayerEnums.sol";
 import "../../types/FactionEnums.sol";
 
 /// @dev Struct representing a quest within Cryptopia
@@ -90,7 +91,17 @@ struct QuestReward {
 
     /// @dev Experience points awarded for claiming the reward
     uint24 xp;
-    
+
+    /// @dev Probability of receiving the reward (0 - 10000)
+    uint16 probability;
+
+    /// @dev Probability modifiers for each player stat
+    uint16 probabilityModifierSpeed;
+    uint16 probabilityModifierCharisma;
+    uint16 probabilityModifierLuck;
+    uint16 probabilityModifierIntelligence;
+    uint16 probabilityModifierStrength;
+
     /// @dev Array of fungible rewards (like ERC20 tokens) awarded
     FungibleTransactionData[] fungible;
 

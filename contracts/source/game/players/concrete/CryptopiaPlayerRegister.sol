@@ -263,6 +263,24 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     }
 
 
+    /// @dev Returns the stats for `player`
+    /// @param player CryptopiaAccount address (registered as a player)
+    /// @return stats Player stats
+    function getPlayerStats(address player) 
+        public virtual override view 
+        returns (PlayerStats memory)
+    {
+        PlayerData memory playerData = playerDatas[player];
+        return PlayerStats({
+            speed: playerData.speed,
+            charisma: playerData.charisma,
+            luck: playerData.luck,
+            intelligence: playerData.intelligence,
+            strength: playerData.strength
+        });
+    }
+
+
     /// @dev Returns player data for `account`
     /// @param account CryptopiaAccount address (registered as a player)
     /// @return player Player data

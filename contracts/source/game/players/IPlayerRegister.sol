@@ -57,6 +57,14 @@ interface IPlayerRegister {
         external view 
         returns (PlayerData memory data);
 
+
+    /// @dev Returns the stats for `player`
+    /// @param player CryptopiaAccount address (registered as a player)
+    /// @return stats Player stats
+    function getPlayerStats(address player) 
+        external view 
+        returns (PlayerStats memory);
+
     
     /// @dev Returns true if `player` is a pirate
     /// @param player CryptopiaAccount address (registered as a player)

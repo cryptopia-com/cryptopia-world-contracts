@@ -26,6 +26,12 @@
                 "name": "Lumberjack convinced",
                 "xp": 10,
                 "karma": 0,
+                "probability": 10000,
+                "probabilityModifierSpeed": 0,
+                "probabilityModifierCharisma": 0,
+                "probabilityModifierLuck": 0,
+                "probabilityModifierIntelligence": 0,
+                "probabilityModifierStrength": 0,
                 "fungible": [
                     {
                         "asset": "AssetToken:Wood",
@@ -64,6 +70,12 @@
                 "name": "Miner convinced",
                 "xp": 10,
                 "karma": 0,
+                "probability": 10000,
+                "probabilityModifierSpeed": 0,
+                "probabilityModifierCharisma": 0,
+                "probabilityModifierLuck": 0,
+                "probabilityModifierIntelligence": 0,
+                "probabilityModifierStrength": 0,
                 "fungible": [
                     {
                         "asset": "AssetToken:Stone",

@@ -45,19 +45,19 @@ describe("Ships", function () {
         const skins : ShipSkinStruct[] = [
             {
                 name: "Blazing Sun Skin".toBytes32(),
-                ship: "Whitewake".toBytes32(),
+                ship: "Whitewake".toBytes32()
             },
             {
                 name: "Frozen Moon Skin".toBytes32(),
-                ship: "Polaris".toBytes32(),
+                ship: "Polaris".toBytes32()
             },
             {
                 name: "Thunderstorm Skin".toBytes32(),
-                ship: "Socrates".toBytes32(),
+                ship: "Socrates".toBytes32()
             },
             {
                 name: "Golden Dawn Skin".toBytes32(),
-                ship: "Kingfisher".toBytes32(),
+                ship: "Kingfisher".toBytes32()
             }
         ];
 

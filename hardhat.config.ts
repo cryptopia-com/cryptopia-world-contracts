@@ -119,6 +119,7 @@ const config: HardhatUserConfig = {
 
 export default config;
 
+
 /**
  * Mint resources
  * 
@@ -156,7 +157,47 @@ task("resource", "Mint resources")
     }
   });
 
-  /**
+/**
+ * Mint skin
+ * 
+ * npx hardhat skin --network localhost  --name "Blazing Sun Skin" --to 0x77E5CE811c764A89BF313eCE7133050bf9CF8DF3
+ * npx hardhat skin --network skaleNebulaTestnet  --name "Blazing Sun Skin" --to 0x77E5CE811c764A89BF313eCE7133050bf9CF8DF3
+ */
+task("skin", "Mint Ship Skin")
+.addParam("name", "The skin to mint")
+.addParam("to", "The address to mint to")
+.setAction(async (taskArguments, hre) =>
+{
+
+  require("./scripts/helpers/converters");
+
+  // Config
+  const isDevEnvironment = hre.network.name == "hardhat" 
+      || hre.network.name == "ganache" 
+      || hre.network.name == "localhost";
+  const config = appConfig.networks[
+      isDevEnvironment ? "development" : hre.network.name];
+
+  const deploymentManager = new DeploymentManager(
+      hre.network.name, config.development);
+
+  const tokenDeployment = await deploymentManager.getContractDeployment(deploymentManager.resolveDeploymentKey("ShipSkinToken"));
+  const tokenInstance = await hre.ethers.getContractAt(deploymentManager.resolveContractName("ShipSkinToken"), tokenDeployment.address);
+
+  const minterRole = "MINTER_ROLE".toKeccak256();
+  const [deployer] = (await hre.ethers.getSigners()).map(s => s.address);
+  const hasRole = await tokenInstance.hasRole(minterRole, deployer);
+  if (!hasRole)
+  {
+    console.log("Granting MINTER_ROLE to deployer");
+    await tokenInstance.grantRole(minterRole, deployer);
+  }
+
+  console.log(`Minting ${taskArguments.name} to ${taskArguments.to}`);
+  await tokenInstance.mint(taskArguments.name.toBytes32(), taskArguments.to);
+});
+
+/**
  * Set automatic node mining for local host
  * 
  * npx hardhat setAutomine --network localhost --state true
@@ -186,13 +227,13 @@ task("setAutomine", "Set Automatic Mining")
  * 
  * npx hardhat fundLocalhost --network localhost --address 0x56870EBd9128c9c43823448e3DE6Bf7Dd762a9d4
  */
-    task("fundLocalhost", "Fund localhost with gas")
-    .addParam("address", "player address to send to")
-    .setAction(async (taskArguments, hre) =>
-    {
-      const [deployer] = await hre.ethers.getSigners();
-      await deployer.sendTransaction({
-        to: taskArguments.address,
-        value: hre.ethers.utils.parseEther("1.0")
-      });
-    });
+task("fundLocalhost", "Fund localhost with gas")
+.addParam("address", "player address to send to")
+.setAction(async (taskArguments, hre) =>
+{
+  const [deployer] = await hre.ethers.getSigners();
+  await deployer.sendTransaction({
+    to: taskArguments.address,
+    value: hre.ethers.utils.parseEther("1.0")
+  });
+});

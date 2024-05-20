@@ -554,6 +554,26 @@
       "address": "0x2CcB17A635bA16006bbb0A92E5968C778035c95a",
       "txHash": "0x10df032d7641f10de0c248c22485d0fba82738c17186650c74412c2e31be8ec2",
       "kind": "transparent"
+    },
+    {
+      "address": "0xe68ce294952f900Ba80c0aCb7E5640659bCD1f55",
+      "txHash": "0x6492e1e217e51b7e8b736651dfc9052fc4b2e8510a886e22dcc2b3e1f4d5a120",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x59B1C09ef3993b684c143d5542c8cf5AB4f6179B",
+      "txHash": "0x63bfe392cfc206e6c0be87cbe025f99f52cdab80a20c5588e1a720d2c68be223",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x2a48DfFbD2504FDFFa8927815C5A69Ad21AC7661",
+      "txHash": "0x822205292ef8ddb4ad591fd0f244a18a633e048db2f939b787ec127bc97edb2b",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x58d502e5544d30e2090f63995a3827719FEDD942",
+      "txHash": "0x949ec2ad72bca3d2d23f33e5dc6f802293cec2a41133e8219828d53e049fcac7",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -12172,6 +12192,774 @@
               "label": "_roles",
               "type": "t_mapping(t_bytes32,t_struct(RoleData)25_storage)",
               "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "af56f87ad7af73d8065d090e55c052ec198c7dce54de2e0090c58c3d32e590d5": {
+      "address": "0x861F44d0680239733Fe2aFFf80E02C21682F232B",
+      "txHash": "0xe82b26d76767209c7ec15c9d78784c86c92393e147746fd6b72a61b2b201f6f4",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "_contractURI",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_string_storage",
+            "contract": "CryptopiaERC721",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\CryptopiaERC721.sol:28"
+          },
+          {
+            "label": "_baseTokenURI",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_string_storage",
+            "contract": "CryptopiaERC721",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\CryptopiaERC721.sol:29"
+          },
+          {
+            "label": "authenticator",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_contract(IAuthenticator)11375",
+            "contract": "CryptopiaERC721",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\CryptopiaERC721.sol:32"
+          },
+          {
+            "label": "_currentTokenId",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256",
+            "contract": "CryptopiaShipSkinToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\ships\\CryptopiaShipSkinToken.sol:30"
+          },
+          {
+            "label": "skins",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_bytes32,t_struct(ShipSkinData)30932_storage)",
+            "contract": "CryptopiaShipSkinToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\ships\\CryptopiaShipSkinToken.sol:33"
+          },
+          {
+            "label": "skinsIndex",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_array(t_bytes32)dyn_storage",
+            "contract": "CryptopiaShipSkinToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\ships\\CryptopiaShipSkinToken.sol:34"
+          },
+          {
+            "label": "skinInstances",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_uint256,t_bytes32)",
+            "contract": "CryptopiaShipSkinToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\ships\\CryptopiaShipSkinToken.sol:37"
+          },
+          {
+            "label": "inventoriesContract",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_address",
+            "contract": "CryptopiaShipSkinToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\ships\\CryptopiaShipSkinToken.sol:40"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]",
+            "numberOfBytes": "32"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IAuthenticator)11375": {
+            "label": "contract IAuthenticator",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_bytes32,t_struct(ShipSkinData)30932_storage)": {
+            "label": "mapping(bytes32 => struct CryptopiaShipSkinToken.ShipSkinData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_bytes32)": {
+            "label": "mapping(uint256 => bytes32)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(ShipSkinData)30932_storage": {
+            "label": "struct CryptopiaShipSkinToken.ShipSkinData",
+            "members": [
+              {
+                "label": "index",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "ship",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)25_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)"
+          },
+          "t_struct(RoleData)25_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_bool))": {
+            "label": "mapping(address => mapping(address => bool))"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)25_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61"
+            }
+          ],
+          "erc7201:openzeppelin.storage.ERC721Enumerable": [
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_ownedTokens",
+              "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:21"
+            },
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_ownedTokensIndex",
+              "type": "t_mapping(t_uint256,t_uint256)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:22"
+            },
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_allTokens",
+              "type": "t_array(t_uint256)dyn_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:24"
+            },
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_allTokensIndex",
+              "type": "t_mapping(t_uint256,t_uint256)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:25"
+            }
+          ],
+          "erc7201:openzeppelin.storage.ERC721": [
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_name",
+              "type": "t_string_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:27"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_symbol",
+              "type": "t_string_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:30"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_owners",
+              "type": "t_mapping(t_uint256,t_address)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:32"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_balances",
+              "type": "t_mapping(t_address,t_uint256)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:34"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_tokenApprovals",
+              "type": "t_mapping(t_uint256,t_address)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:36"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_operatorApprovals",
+              "type": "t_mapping(t_address,t_mapping(t_address,t_bool))",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:38"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "814d2087960c4348aba3e2a13e27596cd8516a62dc510cc64319c3a059a431bd": {
+      "address": "0x8fdfe4473714258aC752dD40f2f45f0A39Bfa21b",
+      "txHash": "0x45fb7b7d69e4366fbef2ea679acac327285ffb2f6028fc6c2570f786f0945651",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "_contractURI",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_string_storage",
+            "contract": "CryptopiaERC721",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\CryptopiaERC721.sol:28"
+          },
+          {
+            "label": "_baseTokenURI",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_string_storage",
+            "contract": "CryptopiaERC721",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\CryptopiaERC721.sol:29"
+          },
+          {
+            "label": "authenticator",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_contract(IAuthenticator)4904",
+            "contract": "CryptopiaERC721",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\CryptopiaERC721.sol:32"
+          },
+          {
+            "label": "_currentTokenId",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256",
+            "contract": "CryptopiaShipSkinToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\ships\\CryptopiaShipSkinToken.sol:30"
+          },
+          {
+            "label": "skins",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_bytes32,t_struct(ShipSkinData)5716_storage)",
+            "contract": "CryptopiaShipSkinToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\ships\\CryptopiaShipSkinToken.sol:33"
+          },
+          {
+            "label": "skinsIndex",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_array(t_bytes32)dyn_storage",
+            "contract": "CryptopiaShipSkinToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\ships\\CryptopiaShipSkinToken.sol:34"
+          },
+          {
+            "label": "skinInstances",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_uint256,t_bytes32)",
+            "contract": "CryptopiaShipSkinToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\ships\\CryptopiaShipSkinToken.sol:37"
+          },
+          {
+            "label": "inventoriesContract",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_address",
+            "contract": "CryptopiaShipSkinToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\ships\\CryptopiaShipSkinToken.sol:40"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]",
+            "numberOfBytes": "32"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IAuthenticator)4904": {
+            "label": "contract IAuthenticator",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_bytes32,t_struct(ShipSkinData)5716_storage)": {
+            "label": "mapping(bytes32 => struct CryptopiaShipSkinToken.ShipSkinData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_bytes32)": {
+            "label": "mapping(uint256 => bytes32)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(ShipSkinData)5716_storage": {
+            "label": "struct CryptopiaShipSkinToken.ShipSkinData",
+            "members": [
+              {
+                "label": "index",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "ship",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)25_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)"
+          },
+          "t_struct(RoleData)25_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_bool))": {
+            "label": "mapping(address => mapping(address => bool))"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)25_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61"
+            }
+          ],
+          "erc7201:openzeppelin.storage.ERC721Enumerable": [
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_ownedTokens",
+              "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:21"
+            },
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_ownedTokensIndex",
+              "type": "t_mapping(t_uint256,t_uint256)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:22"
+            },
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_allTokens",
+              "type": "t_array(t_uint256)dyn_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:24"
+            },
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_allTokensIndex",
+              "type": "t_mapping(t_uint256,t_uint256)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:25"
+            }
+          ],
+          "erc7201:openzeppelin.storage.ERC721": [
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_name",
+              "type": "t_string_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:27"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_symbol",
+              "type": "t_string_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:30"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_owners",
+              "type": "t_mapping(t_uint256,t_address)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:32"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_balances",
+              "type": "t_mapping(t_address,t_uint256)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:34"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_tokenApprovals",
+              "type": "t_mapping(t_uint256,t_address)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:36"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_operatorApprovals",
+              "type": "t_mapping(t_address,t_mapping(t_address,t_bool))",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:38"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    },
+    "68c5117cdc462fd0f24f336997e70d4bfaaae3cda0c86b7ee65523a32d37ea73": {
+      "address": "0x7e81e53271B98b5D116AB031494DcEBAbEe5F64D",
+      "txHash": "0x258b03e9da7bcee2f4d432f014cc9d4aad55b53cfb74b578cfdc4e114aa77272",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "_contractURI",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_string_storage",
+            "contract": "CryptopiaERC721",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\CryptopiaERC721.sol:28"
+          },
+          {
+            "label": "_baseTokenURI",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_string_storage",
+            "contract": "CryptopiaERC721",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\CryptopiaERC721.sol:29"
+          },
+          {
+            "label": "authenticator",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_contract(IAuthenticator)4904",
+            "contract": "CryptopiaERC721",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\CryptopiaERC721.sol:32"
+          },
+          {
+            "label": "_currentTokenId",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256",
+            "contract": "CryptopiaShipSkinToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\ships\\CryptopiaShipSkinToken.sol:30"
+          },
+          {
+            "label": "skins",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_bytes32,t_struct(ShipSkinData)5716_storage)",
+            "contract": "CryptopiaShipSkinToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\ships\\CryptopiaShipSkinToken.sol:33"
+          },
+          {
+            "label": "skinsIndex",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_array(t_bytes32)dyn_storage",
+            "contract": "CryptopiaShipSkinToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\ships\\CryptopiaShipSkinToken.sol:34"
+          },
+          {
+            "label": "skinInstances",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_uint256,t_bytes32)",
+            "contract": "CryptopiaShipSkinToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\ships\\CryptopiaShipSkinToken.sol:37"
+          },
+          {
+            "label": "inventoriesContract",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_address",
+            "contract": "CryptopiaShipSkinToken",
+            "src": "contracts\\source\\tokens\\ERC721\\concrete\\ships\\CryptopiaShipSkinToken.sol:40"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]",
+            "numberOfBytes": "32"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IAuthenticator)4904": {
+            "label": "contract IAuthenticator",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_bytes32,t_struct(ShipSkinData)5716_storage)": {
+            "label": "mapping(bytes32 => struct CryptopiaShipSkinToken.ShipSkinData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_bytes32)": {
+            "label": "mapping(uint256 => bytes32)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(ShipSkinData)5716_storage": {
+            "label": "struct CryptopiaShipSkinToken.ShipSkinData",
+            "members": [
+              {
+                "label": "index",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "ship",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)25_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)"
+          },
+          "t_struct(RoleData)25_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_bool))": {
+            "label": "mapping(address => mapping(address => bool))"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)25_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61"
+            }
+          ],
+          "erc7201:openzeppelin.storage.ERC721Enumerable": [
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_ownedTokens",
+              "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:21"
+            },
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_ownedTokensIndex",
+              "type": "t_mapping(t_uint256,t_uint256)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:22"
+            },
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_allTokens",
+              "type": "t_array(t_uint256)dyn_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:24"
+            },
+            {
+              "contract": "ERC721EnumerableUpgradeable",
+              "label": "_allTokensIndex",
+              "type": "t_mapping(t_uint256,t_uint256)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721EnumerableUpgradeable.sol:25"
+            }
+          ],
+          "erc7201:openzeppelin.storage.ERC721": [
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_name",
+              "type": "t_string_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:27"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_symbol",
+              "type": "t_string_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:30"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_owners",
+              "type": "t_mapping(t_uint256,t_address)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:32"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_balances",
+              "type": "t_mapping(t_address,t_uint256)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:34"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_tokenApprovals",
+              "type": "t_mapping(t_uint256,t_address)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:36"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_operatorApprovals",
+              "type": "t_mapping(t_address,t_mapping(t_address,t_bool))",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:38"
             }
           ],
           "erc7201:openzeppelin.storage.Initializable": [

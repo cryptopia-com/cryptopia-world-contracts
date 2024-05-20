@@ -17,6 +17,7 @@ const config : NethereumConfig =
         "CryptopiaToken",
         "CryptopiaAssetToken", 
         "CryptopiaShipToken", 
+        "CryptopiaShipSkinToken", 
         "CryptopiaToolToken", 
         "CryptopiaTitleDeedToken", 
         "CryptopiaQuestToken", 

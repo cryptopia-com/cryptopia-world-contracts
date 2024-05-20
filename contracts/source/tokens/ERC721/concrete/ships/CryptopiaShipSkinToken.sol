@@ -117,21 +117,22 @@ contract CryptopiaShipSkinToken is CryptopiaERC721, IShipSkins, INonFungibleQues
 
 
     /// @dev Mint a new skin
-    /// @param name_ The name of the skin
+    /// @param skin The name of the skin
     /// @param to The address to mint the skin to
-    function mint(bytes32 name_, address to) 
+    function mint(bytes32 skin, address to) 
         public virtual
         onlyRole(MINTER_ROLE)
+        onlyExisting(skin)
         returns (uint tokenId)
     {
         // Mint
         tokenId = _getNextTokenId();
         _mint(to, tokenId);
         _incrementTokenId();
-        skinInstances[tokenId] = name_;
+        skinInstances[tokenId] = skin;
 
         // Emit event
-        emit ShipSkinMinted(tokenId, name_, to);
+        emit ShipSkinMinted(tokenId, skin, to);
     }
 
 
@@ -215,6 +216,17 @@ contract CryptopiaShipSkinToken is CryptopiaERC721, IShipSkins, INonFungibleQues
         {
             instances[i] = _getSkinInstance(tokenIds[i]);
         }
+    }
+
+
+    /// @dev getTokenURI() postfixed with the token ID baseTokenURI(){tokenID}
+    /// @param tokenId Token ID
+    /// @return uri where token data can be retrieved
+    function getTokenURI(uint tokenId) 
+        public virtual override view 
+        returns (string memory) 
+    {
+        return string(abi.encodePacked(getBaseTokenURI(), skinInstances[tokenId]));
     }
     
 

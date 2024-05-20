@@ -7,7 +7,7 @@ Deploy:
 npx hardhat run --network localhost ./scripts/deploy.ts
 
 Verify:
-npx hardhat run --network localhost ./scripts/verify.ts
+npx hardhat run --network skaleNebulaTestnet ./scripts/verify.ts
 
 Tools: 
 npx hardhat run --network localhost ./scripts/tools/tools.publish.ts
@@ -15,6 +15,9 @@ npx hardhat run --network localhost ./scripts/tools/tools.publish.ts
 Quests:
 npx hardhat run --network localhost ./scripts/quests/items.publish.ts
 npx hardhat run --network localhost ./scripts/quests/quests.publish.ts
+
+Ships:
+npx hardhat run --network skaleNebulaTestnet ./scripts/ships/skins.publish.ts
 
 Crafting:
 npx hardhat run --network localhost ./scripts/crafting/recipes.publish.ts

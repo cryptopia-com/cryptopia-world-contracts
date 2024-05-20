@@ -24,6 +24,10 @@ const config : AppConfig = {
                     contractURI: 'https://mumbai-api.cryptopia.com/ERC721/Ships/',
                     baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/Ships/'
                 },
+                ShipSkinToken: {
+                    contractURI: 'https://mumbai-api.cryptopia.com/ERC721/ShipSkins/',
+                    baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/ShipSkins/'
+                },
                 ToolToken: {
                     contractURI: 'https://mumbai-api.cryptopia.com/ERC721/Tools/',
                     baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/Tools/'
@@ -195,6 +199,10 @@ const config : AppConfig = {
                 ShipToken: {
                     contractURI: 'https://mumbai-api.cryptopia.com/ERC721/Ships/',
                     baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/Ships/'
+                },
+                ShipSkinToken: {
+                    contractURI: 'https://mumbai-api.cryptopia.com/ERC721/ShipSkin/',
+                    baseTokenURI: 'https://mumbai-api.cryptopia.com/ERC721/ShipSkin/'
                 },
                 ToolToken: {
                     contractURI: 'https://mumbai-api.cryptopia.com/ERC721/Tools/',
@@ -371,6 +379,10 @@ const config : AppConfig = {
                     contractURI: 'https://nebula-testnet-api.cryptopia.com/ERC721/Ships/',
                     baseTokenURI: 'https://nebula-testnet-api.cryptopia.com/ERC721/Ships/'
                 },
+                ShipSkinToken: {
+                    contractURI: 'https://nebula-testnet-api.cryptopia.com/ERC721/ShipSkins/',
+                    baseTokenURI: 'https://nebula-testnet-api.cryptopia.com/ERC721/ShipSkins/'
+                },
                 ToolToken: {
                     contractURI: 'https://nebula-testnet-api.cryptopia.com/ERC721/Tools/',
                     baseTokenURI: 'https://nebula-testnet-api.cryptopia.com/ERC721/Tools/'
@@ -542,6 +554,10 @@ const config : AppConfig = {
                 ShipToken: {
                     contractURI: 'https://nebula-mainnet-api.cryptopia.com/ERC721/Ships/',
                     baseTokenURI: 'https://nebula-mainnet-api.cryptopia.com/ERC721/Ships/'
+                },
+                ShipSkinToken: {
+                    contractURI: 'https://nebula-mainnet-api.cryptopia.com/ERC721/ShipSkins/',
+                    baseTokenURI: 'https://nebula-mainnet-api.cryptopia.com/ERC721/ShipSkins/'
                 },
                 ToolToken: {
                     contractURI: 'https://nebula-mainnet-api.cryptopia.com/ERC721/Tools/',
@@ -717,6 +733,7 @@ interface ERC721TokenConfig {
 interface ERC721Config {
     TitleDeedToken: ERC721TokenConfig;
     ShipToken: ERC721TokenConfig;
+    ShipSkinToken: ERC721TokenConfig;
     ToolToken: ERC721TokenConfig;
     QuestToken: ERC721TokenConfig;
 }

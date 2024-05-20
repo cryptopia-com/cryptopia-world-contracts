@@ -139,6 +139,21 @@ async function main() {
 
 
     //////////////////////////////////
+    /////// Deploy Ship Skins ////////
+    //////////////////////////////////
+    const [shipSkinTokenProxy, shipSkinTokenDeploymentStatus] = await ensureDeployed(
+        "ShipSkinToken", 
+        [
+            whitelistAddress, 
+            config.ERC721.ShipSkinToken.contractURI, 
+            config.ERC721.ShipSkinToken.baseTokenURI,
+            inventoriesAddress
+        ]);
+
+    const shipSkinTokenAddress = await shipSkinTokenProxy.address;
+
+
+    //////////////////////////////////
     ////////// Deploy Ships //////////
     //////////////////////////////////
     const [shipTokenProxy, shipTokenDeploymentStatus] = await ensureDeployed(
@@ -146,10 +161,15 @@ async function main() {
         [
             whitelistAddress, 
             config.ERC721.ShipToken.contractURI, 
-            config.ERC721.ShipToken.baseTokenURI
+            config.ERC721.ShipToken.baseTokenURI,
+            shipSkinTokenAddress
         ]);
 
     const shipTokenAddress = await shipTokenProxy.address;
+
+    // Grant roles
+    await ensureSystemRoleGranted(
+        "ShipSkinToken", "ShipToken");
 
 
     //////////////////////////////////

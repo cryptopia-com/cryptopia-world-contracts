@@ -160,6 +160,12 @@ function resolve(data: QuestJsonData[]): QuestStruct[] {
                 name: reward.name.toBytes32(),
                 xp: reward.xp,
                 karma: reward.karma,
+                probability: reward.probability,
+                probabilityModifierSpeed: reward.probabilityModifierSpeed,
+                probabilityModifierCharisma: reward.probabilityModifierCharisma,
+                probabilityModifierLuck: reward.probabilityModifierLuck,
+                probabilityModifierIntelligence: reward.probabilityModifierIntelligence,
+                probabilityModifierStrength: reward.probabilityModifierStrength,
                 fungible: reward.fungible.map((fungibleItem) => ({
                     asset: deploymentManager.getContractDeployment(
                         deploymentManager.resolveDeploymentKey(fungibleItem.asset)).address,

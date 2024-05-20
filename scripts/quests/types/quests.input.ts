@@ -28,6 +28,12 @@ export interface RewardJsonData {
     name: string;
     xp: number;
     karma: number;
+    probability: number;
+    probabilityModifierSpeed: number;
+    probabilityModifierCharisma: number;
+    probabilityModifierLuck: number;
+    probabilityModifierIntelligence: number;
+    probabilityModifierStrength: number;
     fungible: {
         asset: string;
         amount: string;

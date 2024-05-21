@@ -176,7 +176,7 @@
         "prerequisiteQuest": "",
         "steps": [
             {
-                "name": "Talk to the lumberjack",
+                "name": "Talk to the miner",
                 "hasTileConstraint": true,
                 "tile": 94,
                 "takeFungible": [],

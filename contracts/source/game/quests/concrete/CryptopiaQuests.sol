@@ -160,6 +160,12 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, PseudoRando
     /// @param tokenId The token id that was claimed
     event QuestRewardClaim(address indexed player, bytes32 indexed quest, uint8 indexed rewardIndex, address asset, uint amount, uint tokenId);
 
+    /// @dev Emitted when `player` fails to claim `rewardIndex` of `quest`
+    /// @param player The player that failed to claim the reward
+    /// @param quest The quest id that was not claimed
+    /// @param rewardIndex The reward index that was not claimed
+    event QuestRewardClaimFailure(address indexed player, bytes32 indexed quest, uint8 indexed rewardIndex);
+
 
     /**
      * Errors
@@ -1091,6 +1097,12 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, PseudoRando
                 // Emit event
                 emit QuestRewardClaim(msg.sender, questName, rewardIndex, nonFungible.asset, 1, tokenId); 
             }
+        }
+
+        else 
+        {
+            // Emit failure
+            emit QuestRewardClaimFailure(msg.sender, questName, rewardIndex);
         }
 
         // Award xp and karma

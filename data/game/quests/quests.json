@@ -1,14 +1,14 @@
 [
     {
-        "name": "Gather log from the lumberjack",
+        "name": "Lumberjack: Need Wood",
         "level": 0,
         "hasFactionConstraint": false,
         "faction": "",
         "hasSubFactionConstraint": false,
         "subFaction": "None",
-        "cooldown": 86400,
-        "maxCompletions": 0,
-        "maxDuration": 86400,
+        "cooldown": 0,
+        "maxCompletions": 1,
+        "maxDuration": 0,
         "prerequisiteQuest": "",
         "steps": [
             {
@@ -23,8 +23,27 @@
         ],
         "rewards": [
             {
-                "name": "Lumberjack convinced",
-                "xp": 10,
+                "name": "Steal",
+                "xp": 100,
+                "karma": -5,
+                "probability": 10000,
+                "probabilityModifierSpeed": 0,
+                "probabilityModifierCharisma": 0,
+                "probabilityModifierLuck": 0,
+                "probabilityModifierIntelligence": 0,
+                "probabilityModifierStrength": 0,
+                "fungible": [
+                    {
+                        "asset": "AssetToken:Wood",
+                        "amount": "2000000000000000000",
+                        "allowWallet": false
+                    }
+                ],
+                "nonFungible": []
+            },
+            {
+                "name": "Ask",
+                "xp": 50,
                 "karma": 0,
                 "probability": 10000,
                 "probabilityModifierSpeed": 0,
@@ -35,7 +54,26 @@
                 "fungible": [
                     {
                         "asset": "AssetToken:Wood",
-                        "amount": "100000000000000000",
+                        "amount": "1000000000000000000",
+                        "allowWallet": false
+                    }
+                ],
+                "nonFungible": []
+            },
+            {
+                "name": "Persuade",
+                "xp": 100,
+                "karma": 5,
+                "probability": 10000,
+                "probabilityModifierSpeed": 0,
+                "probabilityModifierCharisma": 0,
+                "probabilityModifierLuck": 0,
+                "probabilityModifierIntelligence": 0,
+                "probabilityModifierStrength": 0,
+                "fungible": [
+                    {
+                        "asset": "AssetToken:Wood",
+                        "amount": "2000000000000000000",
                         "allowWallet": false
                     }
                 ],
@@ -44,15 +82,97 @@
         ]
     },
     {
-        "name": "Gather stone from the miner",
+        "name": "Lumberjack: Need More Wood",
         "level": 0,
         "hasFactionConstraint": false,
         "faction": "",
         "hasSubFactionConstraint": false,
         "subFaction": "None",
-        "maxCompletions": 0,
         "cooldown": 86400,
-        "maxDuration": 86400,
+        "maxCompletions": 0,
+        "maxDuration": 0,
+        "prerequisiteQuest": "Lumberjack: Need Wood",
+        "steps": [
+            {
+                "name": "Talk to the lumberjack",
+                "hasTileConstraint": true,
+                "tile": 107,
+                "takeFungible": [],
+                "takeNonFungible": [],
+                "giveFungible": [],
+                "giveNonFungible": []
+            }
+        ],
+        "rewards": [
+            {
+                "name": "Steal",
+                "xp": 100,
+                "karma": -5,
+                "probability": 5000,
+                "probabilityModifierSpeed": 100,
+                "probabilityModifierCharisma": 100,
+                "probabilityModifierLuck": 0,
+                "probabilityModifierIntelligence": 0,
+                "probabilityModifierStrength": 0,
+                "fungible": [
+                    {
+                        "asset": "AssetToken:Wood",
+                        "amount": "2000000000000000000",
+                        "allowWallet": false
+                    }
+                ],
+                "nonFungible": []
+            },
+            {
+                "name": "Ask",
+                "xp": 50,
+                "karma": 0,
+                "probability": 10000,
+                "probabilityModifierSpeed": 0,
+                "probabilityModifierCharisma": 0,
+                "probabilityModifierLuck": 0,
+                "probabilityModifierIntelligence": 0,
+                "probabilityModifierStrength": 0,
+                "fungible": [
+                    {
+                        "asset": "AssetToken:Wood",
+                        "amount": "1000000000000000000",
+                        "allowWallet": false
+                    }
+                ],
+                "nonFungible": []
+            },
+            {
+                "name": "Persuade",
+                "xp": 100,
+                "karma": 5,
+                "probability": 5000,
+                "probabilityModifierSpeed": 0,
+                "probabilityModifierCharisma": 100,
+                "probabilityModifierLuck": 100,
+                "probabilityModifierIntelligence": 0,
+                "probabilityModifierStrength": 0,
+                "fungible": [
+                    {
+                        "asset": "AssetToken:Wood",
+                        "amount": "2000000000000000000",
+                        "allowWallet": false
+                    }
+                ],
+                "nonFungible": []
+            }
+        ]
+    },
+    {
+        "name": "Miner: Need Stone",
+        "level": 0,
+        "hasFactionConstraint": false,
+        "faction": "",
+        "hasSubFactionConstraint": false,
+        "subFaction": "None",
+        "cooldown": 0,
+        "maxCompletions": 1,
+        "maxDuration": 0,
         "prerequisiteQuest": "",
         "steps": [
             {
@@ -67,8 +187,27 @@
         ],
         "rewards": [
             {
-                "name": "Miner convinced",
-                "xp": 10,
+                "name": "Steal",
+                "xp": 100,
+                "karma": -5,
+                "probability": 10000,
+                "probabilityModifierSpeed": 0,
+                "probabilityModifierCharisma": 0,
+                "probabilityModifierLuck": 0,
+                "probabilityModifierIntelligence": 0,
+                "probabilityModifierStrength": 0,
+                "fungible": [
+                    {
+                        "asset": "AssetToken:Stone",
+                        "amount": "2000000000000000000",
+                        "allowWallet": false
+                    }
+                ],
+                "nonFungible": []
+            },
+            {
+                "name": "Ask",
+                "xp": 50,
                 "karma": 0,
                 "probability": 10000,
                 "probabilityModifierSpeed": 0,
@@ -79,7 +218,108 @@
                 "fungible": [
                     {
                         "asset": "AssetToken:Stone",
-                        "amount": "100000000000000000",
+                        "amount": "1000000000000000000",
+                        "allowWallet": false
+                    }
+                ],
+                "nonFungible": []
+            },
+            {
+                "name": "Persuade",
+                "xp": 100,
+                "karma": 5,
+                "probability": 10000,
+                "probabilityModifierSpeed": 0,
+                "probabilityModifierCharisma": 0,
+                "probabilityModifierLuck": 0,
+                "probabilityModifierIntelligence": 0,
+                "probabilityModifierStrength": 0,
+                "fungible": [
+                    {
+                        "asset": "AssetToken:Stone",
+                        "amount": "2000000000000000000",
+                        "allowWallet": false
+                    }
+                ],
+                "nonFungible": []
+            }
+        ]
+    },
+    {
+        "name": "Miner: Need More Stone",
+        "level": 0,
+        "hasFactionConstraint": false,
+        "faction": "",
+        "hasSubFactionConstraint": false,
+        "subFaction": "None",
+        "cooldown": 86400,
+        "maxCompletions": 0,
+        "maxDuration": 0,
+        "prerequisiteQuest": "Miner: Need Stone",
+        "steps": [
+            {
+                "name": "Talk to the miner",
+                "hasTileConstraint": true,
+                "tile": 94,
+                "takeFungible": [],
+                "takeNonFungible": [],
+                "giveFungible": [],
+                "giveNonFungible": []
+            }
+        ],
+        "rewards": [
+            {
+                "name": "Steal",
+                "xp": 100,
+                "karma": -5,
+                "probability": 5000,
+                "probabilityModifierSpeed": 100,
+                "probabilityModifierCharisma": 100,
+                "probabilityModifierLuck": 0,
+                "probabilityModifierIntelligence": 0,
+                "probabilityModifierStrength": 0,
+                "fungible": [
+                    {
+                        "asset": "AssetToken:Stone",
+                        "amount": "2000000000000000000",
+                        "allowWallet": false
+                    }
+                ],
+                "nonFungible": []
+            },
+            {
+                "name": "Ask",
+                "xp": 50,
+                "karma": 0,
+                "probability": 10000,
+                "probabilityModifierSpeed": 0,
+                "probabilityModifierCharisma": 0,
+                "probabilityModifierLuck": 0,
+                "probabilityModifierIntelligence": 0,
+                "probabilityModifierStrength": 0,
+                "fungible": [
+                    {
+                        "asset": "AssetToken:Stone",
+                        "amount": "1000000000000000000",
+                        "allowWallet": false
+                    }
+                ],
+                "nonFungible": []
+            },
+            {
+                "name": "Persuade",
+                "xp": 100,
+                "karma": 5,
+                "probability": 5000,
+                "probabilityModifierSpeed": 0,
+                "probabilityModifierCharisma": 100,
+                "probabilityModifierLuck": 100,
+                "probabilityModifierIntelligence": 0,
+                "probabilityModifierStrength": 0,
+                "fungible": [
+                    {
+                        "asset": "AssetToken:Stone",
+                        "amount": "2000000000000000000",
                         "allowWallet": false
                     }
                 ],

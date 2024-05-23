@@ -370,6 +370,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
 
 
     /// @dev Apply a skin to a ship
+    /// @notice The skin is burned and applied to the ship
     /// @param tokenId The id of the ship to apply the skin to
     /// @param skinTokenId The id of the skin to apply
     function applySkin(uint tokenId, uint skinTokenId)

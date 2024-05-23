@@ -101,6 +101,12 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     /// @param karma The karma that was awarded
     event PlayerAward(address indexed player, uint24 xp, int16 karma);
 
+    /// @dev Emitted when `player` increases a stat
+    /// @param player The address of the account (contract)
+    /// @param stat The stat that was increased
+    /// @param amount The amount that the stat was increased by
+    event PlayerStatIncrease(address indexed player, PlayerStat stat, uint8 amount);
+
     /// @dev Emitted when `player` levels up
     /// @param player The address of the account (contract)
     /// @param level The player's level after leveling up
@@ -533,33 +539,7 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
         playerData.level++;
 
         // Increase stat
-        if (stat == PlayerStat.Luck)
-        {
-            playerData.luck++;
-        }
-        else if (stat == PlayerStat.Charisma)
-        {
-            playerData.charisma++;
-        }
-        else if (stat == PlayerStat.Intelligence)
-        {
-            playerData.intelligence++;
-        }
-        else if (stat == PlayerStat.Strength)
-        {
-            IInventories(inventoriesContract)
-                .__setPlayerInventory(player, INVENTORY_MAX_WEIGHT_BASE + playerData.strength * INVENTORY_STRENGTH_MULTIPLIER);
-
-            playerData.strength++;
-        }
-        else if (stat == PlayerStat.Speed)
-        {
-            playerData.speed++;
-        }
-        else 
-        {
-            revert PlayerInvalidStat(stat);
-        }
+        _increaseStat(player, stat, 1);
 
         // Add to global stats
         totalPlayerProgression++;
@@ -581,39 +561,28 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
        onlyRole(SYSTEM_ROLE)
        onlyRegistered(player)
     {
-        playerDatas[player].xp += xp;
-        if (0 != karma)
+        _award(player, xp, karma);
+    }
+
+
+    /// @dev Increase `player` stat by `amount`
+    /// @param player The player to increase the stat for
+    /// @param stat The stat to increase
+    /// @param amount The amount to increase the stat by
+    /// @param xp The amount of xp that's awarded
+    function __increaseStat(address player, PlayerStat stat, uint8 amount, uint24 xp)
+        public virtual override
+        onlyRole(SYSTEM_ROLE)
+        onlyRegistered(player)
+    {
+        // Increase stat
+        _increaseStat(player, stat, amount);
+
+        // Award xp
+        if (xp > 0)
         {
-            if (!_isPirate(player)) // Cannot come back from KARMA_MIN karma (once a pirate, always a pirate)
-            {
-                if (playerDatas[player].karma + karma > KARMA_MAX)
-                {
-                    // Reached max positive karma
-                    karma = KARMA_MAX - playerDatas[player].karma;
-                    playerDatas[player].karma = KARMA_MAX;
-                }
-                else if (playerDatas[player].karma + karma < KARMA_MIN)
-                {
-                    // Reached max negative karma
-                    karma = KARMA_MIN - playerDatas[player].karma;
-
-                    // Mark as pirate (for life)
-                    _turnPirate(player);
-                }
-                else 
-                {
-                    // Add karma
-                    playerDatas[player].karma = playerDatas[player].karma + karma;
-                }
-            }
-            else 
-            {
-                karma = 0;
-            }
+            _award(player, xp, 0);
         }
-
-        // Emit
-        emit PlayerAward(player, xp, karma);
     }
 
 
@@ -687,6 +656,90 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
         // Emit
         emit RegisterPlayer(tx.origin, account, username, faction, sex);
         emit PlayerEquipShip(account, playerData.ship);
+    }
+
+
+    /// @dev Award xp and/or karma to player 
+    /// @param player The player to award
+    /// @param xp The amount of xp that's awarded
+    /// @param karma The amount of karma
+    function _award(address player, uint24 xp, int16 karma)
+       internal 
+    {
+        playerDatas[player].xp += xp;
+        if (0 != karma)
+        {
+            if (!_isPirate(player)) // Cannot come back from KARMA_MIN karma (once a pirate, always a pirate)
+            {
+                if (playerDatas[player].karma + karma > KARMA_MAX)
+                {
+                    // Reached max positive karma
+                    karma = KARMA_MAX - playerDatas[player].karma;
+                    playerDatas[player].karma = KARMA_MAX;
+                }
+                else if (playerDatas[player].karma + karma < KARMA_MIN)
+                {
+                    // Reached max negative karma
+                    karma = KARMA_MIN - playerDatas[player].karma;
+
+                    // Mark as pirate (for life)
+                    _turnPirate(player);
+                }
+                else 
+                {
+                    // Add karma
+                    playerDatas[player].karma = playerDatas[player].karma + karma;
+                }
+            }
+            else 
+            {
+                karma = 0;
+            }
+        }
+
+        // Emit
+        emit PlayerAward(player, xp, karma);
+    }
+
+
+    /// @dev Increase `player` stat by `amount`
+    /// @param player The player to increase the stat for
+    /// @param stat The stat to increase
+    /// @param amount The amount to increase the stat by
+    function _increaseStat(address player, PlayerStat stat, uint8 amount)
+        internal 
+    {
+        PlayerData storage playerData = playerDatas[player];
+        if (stat == PlayerStat.Luck)
+        {
+            playerData.luck += amount;
+        }
+        else if (stat == PlayerStat.Charisma)
+        {
+            playerData.charisma += amount;
+        }
+        else if (stat == PlayerStat.Intelligence)
+        {
+            playerData.intelligence += amount;
+        }
+        else if (stat == PlayerStat.Strength)
+        {
+            IInventories(inventoriesContract)
+                .__setPlayerInventory(player, INVENTORY_MAX_WEIGHT_BASE + playerData.strength * INVENTORY_STRENGTH_MULTIPLIER);
+
+            playerData.strength += amount;
+        }
+        else if (stat == PlayerStat.Speed)
+        {
+            playerData.speed += amount;
+        }
+        else 
+        {
+            revert PlayerInvalidStat(stat);
+        }
+
+        // Emit
+        emit PlayerStatIncrease(player, stat, amount);
     }
 
 

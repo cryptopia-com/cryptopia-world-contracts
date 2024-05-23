@@ -139,7 +139,7 @@ contract CryptopiaShipSkinToken is CryptopiaERC721, IShipSkins, INonFungibleQues
     /**
      * Public functions
      */
-    // @dev Returns the amount of different skins
+    /// @dev Returns the amount of different skins
     /// @return count The amount of different skins
     function getSkinCount() 
         public virtual override view 

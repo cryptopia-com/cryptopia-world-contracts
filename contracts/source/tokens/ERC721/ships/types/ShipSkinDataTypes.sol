@@ -14,10 +14,10 @@ struct ShipSkin
 /// @dev Skin instance for a ship in Cryptopia
 struct ShipSkinInstance
 {
-    /// @dev The token id of the skin instance
+    /// @dev The token id of the skin 
     uint tokenId;
 
-    /// @dev The address that owns this skin instance
+    /// @dev The address that owns this skin 
     address owner;
 
     /// @dev The index of the skin

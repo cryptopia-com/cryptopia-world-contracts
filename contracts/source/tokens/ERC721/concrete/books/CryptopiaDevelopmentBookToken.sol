@@ -11,14 +11,14 @@ import "../../books/errors/BookErrors.sol";
 import "../../books/IDevelopmentBooks.sol";
 import "../CryptopiaERC721.sol";
 
-/// @title Cryptopia Players Contract
+/// @title Cryptopia Development Book Token Contract
 /// @notice Books that are learnable and can be used to increase the stats of a player. 
 /// It provides functionalities to craft books, consume books and retrieve book data.
 /// @dev Inherits from Initializable and AccessControlUpgradeable and implements the 
 /// IDevelopmentBooks interface. The contract utilizes an upgradable design for scalability 
 /// and future enhancements. It maintains detailed player data, enabling intricate game mechanics and interactions.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-contract DevelopmentBooks is CryptopiaERC721, IDevelopmentBooks, ICraftable, IConsumable, INonFungibleQuestReward {
+contract CryptopiaDevelopmentBookToken is CryptopiaERC721, IDevelopmentBooks, ICraftable, IConsumable, INonFungibleQuestReward {
 
     /// @dev Development book in Cryptopia
     struct DevelopmentBookData

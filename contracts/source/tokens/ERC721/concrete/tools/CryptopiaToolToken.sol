@@ -187,13 +187,13 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
 
 
     /// @dev Retreive a tools by name
-    /// @param name Tool name (unique)
+    /// @param name_ Tool name (unique)
     /// @return tool The tool data
-    function getTool(bytes32 name) 
+    function getTool(bytes32 name_) 
         public virtual override view 
         returns (Tool memory tool)
     {
-        return _getTool(name);
+        return _getTool(name_);
     }
 
 

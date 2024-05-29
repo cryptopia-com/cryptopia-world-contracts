@@ -93,6 +93,7 @@ contract CryptopiaShipSkinToken is CryptopiaERC721, IShipSkins, INonFungibleQues
         __CryptopiaERC721_init(
             "Cryptopia Ship Skins", "SHIPSKIN", _authenticator, initialContractURI, initialBaseTokenURI);
 
+        // Set refs
         inventoriesContract = _inventoriesContract;
 
         // Grant admin role

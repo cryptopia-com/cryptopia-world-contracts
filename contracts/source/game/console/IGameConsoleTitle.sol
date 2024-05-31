@@ -8,6 +8,12 @@ import "./types/GameConsoleDataTypes.sol";
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface IGameConsoleTitle {
 
+    /// @dev Get the name of the game
+    /// @return name The name of the game
+    function getName() 
+        external view 
+        returns (bytes32 name);
+
     /// @dev Determine if the session is valid and calculate the reward
     /// @param session The session
     /// @param sessionData Additional data used to verify the session

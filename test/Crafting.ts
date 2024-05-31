@@ -28,7 +28,7 @@ import {
  * - Default recipes
  * - Learnable recipes
  */
-describe("Crafting Contract", function () {
+describe("Crafting Contracts", function () {
 
     // Accounts
     let deployer: string;

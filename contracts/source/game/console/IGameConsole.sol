@@ -17,6 +17,14 @@ interface IGameConsole {
     function getTitleCount() 
         external view 
         returns (uint count);
+
+
+    /// @dev Get a console title
+    /// @param name The name of the title
+    /// @return title_ The title
+    function getTitle(bytes32 name) 
+        external view 
+        returns (GameConsoleTitle memory title_);
         
 
     /// @dev Get all console titles

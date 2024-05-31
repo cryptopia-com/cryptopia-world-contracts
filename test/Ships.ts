@@ -16,7 +16,7 @@ import {
 /**
  * Ship tests
  */
-describe("Ships", function () {
+describe("Ship Contracts", function () {
 
     // Accounts
     let deployer: string;
@@ -38,7 +38,7 @@ describe("Ships", function () {
     });
 
     /**
-     * Test cleaning of Ships
+     * Test skins
      */
     describe("Skins", function () {
 

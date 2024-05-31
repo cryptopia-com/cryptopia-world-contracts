@@ -26,7 +26,7 @@ import {
  * Test cases:
  * - Gather fruit
  */
-describe("Gathering Contract", function () {
+describe("Gathering Contracts", function () {
 
     // Accounts
     let deployer: string;

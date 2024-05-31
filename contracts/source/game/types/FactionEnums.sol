@@ -7,7 +7,8 @@ enum Faction
     Eco,
     Tech,
     Industrial,
-    Traditional
+    Traditional,
+    Count // Sentinel value
 }
 
 /// @title Sub factions

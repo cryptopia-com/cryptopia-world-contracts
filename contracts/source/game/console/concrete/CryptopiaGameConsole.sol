@@ -4,6 +4,7 @@ pragma solidity 0.8.20;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
+import "../../../types/boxes/bool/BoolBox2.sol";
 import "../../../errors/ArgumentErrors.sol";
 import "../../inventories/types/InventoryEnums.sol";
 import "../../inventories/IInventories.sol";
@@ -58,7 +59,7 @@ contract CryptopiaGameConsole is Initializable, AccessControlUpgradeable, IGameC
     uint constant public MAX_LEADERBOARD_SIZE = 10;
 
     /// @dev Game data
-    mapping (bytes32 => GameConsoleTitleData) private titles;
+    mapping (bytes32 => GameConsoleTitleData) public titles;
     bytes32[] public titlesIndex;
 
     /// @dev Refs
@@ -69,8 +70,12 @@ contract CryptopiaGameConsole is Initializable, AccessControlUpgradeable, IGameC
      * Events
      */
     /// @dev Emitted when a new console title is added
-    /// @param name The name of the title
-    event GameConsoleTitleAdd(bytes32 indexed name);
+    /// @param title The name of the title
+    event GameConsoleTitleAdd(bytes32 indexed title);
+
+    /// @dev Emitted when a console title is updated
+    /// @param title The name of the title
+    event GameConsoleTitleUpdate(bytes32 indexed title);
 
     /// @dev Emitted when a new console game session is added
     /// @param player The player that submitted the score
@@ -78,8 +83,7 @@ contract CryptopiaGameConsole is Initializable, AccessControlUpgradeable, IGameC
     /// @param score The score that was submitted
     /// @param isPersonalHighscore Indicates if the session is a personal highscore
     /// @param isGlobalHighscore Indicates if the session is a global highscore
-    /// @param timestamp The timestamp of the session
-    event GameConsoleSessionSubmit(address indexed player, bytes32 indexed title, uint32 score, bool isPersonalHighscore, bool isGlobalHighscore, uint64 timestamp);
+    event GameConsoleSessionSubmit(address indexed player, bytes32 indexed title, uint32 score, bool isPersonalHighscore, bool isGlobalHighscore);
 
     /// @dev Emitted when a new personal highscore is set
     /// @param player The player that set the highscore
@@ -150,31 +154,45 @@ contract CryptopiaGameConsole is Initializable, AccessControlUpgradeable, IGameC
      * Admin functions
      */
     /// @dev Batch operation to set titles
-    /// @param titles_ The titles to set
-    function setTitles(GameConsoleTitle[] memory titles_) 
+    /// @param contracts the logic contracts
+    function setTitles(address[] memory contracts) 
         onlyRole(DEFAULT_ADMIN_ROLE) 
         public virtual 
     {
-        for (uint i = 0; i < titles_.length; i++) 
+        for (uint i = 0; i < contracts.length; i++) 
         {
-            GameConsoleTitle memory title = titles_[i];
-            GameConsoleTitleData storage titleData = titles[title.name];
-
-            assert(title.name != bytes32(0));
-            assert(title.logic != address(0));
-
-            // Add title if it doesn't exist
-            if (titleData.index == 0) 
+            address titleLogic = contracts[i];
+            bytes32 titleName = IGameConsoleTitle(contracts[i]).getName();
+            
+            // Title name cannot be empty
+            if (titleName == bytes32(0))
             {
-                titlesIndex.push(title.name);
-                titleData.index = titlesIndex.length;
+                revert ArgumentInvalid();
+            }
+
+            // Title logic cannot be empty
+            if (titleLogic == address(0))
+            {
+                revert ArgumentInvalid();
+            }
+
+            GameConsoleTitleData storage data = titles[titleName];
+            if (!_titleExists(titleName))
+            {
+                data.index = titlesIndex.length;
+                titlesIndex.push(titleName);
 
                 // Emit event
-                emit GameConsoleTitleAdd(title.name);
+                emit GameConsoleTitleAdd(titleName);
+            }
+            else 
+            {
+                // Emit event
+                emit GameConsoleTitleUpdate(titleName);
             }
 
             // Update title
-            titleData.logic = title.logic;
+            data.logic = titleLogic;
         }
     }
 
@@ -189,6 +207,22 @@ contract CryptopiaGameConsole is Initializable, AccessControlUpgradeable, IGameC
         returns (uint count)
     {
         return titlesIndex.length;
+    }
+
+
+    /// @dev Get a console title
+    /// @param name The name of the title
+    /// @return title_ The title
+    function getTitle(bytes32 name) 
+        public virtual override view 
+        returns (GameConsoleTitle memory title_)
+    {
+        GameConsoleTitleData storage titleData = titles[name];
+        title_ = GameConsoleTitle(
+            name, 
+            titleData.logic,
+            titleData.highscore, 
+            titleData.leaderboard);
     }
         
 
@@ -277,8 +311,9 @@ contract CryptopiaGameConsole is Initializable, AccessControlUpgradeable, IGameC
 
         playerData.sessions.push(session);
 
-        bool isPersonalHighscore = playerData.highscore.score < score;
-        //bool isGlobalHighscore = titleData.highscore.score < score;
+        BoolBox2 memory highscoreData = BoolBox2(
+            playerData.highscore.score > 0 && playerData.highscore.score < score, // Peroanl highscore
+            titleData.highscore.score > 0 && titleData.highscore.score < score); // Global highscore
 
         // Run game logic
         (
@@ -288,8 +323,8 @@ contract CryptopiaGameConsole is Initializable, AccessControlUpgradeable, IGameC
             session, 
             data, 
             playerData.sessions.length, 
-            isPersonalHighscore, 
-            isPersonalHighscore);
+            highscoreData.value1, 
+            highscoreData.value2);
 
         if (!isValid)
         {
@@ -297,7 +332,7 @@ contract CryptopiaGameConsole is Initializable, AccessControlUpgradeable, IGameC
         }
 
         // Personal highscore?
-        if (isPersonalHighscore) 
+        if (highscoreData.value1) 
         {
             playerData.highscore = session;
 
@@ -310,7 +345,7 @@ contract CryptopiaGameConsole is Initializable, AccessControlUpgradeable, IGameC
         }
 
         // Global highscore?
-        if (isPersonalHighscore) 
+        if (highscoreData.value2) 
         {
             titleData.highscore = session;
 
@@ -401,9 +436,8 @@ contract CryptopiaGameConsole is Initializable, AccessControlUpgradeable, IGameC
             msg.sender, 
             title, 
             score, 
-            isPersonalHighscore, 
-            isPersonalHighscore, 
-            session.timestamp);
+            highscoreData.value1, 
+            highscoreData.value2);
     }
 
 

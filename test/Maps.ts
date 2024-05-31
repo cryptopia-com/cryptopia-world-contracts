@@ -32,7 +32,7 @@ import {
  * - Route Integrity
  * - Chain Integrity
  */
-describe("Maps Contract", function () {
+describe("Map Contracts", function () {
 
     // Accounts
     let deployer: string;

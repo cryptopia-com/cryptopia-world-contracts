@@ -498,13 +498,15 @@ describe("GameConsole Contracts", function () {
         const skyFlightProxy = await upgrades.deployProxy(
             SkyFlightFactory, 
             [
-                playerRegisterAddress,
-                parseRewards(titles["Sky Flight"].rewards)
+                playerRegisterAddress
             ]);
 
         const skyFlightAddress = await skyFlightProxy.address;
         skyFlightInstance = await ethers.getContractAt("CryptopiaSkyFlight", skyFlightAddress);
         titles["Sky Flight"].logic = skyFlightAddress;
+
+        // Setup SkyFlight
+        await skyFlightInstance.setRewards(parseRewards(titles["Sky Flight"].rewards));
 
 
         // Deploy assets

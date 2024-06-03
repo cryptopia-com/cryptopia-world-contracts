@@ -50,10 +50,8 @@ contract CryptopiaSkyFlight is Initializable, AccessControlUpgradeable, IGameCon
 
     /// @dev Initialize
     /// @param _playerRegisterContract The address of the player register contract
-    /// @param _rewards The initial rewards
     function initialize(
-        address _playerRegisterContract,
-        GameConsoleReward[][] memory _rewards)
+        address _playerRegisterContract)
         public initializer 
     {
         __AccessControl_init();
@@ -63,9 +61,6 @@ contract CryptopiaSkyFlight is Initializable, AccessControlUpgradeable, IGameCon
 
         // Set refs
         playerRegisterContract = _playerRegisterContract;
-
-        // Set rewards
-        _setRewards(_rewards);
     }
 
 

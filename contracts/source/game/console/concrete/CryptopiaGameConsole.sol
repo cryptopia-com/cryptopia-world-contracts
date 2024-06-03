@@ -428,8 +428,11 @@ contract CryptopiaGameConsole is Initializable, AccessControlUpgradeable, IGameC
         }
 
         // Award xp 
-        IPlayerRegister(playerRegisterContract)
-            .__award(msg.sender, reward.xp, 0);
+        if (reward.xp > 0)
+        {
+             IPlayerRegister(playerRegisterContract)
+                .__award(msg.sender, reward.xp, 0);
+        }
 
         // Emit event
         emit GameConsoleSessionSubmit(

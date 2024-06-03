@@ -448,6 +448,24 @@ async function main() {
 
 
     //////////////////////////////////
+    ////// Deploy Game Console ///////
+    //////////////////////////////////
+    const [gameConsoleProxy, gameConsoleDeploymentStatus] = await ensureDeployed(
+        "GameConsole", [playerRegisterAddress]);
+
+    // Grant roles
+    await ensureSystemRoleGranted("ShipSkinToken","GameConsole");
+    await ensureSystemRoleGranted("PlayerRegister","GameConsole");
+
+
+    //////////////////////////////////
+    //////// Deploy SkyFlight ////////
+    //////////////////////////////////
+    const [skyFlightProxy, skyFlightDeploymentStatus] = await ensureDeployed(
+        "SkyFlight", [playerRegisterAddress]);
+
+
+    //////////////////////////////////
     /////// Deploy Entry Point ///////
     //////////////////////////////////
     const [entryPointProxy, entryPointDeploymentStatus] = await ensureDeployed(

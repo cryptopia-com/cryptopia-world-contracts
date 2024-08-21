@@ -23,7 +23,7 @@ import {
 /**
  * Inventories Contract
  */
-describe("Inventories Contract", function () {
+describe("Inventory Contracts", function () {
 
     // Accounts
     let deployer: string;

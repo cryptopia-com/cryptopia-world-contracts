@@ -178,6 +178,15 @@ interface IPlayerRegister {
     function __award(address player, uint24 xp, int16 karma)
         external;
 
+
+    /// @dev Increase `player` stat by `amount`
+    /// @param player The player to increase the stat for
+    /// @param stat The stat to increase
+    /// @param amount The amount to increase the stat by
+    /// @param xp The amount of xp that's awarded
+    function __increaseStat(address player, PlayerStat stat, uint8 amount, uint24 xp)
+        external;
+        
     
     /// @dev Award max negative karma to the player and turn pirate instantly
     /// @param player The player to turn pirate

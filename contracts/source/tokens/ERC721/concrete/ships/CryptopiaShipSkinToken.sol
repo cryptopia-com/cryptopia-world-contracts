@@ -2,6 +2,7 @@
 pragma solidity 0.8.20;
 
 import "../../../../game/quests/rewards/INonFungibleQuestReward.sol";
+import "../../../../game/console/rewards/INonFungibleGameConsoleReward.sol";
 import "../../../../game/inventories/IInventories.sol";
 import "../../ships/types/ShipSkinDataTypes.sol";
 import "../../ships/IShipSkins.sol";  
@@ -11,7 +12,7 @@ import "../CryptopiaERC721.sol";
 /// @notice Skins that can be applied to ships to change their appearance
 /// @dev Extends CryptopiaERC721, integrating ERC721 functionalities with game-specific mechanics.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
-contract CryptopiaShipSkinToken is CryptopiaERC721, IShipSkins, INonFungibleQuestReward {
+contract CryptopiaShipSkinToken is CryptopiaERC721, IShipSkins, INonFungibleQuestReward, INonFungibleGameConsoleReward {
 
     /// @dev Ship in Cryptopia
     struct ShipSkinData
@@ -19,7 +20,7 @@ contract CryptopiaShipSkinToken is CryptopiaERC721, IShipSkins, INonFungibleQues
         /// @dev Index within the skinsIndex array
         uint index;
 
-        /// @dev Unique name identifier for the skin
+        /// @dev The ship that the skin is for 
         bytes32 ship;
     }
 
@@ -93,6 +94,7 @@ contract CryptopiaShipSkinToken is CryptopiaERC721, IShipSkins, INonFungibleQues
         __CryptopiaERC721_init(
             "Cryptopia Ship Skins", "SHIPSKIN", _authenticator, initialContractURI, initialBaseTokenURI);
 
+        // Set refs
         inventoriesContract = _inventoriesContract;
 
         // Grant admin role
@@ -139,7 +141,7 @@ contract CryptopiaShipSkinToken is CryptopiaERC721, IShipSkins, INonFungibleQues
     /**
      * Public functions
      */
-    // @dev Returns the amount of different skins
+    /// @dev Returns the amount of different skins
     /// @return count The amount of different skins
     function getSkinCount() 
         public virtual override view 
@@ -243,28 +245,21 @@ contract CryptopiaShipSkinToken is CryptopiaERC721, IShipSkins, INonFungibleQues
         onlyExisting(skin) 
         returns (uint tokenId)
     {
-        tokenId = _getNextTokenId();
-        _incrementTokenId();
-        skinInstances[tokenId] = skin;
+        tokenId = _mintReward(player, inventory, skin);
+    }
 
-        // Into wallet
-        if (inventory == Inventory.Wallet)
-        {
-             _mint(player, tokenId);
-        }
 
-        // Into inventory
-        else 
-        {
-            _mint(inventoriesContract, tokenId);
-
-            // Assign
-            IInventories(inventoriesContract)
-                .__assignNonFungibleToken(player, inventory, address(this), tokenId);
-        }
-
-        // Emit event
-        emit ShipSkinMinted(tokenId, skin, player);
+    /// @dev Mint a reward for the game console
+    /// @param player The player to mint the item to
+    /// @param inventory The inventory to mint the item to
+    /// @param skin The item to mint
+    function __mintGameConsoleReward(address player, Inventory inventory, bytes32 skin)
+        public virtual override 
+        onlyRole(SYSTEM_ROLE) 
+        onlyExisting(skin) 
+        returns (uint tokenId)
+    {
+        tokenId = _mintReward(player, inventory, skin);
     }
 
 
@@ -358,5 +353,38 @@ contract CryptopiaShipSkinToken is CryptopiaERC721, IShipSkins, INonFungibleQues
             name: skinName,
             ship: data.ship
         });
+    }
+
+
+    /// @dev Mint a reward
+    /// @param player The player to mint the item to
+    /// @param inventory The inventory to mint the item to
+    /// @param skin The item to mint
+    function _mintReward(address player, Inventory inventory, bytes32 skin)
+        internal 
+        returns (uint tokenId)
+    {
+        tokenId = _getNextTokenId();
+        _incrementTokenId();
+        skinInstances[tokenId] = skin;
+
+        // Into wallet
+        if (inventory == Inventory.Wallet)
+        {
+             _mint(player, tokenId);
+        }
+
+        // Into inventory
+        else 
+        {
+            _mint(inventoriesContract, tokenId);
+
+            // Assign
+            IInventories(inventoriesContract)
+                .__assignNonFungibleToken(player, inventory, address(this), tokenId);
+        }
+
+        // Emit event
+        emit ShipSkinMinted(tokenId, skin, player);
     }
 }

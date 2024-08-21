@@ -35,7 +35,7 @@ import {
  * - Quick battle
  * - Turn based battle
  */
-describe("PirateMechanics Contract", function () {
+describe("PirateMechanics Contracts", function () {
 
     // Accounts
     let deployer: string;

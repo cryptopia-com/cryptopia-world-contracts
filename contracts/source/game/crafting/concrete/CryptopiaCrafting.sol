@@ -224,7 +224,7 @@ contract CryptopiaCrafting is Initializable, AccessControlUpgradeable, ICrafting
     /** 
      * Public functions
      */
-    // @dev Returns the amount of different `asset` recipes
+    /// @dev Returns the amount of different `asset` recipes
     /// @param asset The contract address of the asset to which the recipes apply
     /// @return count The amount of different recipes
     function getRecipeCount(address asset) 

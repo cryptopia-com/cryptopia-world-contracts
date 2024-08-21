@@ -136,6 +136,14 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, PseudoRando
     /**
      * Events
      */
+    /// @dev Emitted when `quest` is added
+    /// @param quest The quest id that was added
+    event QuestAdd(bytes32 indexed quest);
+
+    /// @dev Emitted when `quest` is updated
+    /// @param quest The quest id that was updated
+    event QuestUpdate(bytes32 indexed quest);
+
     /// @dev Emitted when `player` starts `quest`
     /// @param player The player that started the quest
     /// @param quest The quest id that was started
@@ -626,14 +634,20 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, PseudoRando
         if (!_questExists(quest.name)) 
         {
             // Add quest
-            quests[quest.name].index = questsIndex.length;
+            data.index = questsIndex.length;
             questsIndex.push(quest.name);
+
+            // Emit event
+            emit QuestAdd(quest.name);
         }
         else 
         {
             // Update quest
             delete data.steps;
             delete data.rewards;
+
+            // Emit event
+            emit QuestUpdate(quest.name);
         }
 
         // Set quest data

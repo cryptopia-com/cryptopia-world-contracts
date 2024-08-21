@@ -187,13 +187,13 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
 
 
     /// @dev Retreive a tools by name
-    /// @param name Tool name (unique)
+    /// @param name_ Tool name (unique)
     /// @return tool The tool data
-    function getTool(bytes32 name) 
+    function getTool(bytes32 name_) 
         public virtual override view 
         returns (Tool memory tool)
     {
-        return _getTool(name);
+        return _getTool(name_);
     }
 
 
@@ -324,15 +324,15 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
     /// @param tool The name of the tool to be crafted
     /// @param player The player to craft the tool for
     /// @param inventory The inventory to mint the item into
-    /// @return uint The token ID of the crafted item
+    /// @return tokenId The token ID of the minted item
     function __craft(bytes32 tool, address player, Inventory inventory) 
         public virtual override 
         onlyRole(SYSTEM_ROLE) 
         onlyExisting(tool) 
-        returns (uint)
+        returns (uint tokenId)
     {
         // Mint
-        uint tokenId = _getNextTokenId();
+        tokenId = _getNextTokenId();
         _mint(inventoriesContract, tokenId);
         _incrementTokenId();
         toolInstances[tokenId].name = tool;
@@ -340,8 +340,6 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
         // Assign
         IInventories(inventoriesContract)
             .__assignNonFungibleToken(player, inventory, address(this), tokenId);
-
-        return tokenId;
     }
 
 
@@ -349,6 +347,7 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
     /// @param player The player to mint the item to
     /// @param inventory The inventory to mint the item to
     /// @param tool The item to mint
+    /// @return tokenId The token ID of the minted item
     function __mintQuestReward(address player, Inventory inventory, bytes32 tool)
         public virtual override 
         onlyRole(SYSTEM_ROLE) 

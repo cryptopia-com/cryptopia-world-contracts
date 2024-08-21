@@ -31,7 +31,7 @@ import {
 /**
  * Quest tests
  */
-describe("Quests Contract", function () {
+describe("Quest Contracts", function () {
 
     // Accounts
     let deployer: string;

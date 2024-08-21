@@ -23,9 +23,9 @@ interface ITools {
 
 
     /// @dev Retreive a tools by name
-    /// @param name Tool name (unique)
+    /// @param name_ Tool name (unique)
     /// @return tool The tool data
-    function getTool(bytes32 name) 
+    function getTool(bytes32 name_) 
         external view 
         returns (Tool memory tool);
 

@@ -160,5 +160,18 @@
                 "amount": "1"
             }
         ]
+    },
+    {
+        "level": 1,
+        "learnable": false,
+        "asset": "ToolToken",
+        "item": "Wooden Bow",
+        "craftingTime": 300,
+        "ingredients": [
+            {
+                "asset": "AssetToken:Wood",
+                "amount": "1"
+            }
+        ]
     }
 ]

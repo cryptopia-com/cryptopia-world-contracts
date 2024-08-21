@@ -168,14 +168,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
                 return (tile.waterLevel - tile.elevationLevel) * RESOURCE_PRECISION;
             }
 
-            // On land (has lake)
-            else if (tile.hasLake)
-            {
-                return RESOURCE_PRECISION;
-            }
-
-            // On land (no lake)
-            return 0;
+            return RESOURCE_PRECISION;
         }
 
         // Meat

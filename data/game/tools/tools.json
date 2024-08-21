@@ -11,10 +11,6 @@
         "value3": 0,
         "minting": [
             {
-                "resource": "Meat",
-                "amount": "1"
-            },
-            {
                 "resource": "Wood",
                 "amount": "1"
             }
@@ -31,10 +27,6 @@
         "value2": 0,
         "value3": 0,
         "minting": [
-            {
-                "resource": "Meat",
-                "amount": "1"
-            },
             {
                 "resource": "Wood",
                 "amount": "1"
@@ -53,10 +45,6 @@
         "value3": 0,
         "minting": [
             {
-                "resource": "Meat",
-                "amount": "1"
-            },
-            {
                 "resource": "Wood",
                 "amount": "1"
             }
@@ -74,11 +62,7 @@
         "value3": 0,
         "minting": [
             {
-                "resource": "Meat",
-                "amount": "1"
-            },
-            {
-                "resource": "Wood",
+                "resource": "Stone",
                 "amount": "1"
             }
         ]
@@ -95,11 +79,7 @@
         "value3": 0,
         "minting": [
             {
-                "resource": "Meat",
-                "amount": "1"
-            },
-            {
-                "resource": "Wood",
+                "resource": "Stone",
                 "amount": "1"
             }
         ]
@@ -116,11 +96,7 @@
         "value3": 0,
         "minting": [
             {
-                "resource": "Meat",
-                "amount": "1"
-            },
-            {
-                "resource": "Wood",
+                "resource": "Stone",
                 "amount": "1"
             }
         ]
@@ -189,6 +165,23 @@
         "minting": [
             {
                 "resource": "Sand",
+                "amount": "1"
+            }
+        ]
+    },
+    {
+        "name": "Wooden Bow",
+        "rarity": "Common",
+        "level": 1,
+        "durability": 100,
+        "multiplier_xp": 100,
+        "multiplier_effectiveness": 100,
+        "value1": 0,
+        "value2": 0,
+        "value3": 0,
+        "minting": [
+            {
+                "resource": "Meat",
                 "amount": "1"
             }
         ]

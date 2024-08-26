@@ -447,7 +447,7 @@ contract CryptopiaAccountRegister is Initializable, IAccountRegister {
         internal view
         returns (bool)
     {
-        return accountDatas[account].friendRequests[other] != Relationship.None && 
+        return accountDatas[account].friendRequests[other] != Relationship.None || 
                accountDatas[other].friendRequests[account] != Relationship.None;
     }
 

@@ -101,11 +101,23 @@ export enum RoutePosition {
 
 
 /**
- * Invnetories
+ * Inventories
  */
 export enum Inventory
 {
     Wallet,
     Backpack,
     Ship
+}
+
+
+/**
+ * Relationship
+ */
+export enum Relationship
+{
+    None,
+    Friend,
+    Family,
+    Spouse
 }

@@ -23,6 +23,18 @@ import "./CryptopiaAccount.sol";
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaAccountRegister is Initializable, IAccountRegister {
 
+    struct FriendData 
+    {
+        // True if the friend request is accepted (otherwise pending)
+        bool accepted;
+
+        // The type of relationship
+        Relationship relationship;
+
+        // Index of the friend in the friendsIndex array
+        uint240 index;
+    }
+
     struct AccountData
     {
         // Unique and validated username
@@ -31,10 +43,9 @@ contract CryptopiaAccountRegister is Initializable, IAccountRegister {
         // Optional sex {Undefined, Male, Female}
         Sex sex;
 
-        mapping (address => Relationship) friends;
+        // Friends
+        mapping (address => FriendData) friends;
         address[] friendsIndex;
-
-        mapping (address => Relationship) friendRequests;
     }
 
 
@@ -78,6 +89,12 @@ contract CryptopiaAccountRegister is Initializable, IAccountRegister {
     /// @param relationship The type of friendship
     event AcceptFriendRequest(address indexed sender, address indexed receiver, Relationship indexed relationship);
 
+    /// @dev Emited when a friend is removed
+    /// @param sender The addres that removed the friend
+    /// @param friend The address that `sender` is no longer friends with
+    /// @param relationship The type of friendship
+    event Unfriend(address indexed sender, address indexed friend, Relationship indexed relationship);
+
 
     /**
      * Errors
@@ -103,9 +120,9 @@ contract CryptopiaAccountRegister is Initializable, IAccountRegister {
     /// @param account The account that is already a friend
     error AlreadyFriends(address account);
 
-    /// @dev Emitted when there is already a pending friend request for `account` 
-    /// @param account The account that already has a pending friend request
-    error DuplicateFriendRequest(address account);
+    /// @dev Emitted when `account` is not registered
+    /// @param account The account that is not registered
+    error NotFriends(address account);
 
     /// @dev Emitted when there is no pending friend request for `account`
     /// @param account The account that has no pending friend request
@@ -250,17 +267,20 @@ contract CryptopiaAccountRegister is Initializable, IAccountRegister {
     /// @return friend_account The address of the friend
     /// @return friend_username The unique username of the friend
     /// @return friend_relationship The type of relationship `account` has with the friend
+    /// @return friend_accepted True if the friend request is accepted
     function getFriendAt(address account, uint index) 
         public override view 
         returns (
             address friend_account, 
             bytes32 friend_username,
-            Relationship friend_relationship
+            Relationship friend_relationship,
+            bool friend_accepted
         )
     {
         friend_account = accountDatas[account].friendsIndex[index];
         friend_username = accountDatas[friend_account].username;
-        friend_relationship = accountDatas[account].friends[friend_account];
+        friend_relationship = accountDatas[account].friends[friend_account].relationship;
+        friend_accepted = accountDatas[account].friends[friend_account].accepted;
     }
 
 
@@ -271,24 +291,28 @@ contract CryptopiaAccountRegister is Initializable, IAccountRegister {
     /// @return friend_accounts The addresses of the friends
     /// @return friend_usernames The unique usernames of the friends
     /// @return friend_relationships The type of relationship `account` has with the friends
+    /// @return friend_accepted True if the friend request is accepted
     function getFriends(address account, uint skip, uint take) 
         public override view 
         returns (
             address[] memory friend_accounts, 
             bytes32[] memory friend_usernames,
-            Relationship[] memory friend_relationships
+            Relationship[] memory friend_relationships,
+            bool[] memory friend_accepted
         )
     {
         friend_accounts = new address[](take);
         friend_usernames = new bytes32[](take);
         friend_relationships = new Relationship[](take);
+        friend_accepted = new bool[](take);
 
         uint index = skip;
         for (uint i = 0; i < take; i++)
         {
             friend_accounts[i] = accountDatas[account].friendsIndex[index];
             friend_usernames[i] = accountDatas[friend_accounts[i]].username;
-            friend_relationships[i] = accountDatas[account].friends[friend_accounts[i]];
+            friend_relationships[i] = accountDatas[account].friends[friend_accounts[i]].relationship;
+            friend_accepted[i] = accountDatas[account].friends[friend_accounts[i]].accepted;
             index++;
         }
     }
@@ -315,7 +339,8 @@ contract CryptopiaAccountRegister is Initializable, IAccountRegister {
         public override view
         returns (bool)
     {
-        return accountDatas[account].friends[other] == relationship;
+        FriendData storage friendData = accountDatas[account].friends[other];
+        return friendData.relationship == relationship && friendData.accepted;
     }
 
 
@@ -336,6 +361,7 @@ contract CryptopiaAccountRegister is Initializable, IAccountRegister {
     /// @param friend_relationship The type of relationship that is requested
     function addFriendRequest(address friend_account, Relationship friend_relationship) 
         public override 
+        onlyRegistered(msg.sender) 
     {
         _addFriendRequest(friend_account, friend_relationship);
     }
@@ -346,6 +372,7 @@ contract CryptopiaAccountRegister is Initializable, IAccountRegister {
     /// @param friend_relationships The type of relationships that are requested
     function addFriendRequests(address[] memory friend_accounts, Relationship[] memory friend_relationships) 
        public override 
+       onlyRegistered(msg.sender) 
     {
         for (uint i = 0; i < friend_accounts.length; i++)
         {
@@ -396,6 +423,27 @@ contract CryptopiaAccountRegister is Initializable, IAccountRegister {
     }
 
 
+    /// @dev Remove friendship with `friend_account` for `msg.sender`
+    /// @param friend_account The account to remove the friend for
+    function unfriend(address friend_account) 
+        public override 
+        onlyRegistered(msg.sender) 
+    {
+        if (!_isFriend(msg.sender, friend_account))
+        {
+            revert NotFriends(friend_account);
+        }
+
+        Relationship relationship = accountDatas[msg.sender].friends[friend_account].relationship;
+
+        // Remove friend
+        _removeFriendData(msg.sender, friend_account);
+
+        // Emit
+        emit Unfriend(msg.sender, friend_account, relationship);
+    }
+
+
     /**
      * Internal functions
      */
@@ -435,7 +483,7 @@ contract CryptopiaAccountRegister is Initializable, IAccountRegister {
         internal view
         returns (bool)
     {
-        return accountDatas[account].friends[other] != Relationship.None;
+        return accountDatas[account].friends[other].accepted;
     }
 
 
@@ -447,8 +495,8 @@ contract CryptopiaAccountRegister is Initializable, IAccountRegister {
         internal view
         returns (bool)
     {
-        return accountDatas[account].friendRequests[other] != Relationship.None || 
-               accountDatas[other].friendRequests[account] != Relationship.None;
+        FriendData storage friendData = accountDatas[account].friends[other];
+        return friendData.relationship != Relationship.None && !friendData.accepted;
     }
 
 
@@ -457,7 +505,6 @@ contract CryptopiaAccountRegister is Initializable, IAccountRegister {
     /// @param friend_relationship The type of relationship that is requested
     function _addFriendRequest(address friend_account, Relationship friend_relationship) 
         internal 
-        onlyRegistered(msg.sender) 
     {
         // Ensure valid relationship
         if (!_validateRelationship(friend_relationship))
@@ -483,14 +530,22 @@ contract CryptopiaAccountRegister is Initializable, IAccountRegister {
             revert AlreadyFriends(friend_account);
         }
 
-        // Ensure that there is no pending friend request already for the friend account
-        if (_hasPendingFriendRequest(msg.sender, friend_account))
+        if (!_hasPendingFriendRequest(msg.sender, friend_account))
         {
-            revert DuplicateFriendRequest(friend_account);
+            // Add to sender index
+            accountDatas[msg.sender].friends[friend_account].index = uint240(
+                accountDatas[msg.sender].friendsIndex.length);
+            accountDatas[msg.sender].friendsIndex.push(friend_account);
+            
+            // Add to receiver index
+            accountDatas[friend_account].friends[msg.sender].index = uint240(
+                accountDatas[friend_account].friendsIndex.length);
+            accountDatas[friend_account].friendsIndex.push(msg.sender);
         }
 
-        // Add 
-        accountDatas[msg.sender].friendRequests[friend_account] = friend_relationship;
+        // Add or update
+        accountDatas[msg.sender].friends[friend_account].relationship = friend_relationship;
+        accountDatas[friend_account].friends[msg.sender].relationship = friend_relationship;
 
         // Emit
         emit AddFriendRequest(msg.sender, friend_account, friend_relationship);
@@ -508,12 +563,40 @@ contract CryptopiaAccountRegister is Initializable, IAccountRegister {
             revert MissingFriendRequest(friend_account);
         }
 
-        // Remove 
-        Relationship relationship = accountDatas[msg.sender].friendRequests[friend_account];
-        accountDatas[msg.sender].friendRequests[friend_account] = Relationship.None;
+        Relationship relationship = accountDatas[msg.sender].friends[friend_account].relationship;
 
+        // Remove
+        _removeFriendData(msg.sender, friend_account);
+        
         // Emit
         emit RemoveFriendRequest(msg.sender, friend_account, relationship);
+    }
+
+
+    /// @dev Removes the friend data with `friend_accounts` for `msg.sender`
+    /// @param account The account to remove the friend request for
+    /// @param other The other account to remove the friend request for
+    function _removeFriendData(address account, address other) 
+        internal 
+    {
+        AccountData storage accountData = accountDatas[account];
+        AccountData storage otherData = accountDatas[other];
+
+        // Remove from account 
+        uint240 friendIndex = accountData.friends[other].index;
+        accountData.friendsIndex[friendIndex] = accountData.friendsIndex[accountData.friendsIndex.length - 1];
+        accountData.friends[accountData.friendsIndex[friendIndex]].index = friendIndex;
+
+        delete accountData.friends[other];
+        accountData.friendsIndex.pop();
+
+        // Remove from other
+        friendIndex = otherData.friends[account].index;
+        otherData.friendsIndex[friendIndex] = otherData.friendsIndex[otherData.friendsIndex.length - 1];
+        otherData.friends[otherData.friendsIndex[friendIndex]].index = friendIndex;
+
+        delete otherData.friends[account];
+        otherData.friendsIndex.pop();
     }
 
 
@@ -527,16 +610,12 @@ contract CryptopiaAccountRegister is Initializable, IAccountRegister {
             revert MissingFriendRequest(friend_account);
         }
 
-        // Remove friend request
-        Relationship relationship = accountDatas[friend_account].friendRequests[msg.sender];
-        accountDatas[friend_account].friendRequests[msg.sender] = Relationship.None;
-
-        // Add friendship
-        accountDatas[msg.sender].friends[friend_account] = relationship;
-        accountDatas[friend_account].friends[msg.sender] = relationship;
+        // Accept friend request
+        accountDatas[msg.sender].friends[friend_account].accepted = true;
+        accountDatas[friend_account].friends[msg.sender].accepted = true;
 
         // Emit
-        emit AcceptFriendRequest(friend_account, msg.sender, relationship);
+        emit AcceptFriendRequest(friend_account, msg.sender, accountDatas[msg.sender].friends[friend_account].relationship);
     }
 
 

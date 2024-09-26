@@ -75,12 +75,14 @@ interface IAccountRegister {
     /// @return friend_account The address of the friend
     /// @return friend_username The unique username of the friend
     /// @return friend_relationship The type of relationship `account` has with the friend
+    /// @return friend_accepted True if the friend request is accepted
     function getFriendAt(address account, uint index) 
         external view 
         returns (
             address friend_account, 
             bytes32 friend_username,
-            Relationship friend_relationship
+            Relationship friend_relationship,
+            bool friend_accepted
         );
 
 
@@ -91,12 +93,14 @@ interface IAccountRegister {
     /// @return friend_accounts The addresses of the friends
     /// @return friend_usernames The unique usernames of the friends
     /// @return friend_relationships The type of relationship `account` has with the friends
+    /// @return friend_accepted True if the friend request is accepted
     function getFriends(address account, uint skip, uint take) 
         external view 
         returns (
             address[] memory friend_accounts, 
             bytes32[] memory friend_usernames,
-            Relationship[] memory friend_relationships
+            Relationship[] memory friend_relationships,
+            bool[] memory friend_accepted
         );
 
 
@@ -163,5 +167,10 @@ interface IAccountRegister {
     /// @dev Accept friendships with `friend_accounts` for `msg.sender`
     /// @param friend_accounts The accounts to accept the friend requests for
     function acceptFriendRequests(address[] memory friend_accounts) 
+        external;
+
+    /// @dev Remove friendship with `friend_account` for `msg.sender`
+    /// @param friend_account The account to remove the friend for
+    function unfriend(address friend_account) 
         external;
 }

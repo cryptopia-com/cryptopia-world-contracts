@@ -10,10 +10,10 @@ interface IBlueprints {
     /**
      * Public functions
      */
-    /// @dev Retrieves the structure of the blueprint with `tokenId`
+    /// @dev Retrieves the building of the blueprint with `tokenId`
     /// @param tokenId The blueprint token ID
     /// @return structure unique name
-    function getStructure(uint tokenId) 
+    function getBuilding(uint tokenId) 
         external view
         returns(bytes32);
 

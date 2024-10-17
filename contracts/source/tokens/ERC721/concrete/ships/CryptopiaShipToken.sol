@@ -523,7 +523,7 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
     }
 
 
-    /// @dev Add or update ships
+    /// @dev Add or update a ship
     /// @param ship Ship data
     function _setShip(Ship memory ship) 
         internal 

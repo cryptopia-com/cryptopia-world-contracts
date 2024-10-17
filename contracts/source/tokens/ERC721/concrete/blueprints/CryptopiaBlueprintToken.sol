@@ -13,7 +13,7 @@ contract CryptopiaBlueprintToken is CryptopiaERC721, IBlueprints {
     /**
      * Storage
      */
-    mapping(uint => bytes32) public structures;
+    mapping(uint => bytes32) public buildings;
 
 
     /** 
@@ -34,14 +34,14 @@ contract CryptopiaBlueprintToken is CryptopiaERC721, IBlueprints {
     }
 
 
-    /// @dev Retrieves the structure of the blueprint with `tokenId`
+    /// @dev Retrieves the building of the blueprint with `tokenId`
     /// @param tokenId The blueprint token ID
-    /// @return structure unique name
-    function getStructure(uint tokenId) 
+    /// @return building unique name
+    function getBuilding(uint tokenId) 
         public virtual override view   
         returns(bytes32)
     {
-        return structures[tokenId];
+        return buildings[tokenId];
     }
 
 

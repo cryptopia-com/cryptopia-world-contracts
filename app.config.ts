@@ -540,8 +540,11 @@ const config : AppConfig = {
             confirmations: 2,
             pollingInterval: 5000,
             pollingTimeout: 300000,
+            defaultSystem: [
+                "0x485D44ACaEdD5d01b5d8215dE938CE3E7f47530e"
+            ],
             CryptopiaTreasury: {
-                address: ""
+                address: "0xee27be821e9b6ec58f0ec73feb0723124181a676"
             },
             CryptopiaAccount: {
                 outputBytecode: false,

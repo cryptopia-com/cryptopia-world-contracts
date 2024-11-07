@@ -88,7 +88,7 @@
         "faction": "",
         "hasSubFactionConstraint": false,
         "subFaction": "None",
-        "cooldown": 86400,
+        "cooldown": 30,
         "maxCompletions": 0,
         "maxDuration": 0,
         "prerequisiteQuest": "Lumberjack: Need Wood",
@@ -252,7 +252,7 @@
         "faction": "",
         "hasSubFactionConstraint": false,
         "subFaction": "None",
-        "cooldown": 86400,
+        "cooldown": 30,
         "maxCompletions": 0,
         "maxDuration": 0,
         "prerequisiteQuest": "Miner: Need Stone",
@@ -323,6 +323,53 @@
                         "allowWallet": false
                     }
                 ],
+                "nonFungible": []
+            }
+        ]
+    },
+    {
+        "name": "Find Dr. Laurent",
+        "level": 0,
+        "hasFactionConstraint": false,
+        "faction": "",
+        "hasSubFactionConstraint": false,
+        "subFaction": "None",
+        "cooldown": 0,
+        "maxCompletions": 1,
+        "maxDuration": 0,
+        "prerequisiteQuest": "",
+        "steps": [
+            {
+                "name": "Reach the campsite",
+                "hasTileConstraint": true,
+                "tile": 128,
+                "takeFungible": [],
+                "takeNonFungible": [],
+                "giveFungible": [],
+                "giveNonFungible": []
+            },
+			{
+                "name": "Investigate campsite",
+                "hasTileConstraint": true,
+                "tile": 128,
+                "takeFungible": [],
+                "takeNonFungible": [],
+                "giveFungible": [],
+                "giveNonFungible": []
+            }
+        ],
+        "rewards": [
+            {
+                "name": "Succeed",
+                "xp": 0,
+                "karma": 0,
+                "probability": 10000,
+                "probabilityModifierSpeed": 0,
+                "probabilityModifierCharisma": 0,
+                "probabilityModifierLuck": 0,
+                "probabilityModifierIntelligence": 0,
+                "probabilityModifierStrength": 0,
+                "fungible": [],
                 "nonFungible": []
             }
         ]

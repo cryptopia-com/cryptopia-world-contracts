@@ -30,6 +30,9 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
         /// @dev Type of building
         BuildingType buildingType;
 
+        /// @dev True if the building is an upgrade
+        bool isUpgrade;
+
         /// @dev The level of the building
         uint8 level;
 
@@ -48,9 +51,6 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
 
         /// @dev Base storage capacity
         uint base_inventory;
-
-        /// @dev Optional reference to the building this one upgrades from
-        bytes32 upgradableFrom;
     }
 
 
@@ -73,6 +73,8 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
     /// @dev name => BuildingData
     mapping (bytes32 => BuildingData) public buildings;
     bytes32[] internal buildingsIndex;
+
+    mapping (bytes32 => mapping (bytes32 => bool)) internal upgradableFrom;
 
     /// @dev tile => BuildingInstance
     mapping (uint16 => BuildingInstance) public buildingInstances;
@@ -246,6 +248,14 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
     }
 
 
+    function _isUpgrade(bytes32 building) 
+        internal view 
+        returns (bool) 
+    {
+        
+    }
+
+
     /// @dev Check if a building is upgradable
     /// @param building The name of the building
     function _isUpgradable(bytes32 building) 
@@ -358,6 +368,7 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
 
         // Start construction
         buildingInstances[tileIndex].name = building;
+        buildingInstances[tileIndex].construction = 0;
 
         // Emit
         emit BuildingConstructionStart(tileIndex, building);

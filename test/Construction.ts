@@ -4,7 +4,7 @@ import { ethers, upgrades} from "hardhat";
 import { getParamFromEvent} from '../scripts/helpers/events';
 import { encodeRockData, encodeVegetationData, encodeWildlifeData } from '../scripts/maps/helpers/encoders';
 import { resolveEnum } from "../scripts/helpers/enums";
-import { Resource, Terrain, Biome } from '../scripts/types/enums';
+import { Permission, Rarity, Resource, Profession, Terrain, Biome, BuildingType } from '../scripts/types/enums';
 import { Map } from "../scripts/types/input";
 import { SYSTEM_ROLE } from "./settings/roles";   
 
@@ -16,23 +16,27 @@ import {
     CryptopiaShipToken,
     CryptopiaToolToken,
     CryptopiaCrafting,
-    CryptopiaResourceGathering
+    CryptopiaBlueprintToken,
+    CryptopiaBuildingRegister
 } from "../typechain-types";
+import { BuildingStruct } from "../typechain-types/contracts/source/game/buildings/IBuildingRegister.js";
+
+import { ContractTransaction } from "ethers";
 
 
 /**
- * Gathering tests
+ * Construction tests
  * 
  * Test cases:
- * - Gather fruit
+ * - Start construction
  */
-describe("Gathering Contracts", function () {
+describe("Construction Contracts", function () {
 
     // Accounts
     let deployer: string;
     let system: string;
-    let minter: string;
     let account1: string;
+    let account2: string;
     let other: string;
     let treasury: string;
 
@@ -43,7 +47,8 @@ describe("Gathering Contracts", function () {
     let shipTokenInstance: CryptopiaShipToken;
     let toolTokenInstance: CryptopiaToolToken;
     let craftingInstance: CryptopiaCrafting;
-    let resourceGatheringInstance: CryptopiaResourceGathering;
+    let blueprintTokenInstance: CryptopiaBlueprintToken;
+    let buildingRegisterInstance: CryptopiaBuildingRegister;
 
     let registeredAccountInstance: CryptopiaAccount;
     let unregisteredAccountInstance: CryptopiaAccount;
@@ -54,47 +59,12 @@ describe("Gathering Contracts", function () {
     // Mock Data
     const assets: any[] = [
         {
-            symbol: "FISH",
-            name: "Fish",
-            resource: 0,
-            weight: 50, // 0.5kg
-            system: [
-                "CryptopiaResourceGathering"
-            ],
-            contractAddress: "",
-            contractInstance: {}
-        },
-        {
-            symbol: "MEAT",
-            name: "Meat",
-            resource: 1,
-            weight: 50, // 0.5kg
-            system: [
-                "CryptopiaResourceGathering"
-            ],
-            contractAddress: "",
-            contractInstance: {}
-        },
-        {
-            symbol: "FRUIT",
-            name: "Fruit",
-            resource: 2,
-            weight: 50, // 0.5kg
-            contractAddress: "",
-            system: [
-                "CryptopiaResourceGathering"
-            ],
-            contractInstance: {}
-        },
-        {
             symbol: "WOOD",
             name: "Wood",
             resource: 3,
             weight: 50, // 0.5kg
             contractAddress: "",
-            system: [
-                "CryptopiaResourceGathering"
-            ],
+            system: [],
             contractInstance: {}
         },
         {
@@ -103,20 +73,7 @@ describe("Gathering Contracts", function () {
             resource: 4,
             weight: 100, // 1kg
             contractAddress: "",
-            system: [
-                "CryptopiaResourceGathering"
-            ],
-            contractInstance: {}
-        },
-        {
-            symbol: "SAND",
-            name: "Sand",
-            resource: 5,
-            weight: 100, // 1kg
-            contractAddress: "",
-            system: [
-                "CryptopiaResourceGathering"
-            ],
+            system: [],
             contractInstance: {}
         },
         {
@@ -210,13 +167,87 @@ describe("Gathering Contracts", function () {
         sizeX: 2,
         sizeZ: 2,
         tiles: [
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b000110110001101100011011000110110001101100' , rockData: '0b0001101100011011000110110001' , wildlifeData: '0b00011011000110110001', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 6, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Hills, elevationLevel: 5, waterLevel: 5, vegetationData: '0b000110110001101100011011000110110001101100' , rockData: '0b0001101100011011000110110001' , wildlifeData: '0b00011011000110110001', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.Grassland, terrain: Terrain.Flat, elevationLevel: 6, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: true, resources: [] },
+            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
             { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
         ]
     };
 
+    const buildings: BuildingStruct[] = [
+        {
+            name: "Improvised Mine".toBytes32(),
+            rarity: Rarity.Common, 
+            buildingType: BuildingType.Mine,
+            modules: 1,
+            co2: 100,
+            base_health: 250,
+            base_defence: 100,
+            base_inventory: "120000".toWei(),
+            upgradableFrom: "".toBytes32(),
+            construction: {
+                constraints: {
+                    hasMaxOccurrenceConstraint: false,
+                    maxOccurrence: 0,
+                    lake: Permission.NotAllowed,
+                    river: Permission.Allowed,
+                    dock: Permission.Allowed,
+                    environment: {
+                        beach: true,
+                        coast: true,
+                        inland: true,
+                        coastalWater: false,
+                        shallowWater: false,
+                        deepWater: false,   
+                        industrial: true,
+                        urban: false
+                    },
+                    terrain: {
+                        flat: true,
+                        hills: true,
+                        mountains: false,
+                        water: false, // Remove
+                        seastead: false
+                    },
+                    biome: {
+                        none: true,
+                        plains: true,
+                        grassland: true,
+                        forest: true,
+                        rainForest:true,
+                        mangrove: false,
+                        desert: true,
+                        tundra: true,
+                        swamp: false,
+                        reef: false,
+                        vulcanic: true
+                    }
+                },
+                requirements: {
+                    labour: [
+                        {
+                            profession: Profession.Any,
+                            hasMinimumLevel: false,
+                            minLevel: 0,
+                            hasMaximumLevel: false,
+                            maxLevel: 0,
+                            requiredProfessionals: 10
+                        }
+                    ],
+                    resources: [
+                        { 
+                            resource: Resource.Wood, 
+                            amount: "100".toWei()
+                        },
+                        { 
+                            resource: Resource.Stone, 
+                            amount: "100".toWei()
+                        },
+                    ],
+                }
+            }
+        }
+    ];
 
     /**s
      * Deploy Crafting Contracts
@@ -224,7 +255,7 @@ describe("Gathering Contracts", function () {
     before(async () => {
 
         // Accounts
-        [deployer, system, minter, account1, other, treasury] = (
+        [deployer, system, account1, account2, other, treasury] = (
             await ethers.getSigners()).map(s => s.address);
 
         // Signers
@@ -243,7 +274,8 @@ describe("Gathering Contracts", function () {
         const CraftingFactory = await ethers.getContractFactory("CryptopiaCrafting");
         const TitleDeedTokenFactory = await ethers.getContractFactory("CryptopiaTitleDeedToken");
         const MapsFactory = await ethers.getContractFactory("CryptopiaMaps");
-        const ResourceGatheringFactory = await ethers.getContractFactory("CryptopiaResourceGathering");
+        const BlueprintTokenFactory = await ethers.getContractFactory("CryptopiaBlueprintToken");
+        const BuildingRegisterFactory = await ethers.getContractFactory("CryptopiaBuildingRegister");
         
         // Deploy Inventories
         const inventoriesProxy = await upgrades.deployProxy(
@@ -409,24 +441,34 @@ describe("Gathering Contracts", function () {
         await inventoriesInstance.grantRole(SYSTEM_ROLE, toolTokenAddress);
 
 
-        // Deploy Resource Gathering
-        const resourceGatheringProxy = await upgrades.deployProxy(
-            ResourceGatheringFactory, 
+        // Deploy Blueprint token
+        const blueprintTokenProxy = await upgrades.deployProxy(
+            BlueprintTokenFactory, 
             [
-                mapsAddress,
-                assetRegisterAddress,
-                playerRegisterAddress,
-                inventoriesAddress,
-                toolTokenAddress
+                whitelistAddress,
+                "", 
+                ""
             ]);
 
-        const resourceGatheringAddress = await resourceGatheringProxy.address;
-        resourceGatheringInstance = await ethers.getContractAt("CryptopiaResourceGathering", resourceGatheringAddress);
+        const blueprintTokenAddress = await blueprintTokenProxy.address;
+        blueprintTokenInstance = await ethers.getContractAt("CryptopiaBlueprintToken", blueprintTokenAddress);
+
+
+        // Deploy Resource building register
+        const buildingRegisterProxy = await upgrades.deployProxy(
+            BuildingRegisterFactory, 
+            [
+                mapsAddress,
+                titleDeedTokenAddress,
+                blueprintTokenAddress
+            ]);
+
+        const buildingRegisterAddress = await buildingRegisterProxy.address;
+        buildingRegisterInstance = await ethers.getContractAt("CryptopiaBuildingRegister", buildingRegisterAddress);
 
         // Grant roles
-        await toolTokenInstance.grantRole(SYSTEM_ROLE, resourceGatheringAddress);
-        await inventoriesInstance.grantRole(SYSTEM_ROLE, resourceGatheringAddress);
-        await playerRegisterInstance.grantRole(SYSTEM_ROLE, resourceGatheringAddress);
+        await blueprintTokenInstance.grantRole(SYSTEM_ROLE, buildingRegisterAddress);
+        await buildingRegisterInstance.grantRole(SYSTEM_ROLE, system);
 
 
         // Deploy assets
@@ -444,14 +486,8 @@ describe("Gathering Contracts", function () {
             asset.contractInstance = await ethers
                 .getContractAt("CryptopiaAssetToken", asset.contractAddress);
 
-            await asset.contractInstance.grantRole(SYSTEM_ROLE, minter);
+            await asset.contractInstance.grantRole(SYSTEM_ROLE, system);
             await inventoriesInstance.grantRole(SYSTEM_ROLE, asset.contractAddress);
-            
-            if (asset.system.includes("CryptopiaResourceGathering"))
-            {
-                await asset.contractInstance.grantRole(
-                    SYSTEM_ROLE, resourceGatheringAddress);
-            }
             
             await assetRegisterInstance
                 .registerAsset(asset.contractAddress, true, asset.resource);
@@ -550,32 +586,56 @@ describe("Gathering Contracts", function () {
     });
 
     /**
-     * Test gathering fruit
+     * Test Building Register
      */
-    describe("Gather Fruit", function () {
+    describe("Buildings", function () {
 
-        it("Registered player should be able to mint fruit without a tool", async () => {
+        it("Admin should be able to add buildings", async () => {
+        
+            // Act
+            await buildingRegisterInstance.setBuildings(buildings);
+            
+            // Assert
+            const buildingCount = await buildingRegisterInstance.getBuildingCount();
+            expect(buildingCount).to.equal(buildings.length);
+        });
+    });
+
+    /**
+     * Test Construction
+     */
+    describe("Construction (system)", function () {
+
+        let transaction: ContractTransaction;
+
+        it("System should be able to start construction", async () => {
         
             // Setup
-            const resource = Resource.Fruit;
-            const asset = getAssetByResource(resource);
-            const toolId = 0;
-            const limit = "1".toWei();
-            const inventory = 1; // Backpack
-
-            const callData = resourceGatheringInstance.interface
-                .encodeFunctionData("mint", [resource, toolId, limit]);
-
+            const tileIndex = 0;
+            const building = "Improvised Mine".toBytes32();
+            
             // Act
-            const signer = await ethers.provider.getSigner(account1);
-            const transaction = await registeredAccountInstance
+            const signer = await ethers.provider.getSigner(system);
+            transaction = await buildingRegisterInstance
                 .connect(signer)
-                .submitTransaction(await resourceGatheringInstance.address, 0, callData);
+                .__startConstruction(tileIndex, building);
+
+            // Assert
+            const buildingInstance = await buildingRegisterInstance.getBuildingInstance(tileIndex);
+            expect(buildingInstance.name).to.equal(building);
+            expect(buildingInstance.construction).to.equal(0);
+        });
+
+        it ("Should emit 'BuildingConstructionStart' event ", async () => {
+            
+            // Setup
+            const tileIndex = 0;
+            const building = "Improvised Mine".toBytes32();
 
             // Assert
             await expect(transaction).to
-                .emit(inventoriesInstance, "InventoryAssign")
-                .withArgs(registeredAccountAddress, inventory, asset.contractAddress, limit, 0);
+                .emit(buildingRegisterInstance, "BuildingConstructionStart")
+                .withArgs(tileIndex, building);
         });
     });
 

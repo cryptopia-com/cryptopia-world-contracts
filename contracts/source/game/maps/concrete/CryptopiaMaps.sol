@@ -43,7 +43,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         Biome biome;
 
         /// @dev The type of terrain 
-        /// {Flat, Hills, Mountains, Water, Seastead}
+        /// {Flat, Hills, Mountains, Seastead}
         Terrain terrain;
 
         /// @dev The elevation of the terrain (seafloor in case of sea tile)
@@ -100,8 +100,12 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         Biome biome;
 
         /// @dev The type of terrain 
-        /// {Flat, Hills, Mountains, Water, Seastead}
+        /// {Flat, Hills, Mountains, Seastead}
         Terrain terrain;
+
+        /// @dev The type of environment
+        /// {Beach, Coast, Inland, CoastalWater, ShallowWater, DeepWater}
+        Environment environment;
 
         /// @dev The elevation of the terrain (seafloor in case of sea tile)
         uint8 elevationLevel;
@@ -126,6 +130,9 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     /// @dev Dynamic tile data
     struct TileDynamicData
     {
+        /// @dev Type of zone
+        Zone zone;
+
         /// @dev Indicates the presence of a road on the tile
         /// @notice Roads remove the movement penalty 
         bool hasRoad;
@@ -493,6 +500,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         tileData.safety = data.safety;
         tileData.biome = data.biome;
         tileData.terrain = data.terrain;
+        tileData.environment = data.environment;
         tileData.elevationLevel = data.elevationLevel;
         tileData.waterLevel = data.waterLevel;
         tileData.riverFlags = data.riverFlags;
@@ -528,6 +536,7 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
             tileData.owner = address(0);
         }
 
+        tileData.zone = dynamicData.zone;
         tileData.vegetationData = dynamicData.vegetationData;
         tileData.rockData = dynamicData.rockData;
         tileData.wildlifeData = dynamicData.wildlifeData;
@@ -1110,6 +1119,13 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         tileDataStatic[index].waterLevel = tileData.waterLevel;
         tileDataStatic[index].hasLake = tileData.hasLake;
         tileDataStatic[index].riverFlags = tileData.riverFlags;
+
+        // Derive environment
+        tileDataStatic[index].environment = _getEnvironment(
+            tileData.biome, 
+            tileData.terrain, 
+            tileData.elevationLevel, 
+            tileData.waterLevel);
         
         // Set dynamic data
         tileDataDynamic[index].hasRoad = tileData.hasRoad;
@@ -1128,6 +1144,39 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         // Cache movement penalty
         movementPenaltyCache[index] = TileMovementPenaltyCacheKey(
             true, _getMovementPenalty(index)); 
+    }
+
+
+    /// @dev Retrieve the environment for a tile based on it's biome, terrain, elevation and water level
+    /// @param biome The biome of the tile
+    /// @param terrain The terrain of the tile
+    /// @param elevation The elevation of the tile
+    /// @param waterLevel The water level of the tile
+    /// @return The environment of the tile
+    function _getEnvironment(
+        Biome biome, 
+        Terrain terrain, 
+        uint8 elevation, 
+        uint8 waterLevel) 
+        internal pure 
+        returns (Environment) 
+    {
+        // Water
+        if (waterLevel > elevation)
+        {
+            // Beach?
+
+        }
+
+        // Land
+        else 
+        {
+            // Beach?
+
+            // Coast?
+
+
+        }
     }
 
 

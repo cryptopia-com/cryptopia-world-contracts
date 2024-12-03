@@ -49,8 +49,12 @@ struct TileStatic
     Biome biome;
 
     /// @dev The type of terrain 
-    /// {Flat, Hills, Mountains, Water, Seastead}
+    /// {Flat, Hills, Mountains, Seastead}
     Terrain terrain;
+
+    /// @dev The type of environment
+    /// {Beach, Coast, Inland, CoastalWater, ShallowWater, DeepWater}
+    Environment environment;
 
     /// @dev The elevation of the terrain (seafloor in case of sea tile)
     uint8 elevationLevel;
@@ -76,6 +80,9 @@ struct TileDynamic
 {
     /// @dev the owner of the title deed
     address owner;
+
+    /// @dev Type of zone
+    Zone zone;
 
     /// @dev Indicates the presence of a road on the tile
     /// @notice Roads remove the movement penalty for hills
@@ -140,4 +147,50 @@ struct PlayerNavigation {
 
     /// @dev Tiles that make up the route that the player is currently traveling or last traveled
     bytes32 location_route;
+}
+
+/// @dev Constraints based on the terrain type
+struct TileTerrainConstraints 
+{
+    bool flat;          // Allows construction on flat terrain
+    bool hills;         // Allows construction on hills (with movement penalty)
+    bool mountains;     // Allows construction on mountains (if ever needed)
+    bool seastead;      // Allows construction on seastead tiles
+}
+
+/// @dev Constraints based on the biome type
+struct TileBiomeConstraints 
+{
+    bool none;          // Allows construction in areas with no specific biome
+    bool plains;        // Allows construction in plains
+    bool grassland;     // Allows construction in grassland
+    bool forest;        // Allows construction in forest
+    bool rainForest;    // Allows construction in rainforest
+    bool mangrove;      // Allows construction in mangrove
+    bool desert;        // Allows construction in desert
+    bool tundra;        // Allows construction in tundra
+    bool swamp;         // Allows construction in swamp
+    bool reef;          // Allows construction in reef
+    bool vulcanic;      // Allows construction in vulcanic areas
+}
+
+/// @dev Constraints based on the tile's environment
+struct TileEnvironmentConstraints
+{
+    bool beach;        // Allows construction in beach areas
+    bool coast;        // Allows construction in coastal areas
+    bool inland;       // Allows construction in inland areas
+    bool coastalWater; // Allows construction in coastal water areas
+    bool shallowWater; // Allows construction in shallow water areas
+    bool deepWater;    // Allows construction in deep water areas
+    bool industrial;   // Allows construction in industrial areas
+    bool urban;        // Allows construction in urban areas
+}
+
+struct TileZoneConstraints
+{
+    bool neutral;       // Allows construction in neutral zones
+    bool industrial;    // Allows construction in industrial zones
+    bool ecological;    // Allows construction in ecological zones
+    bool metropolitan;  // Allows construction in metropolitan zones
 }

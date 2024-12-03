@@ -5,6 +5,9 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
 import "../IBuildingRegister.sol";
+import "../types/BuildingDataTypes.sol";
+import "../types/ConstructionDataTypes.sol";
+import "../../maps/IMaps.sol";
 
 /// @title Cryptopia Buildings Contract
 /// @notice Manages the buildings within Cryptopia, including construction, upgrades, and destruction.
@@ -18,23 +21,11 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
         /// @dev Index within the buildingsIndex array
         uint index;
 
-        /// @dev Faction type (Eco, Tech, Traditional, Industrial) 
-        Faction faction;
-
-        /// @dev SubFaction type (None, Pirate, BountyHunter) 
-        SubFaction subFaction;
-
         /// @dev Rarity level of the building (Common, Rare, etc.)
         Rarity rarity;
 
         /// @dev Type of building
         BuildingType buildingType;
-
-        /// @dev True if the building is an upgrade
-        bool isUpgrade;
-
-        /// @dev The level of the building
-        uint8 level;
 
         /// @dev The number of module slots available
         uint8 modules;
@@ -51,6 +42,12 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
 
         /// @dev Base storage capacity
         uint base_inventory;
+
+        /// @dev Building that can be upgraded from
+        bytes32 upgradableFrom;
+
+        /// @dev Construction data
+        ConstructionData construction;
     }
 
 
@@ -63,7 +60,7 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
     /**
      * Storage 
      */
-    uint8 constant private CONSTRUCTION_COMPLETE = 100;
+    uint16 constant private CONSTRUCTION_COMPLETE = 1000;
 
     /// @dev Refs
     address public mapsContract;
@@ -71,10 +68,8 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
     address public blueprintsContract;
 
     /// @dev name => BuildingData
-    mapping (bytes32 => BuildingData) public buildings;
+    mapping (bytes32 => BuildingData) internal buildings;
     bytes32[] internal buildingsIndex;
-
-    mapping (bytes32 => mapping (bytes32 => bool)) internal upgradableFrom;
 
     /// @dev tile => BuildingInstance
     mapping (uint16 => BuildingInstance) public buildingInstances;
@@ -114,8 +109,11 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
 
     /// @dev Emits if a building is not upgradable from the existing building
     /// @param tileIndex The index of the tile
-    /// @param building The name of the expected building
-    error UpgadableBuildingDoesNotExistAtLocation(uint16 tileIndex, bytes32 building);
+    error UpgadableBuildingDoesNotExistAtLocation(uint16 tileIndex);
+
+    /// @dev Emits if a building is upgradable but not completed
+    /// @param tileIndex The index of the tile
+    error UpgadableBuildingIsNotCompleteAtLocation(uint16 tileIndex);
 
     /// @dev Emits if a building already exists at the location
     /// @param tileIndex The index of the tile
@@ -125,6 +123,8 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
     /// @dev Emits if there is no building under construction at the location
     /// @param tileIndex The index of the tile
     error BuildingNotUnderConstructionAtLocation(uint16 tileIndex);
+
+    error ConstructionRequirementsNotMet(uint16 tileIndex, bytes32 building);
 
 
     /// @dev Constructor
@@ -248,35 +248,6 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
     }
 
 
-    function _isUpgrade(bytes32 building) 
-        internal view 
-        returns (bool) 
-    {
-        
-    }
-
-
-    /// @dev Check if a building is upgradable
-    /// @param building The name of the building
-    function _isUpgradable(bytes32 building) 
-        internal view 
-        returns(bool)
-    {
-        return buildings[building].upgradableFrom != bytes32(0);
-    }
-
-
-    /// @dev Check if a building is upgradable from another building
-    /// @param building The name of the building
-    /// @param upgradableFrom The name of the building to upgrade from
-    function _isUpgradableFrom(bytes32 building, bytes32 upgradableFrom) 
-        internal view 
-        returns(bool)
-    {
-        return buildings[building].upgradableFrom == upgradableFrom;
-    }
-
-
     /// @dev Add or update a building
     /// @param building The building data
     function _setBuilding(Building memory building)
@@ -291,42 +262,64 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
 
         // Set building data
         BuildingData storage data = buildings[building.name];
-        data.faction = building.faction;
-        data.subFaction = building.subFaction;
         data.rarity = building.rarity;
         data.buildingType = building.buildingType;
-        data.level = building.level;
         data.modules = building.modules;
         data.co2 = building.co2;
         data.base_health = building.base_health;
         data.base_defence = building.base_defence;
         data.base_inventory = building.base_inventory;
         data.upgradableFrom = building.upgradableFrom;
+
+        // Set construction constraints
+        data.construction.constraints = building.construction.constraints;
+
+        // Set construction requirements
+        delete data.construction.requirements.labour;
+        for (uint i = 0; i < building.construction.requirements.labour.length; i++)
+        {
+            LabourRequirement memory labourRequirement = building.construction.requirements.labour[i];
+            data.construction.requirements.labour.push(LabourRequirement(
+                labourRequirement.profession,
+                labourRequirement.hasMinimumLevel,
+                labourRequirement.minLevel,
+                labourRequirement.hasMaximumLevel,
+                labourRequirement.maxLevel,
+                labourRequirement.requiredProfessionals
+            ));
+        }
+
+        // Set construction requirements
+        delete data.construction.requirements.resources;
+        for (uint i = 0; i < building.construction.requirements.resources.length; i++)
+        {
+            ResourceRequirement memory resourceRequirement = building.construction.requirements.resources[i];
+            data.construction.requirements.resources.push(ResourceRequirement(
+                resourceRequirement.resource, 
+                resourceRequirement.amount
+            ));
+        }
     }
 
 
     /// @dev Retrieve a building by name
     /// @param name The name of the building
-    /// @return Building data
+    /// @return building Building data
     function _getBuilding(bytes32 name)
         internal view
-        returns(Building memory)
+        returns(Building memory building)
     {
-        BuildingData memory data = buildings[name];
-        return Building({
-            name: name,
-            faction: data.faction,
-            subFaction: data.subFaction,
-            rarity: data.rarity,
-            buildingType: data.buildingType,
-            level: data.level,
-            modules: data.modules,
-            co2: data.co2,
-            base_health: data.base_health,
-            base_defence: data.base_defence,
-            base_inventory: data.base_inventory,
-            upgradableFrom: data.upgradableFrom
-        });
+        BuildingData storage data = buildings[name];
+        building.name = name;
+        building.rarity = data.rarity;
+        building.buildingType = data.buildingType;
+        building.modules = data.modules;
+        building.co2 = data.co2;
+        building.base_health = data.base_health;
+        building.base_defence = data.base_defence;
+        building.base_inventory = data.base_inventory;
+        building.upgradableFrom = data.upgradableFrom;
+        building.construction = data.construction;
     }
 
 
@@ -340,8 +333,10 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
         public virtual override 
         onlyRole(SYSTEM_ROLE)
     {
-        // Upgradable
-        if (_isUpgradable(building))
+        BuildingData storage _building = buildings[building];
+
+        // Upgrade
+        if (_building.upgradableFrom != bytes32(0))
         {
             // Check if building exists
             if (buildingInstances[tileIndex].name == bytes32(0))
@@ -349,14 +344,20 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
                 revert BuildingDoesNotExistAtLocation(tileIndex);
             }
 
-            // Check if building is upgradable from existing building
-            if (_isUpgradableFrom(building, buildingInstances[tileIndex].name))
+            // Check if building is upgrade for existing building
+            if (_building.upgradableFrom != buildingInstances[tileIndex].name)
             {
-                revert UpgadableBuildingDoesNotExistAtLocation(tileIndex, buildings[building].upgradableFrom);
+                revert UpgadableBuildingDoesNotExistAtLocation(tileIndex);
+            }
+
+            // Check if existing building is complete
+            if (buildingInstances[tileIndex].construction < CONSTRUCTION_COMPLETE)
+            {
+                revert UpgadableBuildingIsNotCompleteAtLocation(tileIndex);
             }
         }
 
-        // Non-Upgradable
+        // New construction
         else
         {
             // Check if building exists
@@ -364,6 +365,64 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
             {
                 revert BuildingAlreadyExistsAtLocation(tileIndex, building);
             }
+        }
+
+        // Check construction constraints
+        ConstructionConstraints storage constraints = _building.construction.constraints;
+        TileStatic memory tileDataStatic = IMaps(mapsContract).getTileDataStatic(tileIndex);
+        //TileDynamic memory tileDataDynamic = IMaps(mapsContract).getTileDataDynamic(tileIndex);
+
+        bool hasDockAccess = false; // tileGroupToDock[tileDataStatic.group];
+        uint currentInstances = 0; // buildingInstanceCount[buildingType];
+
+        // Validate constraints
+        if ((constraints.hasMaxInstanceConstraint && currentInstances >= constraints.maxInstances) ||
+            (constraints.lake == Permission.Required && !tileDataStatic.hasLake) ||
+            (constraints.lake == Permission.NotAllowed && tileDataStatic.hasLake) || 
+            (constraints.river == Permission.Required && tileDataStatic.riverFlags == 0) ||
+            (constraints.river == Permission.NotAllowed && tileDataStatic.riverFlags > 0) || 
+            (constraints.dock == Permission.Required && !hasDockAccess) ||
+            (constraints.dock == Permission.NotAllowed && hasDockAccess))
+        {
+            revert ConstructionRequirementsNotMet(tileIndex, building);
+        }
+
+        // Validate environment constraints
+        if ((tileDataStatic.environment == Environment.Beach && !constraints.environment.beach) ||
+            (tileDataStatic.environment == Environment.Coast && !constraints.environment.coast) ||
+            (tileDataStatic.environment == Environment.Inland && !constraints.environment.inland) ||
+            (tileDataStatic.environment == Environment.CoastalWater && !constraints.environment.coastalWater) ||
+            (tileDataStatic.environment == Environment.ShallowWater && !constraints.environment.shallowWater) ||
+            (tileDataStatic.environment == Environment.DeepWater && !constraints.environment.deepWater) ||
+            (tileDataStatic.environment == Environment.Industrial && !constraints.environment.industrial) ||
+            (tileDataStatic.environment == Environment.Urban && !constraints.environment.urban))
+        {
+            revert ConstructionRequirementsNotMet(tileIndex, building);
+        }
+
+        // Validate terrain constraints
+        if ((tileDataStatic.terrain == Terrain.Flat && !constraints.terrain.flat) ||
+            (tileDataStatic.terrain == Terrain.Hills && !constraints.terrain.hills) ||
+            (tileDataStatic.terrain == Terrain.Mountains && !constraints.terrain.mountains) ||
+            (tileDataStatic.terrain == Terrain.Seastead && !constraints.terrain.seastead))
+        {
+            revert ConstructionRequirementsNotMet(tileIndex, building);
+        }
+
+        // Validate biome constraints
+        if ((tileDataStatic.biome == Biome.None && !constraints.biome.none) ||
+            (tileDataStatic.biome == Biome.Plains && !constraints.biome.plains) ||
+            (tileDataStatic.biome == Biome.Grassland && !constraints.biome.grassland) ||
+            (tileDataStatic.biome == Biome.Forest && !constraints.biome.forest) ||
+            (tileDataStatic.biome == Biome.RainForest && !constraints.biome.rainForest) ||
+            (tileDataStatic.biome == Biome.Mangrove && !constraints.biome.mangrove) ||
+            (tileDataStatic.biome == Biome.Desert && !constraints.biome.desert) ||
+            (tileDataStatic.biome == Biome.Tundra && !constraints.biome.tundra) ||
+            (tileDataStatic.biome == Biome.Swamp && !constraints.biome.swamp) ||
+            (tileDataStatic.biome == Biome.Reef && !constraints.biome.reef) ||
+            (tileDataStatic.biome == Biome.Vulcanic && !constraints.biome.vulcanic))
+        {
+            revert ConstructionRequirementsNotMet(tileIndex, building);
         }
 
         // Start construction

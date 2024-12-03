@@ -2,6 +2,7 @@
 pragma solidity 0.8.20;
 
 import "./types/BuildingDataTypes.sol";
+import "./types/ConstructionDataTypes.sol";
 
 /// @title Cryptopia Buildings Contract
 /// @notice Manages the buildings within Cryptopia, including construction, upgrades, and destruction.
@@ -44,12 +45,16 @@ interface IBuildingRegister {
         returns (BuildingInstance memory instance);
 
 
-    /// @dev Get a range of building instances
     /// @param tileIndices The indices of the tiles to get the building instances for
     /// @return instances Range of building instances
     function getBuildingInstances(uint16[] memory tileIndices)
         external view 
         returns (BuildingInstance[] memory instances);
+
+
+    // function getConstructionRequirements(bytes32 building)
+    //     external view
+    //     returns (ConstructionRequirements memory requirements);
 
 
     /**
@@ -68,6 +73,12 @@ interface IBuildingRegister {
     /// @param progress The new progress value of the building (0-100)
     function __progressConstruction(uint16 tileIndex, bytes32 building, uint8 progress)
         external;
+
+
+    /// @dev Cancel construction of a building
+    /// @param tileIndex The index of the tile to cancel construction on
+    // function __cancelConstruction(uint16 tileIndex)
+    //     external;
 
 
     /// @dev Destroy a building

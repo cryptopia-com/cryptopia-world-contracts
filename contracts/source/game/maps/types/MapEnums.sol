@@ -22,13 +22,33 @@ enum EdgeType
     Cliff
 }
 
-/// @dev Terrain of a tile
+/// @dev Environment of a tile (static context of the terrain)
+enum Environment
+{
+    Beach,
+    Coast,
+    Inland,
+    CoastalWater,
+    ShallowWater,
+    DeepWater
+}
+
+/// @dev Zone of a tile (dynamic)
+enum Zone 
+{
+    Neutral,       // Preferd by traditional faction
+    Industrial,    // Preferd by industrial faction
+    Ecological,    // Preferd by eco faction      
+    Metropolitan   // Prefered by tech faction
+}
+
+
+/// @dev Terrain of a tile (static)
 enum Terrain
 {
     Flat,
-    Hills, // Penalty for movement
-    Mountains, // Impassable
-    Water,
+    Hills,          // Penalty for movement
+    Mountains,      // Impassable
     Seastead
 }
 
@@ -38,13 +58,13 @@ enum Biome
     None, 
     Plains,
     Grassland,
-    Forest, // Allows minting of wood
+    Forest,     // Allows minting of wood
     RainForest, // Allows minting of wood
-    Mangrove, // Allows minting of wood
+    Mangrove,   // Allows minting of wood
     Desert,
     Tundra,
     Swamp,
-    Reef, // Water only
+    Reef,       // Water only
     Vulcanic
 }
 

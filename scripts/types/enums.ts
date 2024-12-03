@@ -24,6 +24,13 @@ export enum Rarity
     Master
 }
 
+export enum Permission 
+{
+    NotAllowed,
+    Allowed,
+    Required
+}
+
 
 /**
  * Maps
@@ -120,4 +127,27 @@ export enum Relationship
     Friend,
     Family,
     Spouse
+}
+
+/**
+ * Professions
+ */
+export enum Profession 
+{
+    Any,
+    Builder,
+    Architect,
+    Engineer,
+    Miner
+}
+
+/**
+ * Buildings
+ */
+export enum BuildingType
+{
+    System,
+    Dock,
+    Mine,
+    Factory
 }

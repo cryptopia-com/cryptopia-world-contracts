@@ -3,6 +3,7 @@ pragma solidity 0.8.20;
 
 import "../../types/GameEnums.sol";
 import "../../types/FactionEnums.sol";
+import "./ConstructionDataTypes.sol";
 import "./BuildingEnums.sol";
 
 /// @dev Building in Cryptopia
@@ -11,20 +12,11 @@ struct Building
     /// @dev Unique name of the building
     bytes32 name;
 
-    /// @dev Faction type (Eco, Tech, Traditional, Industrial) 
-    Faction faction;
-
-    /// @dev SubFaction type (None, Pirate, BountyHunter) 
-    SubFaction subFaction;
-
     /// @dev Rarity level of the building (Common, Rare, etc.)
     Rarity rarity;
 
     /// @dev Type of building
     BuildingType buildingType;
-
-    /// @dev The level of the building
-    uint8 level;
 
     /// @dev The number of module slots available
     uint8 modules;
@@ -42,8 +34,11 @@ struct Building
     /// @dev Base storage capacity
     uint base_inventory;
 
-    /// @dev Optional reference to the building this one upgrades from
+    /// @dev Building that can be upgraded from
     bytes32 upgradableFrom;
+
+    /// @dev Construction data
+    ConstructionData construction;
 }
 
 /// @dev Building instance
@@ -52,8 +47,8 @@ struct BuildingInstance
     /// @dev Reference to Building definition
     bytes32 name;
 
-    /// @dev 0 - 100, indicating the construction progress
-    uint8 construction; 
+    /// @dev 0 - 100.0, indicating the construction progress
+    uint16 construction; 
 
     /// @dev Effects on health of any equipped modules
     uint16 health;

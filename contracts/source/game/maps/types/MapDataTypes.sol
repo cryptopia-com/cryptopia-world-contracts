@@ -150,7 +150,7 @@ struct PlayerNavigation {
 }
 
 /// @dev Constraints based on the terrain type
-struct TileTerrainConstraints 
+struct TerrainConstraints 
 {
     bool flat;          // Allows construction on flat terrain
     bool hills;         // Allows construction on hills (with movement penalty)
@@ -159,7 +159,7 @@ struct TileTerrainConstraints
 }
 
 /// @dev Constraints based on the biome type
-struct TileBiomeConstraints 
+struct BiomeConstraints 
 {
     bool none;          // Allows construction in areas with no specific biome
     bool plains;        // Allows construction in plains
@@ -175,7 +175,7 @@ struct TileBiomeConstraints
 }
 
 /// @dev Constraints based on the tile's environment
-struct TileEnvironmentConstraints
+struct EnvironmentConstraints
 {
     bool beach;        // Allows construction in beach areas
     bool coast;        // Allows construction in coastal areas
@@ -183,11 +183,9 @@ struct TileEnvironmentConstraints
     bool coastalWater; // Allows construction in coastal water areas
     bool shallowWater; // Allows construction in shallow water areas
     bool deepWater;    // Allows construction in deep water areas
-    bool industrial;   // Allows construction in industrial areas
-    bool urban;        // Allows construction in urban areas
 }
 
-struct TileZoneConstraints
+struct ZoneConstraints
 {
     bool neutral;       // Allows construction in neutral zones
     bool industrial;    // Allows construction in industrial zones

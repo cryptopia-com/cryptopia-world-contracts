@@ -29,6 +29,13 @@ interface IMaps {
         returns (TileDynamic memory tileData);
 
 
+    /// @dev Retrieve tile group
+    /// @param tileIndex Index of the tile to retrieve group for
+    function getTileGroup(uint16 tileIndex)
+        external view 
+        returns (uint16);
+
+
     /// @dev Retrieve tile safety score (0-100)
     /// @param tileIndex Index of the tile to retrieve safety multiplier for
     function getTileSafety(uint16 tileIndex)

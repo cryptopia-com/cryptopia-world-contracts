@@ -4,9 +4,10 @@ import { ethers, upgrades} from "hardhat";
 import { getParamFromEvent} from '../scripts/helpers/events';
 import { encodeRockData, encodeVegetationData, encodeWildlifeData } from '../scripts/maps/helpers/encoders';
 import { resolveEnum } from "../scripts/helpers/enums";
-import { Permission, Rarity, Resource, Profession, Terrain, Biome, BuildingType } from '../scripts/types/enums';
+import { Permission, Rarity, Resource, Profession, Terrain, Biome, Environment, Zone, BuildingType } from '../scripts/types/enums';
 import { Map } from "../scripts/types/input";
 import { SYSTEM_ROLE } from "./settings/roles";   
+import { BuildingConfig } from "./settings/config";   
 
 import { 
     CryptopiaAccount,
@@ -167,10 +168,10 @@ describe("Construction Contracts", function () {
         sizeX: 2,
         sizeZ: 2,
         tiles: [
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Hills, elevationLevel: 5, waterLevel: 5, vegetationData: '0b000110110001101100011011000110110001101100' , rockData: '0b0001101100011011000110110001' , wildlifeData: '0b00011011000110110001', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.Grassland, terrain: Terrain.Flat, elevationLevel: 6, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: true, resources: [] },
-            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Hills, environment: Environment.Coast, zone: Zone.Ecological, elevationLevel: 5, waterLevel: 5, vegetationData: '0b000110110001101100011011000110110001101100' , rockData: '0b0001101100011011000110110001' , wildlifeData: '0b00011011000110110001', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.Grassland, terrain: Terrain.Flat, environment: Environment.Coast, zone: Zone.Neutral, elevationLevel: 6, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: true, resources: [] },
+            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Flat, environment: Environment.ShallowWater, zone: Zone.Ecological, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Hills, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
         ]
     };
 
@@ -187,26 +188,15 @@ describe("Construction Contracts", function () {
             upgradableFrom: "".toBytes32(),
             construction: {
                 constraints: {
-                    hasMaxOccurrenceConstraint: false,
-                    maxOccurrence: 0,
-                    lake: Permission.NotAllowed,
+                    hasMaxInstanceConstraint: false,
+                    maxInstances: 0,
+                    lake: Permission.Allowed,
                     river: Permission.Allowed,
                     dock: Permission.Allowed,
-                    environment: {
-                        beach: true,
-                        coast: true,
-                        inland: true,
-                        coastalWater: false,
-                        shallowWater: false,
-                        deepWater: false,   
-                        industrial: true,
-                        urban: false
-                    },
                     terrain: {
                         flat: true,
                         hills: true,
                         mountains: false,
-                        water: false, // Remove
                         seastead: false
                     },
                     biome: {
@@ -221,6 +211,20 @@ describe("Construction Contracts", function () {
                         swamp: false,
                         reef: false,
                         vulcanic: true
+                    },
+                    environment: {
+                        beach: true,
+                        coast: true,
+                        inland: true,
+                        coastalWater: false,
+                        shallowWater: false,
+                        deepWater: false
+                    },
+                    zone: {
+                        neutral: true,
+                        industrial: true,
+                        ecological: false,
+                        metropolitan: false
                     }
                 },
                 requirements: {
@@ -250,7 +254,7 @@ describe("Construction Contracts", function () {
     ];
 
     /**s
-     * Deploy Crafting Contracts
+     * Deploy Contracts
      */
     before(async () => {
 
@@ -510,6 +514,8 @@ describe("Construction Contracts", function () {
                 safety: tile.safety,
                 biome: tile.biome,
                 terrain: tile.terrain,
+                environment: tile.environment,
+                zone: tile.zone,
                 elevationLevel: tile.elevationLevel,
                 waterLevel: tile.waterLevel,
                 hasRoad: tile.hasRoad,
@@ -588,7 +594,7 @@ describe("Construction Contracts", function () {
     /**
      * Test Building Register
      */
-    describe("Buildings", function () {
+    describe("Buildings (admin)", function () {
 
         it("Admin should be able to add buildings", async () => {
         
@@ -611,7 +617,7 @@ describe("Construction Contracts", function () {
         it("System should be able to start construction", async () => {
         
             // Setup
-            const tileIndex = 0;
+            const tileIndex = 1;
             const building = "Improvised Mine".toBytes32();
             
             // Act
@@ -629,7 +635,7 @@ describe("Construction Contracts", function () {
         it ("Should emit 'BuildingConstructionStart' event ", async () => {
             
             // Setup
-            const tileIndex = 0;
+            const tileIndex = 1;
             const building = "Improvised Mine".toBytes32();
 
             // Assert
@@ -637,7 +643,99 @@ describe("Construction Contracts", function () {
                 .emit(buildingRegisterInstance, "BuildingConstructionStart")
                 .withArgs(tileIndex, building);
         });
+
+        it ("System should be able to progress construction", async () => {
+                
+            // Setup
+            const tileIndex = 1;
+            const progress = 500;
+
+            // Act
+            const signer = await ethers.provider.getSigner(system);
+            transaction = await buildingRegisterInstance
+                .connect(signer)
+                .__progressConstruction(tileIndex, progress);
+
+            // Assert
+            const buildingInstance = await buildingRegisterInstance.getBuildingInstance(tileIndex);
+            expect(buildingInstance.construction).to.equal(progress);
+        });
+
+        it ("Should emit 'BuildingConstructionProgress' event (intermediar)", async () => {
+
+            // Setup
+            const tileIndex = 1;
+            const building = "Improvised Mine".toBytes32();
+            const progress = 500;
+            const completed = false;
+
+            // Assert
+            await expect(transaction).to
+                .emit(buildingRegisterInstance, "BuildingConstructionProgress")
+                .withArgs(tileIndex, building, progress, completed);
+        });
+
+        it ("System should be able to complete construction", async () => {
+
+            // Setup
+            const tileIndex = 1;
+            const progress = BuildingConfig.CONSTRUCTION_COMPLETE; // Always enough to complete
+
+            // Act
+            const signer = await ethers.provider.getSigner(system);
+            transaction = await buildingRegisterInstance
+                .connect(signer)
+                .__progressConstruction(tileIndex, progress);
+
+            // Assert
+            const buildingInstance = await buildingRegisterInstance.getBuildingInstance(tileIndex);
+            expect(buildingInstance.construction).to.equal(BuildingConfig.CONSTRUCTION_COMPLETE);
+        });
+
+        it ("Should emit 'BuildingConstructionProgress' event (complete)", async () => {
+
+            // Setup
+            const tileIndex = 1;
+            const building = "Improvised Mine".toBytes32();
+            const progress = BuildingConfig.CONSTRUCTION_COMPLETE - 500;
+            const completed = true;
+
+            // Assert
+            await expect(transaction).to
+                .emit(buildingRegisterInstance, "BuildingConstructionProgress")
+                .withArgs(tileIndex, building, progress, completed);
+        });
+
+        it ("System should be able to destroy construction", async () => {
+
+            // Setup
+            const tileIndex = 1;
+
+            // Act
+            const signer = await ethers.provider.getSigner(system);
+            transaction = await buildingRegisterInstance
+                .connect(signer)
+                .__destroyConstruction(tileIndex);
+
+            // Assert
+            const buildingInstance = await buildingRegisterInstance.getBuildingInstance(tileIndex);
+            expect(buildingInstance.name).to.equal(ethers.constants.HashZero);
+        });
+
+        it ("Should emit 'BuildingConstructionDestroy' event", async () => {
+
+            // Setup
+            const tileIndex = 1;
+            const building = "Improvised Mine".toBytes32();
+
+            // Assert
+            await expect(transaction).to
+                .emit(buildingRegisterInstance, "BuildingConstructionDestroy")
+                .withArgs(tileIndex, building);
+        });
     });
+
+
 
     /**
      * Helper functions

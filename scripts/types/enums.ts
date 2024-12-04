@@ -46,6 +46,14 @@ export enum HexDirection
     NW = "NorthWest"
 }
 
+/// Specifies the position of a tile in relation to the traveler's progress along the route
+export enum RoutePosition {
+    Any,        // The tile's position relative to the traveler is not considered
+    Upcoming,   // The traveler has not yet reached the tile
+    Current,    // The tile is the current tile of the traveler
+    Passed      // The traveler has already passed the tile
+}
+
 /// Connection between tiles
 export enum EdgeType
 {
@@ -54,6 +62,7 @@ export enum EdgeType
     Cliff
 } 
 
+/// Terrain of a tile (static)
 export enum Terrain
 {
     Flat,
@@ -63,6 +72,7 @@ export enum Terrain
     Seastead
 }
 
+/// Biome of a tile
 export enum Biome 
 {
     None, 
@@ -78,6 +88,30 @@ export enum Biome
     Vulcanic
 }
 
+/// Environment of a tile (static context of the terrain)
+export enum Environment
+{
+    Beach,
+    Coast,
+    Inland,
+    CoastalWater,
+    ShallowWater,
+    DeepWater
+}
+
+/// Zone of a tile (dynamic)
+export enum Zone 
+{
+    Neutral,       // Preferd by traditional faction
+    Industrial,    // Preferd by industrial faction
+    Ecological,    // Preferd by eco faction      
+    Metropolitan   // Prefered by tech faction
+}
+
+
+/**
+ * Resources
+ */
 export enum Resource {
     Fish,
     Meat,
@@ -96,14 +130,6 @@ export enum Resource {
     Glass,
     Steel,
     Fuel
-}
-
-/// Specifies the position of a tile in relation to the traveler's progress along the route
-export enum RoutePosition {
-    Any,        // The tile's position relative to the traveler is not considered
-    Upcoming,   // The traveler has not yet reached the tile
-    Current,    // The tile is the current tile of the traveler
-    Passed      // The traveler has already passed the tile
 }
 
 

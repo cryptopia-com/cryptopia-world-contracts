@@ -47,7 +47,7 @@ struct BuildingInstance
     /// @dev Reference to Building definition
     bytes32 name;
 
-    /// @dev 0 - 100.0, indicating the construction progress
+    /// @dev 0 - 1000, indicating the construction progress
     uint16 construction; 
 
     /// @dev Effects on health of any equipped modules

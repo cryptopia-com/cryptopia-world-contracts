@@ -46,6 +46,14 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         /// {Flat, Hills, Mountains, Seastead}
         Terrain terrain;
 
+        /// @dev The type of environment
+        /// {Beach, Coast, Inland, CoastalWater, ShallowWater, DeepWater}
+        Environment environment;
+
+        /// @dev Type of zone
+        /// {Neutral, Industrial, Ecological, Metropolitan}
+        Zone zone;
+
         /// @dev The elevation of the terrain (seafloor in case of sea tile)
         uint8 elevationLevel;
 
@@ -558,6 +566,16 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
                 staticData.resourcesIndex[i], 
                 dynamicData.resources[staticData.resourcesIndex[i]]);
         }
+    }
+
+
+    /// @dev Retrieve tile group
+    /// @param tileIndex Index of the tile to retrieve group for
+    function getTileGroup(uint16 tileIndex)
+        public virtual view 
+        returns (uint16)
+    {
+        return tileDataStatic[tileIndex].group;
     }
 
 
@@ -1115,23 +1133,18 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         tileDataStatic[index].safety = tileData.safety;
         tileDataStatic[index].biome = tileData.biome;
         tileDataStatic[index].terrain = tileData.terrain;
+        tileDataStatic[index].environment = tileData.environment;
         tileDataStatic[index].elevationLevel = tileData.elevationLevel;
         tileDataStatic[index].waterLevel = tileData.waterLevel;
         tileDataStatic[index].hasLake = tileData.hasLake;
         tileDataStatic[index].riverFlags = tileData.riverFlags;
 
-        // Derive environment
-        tileDataStatic[index].environment = _getEnvironment(
-            tileData.biome, 
-            tileData.terrain, 
-            tileData.elevationLevel, 
-            tileData.waterLevel);
-        
         // Set dynamic data
         tileDataDynamic[index].hasRoad = tileData.hasRoad;
         tileDataDynamic[index].vegetationData = tileData.vegetationData; 
         tileDataDynamic[index].rockData = tileData.rockData;
         tileDataDynamic[index].wildlifeData = tileData.wildlifeData;
+        tileDataDynamic[index].zone = tileData.zone;
 
         // Set resources
         for (uint i = 0; i < tileData.resources.length; i++)
@@ -1144,39 +1157,6 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
         // Cache movement penalty
         movementPenaltyCache[index] = TileMovementPenaltyCacheKey(
             true, _getMovementPenalty(index)); 
-    }
-
-
-    /// @dev Retrieve the environment for a tile based on it's biome, terrain, elevation and water level
-    /// @param biome The biome of the tile
-    /// @param terrain The terrain of the tile
-    /// @param elevation The elevation of the tile
-    /// @param waterLevel The water level of the tile
-    /// @return The environment of the tile
-    function _getEnvironment(
-        Biome biome, 
-        Terrain terrain, 
-        uint8 elevation, 
-        uint8 waterLevel) 
-        internal pure 
-        returns (Environment) 
-    {
-        // Water
-        if (waterLevel > elevation)
-        {
-            // Beach?
-
-        }
-
-        // Land
-        else 
-        {
-            // Beach?
-
-            // Coast?
-
-
-        }
     }
 
 

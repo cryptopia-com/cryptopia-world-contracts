@@ -52,11 +52,6 @@ interface IBuildingRegister {
         returns (BuildingInstance[] memory instances);
 
 
-    // function getConstructionRequirements(bytes32 building)
-    //     external view
-    //     returns (ConstructionRequirements memory requirements);
-
-
     /**
      * System functions
      */
@@ -69,20 +64,13 @@ interface IBuildingRegister {
 
     /// @dev Progress the construction of a building
     /// @param tileIndex The index of the tile to progress construction on
-    /// @param building The name of the building to progress
-    /// @param progress The new progress value of the building (0-100)
-    function __progressConstruction(uint16 tileIndex, bytes32 building, uint8 progress)
+    /// @param progress The new progress value of the building (0-1000)
+    function __progressConstruction(uint16 tileIndex, uint16 progress)
         external;
 
 
-    /// @dev Cancel construction of a building
-    /// @param tileIndex The index of the tile to cancel construction on
-    // function __cancelConstruction(uint16 tileIndex)
-    //     external;
-
-
-    /// @dev Destroy a building
+    /// @dev Destroy a construction
     /// @param tileIndex The index of the tile to destroy the building on
-    function __destroyBuilding(uint16 tileIndex)
+    function __destroyConstruction(uint16 tileIndex)
         external;
 }

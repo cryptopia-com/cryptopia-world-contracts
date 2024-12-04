@@ -38,6 +38,12 @@ export const PlayerConfig = {
     MAX_LUCK: 100, // Denominator
 }
 
+export const BuildingConfig = {
+
+    // Base values
+    CONSTRUCTION_COMPLETE: 1000
+}
+
 /**
  * Pirate mechanics settings
  */

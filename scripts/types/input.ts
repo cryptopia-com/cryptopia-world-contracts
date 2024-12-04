@@ -1,5 +1,5 @@
 import { CryptopiaAssetToken } from "../../typechain-types";
-import { Resource, Terrain, Biome } from "./enums";
+import { Resource, Terrain, Biome, Environment, Zone } from "./enums";
 import { BigNumberish } from 'ethers';
 
 export type Asset = {
@@ -26,6 +26,8 @@ export interface Tile {
     safety: BigNumberish,
     biome: Biome;
     terrain: Terrain;
+    environment: Environment;
+    zone: Zone;
     elevationLevel: BigNumberish;
     waterLevel: BigNumberish;
     vegetationData: string;

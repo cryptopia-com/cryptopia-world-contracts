@@ -73,6 +73,10 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
 
     /// @dev tile => BuildingInstance
     mapping (uint16 => BuildingInstance) public buildingInstances;
+    mapping (BuildingType => uint) public buildingInstanceCount;
+
+    mapping (uint16 => uint16) public tileGroupToDock; // Assuming 0 is not a valid tile index because tile index zero is always water
+    
 
 
     /**
@@ -86,14 +90,14 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
     /// @dev Emitted when the construction of a building progresses
     /// @param tileIndex The index of the tile on which the building is being constructed
     /// @param building The name of the building
-    /// @param progress The progress of the construction (new value)
-    /// @param complete True if the building is complete
-    event BuildingConstructionProgress(uint16 indexed tileIndex, bytes32 building, uint8 progress, bool complete);
+    /// @param progress The progress that was added
+    /// @param completed True if the building is completed
+    event BuildingConstructionProgress(uint16 indexed tileIndex, bytes32 building, uint16 progress, bool completed);
 
     /// @dev Emitted when a building is destroyed
     /// @param tileIndex The index of the tile at which the building is being destroyed
     /// @param building The name of the building
-    event BuildingDestroy(uint16 indexed tileIndex, bytes32 building);
+    event BuildingConstructionDestroy(uint16 indexed tileIndex, bytes32 building);
 
 
     /**
@@ -248,6 +252,18 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
     }
 
 
+    /// @dev True if the group has dock access
+    /// @param group The group to check
+    /// @return hasAccess True if the group has dock access
+    function _hasDockAccess(uint16 group) 
+        internal view 
+        returns (bool) 
+    {
+        return tileGroupToDock[group] != 0 && // 0 is assumed to be water and thus cannot have a dock
+               buildingInstances[tileGroupToDock[group]].construction == CONSTRUCTION_COMPLETE;
+    }
+
+
     /// @dev Add or update a building
     /// @param building The building data
     function _setBuilding(Building memory building)
@@ -370,32 +386,17 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
         // Check construction constraints
         ConstructionConstraints storage constraints = _building.construction.constraints;
         TileStatic memory tileDataStatic = IMaps(mapsContract).getTileDataStatic(tileIndex);
-        //TileDynamic memory tileDataDynamic = IMaps(mapsContract).getTileDataDynamic(tileIndex);
-
-        bool hasDockAccess = false; // tileGroupToDock[tileDataStatic.group];
-        uint currentInstances = 0; // buildingInstanceCount[buildingType];
+        TileDynamic memory tileDataDynamic = IMaps(mapsContract).getTileDataDynamic(tileIndex);
+        bool hasDockAccess = _hasDockAccess(tileDataStatic.group);
 
         // Validate constraints
-        if ((constraints.hasMaxInstanceConstraint && currentInstances >= constraints.maxInstances) ||
+        if ((constraints.hasMaxInstanceConstraint && buildingInstanceCount[_building.buildingType] >= constraints.maxInstances) ||
             (constraints.lake == Permission.Required && !tileDataStatic.hasLake) ||
             (constraints.lake == Permission.NotAllowed && tileDataStatic.hasLake) || 
             (constraints.river == Permission.Required && tileDataStatic.riverFlags == 0) ||
             (constraints.river == Permission.NotAllowed && tileDataStatic.riverFlags > 0) || 
             (constraints.dock == Permission.Required && !hasDockAccess) ||
             (constraints.dock == Permission.NotAllowed && hasDockAccess))
-        {
-            revert ConstructionRequirementsNotMet(tileIndex, building);
-        }
-
-        // Validate environment constraints
-        if ((tileDataStatic.environment == Environment.Beach && !constraints.environment.beach) ||
-            (tileDataStatic.environment == Environment.Coast && !constraints.environment.coast) ||
-            (tileDataStatic.environment == Environment.Inland && !constraints.environment.inland) ||
-            (tileDataStatic.environment == Environment.CoastalWater && !constraints.environment.coastalWater) ||
-            (tileDataStatic.environment == Environment.ShallowWater && !constraints.environment.shallowWater) ||
-            (tileDataStatic.environment == Environment.DeepWater && !constraints.environment.deepWater) ||
-            (tileDataStatic.environment == Environment.Industrial && !constraints.environment.industrial) ||
-            (tileDataStatic.environment == Environment.Urban && !constraints.environment.urban))
         {
             revert ConstructionRequirementsNotMet(tileIndex, building);
         }
@@ -425,9 +426,37 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
             revert ConstructionRequirementsNotMet(tileIndex, building);
         }
 
+        // Validate environment constraints
+        if ((tileDataStatic.environment == Environment.Beach && !constraints.environment.beach) ||
+            (tileDataStatic.environment == Environment.Coast && !constraints.environment.coast) ||
+            (tileDataStatic.environment == Environment.Inland && !constraints.environment.inland) ||
+            (tileDataStatic.environment == Environment.CoastalWater && !constraints.environment.coastalWater) ||
+            (tileDataStatic.environment == Environment.ShallowWater && !constraints.environment.shallowWater) ||
+            (tileDataStatic.environment == Environment.DeepWater && !constraints.environment.deepWater))
+        {
+            revert ConstructionRequirementsNotMet(tileIndex, building);
+        }
+
+        // Validate zone constraints
+        if ((tileDataDynamic.zone == Zone.Neutral && !constraints.zone.neutral) ||
+            (tileDataDynamic.zone == Zone.Industrial && !constraints.zone.industrial) ||
+            (tileDataDynamic.zone == Zone.Ecological && !constraints.zone.ecological) ||
+            (tileDataDynamic.zone == Zone.Metropolitan && !constraints.zone.metropolitan))
+        {
+            revert ConstructionRequirementsNotMet(tileIndex, building);
+        }
+
         // Start construction
         buildingInstances[tileIndex].name = building;
         buildingInstances[tileIndex].construction = 0;
+        buildingInstanceCount[_building.buildingType]++;
+
+        // Dock?
+        if (buildings[building].buildingType == BuildingType.Dock)
+        {
+            // Register dock reference
+            tileGroupToDock[tileDataStatic.group] = tileIndex;
+        }
 
         // Emit
         emit BuildingConstructionStart(tileIndex, building);
@@ -436,36 +465,46 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
 
     /// @dev Progress the construction of a building
     /// @param tileIndex The index of the tile to progress construction on
-    /// @param building The name of the building to progress
-    /// @param progress The new progress value of the building (0-100)
-    function __progressConstruction(uint16 tileIndex, bytes32 building, uint8 progress)
+    /// @param progress The new progress value of the building (0-1000)
+    function __progressConstruction(uint16 tileIndex, uint16 progress)
         public virtual override 
         onlyRole(SYSTEM_ROLE)
     {
+        BuildingInstance storage buildingInstance = buildingInstances[tileIndex];
+        bytes32 building = buildingInstance.name;
+
         // Check location has a building
-        if (buildingInstances[tileIndex].name == bytes32(0))
+        if (building == bytes32(0))
         {
             revert BuildingDoesNotExistAtLocation(tileIndex);
         }
 
-        // Progress construction
-        if (buildingInstances[tileIndex].construction + progress > CONSTRUCTION_COMPLETE)
+        // Check if building is under construction
+        if (buildingInstance.construction >= CONSTRUCTION_COMPLETE)
         {
-            buildingInstances[tileIndex].construction = CONSTRUCTION_COMPLETE;
-        }
-        else
-        {
-            buildingInstances[tileIndex].construction += progress;
+            revert BuildingNotUnderConstructionAtLocation(tileIndex);
         }
 
+        // Progress construction
+        if (buildingInstance.construction + progress > CONSTRUCTION_COMPLETE)
+        {
+            progress = CONSTRUCTION_COMPLETE - buildingInstances[tileIndex].construction;
+        }
+
+        buildingInstance.construction += progress;
+
         // Emit
-        emit BuildingConstructionProgress(tileIndex, building, progress, progress == CONSTRUCTION_COMPLETE);
+        emit BuildingConstructionProgress(
+            tileIndex, 
+            building, 
+            progress, 
+            buildingInstance.construction == CONSTRUCTION_COMPLETE);
     }
 
 
-    /// @dev Destroy a building
+    /// @dev Destroy a construction
     /// @param tileIndex The index of the tile to destroy the building on
-    function __destroyBuilding(uint16 tileIndex)
+    function __destroyConstruction(uint16 tileIndex)
         public virtual override 
         onlyRole(SYSTEM_ROLE)
     {
@@ -477,10 +516,20 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
 
         bytes32 building = buildingInstances[tileIndex].name;
 
-        // Destroy building
+        // Decrement building count
+        buildingInstanceCount[buildings[building].buildingType]--;
+
+        // Dock?
+        if (buildings[building].buildingType == BuildingType.Dock)
+        {
+            // Delete dock reference
+            delete tileGroupToDock[IMaps(mapsContract).getTileGroup(tileIndex)];
+        }
+
+        // Delete building instance
         delete buildingInstances[tileIndex];
 
         // Emit
-        emit BuildingDestroy(tileIndex, building);
+        emit BuildingConstructionDestroy(tileIndex, building);
     }
 }

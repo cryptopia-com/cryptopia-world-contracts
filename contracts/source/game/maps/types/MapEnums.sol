@@ -14,6 +14,14 @@ enum HexSection
     Count // Sentinel value
 }
 
+/// @dev Specifies the position of a tile in relation to the traveler's progress along the route
+enum RoutePosition {
+    Any,        // The tile's position relative to the traveler is not considered
+    Upcoming,   // The traveler has not yet reached the tile
+    Current,    // The tile is the current tile of the traveler
+    Passed      // The traveler has already passed the tile
+}
+
 /// @dev Connection between tiles
 enum EdgeType
 {
@@ -21,27 +29,6 @@ enum EdgeType
     Slope,
     Cliff
 }
-
-/// @dev Environment of a tile (static context of the terrain)
-enum Environment
-{
-    Beach,
-    Coast,
-    Inland,
-    CoastalWater,
-    ShallowWater,
-    DeepWater
-}
-
-/// @dev Zone of a tile (dynamic)
-enum Zone 
-{
-    Neutral,       // Preferd by traditional faction
-    Industrial,    // Preferd by industrial faction
-    Ecological,    // Preferd by eco faction      
-    Metropolitan   // Prefered by tech faction
-}
-
 
 /// @dev Terrain of a tile (static)
 enum Terrain
@@ -68,10 +55,22 @@ enum Biome
     Vulcanic
 }
 
-/// @dev Specifies the position of a tile in relation to the traveler's progress along the route
-enum RoutePosition {
-    Any,        // The tile's position relative to the traveler is not considered
-    Upcoming,   // The traveler has not yet reached the tile
-    Current,    // The tile is the current tile of the traveler
-    Passed      // The traveler has already passed the tile
+/// @dev Environment of a tile (static context of the terrain)
+enum Environment
+{
+    Beach,
+    Coast,
+    Inland,
+    CoastalWater,
+    ShallowWater,
+    DeepWater
+}
+
+/// @dev Zone of a tile (dynamic)
+enum Zone 
+{
+    Neutral,       // Preferd by traditional faction
+    Industrial,    // Preferd by industrial faction
+    Ecological,    // Preferd by eco faction      
+    Metropolitan   // Prefered by tech faction
 }

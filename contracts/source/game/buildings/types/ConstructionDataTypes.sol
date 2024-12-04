@@ -18,10 +18,10 @@ struct ConstructionConstraints
     Permission river;
     Permission dock;
 
-    TileTerrainConstraints terrain;
-    TileBiomeConstraints biome;
-    TileEnvironmentConstraints environment;
-    TileZoneConstraints zone;
+    TerrainConstraints terrain;
+    BiomeConstraints biome;
+    EnvironmentConstraints environment;
+    ZoneConstraints zone;
 }
 
 /// @dev Represents the requirements for constructing a building

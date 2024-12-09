@@ -93,6 +93,7 @@ async function main() {
     console.log(`public const string RESOURCE_GATHERING_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("ResourceGathering")).address}";`);
     console.log(`public const string LOYALTY_TOKEN_CONTRACT = "0x0000000000000000000000000000000000000001";`);
     console.log(`public const string SHIP_TOKEN_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("ShipToken")).address}";`);
+    console.log(`public const string SHIP_SKIN_TOKEN_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("ShipSkinToken")).address}";`);
     console.log(`public const string TOOL_TOKEN_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("ToolToken")).address}";`);
     console.log(`public const string CRAFTING_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("Crafting")).address}";`);
     console.log(`public const string QUEST_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("Quests")).address}";`);

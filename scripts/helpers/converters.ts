@@ -6,6 +6,7 @@ declare global {
     toBytes(n: number): string;
     toBytes32(): string;
     toWei(): string;
+    fromWei(): string;
     toKeccak256(): string;
   }
 
@@ -47,6 +48,16 @@ String.prototype.toBytes32 = function() {
   let input = Number(this).toString();
   return ethers.utils.parseEther(input).toString();
  };
+
+ /**
+ * Convert wei to ether
+ */
+ String.prototype.fromWei = function() 
+ {
+  let input = String(this);
+  return ethers.utils.formatEther(input).toString();
+ };
+
 
 /**
  * Convert string to keccak256

@@ -28,10 +28,10 @@ struct ConstructionConstraints
 struct ConstructionRequirements
 {
     /// @dev The labour requirements for construction
-    LabourRequirement[] labour;
+    LabourData[] labour;
 
     /// @dev The resources required for construction
-    ResourceRequirement[] resources;
+    ResourceData[] resources;
 }
 
 /// @dev Represents the constraints and requirements for constructing a building

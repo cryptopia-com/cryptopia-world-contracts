@@ -257,12 +257,12 @@ contract CryptopiaQuestToken is CryptopiaERC721, INonFungibleQuestItem, IQuestIt
 
 
     /// @dev Returns true if the item exists
-    /// @param name The name of the item
-    function _itemExists(bytes32 name)
+    /// @param name_ The name of the item
+    function _itemExists(bytes32 name_)
         internal virtual view 
         returns (bool)
     {
-        return itemsIndex.length > 0 && itemsIndex[items[name].index] == name;
+        return itemsIndex.length > 0 && itemsIndex[items[name_].index] == name_;
     }
 
 

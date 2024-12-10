@@ -504,20 +504,27 @@ contract CryptopiaShipToken is CryptopiaERC721, IShips {
      */
     /// @dev calculates the next token ID based on value of _currentTokenId
     /// @return uint for the next token ID
-    function _getNextTokenId() private view returns (uint) {
+    function _getNextTokenId() 
+        private view 
+        returns (uint) 
+    {
         return _currentTokenId + 1;
     }
 
 
     /// @dev increments the value of _currentTokenId
-    function _incrementTokenId() private {
+    function _incrementTokenId() 
+        private 
+    {
         _currentTokenId++;
     }
 
     
     /// @dev True if a ship with `name` exists
     /// @param _name of the ship
-    function _exists(bytes32 _name) internal view returns (bool) 
+    function _exists(bytes32 _name) 
+        internal view 
+        returns (bool) 
     {
         return ships[_name].base_speed != 0;
     }

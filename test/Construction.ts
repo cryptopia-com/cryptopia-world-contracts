@@ -10,6 +10,7 @@ import { SYSTEM_ROLE } from "./settings/roles";
 import { BuildingConfig } from "./settings/config";   
 
 import { 
+    MockERC20Token,
     CryptopiaAccount,
     CryptopiaAccountRegister,
     CryptopiaPlayerRegister,
@@ -18,11 +19,13 @@ import {
     CryptopiaToolToken,
     CryptopiaCrafting,
     CryptopiaBlueprintToken,
-    CryptopiaBuildingRegister
+    CryptopiaTitleDeedToken,
+    CryptopiaBuildingRegister,
+    CryptopiaConstructionMechanics
 } from "../typechain-types";
 import { BuildingStruct } from "../typechain-types/contracts/source/game/buildings/IBuildingRegister.js";
 
-import { ContractTransaction } from "ethers";
+import { BigNumber, ContractTransaction } from "ethers";
 
 
 /**
@@ -45,11 +48,14 @@ describe("Construction Contracts", function () {
     let accountRegisterInstance: CryptopiaAccountRegister;
     let playerRegisterInstance: CryptopiaPlayerRegister;
     let inventoriesInstance: CryptopiaInventories;
+    let cryptopiaTokenInstance: MockERC20Token;
     let shipTokenInstance: CryptopiaShipToken;
     let toolTokenInstance: CryptopiaToolToken;
     let craftingInstance: CryptopiaCrafting;
     let blueprintTokenInstance: CryptopiaBlueprintToken;
+    let titleDeedTokenInstance: CryptopiaTitleDeedToken;
     let buildingRegisterInstance: CryptopiaBuildingRegister;
+    let constructionMechanicsInstance: CryptopiaConstructionMechanics;
 
     let registeredAccountInstance: CryptopiaAccount;
     let unregisteredAccountInstance: CryptopiaAccount;
@@ -235,18 +241,48 @@ describe("Construction Contracts", function () {
                             minLevel: 0,
                             hasMaximumLevel: false,
                             maxLevel: 0,
-                            requiredProfessionals: 10
+                            slots: 20,
+                            actionValue1: 50,
+                            actionValue2: 0,
+                        },
+                        {
+                            profession: Profession.Builder,
+                            hasMinimumLevel: false,
+                            minLevel: 0,
+                            hasMaximumLevel: false,
+                            maxLevel: 0,
+                            slots: 8,
+                            actionValue1: 50,
+                            actionValue2: 0,
+                        },
+                        {
+                            profession: Profession.Architect,
+                            hasMinimumLevel: false,
+                            minLevel: 0,
+                            hasMaximumLevel: false,
+                            maxLevel: 0,
+                            slots: 2,
+                            actionValue1: 50,
+                            actionValue2: 0,
                         }
                     ],
                     resources: [
                         { 
                             resource: Resource.Wood, 
-                            amount: "100".toWei()
+                            amount: "500".toWei()
                         },
                         { 
                             resource: Resource.Stone, 
-                            amount: "100".toWei()
+                            amount: "1000".toWei()
                         },
+                        { 
+                            resource: Resource.Iron, 
+                            amount: "500".toWei()
+                        },
+                        { 
+                            resource: Resource.Glass, 
+                            amount: "100".toWei()
+                        }
                     ],
                 }
             }
@@ -269,6 +305,7 @@ describe("Construction Contracts", function () {
         const WhitelistFactory = await ethers.getContractFactory("CryptopiaWhitelist");
         const AccountRegisterFactory = await ethers.getContractFactory("CryptopiaAccountRegister");
         const PlayerRegisterFactory = await ethers.getContractFactory("CryptopiaPlayerRegister");
+        const CryptopiaTokenFactory = await ethers.getContractFactory("MockERC20Token");
         const AssetRegisterFactory = await ethers.getContractFactory("CryptopiaAssetRegister");
         const AssetTokenFactory = await ethers.getContractFactory("CryptopiaAssetToken");
         const ShipTokenFactory = await ethers.getContractFactory("CryptopiaShipToken");
@@ -280,6 +317,7 @@ describe("Construction Contracts", function () {
         const MapsFactory = await ethers.getContractFactory("CryptopiaMaps");
         const BlueprintTokenFactory = await ethers.getContractFactory("CryptopiaBlueprintToken");
         const BuildingRegisterFactory = await ethers.getContractFactory("CryptopiaBuildingRegister");
+        const ConstructionMechanicsFactory = await ethers.getContractFactory("CryptopiaConstructionMechanics");
         
         // Deploy Inventories
         const inventoriesProxy = await upgrades.deployProxy(
@@ -394,6 +432,14 @@ describe("Construction Contracts", function () {
         await craftingInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
 
 
+        // Deploy Cryptopia Token
+        const cryptopiaTokenProxy = await upgrades.deployProxy(
+            CryptopiaTokenFactory);
+
+        const cryptopiaTokenAddress = await cryptopiaTokenProxy.address;
+        cryptopiaTokenInstance = await ethers.getContractAt("MockERC20Token", cryptopiaTokenAddress);
+
+
         // Deploy title deed token
         const titleDeedTokenProxy = await upgrades.deployProxy(
             TitleDeedTokenFactory, 
@@ -404,7 +450,10 @@ describe("Construction Contracts", function () {
             ]);
 
         const titleDeedTokenAddress = await titleDeedTokenProxy.address;
-        const titleDeedTokenInstance = await ethers.getContractAt("CryptopiaTitleDeedToken", titleDeedTokenAddress);
+        titleDeedTokenInstance = await ethers.getContractAt("CryptopiaTitleDeedToken", titleDeedTokenAddress);
+
+        // Grant roles
+        await titleDeedTokenInstance.grantRole(SYSTEM_ROLE, system);
 
         
         // Deploy Maps
@@ -457,14 +506,15 @@ describe("Construction Contracts", function () {
         const blueprintTokenAddress = await blueprintTokenProxy.address;
         blueprintTokenInstance = await ethers.getContractAt("CryptopiaBlueprintToken", blueprintTokenAddress);
 
+        // Grant roles
+        await blueprintTokenInstance.grantRole(SYSTEM_ROLE, system);
+
 
         // Deploy Resource building register
         const buildingRegisterProxy = await upgrades.deployProxy(
             BuildingRegisterFactory, 
             [
-                mapsAddress,
-                titleDeedTokenAddress,
-                blueprintTokenAddress
+                mapsAddress
             ]);
 
         const buildingRegisterAddress = await buildingRegisterProxy.address;
@@ -473,6 +523,25 @@ describe("Construction Contracts", function () {
         // Grant roles
         await blueprintTokenInstance.grantRole(SYSTEM_ROLE, buildingRegisterAddress);
         await buildingRegisterInstance.grantRole(SYSTEM_ROLE, system);
+
+
+        // Deploy Construction Mechanics
+        const constructionMechanicsProxy = await upgrades.deployProxy(
+            ConstructionMechanicsFactory, 
+            [
+                treasury,
+                cryptopiaTokenAddress,
+                titleDeedTokenAddress,
+                blueprintTokenAddress,
+                buildingRegisterAddress
+            ]);
+
+        const constructionMechanicsAddress = await constructionMechanicsProxy.address;
+        constructionMechanicsInstance = await ethers.getContractAt("CryptopiaConstructionMechanics", constructionMechanicsAddress);
+
+        // Grant roles
+        await buildingRegisterInstance.grantRole(SYSTEM_ROLE, constructionMechanicsAddress);
+        await blueprintTokenInstance.grantRole(SYSTEM_ROLE, constructionMechanicsAddress);
 
 
         // Deploy assets
@@ -607,8 +676,9 @@ describe("Construction Contracts", function () {
         });
     });
 
+
     /**
-     * Test Construction
+     * Test Construction (system)
      */
     describe("Construction (system)", function () {
 
@@ -735,6 +805,93 @@ describe("Construction Contracts", function () {
         });
     });
 
+
+    /**
+     * Test Construction (player)
+     */
+    describe("Construction (player)", function () {
+
+        let transaction: ContractTransaction;
+
+        it("Player should be able to start construction", async () => {
+        
+            // Setup
+            const building = buildings[0];
+            const tileIndex = 1;
+            const titleDeedId = 2; 
+            const blueprintId = 1; 
+            const cryptopiaTokenAddress = await cryptopiaTokenInstance.address;
+            const constructionMechanicsAddress = await constructionMechanicsInstance.address;
+            const systemSigner = await ethers.provider.getSigner(system);
+            const account1Signer = await ethers.provider.getSigner(account1);
+
+            // Compensation per player
+            const labourCompenstations = [
+                "100".toWei(), // Any 
+                "200".toWei(), // Builder
+                "1000".toWei() // Architect
+            ];
+
+            // Compensation per resource unit
+            const resourceCompensations = [
+                "1", // Wood
+                "1", // Stone
+                "5", // Iron
+                "2"  // Glass
+            ];
+
+            let totalCompensation = BigNumber.from(0);
+            for (let i = 0; i < building.construction.requirements.labour.length; i++)
+            {
+                const slots = building.construction.requirements.labour[i].slots.valueOf();
+                totalCompensation = totalCompensation.add(BigNumber.from(slots).mul(labourCompenstations[i]));
+            }
+
+            for (let i = 0; i < building.construction.requirements.resources.length; i++)
+            {
+                const amount = String(building.construction.requirements.resources[i].amount.valueOf());
+                totalCompensation = totalCompensation.add(BigNumber.from(resourceCompensations[i]).mul(amount));
+            }
+
+            const totalTax = totalCompensation.mul(BuildingConfig.TAX_RATE).div(BuildingConfig.TAX_RATE_PRECISION);
+            const totalCost = totalCompensation.add(totalTax);
+
+            // Ensure sufficient funds
+            await cryptopiaTokenInstance
+                .__mint(registeredAccountAddress, totalCost);
+
+            // Approve spending
+            const approveCallData = cryptopiaTokenInstance.interface.encodeFunctionData(
+                "approve", [constructionMechanicsAddress, totalCost]);
+
+            await registeredAccountInstance
+                .connect(account1Signer)
+                .submitTransaction(cryptopiaTokenAddress, 0, approveCallData);
+
+            // Mint blueprint
+            await blueprintTokenInstance
+                .connect(systemSigner)
+                .__mintTo(registeredAccountAddress, building.name);
+
+            // Mint title deed
+            await titleDeedTokenInstance
+                .connect(systemSigner)
+                .__mintTo(registeredAccountAddress, tileIndex);
+
+            // Act
+            const startConstructionCallData = constructionMechanicsInstance.interface.encodeFunctionData(
+                "startConstruction", [titleDeedId, blueprintId, labourCompenstations, resourceCompensations]);
+
+            transaction = await registeredAccountInstance
+                .connect(account1Signer)
+                .submitTransaction(constructionMechanicsAddress, 0, startConstructionCallData);
+
+            // Assert
+            const buildingInstance = await buildingRegisterInstance.getBuildingInstance(tileIndex);
+            expect(buildingInstance.name).to.equal(building.name);
+            expect(buildingInstance.construction).to.equal(0);
+        });
+    });
 
 
     /**

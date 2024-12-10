@@ -13,7 +13,10 @@ contract CryptopiaBlueprintToken is CryptopiaERC721, IBlueprints {
     /**
      * Storage
      */
-    mapping(uint => bytes32) public buildings;
+    uint private _currentTokenId; 
+
+    /// @dev tokenId => building
+    mapping(uint => bytes32) private blueprintInstances;
 
 
     /** 
@@ -41,13 +44,27 @@ contract CryptopiaBlueprintToken is CryptopiaERC721, IBlueprints {
         public virtual override view   
         returns(bytes32)
     {
-        return buildings[tokenId];
+        return blueprintInstances[tokenId];
     }
 
 
-    /** 
+    /**
      * System functions
      */
+    /// @dev Mints a blueprint to an address
+    /// @param to address of the owner of the blueprint
+    /// @param building Unique building name
+    function __mintTo(address to, bytes32 building)  
+        public virtual override 
+        onlyRole(SYSTEM_ROLE) 
+    {
+        uint tokenId = _getNextTokenId();
+        _mint(to, tokenId);
+        _incrementTokenId();
+        blueprintInstances[tokenId] = building;
+    }
+
+
     /// @dev Destroys `tokenId`.
     /// @notice The approval is cleared when the token is burned.
     /// @notice This is an internal function that does not check if the sender is authorized to operate on the token.
@@ -57,5 +74,23 @@ contract CryptopiaBlueprintToken is CryptopiaERC721, IBlueprints {
         onlyRole(SYSTEM_ROLE)  
     {
         _burn(tokenId);
+    }
+
+
+    /**
+     * Private functions
+     */
+    /// @dev calculates the next token ID based on value of _currentTokenId
+    /// @return uint for the next token ID
+    function _getNextTokenId() private view returns (uint) 
+    {
+        return _currentTokenId + 1;
+    }
+
+
+    /// @dev increments the value of _currentTokenId
+    function _incrementTokenId() private 
+    {
+        _currentTokenId++;
     }
 }

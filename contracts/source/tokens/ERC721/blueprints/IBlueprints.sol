@@ -21,6 +21,13 @@ interface IBlueprints {
     /**
      * System functions
      */
+    /// @dev Mints a blueprint to an address
+    /// @param to address of the owner of the blueprint
+    /// @param building Unique building name
+    function __mintTo(address to, bytes32 building) 
+        external;
+
+
     /// @dev Destroys `tokenId`.
     /// @notice The approval is cleared when the token is burned.
     /// @notice This is an internal function that does not check if the sender is authorized to operate on the token.

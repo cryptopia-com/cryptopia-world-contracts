@@ -42,6 +42,13 @@ interface ITitleDeeds {
     /**
      * System functions
      */
+    /// @dev Mints a title deed to an address
+    /// @param to address of the owner of the title deed
+    /// @param tileIndex Corresponds to the tile index
+    function __mintTo(address to, uint tileIndex)  
+        external;
+
+
     /// @dev Increase the max supply
     /// @param increment Number to increment max supply with
     function __increaseLimit(uint increment) 

@@ -13,11 +13,23 @@ struct AssetInfo
 }
 
 /// @dev Represents a requirement for a specific resource and its amount
-struct ResourceRequirement 
+struct ResourceData
 {
     /// @dev The type of resource required
     Resource resource;
 
     /// @dev The quantity of the resource needed
     uint amount;
+}
+
+struct ResourceContract
+{
+    /// @dev The type of resource required
+    Resource resource;
+
+    /// @dev The quantity of the resource needed
+    uint amount;
+
+    /// @dev The compensation for the resource
+    uint compensation;
 }

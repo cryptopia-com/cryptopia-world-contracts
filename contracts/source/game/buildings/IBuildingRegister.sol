@@ -52,6 +52,14 @@ interface IBuildingRegister {
         returns (BuildingInstance[] memory instances);
 
 
+    /// @dev Get the construction data for a building
+    /// @param name The name of the building
+    /// @return data Construction data
+    function getConstructionData(bytes32 name) 
+        external view 
+        returns (ConstructionData memory data);
+
+
     /**
      * System functions
      */

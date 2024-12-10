@@ -4,10 +4,11 @@ pragma solidity 0.8.20;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-import "../IBuildingRegister.sol";
+import "../../../errors/ArgumentErrors.sol";
 import "../types/BuildingDataTypes.sol";
 import "../types/ConstructionDataTypes.sol";
 import "../../maps/IMaps.sol";
+import "../IBuildingRegister.sol";
 
 /// @title Cryptopia Buildings Contract
 /// @notice Manages the buildings within Cryptopia, including construction, upgrades, and destruction.
@@ -60,12 +61,10 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
     /**
      * Storage 
      */
-    uint16 constant private CONSTRUCTION_COMPLETE = 1000;
+    uint16 constant private CONSTRUCTION_COMPLETE = 1_000;
 
     /// @dev Refs
     address public mapsContract;
-    address public titleDeedsContract;
-    address public blueprintsContract;
 
     /// @dev name => BuildingData
     mapping (bytes32 => BuildingData) internal buildings;
@@ -128,25 +127,21 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
     /// @param tileIndex The index of the tile
     error BuildingNotUnderConstructionAtLocation(uint16 tileIndex);
 
+    /// @dev Emits if the construction requirements are not met
+    /// @param tileIndex The index of the tile
+    /// @param building The name of the building
     error ConstructionRequirementsNotMet(uint16 tileIndex, bytes32 building);
 
 
     /// @dev Constructor
     /// @param _mapsContract The address of the maps contract
-    /// @param _titleDeedsContract The address of the title deeds contract
-    /// @param _blueprintsContract The address of the blueprints contract
-    function initialize(
-        address _mapsContract, 
-        address _titleDeedsContract, 
-        address _blueprintsContract) 
+    function initialize(address _mapsContract)
         public virtual initializer 
     {
         __AccessControl_init();
 
         // Set refs
         mapsContract = _mapsContract;
-        titleDeedsContract = _titleDeedsContract;
-        blueprintsContract = _blueprintsContract;
 
         // Grant admin role
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -239,6 +234,17 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
             instances[i] = buildingInstances[tileIndices[i]];
         }
     }
+
+
+    /// @dev Get the construction data for a building
+    /// @param name The name of the building
+    /// @return data Construction data
+    function getConstructionData(bytes32 name) 
+        public view 
+        returns (ConstructionData memory data)
+    {
+        data = buildings[name].construction;
+    }
     
 
     /**
@@ -290,29 +296,41 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
         // Set construction constraints
         data.construction.constraints = building.construction.constraints;
 
-        // Set construction requirements
+        // Set labour requirements
+        uint16 totalProgress = 0;
         delete data.construction.requirements.labour;
         for (uint i = 0; i < building.construction.requirements.labour.length; i++)
         {
-            LabourRequirement memory labourRequirement = building.construction.requirements.labour[i];
-            data.construction.requirements.labour.push(LabourRequirement(
-                labourRequirement.profession,
-                labourRequirement.hasMinimumLevel,
-                labourRequirement.minLevel,
-                labourRequirement.hasMaximumLevel,
-                labourRequirement.maxLevel,
-                labourRequirement.requiredProfessionals
+            LabourData memory labourData = building.construction.requirements.labour[i];
+            data.construction.requirements.labour.push(LabourData(
+                labourData.profession,
+                labourData.hasMinimumLevel,
+                labourData.minLevel,
+                labourData.hasMaximumLevel,
+                labourData.maxLevel,
+                labourData.slots,
+                labourData.actionValue1,
+                labourData.actionValue2
             ));
+
+            // Calculate total progress
+            totalProgress += uint16(labourData.actionValue1) * labourData.slots;
         }
 
-        // Set construction requirements
+        // Ensure total progress is CONSTRUCTION_COMPLETE
+        if (totalProgress < CONSTRUCTION_COMPLETE)
+        {
+            revert ArgumentInvalid();
+        }
+
+        // Set resource requirements
         delete data.construction.requirements.resources;
         for (uint i = 0; i < building.construction.requirements.resources.length; i++)
         {
-            ResourceRequirement memory resourceRequirement = building.construction.requirements.resources[i];
-            data.construction.requirements.resources.push(ResourceRequirement(
-                resourceRequirement.resource, 
-                resourceRequirement.amount
+            ResourceData memory resourceData = building.construction.requirements.resources[i];
+            data.construction.requirements.resources.push(ResourceData(
+                resourceData.resource, 
+                resourceData.amount
             ));
         }
     }
@@ -371,6 +389,7 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
             {
                 revert UpgadableBuildingIsNotCompleteAtLocation(tileIndex);
             }
+
         }
 
         // New construction

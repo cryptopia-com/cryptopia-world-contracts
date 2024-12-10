@@ -41,7 +41,11 @@ export const PlayerConfig = {
 export const BuildingConfig = {
 
     // Base values
-    CONSTRUCTION_COMPLETE: 1000
+    CONSTRUCTION_COMPLETE: 1000,
+
+    // Tax values
+    TAX_RATE: 100, // 10%
+    TAX_RATE_PRECISION: 1000, // Denominator
 }
 
 /**

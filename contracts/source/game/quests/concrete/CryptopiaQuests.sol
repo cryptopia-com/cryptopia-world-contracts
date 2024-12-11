@@ -909,7 +909,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, PseudoRando
 
         // Get Player location data
         (
-            uint16 playerTile, 
+            uint16 playerTile,,
             bool playerCanInteract
         ) = IMaps(mapsContract).getPlayerLocationData(msg.sender);
 

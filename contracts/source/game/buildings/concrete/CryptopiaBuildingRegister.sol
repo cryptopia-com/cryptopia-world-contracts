@@ -74,9 +74,10 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
     mapping (uint16 => BuildingInstance) public buildingInstances;
     mapping (BuildingType => uint) public buildingInstanceCount;
 
-    mapping (uint16 => uint16) public tileGroupToDock; // Assuming 0 is not a valid tile index because tile index zero is always water
+    /// @dev Group => Dock tile
+    /// @notice Assuming 0 is not a valid tile index because tile index zero is always water
+    mapping (uint16 => uint16) public tileGroupToDock;
     
-
 
     /**
      * Events
@@ -167,6 +168,17 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
     /**
      * Public functions 
      */
+    /// @dev True if the group has dock access
+    /// @param group The group to check
+    /// @return hasAccess True if the group has dock access
+    function hasDockAccess(uint16 group) 
+        public view 
+        returns (bool) 
+    {
+        return _hasDockAccess(group);
+    }
+
+
     /// @dev Get the amount of unique buildings
     /// @return count The amount of unique buildings
     function getBuildingCount() 
@@ -245,7 +257,7 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
     {
         data = buildings[name].construction;
     }
-    
+
 
     /**
      * Private functions 
@@ -406,7 +418,7 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
         ConstructionConstraints storage constraints = _building.construction.constraints;
         TileStatic memory tileDataStatic = IMaps(mapsContract).getTileDataStatic(tileIndex);
         TileDynamic memory tileDataDynamic = IMaps(mapsContract).getTileDataDynamic(tileIndex);
-        bool hasDockAccess = _hasDockAccess(tileDataStatic.group);
+        bool hasDockAccess_ = _hasDockAccess(tileDataStatic.group);
 
         // Validate constraints
         if ((constraints.hasMaxInstanceConstraint && buildingInstanceCount[_building.buildingType] >= constraints.maxInstances) ||
@@ -414,8 +426,8 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
             (constraints.lake == Permission.NotAllowed && tileDataStatic.hasLake) || 
             (constraints.river == Permission.Required && tileDataStatic.riverFlags == 0) ||
             (constraints.river == Permission.NotAllowed && tileDataStatic.riverFlags > 0) || 
-            (constraints.dock == Permission.Required && !hasDockAccess) ||
-            (constraints.dock == Permission.NotAllowed && hasDockAccess))
+            (constraints.dock == Permission.Required && !hasDockAccess_) ||
+            (constraints.dock == Permission.NotAllowed && hasDockAccess_))
         {
             revert ConstructionRequirementsNotMet(tileIndex, building);
         }

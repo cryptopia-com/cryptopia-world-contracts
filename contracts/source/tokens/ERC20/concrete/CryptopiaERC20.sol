@@ -20,13 +20,13 @@ abstract contract CryptopiaERC20 is Initializable, ERC20Upgradeable, AccessContr
     
 
     /// @dev Contract initializer
-    /// @param name Token name (long)
-    /// @param symbol Token ticker symbol (short)
-    function __CryptopiaERC20_init(string memory name, string memory symbol) 
+    /// @param name_ Token name (long)
+    /// @param symbol_ Token ticker symbol (short)
+    function __CryptopiaERC20_init(string memory name_, string memory symbol_) 
         internal onlyInitializing
     {
         __AccessControl_init();
-        __ERC20_init(name, symbol);
+        __ERC20_init(name_, symbol_);
         __CryptopiaERC20_init_unchained();
     }
 

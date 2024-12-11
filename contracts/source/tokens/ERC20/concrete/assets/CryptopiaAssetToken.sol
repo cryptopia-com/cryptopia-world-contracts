@@ -20,15 +20,15 @@ contract CryptopiaAssetToken is CryptopiaERC20, IAssetToken, IFungibleQuestRewar
 
 
     /// @dev Contract Initializer
-    /// @param name Token name
-    /// @param symbol Token symbol
+    /// @param name_ Token name
+    /// @param symbol_ Token symbol
     function initialize(
-        string memory name, 
-        string memory symbol, 
+        string memory name_, 
+        string memory symbol_, 
         address _inventoriesContract) 
         public virtual initializer 
     {
-        __CryptopiaERC20_init(name, symbol);
+        __CryptopiaERC20_init(name_, symbol_);
 
         // Refs
         inventoriesContract = _inventoriesContract;
@@ -49,8 +49,19 @@ contract CryptopiaAssetToken is CryptopiaERC20, IAssetToken, IFungibleQuestRewar
     }
 
 
+    /// @dev Burns 'amount' token from an address
+    /// @param from Account to burn the tokens from
+    /// @param amount Amount of tokens to burn
+    function __burnFrom(address from, uint amount) 
+        public override 
+        onlyRole(SYSTEM_ROLE) 
+    {
+        _burn(from, amount);
+    }
+
+
     /// @dev Mints 'amount' of tokens to 'player' and assigns them to 'inventory'
-    /// @param player The player that completed the quest
+    /// @param player The player to mint the tokens to
     /// @param inventory The inventory to mint the tokens to
     /// @param amount The amount of tokens to mint
     function __mintToInventory(address player, Inventory inventory, uint amount) 
@@ -63,6 +74,23 @@ contract CryptopiaAssetToken is CryptopiaERC20, IAssetToken, IFungibleQuestRewar
         // Assign
         IInventories(inventoriesContract)
             .__assignFungibleToken(player, inventory, address(this), amount);
+    }
+
+
+    /// @dev Burns 'amount' of tokens from 'player' and removes them from 'inventory'
+    /// @param player The player to burn the tokens from
+    /// @param inventory The inventory to burn the tokens from
+    /// @param amount The amount of tokens to burn
+    function __burnFromInventory(address player, Inventory inventory, uint amount)
+        public override 
+        onlyRole(SYSTEM_ROLE) 
+    {
+        // Deduct from inventory
+        IInventories(inventoriesContract)
+            .__deductFungibleToken(player, inventory, address(this), amount, false);
+
+        // Burn
+        _burn(inventoriesContract, amount); 
     }
 
 

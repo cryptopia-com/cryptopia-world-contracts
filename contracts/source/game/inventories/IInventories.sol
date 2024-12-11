@@ -224,7 +224,7 @@ interface IInventories {
     /// SYSTEM caller is trusted so checks can be omitted
     /// - Assumes inventory exists
     /// - Assumes asset exists
-    /// - Assumes amount of asset is allocated to player
+    /// - Checks amount of asset is allocated to player
     /// - Checks if the players inventory is frozen
     /// @param player The inventory owner to deduct the asset from
     /// @param inventory The inventory type to deduct the asset from {BackPack | Ship}
@@ -240,6 +240,7 @@ interface IInventories {
     /// - Assumes inventory exists
     /// - Assumes asset exists
     /// - Assumes amount of asset is allocated to player
+    /// - Assumes the players inventory is not frozen
     /// @param player The inventory owner to deduct the asset from
     /// @param inventory The inventory type to deduct the asset from {BackPack | Ship}
     /// @param asset The asset contract address 

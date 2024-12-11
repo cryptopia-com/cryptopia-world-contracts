@@ -1,10 +1,11 @@
 import "../scripts/helpers/converters.ts";
 import { expect } from "chai";
 import { ethers, upgrades} from "hardhat";
+import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { getParamFromEvent} from '../scripts/helpers/events';
 import { encodeRockData, encodeVegetationData, encodeWildlifeData } from '../scripts/maps/helpers/encoders';
 import { resolveEnum } from "../scripts/helpers/enums";
-import { Permission, Rarity, Resource, Profession, Terrain, Biome, Environment, Zone, BuildingType } from '../scripts/types/enums';
+import { Permission, Rarity, Resource, Profession, Terrain, Biome, Environment, Zone, BuildingType, Inventory } from '../scripts/types/enums';
 import { Map } from "../scripts/types/input";
 import { SYSTEM_ROLE } from "./settings/roles";   
 import { BuildingConfig } from "./settings/config";   
@@ -20,10 +21,13 @@ import {
     CryptopiaCrafting,
     CryptopiaBlueprintToken,
     CryptopiaTitleDeedToken,
+    CryptopiaAssetRegister,
     CryptopiaBuildingRegister,
-    CryptopiaConstructionMechanics
+    CryptopiaConstructionMechanics,
+    CryptopiaMaps
 } from "../typechain-types";
 import { BuildingStruct } from "../typechain-types/contracts/source/game/buildings/IBuildingRegister.js";
+import { ResourceContractDepositStruct } from "../typechain-types/contracts/source/game/mechanics/construction/IConstructionMechanics.js";
 
 import { BigNumber, ContractTransaction } from "ethers";
 
@@ -54,8 +58,10 @@ describe("Construction Contracts", function () {
     let craftingInstance: CryptopiaCrafting;
     let blueprintTokenInstance: CryptopiaBlueprintToken;
     let titleDeedTokenInstance: CryptopiaTitleDeedToken;
+    let assetRegisterInstance: CryptopiaAssetRegister;
     let buildingRegisterInstance: CryptopiaBuildingRegister;
     let constructionMechanicsInstance: CryptopiaConstructionMechanics;
+    let mapsInstance: CryptopiaMaps;
 
     let registeredAccountInstance: CryptopiaAccount;
     let unregisteredAccountInstance: CryptopiaAccount;
@@ -68,7 +74,7 @@ describe("Construction Contracts", function () {
         {
             symbol: "WOOD",
             name: "Wood",
-            resource: 3,
+            resource: Resource.Wood,
             weight: 50, // 0.5kg
             contractAddress: "",
             system: [],
@@ -77,7 +83,7 @@ describe("Construction Contracts", function () {
         {
             symbol: "STONE",
             name: "Stone",
-            resource: 4,
+            resource: Resource.Stone,
             weight: 100, // 1kg
             contractAddress: "",
             system: [],
@@ -86,7 +92,16 @@ describe("Construction Contracts", function () {
         {
             symbol: "FE26",
             name: "Iron",
-            resource: 7,
+            resource: Resource.Iron,
+            weight: 100, // 1kg
+            system: [],
+            contractAddress: "",
+            contractInstance: {}
+        },
+        {
+            symbol: "GLASS",
+            name: "Glass",
+            resource: Resource.Glass,
             weight: 100, // 1kg
             system: [],
             contractAddress: "",
@@ -298,9 +313,6 @@ describe("Construction Contracts", function () {
         [deployer, system, account1, account2, other, treasury] = (
             await ethers.getSigners()).map(s => s.address);
 
-        // Signers
-        const systemSigner = await ethers.provider.getSigner(system);
-
         // Factories
         const WhitelistFactory = await ethers.getContractFactory("CryptopiaWhitelist");
         const AccountRegisterFactory = await ethers.getContractFactory("CryptopiaAccountRegister");
@@ -361,7 +373,7 @@ describe("Construction Contracts", function () {
             AssetRegisterFactory, []);
 
         const assetRegisterAddress = await assetRegisterProxy.address;
-        const assetRegisterInstance = await ethers.getContractAt("CryptopiaAssetRegister", assetRegisterAddress);
+        assetRegisterInstance = await ethers.getContractAt("CryptopiaAssetRegister", assetRegisterAddress);
 
         // Grant roles
         await assetRegisterInstance.grantRole(SYSTEM_ROLE, system);
@@ -467,7 +479,7 @@ describe("Construction Contracts", function () {
             ]);
 
         const mapsAddress = await mapsProxy.address;
-        const mapsInstance = await ethers.getContractAt("CryptopiaMaps", mapsAddress);
+        mapsInstance = await ethers.getContractAt("CryptopiaMaps", mapsAddress);
 
         // Grant roles
         await titleDeedTokenInstance.grantRole(SYSTEM_ROLE, mapsAddress);
@@ -533,7 +545,10 @@ describe("Construction Contracts", function () {
                 cryptopiaTokenAddress,
                 titleDeedTokenAddress,
                 blueprintTokenAddress,
-                buildingRegisterAddress
+                assetRegisterAddress,
+                buildingRegisterAddress,
+                inventoriesAddress,
+                mapsAddress
             ]);
 
         const constructionMechanicsAddress = await constructionMechanicsProxy.address;
@@ -542,6 +557,7 @@ describe("Construction Contracts", function () {
         // Grant roles
         await buildingRegisterInstance.grantRole(SYSTEM_ROLE, constructionMechanicsAddress);
         await blueprintTokenInstance.grantRole(SYSTEM_ROLE, constructionMechanicsAddress);
+        await inventoriesInstance.grantRole(SYSTEM_ROLE, constructionMechanicsAddress);
 
 
         // Deploy assets
@@ -654,7 +670,7 @@ describe("Construction Contracts", function () {
         registeredAccountInstance = await ethers.getContractAt("CryptopiaAccount", registeredAccountAddress);
 
         // Create unregistered account
-        const createUnregisteredAccountTransaction = await accountRegisterInstance.create([other], 1, 0, "Unregistered_Username".toBytes32(), 0);
+        const createUnregisteredAccountTransaction = await accountRegisterInstance.create([account2], 1, 0, "Unregistered_Username".toBytes32(), 0);
         const createUnregisteredAccountReceipt = await createUnregisteredAccountTransaction.wait();
         unregisteredAccountAddress = getParamFromEvent(accountRegisterInstance, createUnregisteredAccountReceipt, "account", "CreateAccount");
         unregisteredAccountInstance = await ethers.getContractAt("CryptopiaAccount", unregisteredAccountAddress);
@@ -811,9 +827,24 @@ describe("Construction Contracts", function () {
      */
     describe("Construction (player)", function () {
 
+        // Compensation per player
+        const labourCompenstations = [
+            "100".toWei(), // Any 
+            "200".toWei(), // Builder
+            "1000".toWei() // Architect
+        ];
+
+        // Compensation per resource unit
+        const resourceCompensations = [
+            "1", // Wood
+            "1", // Stone
+            "5", // Iron
+            "2"  // Glass
+        ];
+
         let transaction: ContractTransaction;
 
-        it("Player should be able to start construction", async () => {
+        it("Non-Player should be able to start construction", async () => {
         
             // Setup
             const building = buildings[0];
@@ -823,22 +854,9 @@ describe("Construction Contracts", function () {
             const cryptopiaTokenAddress = await cryptopiaTokenInstance.address;
             const constructionMechanicsAddress = await constructionMechanicsInstance.address;
             const systemSigner = await ethers.provider.getSigner(system);
-            const account1Signer = await ethers.provider.getSigner(account1);
-
-            // Compensation per player
-            const labourCompenstations = [
-                "100".toWei(), // Any 
-                "200".toWei(), // Builder
-                "1000".toWei() // Architect
-            ];
-
-            // Compensation per resource unit
-            const resourceCompensations = [
-                "1", // Wood
-                "1", // Stone
-                "5", // Iron
-                "2"  // Glass
-            ];
+            const nonPlayerAccountSigner = await ethers.provider.getSigner(account2);
+            const nonPlayerAccountInstance = unregisteredAccountInstance;
+            const nonPlayerAccountAddress = unregisteredAccountAddress;
 
             let totalCompensation = BigNumber.from(0);
             for (let i = 0; i < building.construction.requirements.labour.length; i++)
@@ -858,32 +876,32 @@ describe("Construction Contracts", function () {
 
             // Ensure sufficient funds
             await cryptopiaTokenInstance
-                .__mint(registeredAccountAddress, totalCost);
+                .__mint(nonPlayerAccountAddress, totalCost);
 
             // Approve spending
             const approveCallData = cryptopiaTokenInstance.interface.encodeFunctionData(
                 "approve", [constructionMechanicsAddress, totalCost]);
 
-            await registeredAccountInstance
-                .connect(account1Signer)
+            await nonPlayerAccountInstance
+                .connect(nonPlayerAccountSigner)
                 .submitTransaction(cryptopiaTokenAddress, 0, approveCallData);
 
             // Mint blueprint
             await blueprintTokenInstance
                 .connect(systemSigner)
-                .__mintTo(registeredAccountAddress, building.name);
+                .__mintTo(nonPlayerAccountAddress, building.name);
 
             // Mint title deed
             await titleDeedTokenInstance
                 .connect(systemSigner)
-                .__mintTo(registeredAccountAddress, tileIndex);
+                .__mintTo(nonPlayerAccountAddress, tileIndex);
 
             // Act
             const startConstructionCallData = constructionMechanicsInstance.interface.encodeFunctionData(
                 "startConstruction", [titleDeedId, blueprintId, labourCompenstations, resourceCompensations]);
 
-            transaction = await registeredAccountInstance
-                .connect(account1Signer)
+            transaction = await nonPlayerAccountInstance
+                .connect(nonPlayerAccountSigner)
                 .submitTransaction(constructionMechanicsAddress, 0, startConstructionCallData);
 
             // Assert
@@ -891,12 +909,98 @@ describe("Construction Contracts", function () {
             expect(buildingInstance.name).to.equal(building.name);
             expect(buildingInstance.construction).to.equal(0);
         });
+
+        it ("Should emit 'BuildingConstructionStart' event ", async () => {
+            
+            // Setup
+            const tileIndex = 1;
+            const building = buildings[0];
+
+            // Assert
+            await expect(transaction).to
+                .emit(buildingRegisterInstance, "BuildingConstructionStart")
+                .withArgs(tileIndex, building.name);
+        });
+
+        it ("Player should be able to deposit resources in exchange for $TOS", async () => {
+
+            // Setup
+            const tileIndex = 1;
+            const deposits = [
+                { 
+                    contractIndex: 0,
+                    inventory: Inventory.Backpack,
+                    amount: "100".toWei()
+                }
+            ];
+
+            const compensations = [
+                resourceCompensations[0]
+            ];
+
+            const systemSigner = await ethers.provider.getSigner(system);
+            const playerAccountSigner = await ethers.provider.getSigner(account1);
+            const playerAccountInstance = registeredAccountInstance;
+            const playerAccountAddress = registeredAccountAddress;
+
+            const constructionContract = await constructionMechanicsInstance
+                .getConstructionContract(tileIndex);
+
+            // Ensure sufficient resources
+            for (let i = 0; i < deposits.length; i++)
+            {
+                const resource = constructionContract.resources[deposits[i].contractIndex].resource;
+                await getAssetByResource(resource).contractInstance
+                    ?.connect(systemSigner)
+                    .__mintToInventory(playerAccountAddress, deposits[i].inventory, deposits[i].amount);
+            }
+
+            // Travel to the correct tile
+            await travelToLocation(playerAccountInstance, playerAccountSigner, [0, tileIndex]);
+
+            // Act
+            const depositCallData = constructionMechanicsInstance.interface.encodeFunctionData(
+                "depositResources", [tileIndex, deposits]);
+
+            transaction = await playerAccountInstance
+                .connect(playerAccountSigner)
+                .submitTransaction(constructionMechanicsInstance.address, 0, depositCallData);
+
+            // Assert
+            const balance = await cryptopiaTokenInstance.balanceOf(playerAccountAddress);
+            let expectedBalance = BigNumber.from(0);
+            for (let i = 0; i < deposits.length; i++)
+            {
+                const amount = deposits[i].amount;
+                expectedBalance = expectedBalance.add(BigNumber.from(amount).mul(compensations[i]));
+            }
+
+            expect(balance).to.equal(expectedBalance);
+        });
     });
 
 
     /**
      * Helper functions
      */
+    const travelToLocation = async (playerInstance: CryptopiaAccount, playerSigner: any, path: number[]) => {
+
+        // Travel to the correct tile
+        const mapsAddress = await mapsInstance.address;
+        const playerMoveCalldata = mapsInstance.interface
+            .encodeFunctionData("playerMove", [path]);
+        
+        const playerMoveTransaction = await playerInstance
+            .connect(playerSigner)
+            .submitTransaction(mapsAddress, 0, playerMoveCalldata);
+
+        const playerMoveReceipt = await playerMoveTransaction.wait();
+        const arrival = getParamFromEvent(
+            mapsInstance, playerMoveReceipt, "arrival", "PlayerMove");
+
+        await time.increaseTo(arrival);
+    };
+
     const getAssetByResource = (resource: Resource) => {
         const asset =  assets.find(
             asset => asset.resource === resource);

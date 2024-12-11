@@ -5,6 +5,12 @@ pragma solidity 0.8.20;
 /// @param account The account that is not a player
 error PlayerNotRegistered(address account);
 
+/// @dev Emitted when `account` is not in the expected location
+/// @param account The account that is not in the expected location
+/// @param expected The expected location
+/// @param actual The actual location
+error PlayerNotInExpectedLocation(address account, uint16 expected, uint16 actual);
+
 /// @dev Emitted when `account` cannot interact at this time
 /// @param account The account that cannot interact
 error PlayerCannotInteract(address account);

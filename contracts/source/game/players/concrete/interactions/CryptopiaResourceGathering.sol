@@ -147,7 +147,7 @@ contract CryptopiaResourceGathering is ContextUpgradeable, CryptopiaERC20Retriev
         returns (uint)
     {
         (
-            uint16 tileIndex, 
+            uint16 tileIndex,,
             bool canInteract
         ) = IMaps(mapContract).getPlayerLocationData(account);
 

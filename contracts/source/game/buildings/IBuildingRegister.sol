@@ -13,6 +13,14 @@ interface IBuildingRegister {
     /**
      * Public functions 
      */
+    /// @dev True if the group has dock access
+    /// @param group The group to check
+    /// @return hasAccess True if the group has dock access
+    function hasDockAccess(uint16 group) 
+        external view 
+        returns (bool);
+
+        
     /// @dev Get the amount of unique buildings
     /// @return count The amount of unique buildings
     function getBuildingCount() 

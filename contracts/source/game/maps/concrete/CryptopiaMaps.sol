@@ -785,17 +785,20 @@ contract CryptopiaMaps is Initializable, AccessControlUpgradeable, IMaps, IPlaye
     }
 
 
-    /// @dev Retrieve general player data for `account`
+    /// @dev Retrieve data that's attached to player
     /// @param account The account to retreive player data for
     /// @return tileIndex The tile that the player is at
+    /// @return tileGroup The group that the player is at
     /// @return canInteract Wether the player can interact with the tile
     function getPlayerLocationData(address account)
         public virtual override view 
         returns (
             uint16 tileIndex,
+            uint16 tileGroup,
             bool canInteract)
     {
         tileIndex = playerData[account].location_tileIndex;
+        tileGroup = tileDataStatic[tileIndex].group;
         canInteract = _playerCanInteract(account);
     }
 

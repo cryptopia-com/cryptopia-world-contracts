@@ -8,5 +8,6 @@ interface IERC20Retriever {
 
     /// @notice Extracts tokens from the contract.
     /// @param _tokenContract The address of the ERC20 compatible token.
-    function retrieveTokens(address _tokenContract) external;
+    function retrieveTokens(address _tokenContract) 
+        external;
 }

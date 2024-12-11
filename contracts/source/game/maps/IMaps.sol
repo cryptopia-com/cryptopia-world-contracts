@@ -75,11 +75,13 @@ interface IMaps {
     /// @dev Retrieve data that's attached to player
     /// @param account The account to retreive player data for
     /// @return tileIndex The tile that the player is at
+    /// @return tileGroup The group that the player is at
     /// @return canInteract Wether the player can interact with the tile
     function getPlayerLocationData(address account)
         external view 
         returns (
             uint16 tileIndex,
+            uint16 tileGroup,
             bool canInteract);
 
         

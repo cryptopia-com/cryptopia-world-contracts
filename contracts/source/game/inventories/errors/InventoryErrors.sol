@@ -7,6 +7,11 @@ import "../types/InventoryEnums.sol";
 /// @param inventory The inventory that was invalid
 error InventoryInvalid(Inventory inventory);
 
+/// @dev Emitted when the inventory is not accessible
+/// @param inventory The inventory that is not accessible
+/// @param tileIndex The tile index that the inventory is not accessible from
+error InventoryNotAccessible(Inventory inventory, uint16 tileIndex);
+
 /// @dev Emitted the game item with `tokenId` is not found in the inventory
 /// @param player The player that the inventory belongs to
 /// @param inventory The inventory that the game item was expected to be found in

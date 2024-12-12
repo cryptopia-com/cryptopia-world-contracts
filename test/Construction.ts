@@ -284,19 +284,19 @@ describe("Construction Contracts", function () {
                     resources: [
                         { 
                             resource: Resource.Wood, 
-                            amount: "500".toWei()
+                            amount: "50".toWei()
                         },
                         { 
                             resource: Resource.Stone, 
-                            amount: "1000".toWei()
+                            amount: "50".toWei()
                         },
                         { 
                             resource: Resource.Iron, 
-                            amount: "500".toWei()
+                            amount: "20".toWei()
                         },
                         { 
                             resource: Resource.Glass, 
-                            amount: "100".toWei()
+                            amount: "20".toWei()
                         }
                     ],
                 }
@@ -930,12 +930,30 @@ describe("Construction Contracts", function () {
                 { 
                     contractIndex: 0,
                     inventory: Inventory.Backpack,
-                    amount: "100".toWei()
+                    amount: "50".toWei()
+                },
+                { 
+                    contractIndex: 1,
+                    inventory: Inventory.Backpack,
+                    amount: "10".toWei()
+                },
+                { 
+                    contractIndex: 2,
+                    inventory: Inventory.Backpack,
+                    amount: "10".toWei()
+                },
+                { 
+                    contractIndex: 3,
+                    inventory: Inventory.Backpack,
+                    amount: "10".toWei()
                 }
             ];
 
             const compensations = [
-                resourceCompensations[0]
+                resourceCompensations[0],
+                resourceCompensations[1],
+                resourceCompensations[2],
+                resourceCompensations[3]
             ];
 
             const systemSigner = await ethers.provider.getSigner(system);
@@ -976,6 +994,140 @@ describe("Construction Contracts", function () {
             }
 
             expect(balance).to.equal(expectedBalance);
+        });
+
+        it ("Should emit 'ConstructionResourceDeposit' events", async () => {
+                
+            // Setup
+            const tileIndex = 1;
+            const deposits = [
+                { 
+                    contractIndex: 0,
+                    inventory: Inventory.Backpack,
+                    amount: "50".toWei()
+                },
+                { 
+                    contractIndex: 1,
+                    inventory: Inventory.Backpack,
+                    amount: "10".toWei()
+                },
+                { 
+                    contractIndex: 2,
+                    inventory: Inventory.Backpack,
+                    amount: "10".toWei()
+                },
+                { 
+                    contractIndex: 3,
+                    inventory: Inventory.Backpack,
+                    amount: "10".toWei()
+                }
+            ];
+
+            const playerAccountAddress = registeredAccountAddress;
+            const constructionContract = await constructionMechanicsInstance
+                .getConstructionContract(tileIndex);
+
+            // Assert
+            for (let i = 0; i < deposits.length; i++)
+            {
+                const resource = constructionContract.resources[deposits[i].contractIndex].resource;
+                await expect(transaction).to
+                    .emit(constructionMechanicsInstance, "ConstructionResourceDeposit")
+                    .withArgs(playerAccountAddress, tileIndex, resource, deposits[i].amount);
+            }
+        });
+
+        it ("Should record intermediair resource deposit progress (intermediar)", async () => {
+                
+            // Setup
+            const tileIndex = 1;
+            const currentProgress = 1;
+
+            // Assert
+            const constructionContract = await constructionMechanicsInstance
+                .getConstructionContract(tileIndex); 
+
+            expect(constructionContract.resourceProgress).to.equal(currentProgress);
+        });
+
+        it ("Players should be able to fufill all resource contracts", async () => {
+
+            // Setup
+            const tileIndex = 1;
+            const deposits = [
+                { 
+                    contractIndex: 1,
+                    inventory: Inventory.Backpack,
+                    amount: "40".toWei()
+                },
+                { 
+                    contractIndex: 2,
+                    inventory: Inventory.Backpack,
+                    amount: "10".toWei()
+                },
+                { 
+                    contractIndex: 3,
+                    inventory: Inventory.Backpack,
+                    amount: "10".toWei()
+                }
+            ];
+
+            const compensations = [
+                resourceCompensations[1],
+                resourceCompensations[2],
+                resourceCompensations[3]
+            ];
+
+            const systemSigner = await ethers.provider.getSigner(system);
+            const playerAccountSigner = await ethers.provider.getSigner(account1);
+            const playerAccountInstance = registeredAccountInstance;
+            const playerAccountAddress = registeredAccountAddress;
+
+            const constructionContract = await constructionMechanicsInstance
+                .getConstructionContract(tileIndex);
+
+            // Ensure sufficient resources
+            for (let i = 0; i < deposits.length; i++)
+            {
+                const resource = constructionContract.resources[deposits[i].contractIndex].resource;
+                await getAssetByResource(resource).contractInstance
+                    ?.connect(systemSigner)
+                    .__mintToInventory(playerAccountAddress, deposits[i].inventory, deposits[i].amount);
+            }
+
+            const balanceBefore = await cryptopiaTokenInstance.balanceOf(playerAccountAddress);
+
+            // Act
+            const depositCallData = constructionMechanicsInstance.interface.encodeFunctionData(
+                "depositResources", [tileIndex, deposits]);
+
+            transaction = await playerAccountInstance
+                .connect(playerAccountSigner)
+                .submitTransaction(constructionMechanicsInstance.address, 0, depositCallData);
+
+            // Assert
+            const balanceAfter = await cryptopiaTokenInstance.balanceOf(playerAccountAddress);
+            let expectedBalance = BigNumber.from(0);
+            for (let i = 0; i < deposits.length; i++)
+            {
+                const amount = deposits[i].amount;
+                expectedBalance = expectedBalance.add(BigNumber.from(amount).mul(compensations[i]));
+            }
+
+            expect(balanceAfter).to.equal(balanceBefore.add(expectedBalance));
+        });
+
+        it ("Should record resource deposit progress (complete)", async () => {
+                
+            // Setup
+            const tileIndex = 1;
+            const currentProgress = 4;
+
+            // Assert
+            const constructionContract = await constructionMechanicsInstance
+                .getConstructionContract(tileIndex); 
+
+            expect(constructionContract.resourceProgress).to.equal(currentProgress);
         });
     });
 

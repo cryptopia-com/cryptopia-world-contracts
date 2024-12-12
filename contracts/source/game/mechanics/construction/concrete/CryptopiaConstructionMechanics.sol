@@ -266,7 +266,7 @@ contract CryptopiaConstructionMechanics is Initializable, AccessControlUpgradeab
         for (uint i = 0; i < deposits.length; i++)
         {
             ResourceContractDeposit memory resourceDeposit = deposits[i];
-            ResourceContract memory resourceContract = constructionContract.resources[resourceDeposit.contractIndex];
+            ResourceContract storage resourceContract = constructionContract.resources[resourceDeposit.contractIndex];
 
             // Validate inventory (backpack or ship when dock access)
             if (Inventory.Backpack != resourceDeposit.inventory && 

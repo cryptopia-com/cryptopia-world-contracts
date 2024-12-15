@@ -17,13 +17,9 @@ interface IConstructionMechanics {
     /// @dev Start construction of a building
     /// @param titleDeedId The title deed ID
     /// @param blueprintId The blueprint ID
-    /// @param labourCompenstations The labour compensations
+    /// @param jobCompenstations The job compensations
     /// @param resourceCompensations The resource compensations
-    function startConstruction(
-        uint titleDeedId, 
-        uint blueprintId, 
-        uint[] memory labourCompenstations, 
-        uint[] memory resourceCompensations) 
+    function startConstruction(uint titleDeedId, uint blueprintId, uint[] memory jobCompenstations, uint[] memory resourceCompensations) 
         external;
 
 
@@ -35,19 +31,15 @@ interface IConstructionMechanics {
     /// - The player must have the required resources in their inventory (backpack or ship when dock access)
     /// @param tileIndex The tile index at which to deposit resources
     /// @param deposits The deposit instructions
-    function depositResources(
-        uint16 tileIndex, 
-        ResourceContractDeposit[] memory deposits)
+    function depositResources(uint16 tileIndex, ResourceContractDeposit[] memory deposits)
         external;
 
 
-    // /// @dev Progress construction
-    // /// @param tileIndex The tile index
-    // /// @param profession The profession
-    // function progressConstruction(
-    //     uint16 tileIndex, 
-    //     Profession profession) 
-    //     external;
+    /// @dev Progress construction
+    /// @param tileIndex The tile index
+    /// @param contractIndex Job contract index
+    function progressConstruction(uint16 tileIndex, uint8 contractIndex) 
+        external;
 
 
     // /// @dev Complete construction

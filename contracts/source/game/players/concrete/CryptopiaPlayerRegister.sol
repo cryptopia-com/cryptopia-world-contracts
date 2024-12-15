@@ -258,6 +258,29 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
     }
 
 
+    /// @dev Returns true if `player` is a pirate
+    /// @param player CryptopiaAccount address (registered as a player)
+    /// @return true if player is a pirate
+    function isPirate(address player) 
+        public virtual override view 
+        returns (bool)
+    {
+        return _isPirate(player);
+    }
+
+
+    /// @dev Returns true if `player` has `profession` (player can have multiple professions)
+    /// @param player CryptopiaAccount address (registered as a player)
+    /// @param profession The profession to check for
+    /// @return true if player has profession
+    function hasProfession(address player, Profession profession) 
+        public virtual override view 
+        returns (bool)
+    {
+        return _isRegistered(player) && profession <= Profession.Miner; // TODO: Implement professions
+    }
+
+
     /// @dev Returns player data for `account`
     /// @param account CryptopiaAccount address (registered as a player)
     /// @return data Player data
@@ -326,17 +349,6 @@ contract CryptopiaPlayerRegister is Initializable, AccessControlUpgradeable, IPl
         {
             players[i] = getPlayer(accounts[i]);
         }
-    }
-
-
-    /// @dev Returns true if `player` is a pirate
-    /// @param player CryptopiaAccount address (registered as a player)
-    /// @return true if player is a pirate
-    function isPirate(address player) 
-        public virtual override view 
-        returns (bool)
-    {
-        return _isPirate(player);
     }
 
 

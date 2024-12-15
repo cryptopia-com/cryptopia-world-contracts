@@ -249,15 +249,16 @@ describe("Construction Contracts", function () {
                     }
                 },
                 requirements: {
-                    labour: [
+                    jobs: [
                         {
                             profession: Profession.Any,
                             hasMinimumLevel: false,
                             minLevel: 0,
                             hasMaximumLevel: false,
                             maxLevel: 0,
-                            slots: 20,
-                            actionValue1: 50,
+                            slots: 5,
+                            xp: 100,
+                            actionValue1: 100, // Progress per job
                             actionValue2: 0,
                         },
                         {
@@ -266,8 +267,9 @@ describe("Construction Contracts", function () {
                             minLevel: 0,
                             hasMaximumLevel: false,
                             maxLevel: 0,
-                            slots: 8,
-                            actionValue1: 50,
+                            slots: 2,
+                            xp: 150,
+                            actionValue1: 150, // Progress per job
                             actionValue2: 0,
                         },
                         {
@@ -276,8 +278,9 @@ describe("Construction Contracts", function () {
                             minLevel: 0,
                             hasMaximumLevel: false,
                             maxLevel: 0,
-                            slots: 2,
-                            actionValue1: 50,
+                            slots: 1,
+                            xp: 200,
+                            actionValue1: 200, // Progress per job
                             actionValue2: 0,
                         }
                     ],
@@ -546,6 +549,7 @@ describe("Construction Contracts", function () {
                 titleDeedTokenAddress,
                 blueprintTokenAddress,
                 assetRegisterAddress,
+                playerRegisterAddress,
                 buildingRegisterAddress,
                 inventoriesAddress,
                 mapsAddress
@@ -555,6 +559,7 @@ describe("Construction Contracts", function () {
         constructionMechanicsInstance = await ethers.getContractAt("CryptopiaConstructionMechanics", constructionMechanicsAddress);
 
         // Grant roles
+        await playerRegisterInstance.grantRole(SYSTEM_ROLE, constructionMechanicsAddress);
         await buildingRegisterInstance.grantRole(SYSTEM_ROLE, constructionMechanicsAddress);
         await blueprintTokenInstance.grantRole(SYSTEM_ROLE, constructionMechanicsAddress);
         await inventoriesInstance.grantRole(SYSTEM_ROLE, constructionMechanicsAddress);
@@ -828,7 +833,7 @@ describe("Construction Contracts", function () {
     describe("Construction (player)", function () {
 
         // Compensation per player
-        const labourCompenstations = [
+        const jobCompenstations = [
             "100".toWei(), // Any 
             "200".toWei(), // Builder
             "1000".toWei() // Architect
@@ -859,10 +864,10 @@ describe("Construction Contracts", function () {
             const nonPlayerAccountAddress = unregisteredAccountAddress;
 
             let totalCompensation = BigNumber.from(0);
-            for (let i = 0; i < building.construction.requirements.labour.length; i++)
+            for (let i = 0; i < building.construction.requirements.jobs.length; i++)
             {
-                const slots = building.construction.requirements.labour[i].slots.valueOf();
-                totalCompensation = totalCompensation.add(BigNumber.from(slots).mul(labourCompenstations[i]));
+                const slots = building.construction.requirements.jobs[i].slots.valueOf();
+                totalCompensation = totalCompensation.add(BigNumber.from(slots).mul(jobCompenstations[i]));
             }
 
             for (let i = 0; i < building.construction.requirements.resources.length; i++)
@@ -898,7 +903,7 @@ describe("Construction Contracts", function () {
 
             // Act
             const startConstructionCallData = constructionMechanicsInstance.interface.encodeFunctionData(
-                "startConstruction", [titleDeedId, blueprintId, labourCompenstations, resourceCompensations]);
+                "startConstruction", [titleDeedId, blueprintId, jobCompenstations, resourceCompensations]);
 
             transaction = await nonPlayerAccountInstance
                 .connect(nonPlayerAccountSigner)
@@ -1129,6 +1134,41 @@ describe("Construction Contracts", function () {
 
             expect(constructionContract.resourceProgress).to.equal(currentProgress);
         });
+
+        // it ("Player should be able to progress construction in exchange for $TOS", async () => {
+
+        //     // Setup
+        //     const tileIndex = 1;
+        //     const progress = 500;
+        //     const systemSigner = await ethers.provider.getSigner(system);
+        //     const playerAccountSigner = await ethers.provider.getSigner(account1);
+        //     const playerAccountInstance = registeredAccountInstance;
+        //     const playerAccountAddress = registeredAccountAddress;
+
+        //     const constructionContract = await constructionMechanicsInstance
+        //         .getConstructionContract(tileIndex);
+
+        //     const totalCost = BigNumber.from(progress).mul(BuildingConfig.CONSTRUCTION_COST);
+
+        //     // Ensure sufficient funds
+        //     await cryptopiaTokenInstance
+        //         .__mint(playerAccountAddress, totalCost);
+
+        //     // Travel to the correct tile
+        //     await travelToLocation(playerAccountInstance, playerAccountSigner, [0, tileIndex]);
+
+        //     // Act
+        //     const progressCallData = constructionMechanicsInstance.interface.encodeFunctionData(
+        //         "progressConstruction", [tileIndex, progress]);
+
+        //     transaction = await playerAccountInstance
+        //         .connect(playerAccountSigner)
+        //         .submitTransaction(constructionMechanicsInstance.address, 0, progressCallData);
+
+        //     // Assert
+        //     const buildingInstance = await buildingRegisterInstance.getBuildingInstance(tileIndex);
+        //     expect(buildingInstance.construction).to.equal(progress);
+        // });
     });
 
 

@@ -2,7 +2,6 @@
 pragma solidity 0.8.20;
 
 /// @title Player enums
-/// @author Frank Bonnet - <frankbonnet@outlook.com>
 enum PlayerStat
 {
     Speed,
@@ -10,4 +9,15 @@ enum PlayerStat
     Luck,
     Intelligence,
     Strength
+}
+
+/// @title ProfessionEnums
+/// @notice Contains the different professions available in Cryptopia's mechanics
+enum Profession 
+{
+    Any,
+    Builder,
+    Architect,
+    Engineer,
+    Miner
 }

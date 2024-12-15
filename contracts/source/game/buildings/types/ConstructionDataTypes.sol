@@ -4,7 +4,7 @@ pragma solidity 0.8.20;
 import "../../../types/GenericEnums.sol";
 import "../../maps/types/MapDataTypes.sol";
 import "../../assets/types/AssetDataTypes.sol";
-import "../../mechanics/types/LabourDataTypes.sol";
+import "../../mechanics/types/JobDataTypes.sol";
 
 /// @dev Represents all constraints applicable to a construction
 struct ConstructionConstraints
@@ -27,8 +27,8 @@ struct ConstructionConstraints
 /// @dev Represents the requirements for constructing a building
 struct ConstructionRequirements
 {
-    /// @dev The labour requirements for construction
-    LabourData[] labour;
+    /// @dev The job requirements for construction
+    JobData[] jobs;
 
     /// @dev The resources required for construction
     ResourceData[] resources;
@@ -42,6 +42,6 @@ struct ConstructionData
     ConstructionConstraints constraints;
 
     /// @dev The requirements for construction
-    /// @notice These requirements are used to determine the resources and labour required for construction
+    /// @notice These requirements are used to determine the resources and jobs required for construction
     ConstructionRequirements requirements;
 }

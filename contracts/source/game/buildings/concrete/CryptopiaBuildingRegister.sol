@@ -308,25 +308,26 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
         // Set construction constraints
         data.construction.constraints = building.construction.constraints;
 
-        // Set labour requirements
+        // Set job requirements
         uint16 totalProgress = 0;
-        delete data.construction.requirements.labour;
-        for (uint i = 0; i < building.construction.requirements.labour.length; i++)
+        delete data.construction.requirements.jobs;
+        for (uint i = 0; i < building.construction.requirements.jobs.length; i++)
         {
-            LabourData memory labourData = building.construction.requirements.labour[i];
-            data.construction.requirements.labour.push(LabourData(
-                labourData.profession,
-                labourData.hasMinimumLevel,
-                labourData.minLevel,
-                labourData.hasMaximumLevel,
-                labourData.maxLevel,
-                labourData.slots,
-                labourData.actionValue1,
-                labourData.actionValue2
+            JobData memory jobData = building.construction.requirements.jobs[i];
+            data.construction.requirements.jobs.push(JobData(
+                jobData.profession,
+                jobData.hasMinimumLevel,
+                jobData.minLevel,
+                jobData.hasMaximumLevel,
+                jobData.maxLevel,
+                jobData.slots,
+                jobData.xp,
+                jobData.actionValue1,
+                jobData.actionValue2
             ));
 
             // Calculate total progress
-            totalProgress += uint16(labourData.actionValue1) * labourData.slots;
+            totalProgress += uint16(jobData.actionValue1) * jobData.slots;
         }
 
         // Ensure total progress is CONSTRUCTION_COMPLETE

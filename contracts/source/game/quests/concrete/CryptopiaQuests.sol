@@ -812,7 +812,7 @@ contract CryptopiaQuests is Initializable, AccessControlUpgradeable, PseudoRando
             // Check level
             if (playerData.level < quest.level) 
             {
-                revert PlayerLevelInsufficient(msg.sender, quest.level, playerData.level);
+                revert PlayerLevelTooLow(msg.sender, quest.level, playerData.level);
             }
         }
 

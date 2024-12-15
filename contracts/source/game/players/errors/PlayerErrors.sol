@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: ISC
 pragma solidity 0.8.20;
 
+import "../types/PlayerEnums.sol";
+
 /// @dev Emitted when `account` is not a player
 /// @param account The account that is not a player
 error PlayerNotRegistered(address account);
@@ -28,5 +30,16 @@ error PlayerIsFrozen(address account, uint64 until);
 /// @dev Emitted when `player` level is too low
 /// @param player The player that has a level that is too low
 /// @param level The level of the player
-/// @param requiredLevel The required level
-error PlayerLevelInsufficient(address player, uint level, uint requiredLevel);
+/// @param minLevel The required min level
+error PlayerLevelTooLow(address player, uint level, uint minLevel);
+
+/// @dev Emitted when `player` level is too high
+/// @param player The player that has a level that is too high
+/// @param level The level of the player
+/// @param maxLevel The required max level
+error PlayerLevelTooHigh(address player, uint level, uint maxLevel);
+
+/// @dev Emitted when `player` does not have the required profession
+/// @param player The player that does not have the required profession
+/// @param profession The required profession
+error PlayerMissingProfession(address player, Profession profession);

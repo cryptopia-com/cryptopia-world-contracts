@@ -281,7 +281,7 @@ contract CryptopiaToolToken is CryptopiaERC721, ITools, ICraftable, INonFungible
         uint8 playerLevel = IPlayerRegister(playerRegisterContract).getLevel(player);
         if (playerLevel < tools[toolName].level)
         {
-            revert PlayerLevelInsufficient(player, playerLevel, tools[toolName].level);
+            revert PlayerLevelTooLow(player, playerLevel, tools[toolName].level);
         }
 
         // Apply effects

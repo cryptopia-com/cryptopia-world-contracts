@@ -50,6 +50,23 @@ interface IPlayerRegister {
         returns (bool);
 
 
+    /// @dev Returns true if `player` is a pirate
+    /// @param player CryptopiaAccount address (registered as a player)
+    /// @return true if player is a pirate
+    function isPirate(address player) 
+        external view 
+        returns (bool);
+
+
+    /// @dev Returns true if `player` has `profession` (player can have multiple professions)
+    /// @param player CryptopiaAccount address (registered as a player)
+    /// @param profession The profession to check for
+    /// @return true if player has profession
+    function hasProfession(address player, Profession profession) 
+        external view 
+        returns (bool);
+
+
     /// @dev Returns player data for `account`
     /// @param account CryptopiaAccount address (registered as a player)
     /// @return data Player data
@@ -65,15 +82,7 @@ interface IPlayerRegister {
         external view 
         returns (PlayerStats memory);
 
-    
-    /// @dev Returns true if `player` is a pirate
-    /// @param player CryptopiaAccount address (registered as a player)
-    /// @return true if player is a pirate
-    function isPirate(address player) 
-        external view 
-        returns (bool);
 
-    
     /// @dev Returns the player's faction 
     /// @param player CryptopiaAccount address (registered as a player)
     /// @return subFaction The player's faction

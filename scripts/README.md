@@ -25,6 +25,9 @@ npx hardhat run --network localhost ./scripts/crafting/recipes.publish.ts
 Maps:
 npx hardhat run --network localhost ./scripts/maps/maps.publish.ts
 
+Buildings:
+npx hardhat run --network localhost ./scripts/buildings/buildings.publish.ts
+
 Node:
 npx hardhat node
 npx hardhat setAutomine --network localhost --state true

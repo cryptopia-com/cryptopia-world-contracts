@@ -86,9 +86,12 @@ async function main() {
     console.log(`public const string AVATAR_REGISTER_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("AvatarRegister")).address}";`);
     console.log(`public const string PLAYER_REGISTER_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("PlayerRegister")).address}";`);
     console.log(`public const string ASSET_REGISTER_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("AssetRegister")).address}";`);
+    console.log(`public const string BUILDING_REGISTER_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("BuildingRegister")).address}";`);
+    console.log(`public const string CONSTRUCTION_MECHANICS_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("ConstructionMechanics")).address}";`);
     console.log(`public const string MAP_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("Maps")).address}";`);
     console.log(`public const string MAP_EXTENSIONS_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("MapsExtensions")).address}";`);
     console.log(`public const string TITLE_DEED_TOKEN_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("TitleDeedToken")).address}";`);
+    console.log(`public const string BLUEPRINT_TOKEN_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("BlueprintToken")).address}";`);
     console.log(`public const string INVENTORIES_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("Inventories")).address}";`);
     console.log(`public const string RESOURCE_GATHERING_CONTRACT = "${deploymentManager.getContractDeployment(deploymentManager.resolveContractName("ResourceGathering")).address}";`);
     console.log(`public const string LOYALTY_TOKEN_CONTRACT = "0x0000000000000000000000000000000000000001";`);

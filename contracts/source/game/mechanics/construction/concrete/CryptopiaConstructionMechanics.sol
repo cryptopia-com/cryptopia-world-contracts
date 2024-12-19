@@ -20,6 +20,17 @@ import "../../../maps/IMaps.sol";
 import "../types/ConstructionDataTypes.sol";
 import "../IConstructionMechanics.sol";
 
+/// @title Cryptopia Construction Mechanics
+/// @notice This contract governs the construction mechanics within Cryptopia, enabling players to engage in building operations. 
+/// Players can initiate, manage, and progress the construction of buildings.
+/// 
+/// The mechanics facilitate interactions such as starting construction projects, depositing resources, 
+/// and managing compensations for construction jobs.
+/// @dev Inherits from Initializable and AccessControlUpgradeable, implementing the IConstructionMechanics interface.
+/// This contract is designed to ensure modularity, scalability, and efficient resource handling. It enforces robust 
+/// validation checks to maintain game integrity and fairness while facilitating dynamic construction mechanics.
+/// The contract's functions are optimized for seamless interaction with player data, resources, and tile states.
+/// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaConstructionMechanics is Initializable, AccessControlUpgradeable, IConstructionMechanics 
 {
     /**
@@ -47,19 +58,35 @@ contract CryptopiaConstructionMechanics is Initializable, AccessControlUpgradeab
     // Settings
     uint constant private TAX_RATE = 100; // 10%
     uint constant private TAX_RATE_PRECISION = 1_000; // 1_000
-    uint64 constant private MAX_CONSTRUCTION_TIME = 86400; // 1 day 
+    uint64 constant private MAX_CONSTRUCTION_TIME = 864000; // 10 days 
     uint64 constant private CONSTRUCTION_JOB_COOLDOWN_TIME = 3600; // 1 hour
 
 
     /**
      * Events
      */
-    /// @dev Emitted when a resource is deposited
+    /// @dev Emitted when a player deposits resources to a construction site
     /// @param player The player that deposited the resources
     /// @param tileIndex The tile index at which the resources were deposited
     /// @param resource The resource that was deposited
     /// @param amount The amount that was deposited
     event ConstructionResourceDeposit(address indexed player, uint16 indexed tileIndex, Resource resource, uint amount);
+
+    /// @dev Emitted when a resource contract is fulfilled
+    /// @param tileIndex The tile index of the construction site
+    /// @param resource The resource that was fulfilled
+    event ConstructionResourceContractFulfilled(uint16 indexed tileIndex, Resource resource);
+
+    /// @dev Emitted when a player completes a construction job and progresses construction
+    /// @param player The player that completed the job
+    /// @param tileIndex The tile index at which the job was completed
+    /// @param profession The profession that was completed
+    event ConstructionJobComplete(address indexed player, uint16 indexed tileIndex, Profession profession);
+
+    /// @dev Emitted when a job contract is fulfilled
+    /// @param tileIndex The tile index of the construction site
+    /// @param profession The profession that was fulfilled
+    event ConstructionJobContractFulfilled(uint16 indexed tileIndex, Profession profession);
 
 
     /**
@@ -73,6 +100,10 @@ contract CryptopiaConstructionMechanics is Initializable, AccessControlUpgradeab
     /// @param tileIndex The tile index of the construction site
     /// @param profession The profession that is already fulfilled
     error ConstructionJobContractFufilled(uint16 tileIndex, Profession profession);
+
+    /// @dev Error when resources are not fully deposited
+    /// @param tileIndex The tile index of the construction site
+    error ConstructionResourcesMissing(uint16 tileIndex);
 
     /// @dev Emitted when the cooldown of `player` has not expired
     /// @param player The player that is on cooldown
@@ -262,6 +293,12 @@ contract CryptopiaConstructionMechanics is Initializable, AccessControlUpgradeab
     {
         ConstructionContract storage constructionContract = constructions[tileIndex];
 
+        // Check if resources are fully deposited
+        if (constructionContract.resourceProgress == constructionContract.resources.length)
+        {
+            revert ConstructionResourcesMissing(tileIndex);
+        }
+
         // Get Player location data
         (
             uint16 playerTileIndex,
@@ -315,12 +352,6 @@ contract CryptopiaConstructionMechanics is Initializable, AccessControlUpgradeab
             totalAmount += amount;
             totalCompensation += amount * resourceContract.compensation;
 
-            // Check if resource is fully deposited
-            if (0 == resourceContract.amount)
-            {
-                constructionContract.resourceProgress++;
-            }
-
             // Resolve asset
             address asset = IAssetRegister(assetRegisterContract)
                 .getAssetByResrouce(resourceContract.resource);
@@ -331,6 +362,15 @@ contract CryptopiaConstructionMechanics is Initializable, AccessControlUpgradeab
 
             // Emit event
             emit ConstructionResourceDeposit(msg.sender, tileIndex, resourceContract.resource, amount);
+
+            // Check if resource contract is fulfilled
+            if (0 == resourceContract.amount)
+            {
+                constructionContract.resourceProgress++;
+
+                // Emit event
+                emit ConstructionResourceContractFulfilled(tileIndex, resourceContract.resource);
+            }
         }
 
         // Transfer compensation
@@ -356,16 +396,14 @@ contract CryptopiaConstructionMechanics is Initializable, AccessControlUpgradeab
         onlyDuringActiveConstruction(tileIndex)
         public override
     {
-        JobContract storage jobContract = constructions[tileIndex].jobs[contractIndex];
+        ConstructionContract storage constructionContract = constructions[tileIndex];
+        JobContract storage jobContract = constructionContract.jobs[contractIndex];
 
         // Check for open slot
         if (0 == jobContract.openSlots)
         {
             revert ConstructionJobContractFufilled(tileIndex, jobContract.profession);
         }
-
-        // Decrement open slots
-        jobContract.openSlots--;
 
         // Check player cooldown
         if (playerConstructionCooldown[msg.sender] > block.timestamp)
@@ -419,8 +457,26 @@ contract CryptopiaConstructionMechanics is Initializable, AccessControlUpgradeab
         }
 
         // Progress construction
-        IBuildingRegister(buildingRegisterContract)
-            .__progressConstruction(tileIndex, uint16(jobContract.actionValue1));
+        if (IBuildingRegister(buildingRegisterContract)
+            .__progressConstruction(tileIndex, uint16(jobContract.actionValue1)))
+        {
+            constructionContract.expiration = 0;
+        }
+
+        // Emit event
+        emit ConstructionJobComplete(msg.sender, tileIndex, jobContract.profession);
+
+        // Decrement open slots
+        jobContract.openSlots--;
+
+        // Check if job contract is fulfilled
+        if (0 == jobContract.openSlots)
+        {
+            constructions[tileIndex].jobProgress++;
+
+            // Emit event
+            emit ConstructionJobContractFulfilled(tileIndex, jobContract.profession);
+        }
 
         // Awawrd XP
         if (jobContract.xp > 0)

@@ -4,9 +4,16 @@ pragma solidity 0.8.20;
 import "./types/BuildingDataTypes.sol";
 import "./types/ConstructionDataTypes.sol";
 
-/// @title Cryptopia Buildings Contract
-/// @notice Manages the buildings within Cryptopia, including construction, upgrades, and destruction.
-/// @dev Inherits from Initializable, AccessControlUpgradeable, and IBuildingRegister and implements the IBuildingRegister interface.
+/// @title Cryptopia Buildings Register
+/// @notice This contract serves as the central registry for all buildings within Cryptopia, providing mechanisms 
+/// to manage building data, instances, and construction progress.
+/// 
+/// The registry facilitates operations such as querying building data, retrieving construction details, 
+/// and managing instances across tiles. Additionally, it supports system-level operations like initiating, 
+/// progressing, and destroying constructions.
+///
+/// @dev Inherits from Initializable, AccessControlUpgradeable, and implements the IBuildingRegister interface.
+/// It uses modular patterns to maintain code clarity and upgradeability, ensuring compatibility with evolving game requirements.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 interface IBuildingRegister {
 
@@ -81,8 +88,10 @@ interface IBuildingRegister {
     /// @dev Progress the construction of a building
     /// @param tileIndex The index of the tile to progress construction on
     /// @param progress The new progress value of the building (0-1000)
+    /// @return completed True if the construction is completed
     function __progressConstruction(uint16 tileIndex, uint16 progress)
-        external;
+        external 
+        returns (bool completed);
 
 
     /// @dev Destroy a construction

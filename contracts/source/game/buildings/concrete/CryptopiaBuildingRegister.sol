@@ -10,9 +10,16 @@ import "../types/ConstructionDataTypes.sol";
 import "../../maps/IMaps.sol";
 import "../IBuildingRegister.sol";
 
-/// @title Cryptopia Buildings Contract
-/// @notice Manages the buildings within Cryptopia, including construction, upgrades, and destruction.
-/// @dev Inherits from Initializable, AccessControlUpgradeable, and IBuildingRegister and implements the IBuildingRegister interface.
+/// @title Cryptopia Buildings Register
+/// @notice This contract serves as the central registry for all buildings within Cryptopia, providing mechanisms 
+/// to manage building data, instances, and construction progress.
+/// 
+/// The registry facilitates operations such as querying building data, retrieving construction details, 
+/// and managing instances across tiles. Additionally, it supports system-level operations like initiating, 
+/// progressing, and destroying constructions.
+///
+/// @dev Inherits from Initializable, AccessControlUpgradeable, and implements the IBuildingRegister interface.
+/// It uses modular patterns to maintain code clarity and upgradeability, ensuring compatibility with evolving game requirements.
 /// @author Frank Bonnet - <frankbonnet@outlook.com>
 contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, IBuildingRegister 
 {
@@ -402,7 +409,6 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
             {
                 revert UpgadableBuildingIsNotCompleteAtLocation(tileIndex);
             }
-
         }
 
         // New construction
@@ -498,9 +504,11 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
     /// @dev Progress the construction of a building
     /// @param tileIndex The index of the tile to progress construction on
     /// @param progress The new progress value of the building (0-1000)
+    /// @return completed True if the building is completed
     function __progressConstruction(uint16 tileIndex, uint16 progress)
         public virtual override 
         onlyRole(SYSTEM_ROLE)
+        returns (bool completed) 
     {
         BuildingInstance storage buildingInstance = buildingInstances[tileIndex];
         bytes32 building = buildingInstance.name;
@@ -524,13 +532,10 @@ contract CryptopiaBuildingRegister is Initializable, AccessControlUpgradeable, I
         }
 
         buildingInstance.construction += progress;
+        completed = buildingInstance.construction == CONSTRUCTION_COMPLETE;
 
         // Emit
-        emit BuildingConstructionProgress(
-            tileIndex, 
-            building, 
-            progress, 
-            buildingInstance.construction == CONSTRUCTION_COMPLETE);
+        emit BuildingConstructionProgress(tileIndex, building, progress, completed);
     }
 
 

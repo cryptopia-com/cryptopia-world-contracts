@@ -2,13 +2,14 @@ import "../scripts/helpers/converters.ts";
 import { expect } from "chai";
 import { ethers, upgrades} from "hardhat";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
+import { BigNumber, ContractTransaction } from "ethers";
 import { getParamFromEvent} from '../scripts/helpers/events';
 import { encodeRockData, encodeVegetationData, encodeWildlifeData } from '../scripts/maps/helpers/encoders';
-import { resolveEnum } from "../scripts/helpers/enums";
 import { Permission, Rarity, Resource, Profession, Terrain, Biome, Environment, Zone, BuildingType, Inventory } from '../scripts/types/enums';
 import { Map } from "../scripts/types/input";
 import { SYSTEM_ROLE } from "./settings/roles";   
 import { BuildingConfig } from "./settings/config";   
+import { BuildingStruct } from "../typechain-types/contracts/source/game/buildings/IBuildingRegister.js";
 
 import { 
     MockERC20Token,
@@ -26,10 +27,6 @@ import {
     CryptopiaConstructionMechanics,
     CryptopiaMaps
 } from "../typechain-types";
-import { BuildingStruct } from "../typechain-types/contracts/source/game/buildings/IBuildingRegister.js";
-import { ResourceContractDepositStruct } from "../typechain-types/contracts/source/game/mechanics/construction/IConstructionMechanics.js";
-
-import { BigNumber, ContractTransaction } from "ethers";
 
 
 /**
@@ -37,6 +34,9 @@ import { BigNumber, ContractTransaction } from "ethers";
  * 
  * Test cases:
  * - Start construction
+ * - Deposit resources
+ * - Progress construction
+ * - Complete construction
  */
 describe("Construction Contracts", function () {
 
@@ -107,81 +107,6 @@ describe("Construction Contracts", function () {
             contractAddress: "",
             contractInstance: {}
         },
-    ];
-
-    const tools = [
-        {
-            name: "Stone Axe",
-            rarity: 1,
-            level: 1,
-            durability: 90, 
-            multiplier_xp: 100, 
-            multiplier_effectiveness: 100, 
-            value1: 10, 
-            value2: 20, 
-            value3: 30,
-            minting: [
-                { 
-                    resource: "MEAT",
-                    amount: "1"
-                }, 
-                { 
-                    resource: "WOOD",
-                    amount: "1"
-                }
-            ],
-            recipe: {
-                level: 1,
-                learnable: false,
-                craftingTime: 300, // 5 min
-                ingredients: [
-                    {
-                        asset: "WOOD",
-                        amount: "2"
-                    },
-                    {
-                        asset: "STONE",
-                        amount: "1"
-                    }
-                ]
-            }
-        },
-        {
-            name: "Iron Axe",
-            rarity: 1,
-            level: 1,
-            durability: 95, 
-            multiplier_xp: 110, 
-            multiplier_effectiveness: 110, 
-            value1: 11, 
-            value2: 22, 
-            value3: 33,
-            minting: [
-                { 
-                    resource: "MEAT",
-                    amount: "1"
-                }, 
-                { 
-                    resource: "WOOD",
-                    amount: "1"
-                }
-            ],
-            recipe: {
-                level: 1,
-                learnable: true,
-                craftingTime: 600, // 10 min
-                ingredients: [
-                    {
-                        asset: "WOOD",
-                        amount: "2"
-                    },
-                    {
-                        asset: "FE26",
-                        amount: "1"
-                    }
-                ]
-            }
-        }
     ];
 
     const map: Map = {
@@ -307,7 +232,7 @@ describe("Construction Contracts", function () {
         }
     ];
 
-    /**s
+    /**
      * Deploy Contracts
      */
     before(async () => {
@@ -536,7 +461,6 @@ describe("Construction Contracts", function () {
         buildingRegisterInstance = await ethers.getContractAt("CryptopiaBuildingRegister", buildingRegisterAddress);
 
         // Grant roles
-        await blueprintTokenInstance.grantRole(SYSTEM_ROLE, buildingRegisterAddress);
         await buildingRegisterInstance.grantRole(SYSTEM_ROLE, system);
 
 
@@ -622,52 +546,7 @@ describe("Construction Contracts", function () {
         
         await mapsInstance.finalizeMap();
 
-
-        // Setup Tools
-        await inventoriesInstance.setNonFungibleAsset(
-            await toolTokenProxy.address, true);
-
-        // Add tools
-        await toolTokenInstance.setTools(
-            tools.map((tool: any) => {
-                return {
-                    name: tool.name.toBytes32(),
-                    rarity: tool.rarity,
-                    level: tool.level,
-                    durability: tool.durability,
-                    multiplier_xp: tool.multiplier_xp,
-                    multiplier_effectiveness: tool.multiplier_effectiveness,
-                    value1: tool.value1,
-                    value2: tool.value2,
-                    value3: tool.value3,
-                    minting: tool.minting.map((minting: any) => {
-                        return {
-                            resource: resolveEnum(Resource, minting.resource),
-                            amount: minting.amount.toWei()
-                        };
-                    })
-                };
-            }));
-
-        // Add tool recipes
-        await craftingInstance.setRecipes(
-            tools.map((tool: any) => {
-                return {
-                    level: tool.recipe.level,
-                    learnable: tool.recipe.learnable,
-                    asset: toolTokenAddress,
-                    item: tool.name.toBytes32(),
-                    craftingTime: tool.recipe.craftingTime,
-                    ingredients: tool.recipe.ingredients.map((ingredient: any) => {
-                        return {
-                            asset: getAssetBySymbol(ingredient.asset).contractAddress,
-                            amount: ingredient.amount.toWei()
-                        };
-                    })
-                };
-            }));
-
-            
+        
         // Create registered account
         const createRegisteredAccountTransaction = await playerRegisterInstance.create([account1], 1, 0, "Registered_Username".toBytes32(), 0, 0);
         const createRegisteredAccountReceipt = await createRegisteredAccountTransaction.wait();
@@ -680,6 +559,7 @@ describe("Construction Contracts", function () {
         unregisteredAccountAddress = getParamFromEvent(accountRegisterInstance, createUnregisteredAccountReceipt, "account", "CreateAccount");
         unregisteredAccountInstance = await ethers.getContractAt("CryptopiaAccount", unregisteredAccountAddress);
     });
+
 
     /**
      * Test Building Register
@@ -832,6 +712,10 @@ describe("Construction Contracts", function () {
      */
     describe("Construction (player)", function () {
 
+        // Setup 
+        const tileIndex = 1;
+        const building = buildings[0];
+
         // Compensation per player
         const jobCompenstations = [
             "100".toWei(), // Any 
@@ -852,8 +736,6 @@ describe("Construction Contracts", function () {
         it("Non-Player should be able to start construction", async () => {
         
             // Setup
-            const building = buildings[0];
-            const tileIndex = 1;
             const titleDeedId = 2; 
             const blueprintId = 1; 
             const cryptopiaTokenAddress = await cryptopiaTokenInstance.address;
@@ -917,10 +799,6 @@ describe("Construction Contracts", function () {
 
         it ("Should emit 'BuildingConstructionStart' event ", async () => {
             
-            // Setup
-            const tileIndex = 1;
-            const building = buildings[0];
-
             // Assert
             await expect(transaction).to
                 .emit(buildingRegisterInstance, "BuildingConstructionStart")
@@ -930,7 +808,6 @@ describe("Construction Contracts", function () {
         it ("Player should be able to deposit resources in exchange for $TOS", async () => {
 
             // Setup
-            const tileIndex = 1;
             const deposits = [
                 { 
                     contractIndex: 0,
@@ -1004,7 +881,6 @@ describe("Construction Contracts", function () {
         it ("Should emit 'ConstructionResourceDeposit' events", async () => {
                 
             // Setup
-            const tileIndex = 1;
             const deposits = [
                 { 
                     contractIndex: 0,
@@ -1045,7 +921,6 @@ describe("Construction Contracts", function () {
         it ("Should record intermediair resource deposit progress (intermediar)", async () => {
                 
             // Setup
-            const tileIndex = 1;
             const currentProgress = 1;
 
             // Assert
@@ -1058,7 +933,6 @@ describe("Construction Contracts", function () {
         it ("Players should be able to fufill all resource contracts", async () => {
 
             // Setup
-            const tileIndex = 1;
             const deposits = [
                 { 
                     contractIndex: 1,
@@ -1126,7 +1000,7 @@ describe("Construction Contracts", function () {
                 
             // Setup
             const tileIndex = 1;
-            const currentProgress = 4;
+            const currentProgress = building.construction.requirements.resources.length;
 
             // Assert
             const constructionContract = await constructionMechanicsInstance
@@ -1135,42 +1009,104 @@ describe("Construction Contracts", function () {
             expect(constructionContract.resourceProgress).to.equal(currentProgress);
         });
 
-        // it ("Player should be able to progress construction in exchange for $TOS", async () => {
+        for (let i = 0; i < buildings[0].construction.requirements.jobs.length; i++)
+        {
+            // Setup 
+            const job = building.construction.requirements.jobs[i];
+            const profession = (job.profession as Profession);
+            const compensation = jobCompenstations[profession];
+            const progress = (job.actionValue1.valueOf() as number);
 
-        //     // Setup
-        //     const tileIndex = 1;
-        //     const progress = 500;
-        //     const systemSigner = await ethers.provider.getSigner(system);
-        //     const playerAccountSigner = await ethers.provider.getSigner(account1);
-        //     const playerAccountInstance = registeredAccountInstance;
-        //     const playerAccountAddress = registeredAccountAddress;
+            for (let j = 0; j < (job.slots.valueOf() as number); j++)
+            {
+                it ("Player should be able to progress construction in exchange for $TOS (job: " + profession + ", slot: " + j + ")", async () => {
 
-        //     const constructionContract = await constructionMechanicsInstance
-        //         .getConstructionContract(tileIndex);
+                    // Setup
+                    const playerAccountInstance = registeredAccountInstance;
+                    const playerAccountAddress = registeredAccountAddress;
+                    const playerAccountSigner = await ethers.provider.getSigner(account1);
 
-        //     const totalCost = BigNumber.from(progress).mul(BuildingConfig.CONSTRUCTION_COST);
+                    const balanceBefore = await cryptopiaTokenInstance.balanceOf(playerAccountAddress);
+                    const progressBefore = (await buildingRegisterInstance.getBuildingInstance(tileIndex)).construction;
 
-        //     // Ensure sufficient funds
-        //     await cryptopiaTokenInstance
-        //         .__mint(playerAccountAddress, totalCost);
+                    // Move time after cooldown
+                    const cooldown = await constructionMechanicsInstance
+                        .playerConstructionCooldown(playerAccountAddress);
 
-        //     // Travel to the correct tile
-        //     await travelToLocation(playerAccountInstance, playerAccountSigner, [0, tileIndex]);
+                    if (cooldown.gt(0))
+                    {
+                        await time.increaseTo(cooldown.toNumber());
+                    }
+                    
+                    // Act
+                    const progressCallData = constructionMechanicsInstance.interface.encodeFunctionData(
+                        "progressConstruction", [tileIndex, profession]);
+        
+                    transaction = await playerAccountInstance
+                        .connect(playerAccountSigner)
+                        .submitTransaction(constructionMechanicsInstance.address, 0, progressCallData);
+        
+                    const balanceAfter = await cryptopiaTokenInstance.balanceOf(playerAccountAddress);
+                    const progressAfter = (await buildingRegisterInstance.getBuildingInstance(tileIndex)).construction;
+        
+                    // Assert
+                    const expectedBalance = balanceBefore.add(compensation);
+                    expect(balanceAfter).to.equal(expectedBalance);
+        
+                    const expectedProgress = progressBefore + progress;
+                    expect(progressAfter).to.equal(expectedProgress);
+                });
+        
+                it ("Should emit 'BuildingConstructionProgress' event (job: " + profession + ", slot: " + j + ")", async () => {
+                    
+                    // Setup 
+                    const complete = i == buildings[0].construction.requirements.jobs.length - 1 
+                        && j == (job.slots.valueOf() as number) - 1;
 
-        //     // Act
-        //     const progressCallData = constructionMechanicsInstance.interface.encodeFunctionData(
-        //         "progressConstruction", [tileIndex, progress]);
+                    // Assert
+                    await expect(transaction).to
+                        .emit(buildingRegisterInstance, "BuildingConstructionProgress")
+                        .withArgs(tileIndex, building.name, progress, complete);
+                });
+            }
 
-        //     transaction = await playerAccountInstance
-        //         .connect(playerAccountSigner)
-        //         .submitTransaction(constructionMechanicsInstance.address, 0, progressCallData);
+            it ("Should emit 'ConstructionJobContractFulfilled' event (job: " + profession + ")", async () => {
 
-        //     // Assert
-        //     const buildingInstance = await buildingRegisterInstance.getBuildingInstance(tileIndex);
-        //     expect(buildingInstance.construction).to.equal(progress);
-        // });
+                // Assert
+                await expect(transaction).to
+                    .emit(constructionMechanicsInstance, "ConstructionJobContractFulfilled")
+                    .withArgs(tileIndex, profession);
+            });
+        }
+
+        it ("Should record job progress (complete)", async () => {
+                
+            // Setup
+            const currentProgress = building.construction.requirements.jobs.length;
+
+            // Assert
+            const constructionContract = await constructionMechanicsInstance
+                .getConstructionContract(tileIndex); 
+
+            expect(constructionContract.jobProgress).to.equal(currentProgress);
+        });
+        
+        it ("Construction contract should be completed", async () => {
+
+            // Assert
+            const constructionContract = await constructionMechanicsInstance
+                .getConstructionContract(tileIndex); 
+
+            expect(constructionContract.expiration).to.equal(0);
+        });
+
+        it ("Building should be completed", async () => {
+
+            // Assert
+            const buildingInstance = await buildingRegisterInstance.getBuildingInstance(tileIndex);
+            expect(buildingInstance.construction).to.equal(BuildingConfig.CONSTRUCTION_COMPLETE);
+        });
     });
-
 
     /**
      * Helper functions

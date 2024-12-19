@@ -3,6 +3,8 @@ export interface TileJsonData {
     safety: number;
     biome: string;
     terrain: string;
+    environment: string;
+    zone: string;
     elevationLevel: number;
     waterLevel: number;
     riverFlags: number;

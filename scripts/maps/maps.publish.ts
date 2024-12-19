@@ -6,7 +6,7 @@ import hre, { ethers } from "hardhat";
 import appConfig, { NetworkConfig } from "../../app.config";
 import { resolveEnum } from "../helpers/enums";
 import { encodeRockData, encodeVegetationData, encodeWildlifeData } from './helpers/encoders';
-import { Resource, Biome, Terrain } from '../types/enums';
+import { Resource, Biome, Terrain, Environment, Zone } from '../types/enums';
 import { DeploymentManager } from "../helpers/deployments";
 import { waitForMinimumTime } from "../helpers/timers";
 import { MapJsonData } from './types/maps.input';
@@ -193,6 +193,8 @@ function resolve(data: MapJsonData): CryptopiaMaps.TileInputStruct[]
             safety: tileData.safety,
             biome: resolveEnum(Biome, tileData.biome),
             terrain: resolveEnum(Terrain, tileData.terrain),
+            environment: resolveEnum(Environment, tileData.environment),
+            zone: resolveEnum(Zone, tileData.zone),
             elevationLevel: tileData.elevationLevel,
             waterLevel: tileData.waterLevel,
             riverFlags: tileData.riverFlags,

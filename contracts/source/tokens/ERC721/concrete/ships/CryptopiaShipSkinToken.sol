@@ -269,12 +269,14 @@ contract CryptopiaShipSkinToken is CryptopiaERC721, IShipSkins, INonFungibleQues
         public virtual override 
         onlyRole(SYSTEM_ROLE)
     {
-        // Burn
-        _update(address(0), tokenId, address(0));
-        delete skinInstances[tokenId];
+        // Burn tokens
+        _burn(tokenId);
 
         // Emit event
         emit ShipSkinBurned(tokenId, skinInstances[tokenId]);
+
+        // Remove instance
+        delete skinInstances[tokenId];
     }
 
 

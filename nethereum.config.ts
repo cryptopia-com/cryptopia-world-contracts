@@ -14,12 +14,13 @@ const config : NethereumConfig =
         "CryptopiaPlayerRegister", 
         "CryptopiaAvatarRegister",
         "CryptopiaAssetRegister",
-        "CryptopiaToken",
+        "CryptopiaBuildingRegister",
         "CryptopiaAssetToken", 
         "CryptopiaShipToken", 
         "CryptopiaShipSkinToken", 
         "CryptopiaToolToken", 
         "CryptopiaTitleDeedToken", 
+        "CryptopiaBlueprintToken",
         "CryptopiaQuestToken", 
         "CryptopiaMaps",
         "CryptopiaMapsExtensions", 
@@ -28,7 +29,8 @@ const config : NethereumConfig =
         "CryptopiaCrafting",
         "CryptopiaResourceGathering", 
         "CryptopiaPirateMechanics",
-        "CryptopiaNavalBattleMechanics"
+        "CryptopiaNavalBattleMechanics",
+        "CryptopiaConstructionMechanics"
     ]
 }
 

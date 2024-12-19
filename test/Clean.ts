@@ -2,7 +2,7 @@ import "../scripts/helpers/converters";
 import { expect } from "chai";
 import { ethers, upgrades } from "hardhat";
 import { DEFAULT_ADMIN_ROLE, SYSTEM_ROLE } from "./settings/roles";   
-import { Resource, Terrain, Biome, Inventory, SubFaction } from "../scripts/types/enums";
+import { Permission, Profession, Rarity, Environment, Zone, Resource, Terrain, Biome, Inventory, SubFaction, BuildingType } from "../scripts/types/enums";
 import { Asset, Map } from "../scripts/types/input";
 import { getParamFromEvent} from '../scripts/helpers/events';
 import { encodeRockData, encodeVegetationData, encodeWildlifeData } from '../scripts/maps/helpers/encoders';
@@ -17,14 +17,16 @@ import {
     DevelopmentAvatarRegister,
     DevelopmentAssetRegister,
     DevelopmentPlayerRegister,
+    DevelopmentBuildingRegister,
     DevelopmentInventories,
     DevelopmentCrafting,
     DevelopmentQuests,
     DevelopmentQuestToken,
     DevelopmentPirateMechanics,
+    DevelopmentConstructionMechanics,
     DevelopmentToolToken,
     DevelopmentShipToken,
-    DevelopmentShipSkinToken
+    DevelopmentShipSkinToken 
 } from "../typechain-types";
 
 import { 
@@ -254,10 +256,10 @@ describe("Clean Contracts", function () {
             sizeX: 2,
             sizeZ: 2,
             tiles: [
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
             ]
         };
 
@@ -426,6 +428,8 @@ describe("Clean Contracts", function () {
                     safety: tile.safety,
                     biome: tile.biome,
                     terrain: tile.terrain,
+                    environment: tile.environment,
+                    zone: tile.zone,
                     elevationLevel: tile.elevationLevel,
                     waterLevel: tile.waterLevel,
                     hasRoad: tile.hasRoad,
@@ -670,10 +674,10 @@ describe("Clean Contracts", function () {
             sizeX: 2,
             sizeZ: 2,
             tiles: [
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
             ]
         };
 
@@ -844,7 +848,7 @@ describe("Clean Contracts", function () {
                     safety: tile.safety,
                     biome: tile.biome,
                     terrain: tile.terrain,
-                    elevationLevel: tile.elevationLevel,
+                    environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: tile.elevationLevel,
                     waterLevel: tile.waterLevel,
                     hasRoad: tile.hasRoad,
                     hasLake: tile.hasLake,
@@ -990,39 +994,39 @@ describe("Clean Contracts", function () {
             tiles: [
                 
                 // Bottom row
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
                 
                 // Second row
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 7, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b1010101010101010101010101010' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: true, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Gold, amount: "500".toWei() }] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 7, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b1010101010101010101010101010' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: true, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Gold, amount: "500".toWei() }] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
                 
                 // Third row
-                { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Flat, elevationLevel: 4, waterLevel: 5, vegetationData: '0b101010101010101010101010101010101010101010' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b10000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Mountains, elevationLevel: 8, waterLevel: 5, vegetationData: '0b111111111111111111111111111111111111111111' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [{ resource: Resource.Gold, amount: "500".toWei() }] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 4, waterLevel: 5, vegetationData: '0b101010101010101010101010101010101010101010' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b10000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Mountains, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 8, waterLevel: 5, vegetationData: '0b111111111111111111111111111111111111111111' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [{ resource: Resource.Gold, amount: "500".toWei() }] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
 
                 // Fourth row
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b1010101010101010101010101010' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: true, hasLake: false, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Copper, amount: "5000".toWei() }] },
-                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Flat, elevationLevel: 4, waterLevel: 5, vegetationData: '0b111111111111111111111111111111111111111111' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b11000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b1010101010101010101010101010' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: true, hasLake: false, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Copper, amount: "5000".toWei() }] },
+                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 4, waterLevel: 5, vegetationData: '0b111111111111111111111111111111111111111111' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b11000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
 
                 // Top row
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
             ]
         };
 
@@ -1205,7 +1209,7 @@ describe("Clean Contracts", function () {
                     safety: tile.safety,
                     biome: tile.biome,
                     terrain: tile.terrain,
-                    elevationLevel: tile.elevationLevel,
+                    environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: tile.elevationLevel,
                     waterLevel: tile.waterLevel,
                     hasRoad: tile.hasRoad,
                     hasLake: tile.hasLake,
@@ -1584,10 +1588,10 @@ describe("Clean Contracts", function () {
             sizeX: 2,
             sizeZ: 2,
             tiles: [
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
             ]
         };
 
@@ -1864,7 +1868,7 @@ describe("Clean Contracts", function () {
                     safety: tile.safety,
                     biome: tile.biome,
                     terrain: tile.terrain,
-                    elevationLevel: tile.elevationLevel,
+                    environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: tile.elevationLevel,
                     waterLevel: tile.waterLevel,
                     hasRoad: tile.hasRoad,
                     hasLake: tile.hasLake,
@@ -2223,10 +2227,10 @@ describe("Clean Contracts", function () {
             sizeX: 2,
             sizeZ: 2,
             tiles: [
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
             ]
         };
 
@@ -2477,7 +2481,7 @@ describe("Clean Contracts", function () {
                     safety: tile.safety,
                     biome: tile.biome,
                     terrain: tile.terrain,
-                    elevationLevel: tile.elevationLevel,
+                    environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: tile.elevationLevel,
                     waterLevel: tile.waterLevel,
                     hasRoad: tile.hasRoad,
                     hasLake: tile.hasLake,
@@ -2764,10 +2768,10 @@ describe("Clean Contracts", function () {
             sizeX: 2,
             sizeZ: 2,
             tiles: [
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
             ]
         };
 
@@ -2973,7 +2977,7 @@ describe("Clean Contracts", function () {
                     safety: tile.safety,
                     biome: tile.biome,
                     terrain: tile.terrain,
-                    elevationLevel: tile.elevationLevel,
+                    environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: tile.elevationLevel,
                     waterLevel: tile.waterLevel,
                     hasRoad: tile.hasRoad,
                     hasLake: tile.hasLake,
@@ -3187,63 +3191,63 @@ describe("Clean Contracts", function () {
         ];
 
         /** 
-     * (Hex) Grid:      Height:         Naviagation:          Legend:
-     *  W W W W W        W W W W W       20 21 22 23 24       - Water (5)
-     *   W I I R W        W 5 5 W W       15 16 17 18 19      - Island
-     *  R I M I W        W 5 8 5 W       10 11 12 13 14       - Mountain
-     *   W I I I W        W 7 5 5 W       05 06 07 08 09      - Reef
-     *  W W W W W        W W W W W       00 01 02 03 04
-     */
-    /** 
-     * (Hex) Grid:      Height:         Naviagation:          Legend:
-     *  W W W W W        W W W W W       20 21 22 23 24       - Water (5)
-     *   W I I R W        W 5 5 W W       15 16 17 18 19      - Island
-     *  R I M I W        W 5 8 5 W       10 11 12 13 14       - Mountain
-     *   W I I I W        W 7 5 5 W       05 06 07 08 09      - Reef
-     *  W W W W W        W W W W W       00 01 02 03 04
-     */
-    const map: Map = {
-        name: "Map 1".toBytes32(),
-        sizeX: 5,
-        sizeZ: 5,
-        tiles: [
-            
-            // Bottom row
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            
-            // Second row
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 7, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b1010101010101010101010101010' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: true, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Gold, amount: "500".toWei() }] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            
-            // Third row
-            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Flat, elevationLevel: 4, waterLevel: 5, vegetationData: '0b101010101010101010101010101010101010101010' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b10000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Mountains, elevationLevel: 8, waterLevel: 5, vegetationData: '0b111111111111111111111111111111111111111111' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [{ resource: Resource.Gold, amount: "500".toWei() }] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+         * (Hex) Grid:      Height:         Naviagation:          Legend:
+         *  W W W W W        W W W W W       20 21 22 23 24       - Water (5)
+         *   W I I R W        W 5 5 W W       15 16 17 18 19      - Island
+         *  R I M I W        W 5 8 5 W       10 11 12 13 14       - Mountain
+         *   W I I I W        W 7 5 5 W       05 06 07 08 09      - Reef
+         *  W W W W W        W W W W W       00 01 02 03 04
+         */
+        /** 
+         * (Hex) Grid:      Height:         Naviagation:          Legend:
+         *  W W W W W        W W W W W       20 21 22 23 24       - Water (5)
+         *   W I I R W        W 5 5 W W       15 16 17 18 19      - Island
+         *  R I M I W        W 5 8 5 W       10 11 12 13 14       - Mountain
+         *   W I I I W        W 7 5 5 W       05 06 07 08 09      - Reef
+         *  W W W W W        W W W W W       00 01 02 03 04
+         */
+        const map: Map = {
+            name: "Map 1".toBytes32(),
+            sizeX: 5,
+            sizeZ: 5,
+            tiles: [
+                
+                // Bottom row
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                
+                // Second row
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 7, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b1010101010101010101010101010' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: true, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Gold, amount: "500".toWei() }] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                
+                // Third row
+                { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 4, waterLevel: 5, vegetationData: '0b101010101010101010101010101010101010101010' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b10000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Mountains, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 8, waterLevel: 5, vegetationData: '0b111111111111111111111111111111111111111111' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [{ resource: Resource.Gold, amount: "500".toWei() }] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
 
-            // Fourth row
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b1010101010101010101010101010' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: true, hasLake: false, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Copper, amount: "5000".toWei() }] },
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Flat, elevationLevel: 4, waterLevel: 5, vegetationData: '0b111111111111111111111111111111111111111111' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b11000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                // Fourth row
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b1010101010101010101010101010' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: true, hasLake: false, resources: [{ resource: Resource.Iron, amount: "100000".toWei() }, { resource: Resource.Copper, amount: "5000".toWei() }] },
+                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 5, waterLevel: 5, vegetationData: '0b10101010101010101010101010101010101010101' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 4, waterLevel: 5, vegetationData: '0b111111111111111111111111111111111111111111' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b11000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b01000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
 
-            // Top row
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-        ]
-    };
+                // Top row
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            ]
+        };
 
         let account1Address: string;
         let account2Address: string;
@@ -3556,7 +3560,7 @@ describe("Clean Contracts", function () {
                     safety: tile.safety,
                     biome: tile.biome,
                     terrain: tile.terrain,
-                    elevationLevel: tile.elevationLevel,
+                    environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: tile.elevationLevel,
                     waterLevel: tile.waterLevel,
                     hasRoad: tile.hasRoad,
                     hasLake: tile.hasLake,
@@ -4032,5 +4036,537 @@ describe("Clean Contracts", function () {
             expect(item1Instance).to.equal("".toBytes32());
             expect(item2Instance).to.equal("".toBytes32());
         });
+    });
+
+    /**
+     * Test cleaning of BuildingRegister
+     */
+    describe("BuildingRegister", function () {
+
+        // Data
+        const assets: any[] = [
+            {
+                symbol: "WOOD",
+                name: "Wood",
+                resource: Resource.Wood,
+                weight: 50, // 0.5kg
+                contractAddress: "",
+                system: [],
+                contractInstance: {}
+            },
+            {
+                symbol: "STONE",
+                name: "Stone",
+                resource: Resource.Stone,
+                weight: 100, // 1kg
+                contractAddress: "",
+                system: [],
+                contractInstance: {}
+            },
+            {
+                symbol: "FE26",
+                name: "Iron",
+                resource: Resource.Iron,
+                weight: 100, // 1kg
+                system: [],
+                contractAddress: "",
+                contractInstance: {}
+            },
+            {
+                symbol: "GLASS",
+                name: "Glass",
+                resource: Resource.Glass,
+                weight: 100, // 1kg
+                system: [],
+                contractAddress: "",
+                contractInstance: {}
+            },
+        ];
+    
+        const map: Map = {
+            name: "Map 1".toBytes32(),
+            sizeX: 2,
+            sizeZ: 2,
+            tiles: [
+                { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Hills, environment: Environment.Coast, zone: Zone.Ecological, elevationLevel: 5, waterLevel: 5, vegetationData: '0b000110110001101100011011000110110001101100' , rockData: '0b0001101100011011000110110001' , wildlifeData: '0b00011011000110110001', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 1, safety: 50, biome: Biome.Grassland, terrain: Terrain.Flat, environment: Environment.Coast, zone: Zone.Neutral, elevationLevel: 6, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: true, resources: [] },
+                { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Flat, environment: Environment.ShallowWater, zone: Zone.Ecological, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+                { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Hills, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            ]
+        };
+    
+        const buildings = [
+            {
+                name: "Improvised Mine".toBytes32(),
+                rarity: Rarity.Common, 
+                buildingType: BuildingType.Mine,
+                modules: 1,
+                co2: 100,
+                base_health: 250,
+                base_defence: 100,
+                base_inventory: "120000".toWei(),
+                upgradableFrom: "".toBytes32(),
+                construction: {
+                    constraints: {
+                        hasMaxInstanceConstraint: false,
+                        maxInstances: 0,
+                        lake: Permission.Allowed,
+                        river: Permission.Allowed,
+                        dock: Permission.Allowed,
+                        terrain: {
+                            flat: true,
+                            hills: true,
+                            mountains: false,
+                            seastead: false
+                        },
+                        biome: {
+                            none: true,
+                            plains: true,
+                            grassland: true,
+                            forest: true,
+                            rainForest:true,
+                            mangrove: false,
+                            desert: true,
+                            tundra: true,
+                            swamp: false,
+                            reef: false,
+                            vulcanic: true
+                        },
+                        environment: {
+                            beach: true,
+                            coast: true,
+                            inland: true,
+                            coastalWater: false,
+                            shallowWater: false,
+                            deepWater: false
+                        },
+                        zone: {
+                            neutral: true,
+                            industrial: true,
+                            ecological: false,
+                            metropolitan: false
+                        }
+                    },
+                    requirements: {
+                        jobs: [
+                            {
+                                profession: Profession.Any,
+                                hasMinimumLevel: false,
+                                minLevel: 0,
+                                hasMaximumLevel: false,
+                                maxLevel: 0,
+                                slots: 5,
+                                xp: 100,
+                                actionValue1: 100, // Progress per job
+                                actionValue2: 0,
+                            },
+                            {
+                                profession: Profession.Builder,
+                                hasMinimumLevel: false,
+                                minLevel: 0,
+                                hasMaximumLevel: false,
+                                maxLevel: 0,
+                                slots: 2,
+                                xp: 150,
+                                actionValue1: 150, // Progress per job
+                                actionValue2: 0,
+                            },
+                            {
+                                profession: Profession.Architect,
+                                hasMinimumLevel: false,
+                                minLevel: 0,
+                                hasMaximumLevel: false,
+                                maxLevel: 0,
+                                slots: 1,
+                                xp: 200,
+                                actionValue1: 200, // Progress per job
+                                actionValue2: 0,
+                            }
+                        ],
+                        resources: [
+                            { 
+                                resource: Resource.Wood, 
+                                amount: "50".toWei()
+                            },
+                            { 
+                                resource: Resource.Stone, 
+                                amount: "50".toWei()
+                            },
+                            { 
+                                resource: Resource.Iron, 
+                                amount: "20".toWei()
+                            },
+                            { 
+                                resource: Resource.Glass, 
+                                amount: "20".toWei()
+                            }
+                        ],
+                    }
+                }
+            }
+        ];
+
+        let buildingRegisterInstance: DevelopmentBuildingRegister;
+        let constructionMechanicsInstance: DevelopmentConstructionMechanics;
+    
+        let registeredAccountInstance: CryptopiaAccount;
+        let registeredAccountAddress: string;
+
+        /**
+         * Setup
+         */
+        before(async () => {
+
+            // Factories
+            const WhitelistFactory = await ethers.getContractFactory("DevelopmentWhitelist");
+            const AccountRegisterFactory = await ethers.getContractFactory("DevelopmentAccountRegister");
+            const PlayerRegisterFactory = await ethers.getContractFactory("DevelopmentPlayerRegister");
+            const CryptopiaTokenFactory = await ethers.getContractFactory("MockERC20Token");
+            const AssetRegisterFactory = await ethers.getContractFactory("DevelopmentAssetRegister");
+            const AssetTokenFactory = await ethers.getContractFactory("DevelopmentAssetToken");
+            const ShipTokenFactory = await ethers.getContractFactory("DevelopmentShipToken");
+            const ShipSkinTokenFactory = await ethers.getContractFactory("DevelopmentShipSkinToken");
+            const ToolTokenFactory = await ethers.getContractFactory("DevelopmentToolToken");
+            const InventoriesFactory = await ethers.getContractFactory("DevelopmentInventories");
+            const CraftingFactory = await ethers.getContractFactory("DevelopmentCrafting");
+            const TitleDeedTokenFactory = await ethers.getContractFactory("DevelopmentTitleDeedToken");
+            const MapsFactory = await ethers.getContractFactory("DevelopmentMaps");
+            const BlueprintTokenFactory = await ethers.getContractFactory("DevelopmentBlueprintToken");
+            const BuildingRegisterFactory = await ethers.getContractFactory("DevelopmentBuildingRegister");
+            const ConstructionMechanicsFactory = await ethers.getContractFactory("DevelopmentConstructionMechanics");
+            
+            // Deploy Inventories
+            const inventoriesProxy = await upgrades.deployProxy(
+                InventoriesFactory, 
+                [
+                    treasury
+                ]);
+
+            const inventoriesAddress = await inventoriesProxy.address;
+            const inventoriesInstance = await ethers.getContractAt("DevelopmentInventories", inventoriesAddress);
+
+            // Grant roles
+            await inventoriesInstance.grantRole(SYSTEM_ROLE, system);
+
+
+            // Deploy Whitelist
+            const whitelistProxy = await upgrades.deployProxy(
+                WhitelistFactory, 
+                [
+                    [
+                        inventoriesAddress
+                    ]
+                ]);
+
+            const whitelistAddress = await whitelistProxy.address;
+
+
+            // Deploy AccountRegister 
+            const accountRegisterProxy = await upgrades.deployProxy(
+                AccountRegisterFactory);
+
+            const accountRegisterAddress = await accountRegisterProxy.address;
+            const accountRegisterInstance = await ethers.getContractAt("DevelopmentAccountRegister", accountRegisterAddress);
+
+            // SKALE workaround
+            await accountRegisterInstance.initializeManually();
+
+
+            // Deploy Asset Register
+            const assetRegisterProxy = await upgrades.deployProxy(
+                AssetRegisterFactory, []);
+
+            const assetRegisterAddress = await assetRegisterProxy.address;
+            const assetRegisterInstance = await ethers.getContractAt("DevelopmentAssetRegister", assetRegisterAddress);
+
+            // Grant roles
+            await assetRegisterInstance.grantRole(SYSTEM_ROLE, system);
+
+
+            // Deploy skins
+            const shipSkinTokenProxy = await upgrades.deployProxy(
+                ShipSkinTokenFactory, 
+                [
+                    whitelistAddress,
+                    "", 
+                    "",
+                    inventoriesAddress
+                ]);
+
+            const shipSkinTokenAddress = await shipSkinTokenProxy.address;
+
+
+            // Deploy Ships
+            const shipTokenProxy = await upgrades.deployProxy(
+                ShipTokenFactory, 
+                [
+                    whitelistAddress,
+                    "", 
+                    "",
+                    shipSkinTokenAddress
+                ]);
+
+            const shipTokenAddress = await shipTokenProxy.address;
+            const shipTokenInstance = await ethers.getContractAt("DevelopmentShipToken", shipTokenAddress);
+
+
+            // Deploy Crafting
+            const craftingProxy = await upgrades.deployProxy(
+                CraftingFactory, 
+                [
+                    inventoriesAddress
+                ]);
+
+            const craftingAddress = await craftingProxy.address;
+            const craftingInstance = await ethers.getContractAt("DevelopmentCrafting", craftingAddress);
+
+            // Grant roles
+            await craftingInstance.grantRole(SYSTEM_ROLE, system);
+            await inventoriesInstance.grantRole(SYSTEM_ROLE, craftingAddress);
+
+
+            // Deploy Player Register
+            const playerRegisterProxy = await upgrades.deployProxy(
+                PlayerRegisterFactory, 
+                [
+                    accountRegisterAddress, 
+                    inventoriesAddress, 
+                    craftingAddress, 
+                    shipTokenAddress, 
+                    [
+                        deployer
+                    ]
+                ]);
+
+            const playerRegisterAddress = await playerRegisterProxy.address;
+            const playerRegisterInstance = await ethers.getContractAt("DevelopmentPlayerRegister", playerRegisterAddress);
+
+            // Grant roles
+            await playerRegisterInstance.grantRole(SYSTEM_ROLE, system);    
+            await shipTokenInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
+            await inventoriesInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
+            await craftingInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
+
+
+            // Deploy Cryptopia Token
+            const cryptopiaTokenProxy = await upgrades.deployProxy(
+                CryptopiaTokenFactory);
+
+            const cryptopiaTokenAddress = await cryptopiaTokenProxy.address;
+            const cryptopiaTokenInstance = await ethers.getContractAt("MockERC20Token", cryptopiaTokenAddress);
+
+
+            // Deploy title deed token
+            const titleDeedTokenProxy = await upgrades.deployProxy(
+                TitleDeedTokenFactory, 
+                [
+                    whitelistAddress,
+                    "", 
+                    ""
+                ]);
+
+            const titleDeedTokenAddress = await titleDeedTokenProxy.address;
+            const titleDeedTokenInstance = await ethers.getContractAt("DevelopmentTitleDeedToken", titleDeedTokenAddress);
+
+            // Grant roles
+            await titleDeedTokenInstance.grantRole(SYSTEM_ROLE, system);
+
+            
+            // Deploy Maps
+            const mapsProxy = await upgrades.deployProxy(
+                MapsFactory, 
+                [
+                    playerRegisterAddress,
+                    assetRegisterAddress,
+                    titleDeedTokenAddress,
+                    shipTokenAddress
+                ]);
+
+            const mapsAddress = await mapsProxy.address;
+            const mapsInstance = await ethers.getContractAt("DevelopmentMaps", mapsAddress);
+
+            // Grant roles
+            await titleDeedTokenInstance.grantRole(SYSTEM_ROLE, mapsAddress);
+            await playerRegisterInstance.setMapsContract(mapsAddress);
+            await mapsInstance.grantRole(SYSTEM_ROLE, playerRegisterAddress);
+
+
+            // Deploy Tools
+            const toolTokenProxy = await upgrades.deployProxy(
+                ToolTokenFactory, 
+                [
+                    whitelistAddress, 
+                    "", 
+                    "",
+                    playerRegisterAddress,
+                    inventoriesAddress
+                ]);
+
+            const toolTokenAddress = await toolTokenProxy.address;
+            const toolTokenInstance = await ethers.getContractAt("DevelopmentToolToken", toolTokenAddress);
+
+            // Grant roles
+            await toolTokenInstance.grantRole(SYSTEM_ROLE, craftingAddress);
+            await inventoriesInstance.grantRole(SYSTEM_ROLE, toolTokenAddress);
+
+
+            // Deploy Blueprint token
+            const blueprintTokenProxy = await upgrades.deployProxy(
+                BlueprintTokenFactory, 
+                [
+                    whitelistAddress,
+                    "", 
+                    ""
+                ]);
+
+            const blueprintTokenAddress = await blueprintTokenProxy.address;
+            const blueprintTokenInstance = await ethers.getContractAt("DevelopmentBlueprintToken", blueprintTokenAddress);
+
+            // Grant roles
+            await blueprintTokenInstance.grantRole(SYSTEM_ROLE, system);
+
+
+            // Deploy Resource building register
+            const buildingRegisterProxy = await upgrades.deployProxy(
+                BuildingRegisterFactory, 
+                [
+                    mapsAddress
+                ]);
+
+            const buildingRegisterAddress = await buildingRegisterProxy.address;
+            buildingRegisterInstance = await ethers.getContractAt("DevelopmentBuildingRegister", buildingRegisterAddress);
+
+            // Grant roles
+            await blueprintTokenInstance.grantRole(SYSTEM_ROLE, buildingRegisterAddress);
+            await buildingRegisterInstance.grantRole(SYSTEM_ROLE, system);
+
+
+            // Deploy Construction Mechanics
+            const constructionMechanicsProxy = await upgrades.deployProxy(
+                ConstructionMechanicsFactory, 
+                [
+                    treasury,
+                    cryptopiaTokenAddress,
+                    titleDeedTokenAddress,
+                    blueprintTokenAddress,
+                    assetRegisterAddress,
+                    playerRegisterAddress,
+                    buildingRegisterAddress,
+                    inventoriesAddress,
+                    mapsAddress
+                ]);
+
+            const constructionMechanicsAddress = await constructionMechanicsProxy.address;
+            constructionMechanicsInstance = await ethers.getContractAt("DevelopmentConstructionMechanics", constructionMechanicsAddress);
+
+            // Grant roles
+            await playerRegisterInstance.grantRole(SYSTEM_ROLE, constructionMechanicsAddress);
+            await buildingRegisterInstance.grantRole(SYSTEM_ROLE, constructionMechanicsAddress);
+            await blueprintTokenInstance.grantRole(SYSTEM_ROLE, constructionMechanicsAddress);
+            await inventoriesInstance.grantRole(SYSTEM_ROLE, constructionMechanicsAddress);
+
+
+            // Deploy assets
+            for (let asset of assets)
+            {
+                const assetTokenProxy = await upgrades.deployProxy(
+                    AssetTokenFactory, 
+                    [
+                        asset.name, 
+                        asset.symbol,
+                        inventoriesAddress
+                    ]);
+
+                asset.contractAddress = await assetTokenProxy.address;
+                asset.contractInstance = await ethers
+                    .getContractAt("DevelopmentAssetToken", asset.contractAddress);
+
+                await asset.contractInstance.grantRole(SYSTEM_ROLE, system);
+                await inventoriesInstance.grantRole(SYSTEM_ROLE, asset.contractAddress);
+                
+                await assetRegisterInstance
+                    .registerAsset(asset.contractAddress, true, asset.resource);
+
+                await inventoriesInstance
+                    .setFungibleAsset(asset.contractAddress, asset.weight);
+            }
+
+
+            // Create map 
+            await mapsInstance.createMap(
+                map.name, map.sizeX, map.sizeZ);
+
+            await mapsInstance.setTiles(
+                map.tiles.map((_, index) => index), 
+                map.tiles.map(tile => ({
+                    initialized: true, 
+                    mapIndex: 0,
+                    group: tile.group,
+                    safety: tile.safety,
+                    biome: tile.biome,
+                    terrain: tile.terrain,
+                    environment: tile.environment,
+                    zone: tile.zone,
+                    elevationLevel: tile.elevationLevel,
+                    waterLevel: tile.waterLevel,
+                    hasRoad: tile.hasRoad,
+                    hasLake: tile.hasLake,
+                    riverFlags: tile.riverFlags,
+                    rockData: encodeRockData(tile.rockData),
+                    vegetationData: encodeVegetationData(tile.vegetationData),
+                    wildlifeData: encodeWildlifeData(tile.wildlifeData),
+                    resources: tile.resources.map(resource => ({    
+                        resource: resource.resource,
+                        initialAmount: resource.amount
+                    }))
+                })));
+            
+            await mapsInstance.finalizeMap();
+
+            // Add buildings
+            await buildingRegisterInstance.setBuildings(buildings);
+
+            
+            // Create registered account
+            const createRegisteredAccountTransaction = await playerRegisterInstance.create([account1], 1, 0, "Registered_Username".toBytes32(), 0, 0);
+            const createRegisteredAccountReceipt = await createRegisteredAccountTransaction.wait();
+            registeredAccountAddress = getParamFromEvent(playerRegisterInstance, createRegisteredAccountReceipt, "account", "RegisterPlayer");
+            registeredAccountInstance = await ethers.getContractAt("CryptopiaAccount", registeredAccountAddress);
+        });
+
+        it ("Should contain building data to clean", async function () {
+
+            // Act
+            const buildingCount = await buildingRegisterInstance.getBuildingCount();
+
+            // Assert
+            expect(buildingCount).to.equal(buildings.length);
+        });
+
+        it ("Should not allow non-admin to clean building data", async function () {
+
+            // Setup 
+            const nonAdminSigner = await ethers.provider.getSigner(other);
+
+            // Act
+            const operation = buildingRegisterInstance
+                .connect(nonAdminSigner)
+                .cleanBuildingData();
+
+            // Assert
+            await expect(operation).to.be
+                .revertedWithCustomError(buildingRegisterInstance, "AccessControlUnauthorizedAccount")
+                .withArgs(other, DEFAULT_ADMIN_ROLE);
+        });
+        
+        it ("Should allow admin to clean", async function () {
+
+            // Act
+            await buildingRegisterInstance.cleanBuildingData();
+
+            // Assert
+            const buildingCount = await buildingRegisterInstance.getBuildingCount();
+            expect(buildingCount).to.equal(0);
+        }); 
     });
 });

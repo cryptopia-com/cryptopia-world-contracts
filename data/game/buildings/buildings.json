@@ -1,0 +1,80 @@
+[
+    {
+        "name": "Improvised Mine",
+        "rarity": "Common", 
+        "buildingType": "Mine",
+        "modules": 1,
+        "co2": 100,
+        "base_health": 250,
+        "base_defence": 100,
+        "base_inventory": "120000",
+        "upgradableFrom": "",
+        "construction": {
+            "constraints": {
+                "hasMaxInstanceConstraint": false,
+                "maxInstances": 0,
+                "lake": "Allowed",
+                "river": "Allowed",
+                "dock": "Allowed",
+                "terrain": {
+                    "flat": true,
+                    "hills": true,
+                    "mountains": false,
+                    "seastead": false
+                },
+                "biome": {
+                    "none": true,
+                    "plains": true,
+                    "grassland": true,
+                    "forest": true,
+                    "rainForest":true,
+                    "mangrove": false,
+                    "desert": true,
+                    "tundra": true,
+                    "swamp": false,
+                    "reef": false,
+                    "vulcanic": true
+                },
+                "environment": {
+                    "beach": true,
+                    "coast": true,
+                    "inland": true,
+                    "coastalWater": false,
+                    "shallowWater": false,
+                    "deepWater": false
+                },
+                "zone": {
+                    "neutral": true,
+                    "industrial": true,
+                    "ecological": false,
+                    "metropolitan": false
+                }
+            },
+            "requirements": {
+                "jobs": [
+                    {
+                        "profession": "Any",
+                        "hasMinimumLevel": false,
+                        "minLevel": 0,
+                        "hasMaximumLevel": false,
+                        "maxLevel": 0,
+                        "slots": 10,
+                        "xp": 100,
+                        "actionValue1": 100,
+                        "actionValue2": 0
+                    }
+                ],
+                "resources": [
+                    { 
+                        "resource": "Wood", 
+                        "amount": "100"
+                    },
+                    { 
+                        "resource": "Stone", 
+                        "amount": "50"
+                    }
+                ]
+            }
+        }
+    }
+]

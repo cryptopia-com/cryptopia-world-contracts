@@ -158,6 +158,46 @@ task("resource", "Mint resources")
   });
 
 /**
+ * Mint blueprint
+ * 
+ * npx hardhat blueprint --network localhost  --name "Improvised Mine" --to 0x77E5CE811c764A89BF313eCE7133050bf9CF8DF3
+ * npx hardhat blueprint --network skaleNebulaTestnet  --name "Improvised Mine" --to 0x77E5CE811c764A89BF313eCE7133050bf9CF8DF3
+ */
+task("blueprint", "Mint blueprint")
+.addParam("name", "The blueprint to mint")
+.addParam("to", "The address to mint to")
+.setAction(async (taskArguments, hre) =>
+{
+
+  require("./scripts/helpers/converters");
+
+  // Config
+  const isDevEnvironment = hre.network.name == "hardhat" 
+      || hre.network.name == "ganache" 
+      || hre.network.name == "localhost";
+  const config = appConfig.networks[
+      isDevEnvironment ? "development" : hre.network.name];
+
+  const deploymentManager = new DeploymentManager(
+      hre.network.name, config.development);
+
+  const tokenDeployment = await deploymentManager.getContractDeployment(deploymentManager.resolveDeploymentKey("BlueprintToken"));
+  const tokenInstance = await hre.ethers.getContractAt(deploymentManager.resolveContractName("BlueprintToken"), tokenDeployment.address);
+
+  const minterRole = "MINTER_ROLE".toKeccak256();
+  const [deployer] = (await hre.ethers.getSigners()).map(s => s.address);
+  const hasRole = await tokenInstance.hasRole(minterRole, deployer);
+  if (!hasRole)
+  {
+    console.log("Granting MINTER_ROLE to deployer");
+    await tokenInstance.grantRole(minterRole, deployer);
+  }
+
+  console.log(`Minting ${taskArguments.name} to ${taskArguments.to}`);
+  await tokenInstance.mint(taskArguments.name.toBytes32(), taskArguments.to);
+});
+
+/**
  * Mint skin
  * 
  * npx hardhat skin --network localhost  --name "Blazing Sun Skin" --to 0x77E5CE811c764A89BF313eCE7133050bf9CF8DF3

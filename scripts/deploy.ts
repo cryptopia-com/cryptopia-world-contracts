@@ -54,13 +54,37 @@ async function main() {
     upgrades.silenceWarnings(); // Prevents warnings from being printed to the console
     console.log(`\n\nStarting deployment to ${chalk.yellow(hre.network.name)}..`);
 
+    
+    //////////////////////////////////
+    //////// Deploy Treasury /////////
+    //////////////////////////////////
+    let treasuryAddress = config.CryptopiaTreasury.contract;
+    if (!treasuryAddress.startsWith("0x"))
+    {
+        throw new Error(`Not implemented`);
+    }
+
+
+    //////////////////////////////////
+    //////// Deploy TOS Token ////////
+    //////////////////////////////////
+    let tokenAddress = config.CryptopiaToken.contract;
+    if (!tokenAddress.startsWith("0x"))    
+    {
+        const [tokenProxy, tokenDeploymentStatus] = await ensureDeployed(
+            "Token", []);
+
+        tokenAddress = await tokenProxy.address;
+    }
+    
+
     //////////////////////////////////
     /////// Deploy Inventories ///////
     //////////////////////////////////
     const [inventoriesProxy, inventoriesDeploymentStatus] = await ensureDeployed(
         "Inventories", 
         [
-            config.CryptopiaTreasury.address
+            treasuryAddress
         ]);
 
     const inventoriesAddress = await inventoriesProxy.address;
@@ -87,14 +111,6 @@ async function main() {
         ]);
 
     const whitelistAddress = await whitelistProxy.address;
-
-
-    //////////////////////////////////
-    //////// Deploy CRT Token ////////
-    //////////////////////////////////
-    const [TokenProxy, TokenDeploymentStatus] = await ensureDeployed(
-        "Token", []);
-    const TokenAddress = await TokenProxy.address;
 
 
     //////////////////////////////////
@@ -261,7 +277,7 @@ async function main() {
             playerRegisterAddress, 
             assetRegisterAddress, 
             titleDeedTokenAddress, 
-            TokenAddress
+            tokenAddress
         ]);
 
     const mapsAddress = await mapsProxy.address;    
@@ -286,6 +302,56 @@ async function main() {
     // Grant roles
     await ensureSystemRoleGranted("TitleDeedToken", "Maps");
     await ensureSystemRoleGranted("Maps", "PlayerRegister");
+
+
+    //////////////////////////////////
+    /////// Deploy Blueprints ////////
+    //////////////////////////////////
+    const [blueprintTokenProxy, blueprintTokenDeploymentStatus] = await ensureDeployed(
+        "BlueprintToken", 
+        [
+            whitelistAddress, 
+            config.ERC721.BlueprintToken.contractURI, 
+            config.ERC721.BlueprintToken.baseTokenURI
+        ]);
+
+    const blueprintTokenAddress = await blueprintTokenProxy.address;
+
+
+    //////////////////////////////////
+    //// Deploy Building Register ////
+    //////////////////////////////////
+    const [buildingRegisterProxy, buildingRegisterDeploymentStatus] = await ensureDeployed(
+        "BuildingRegister", 
+        [
+            mapsAddress
+        ]);
+
+    const buildingRegisterAddress = await buildingRegisterProxy.address;
+
+
+    //////////////////////////////////
+    // Deploy Construction Mechanics /
+    //////////////////////////////////
+    const [constructionMechanicsProxy, constructionMechanicsDeploymentStatus] = await ensureDeployed(
+        "ConstructionMechanics", 
+        [
+            treasuryAddress,
+            tokenAddress,
+            titleDeedTokenAddress,
+            blueprintTokenAddress,
+            assetRegisterAddress,
+            playerRegisterAddress,
+            buildingRegisterAddress,
+            inventoriesAddress,
+            mapsAddress
+        ]);
+
+    // Grant roles
+    await ensureSystemRoleGranted("PlayerRegister", "ConstructionMechanics");
+    await ensureSystemRoleGranted("BuildingRegister", "ConstructionMechanics");
+    await ensureSystemRoleGranted("BlueprintToken", "ConstructionMechanics");
+    await ensureSystemRoleGranted("Inventories", "ConstructionMechanics");
 
         
     //////////////////////////////////
@@ -318,6 +384,7 @@ async function main() {
 
     // Grant roles
     await ensureSystemRoleGranted("ToolToken", "Quests");
+    await ensureSystemRoleGranted("BlueprintToken", "Quests");
     await ensureSystemRoleGranted("PlayerRegister", "Quests");
     await ensureSystemRoleGranted("QuestToken", "Quests");
 

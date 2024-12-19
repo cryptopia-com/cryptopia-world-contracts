@@ -91,18 +91,18 @@ export enum Biome
 /// Environment of a tile (static context of the terrain)
 export enum Environment
 {
-    Beach,
-    Coast,
-    Inland,
-    CoastalWater,
-    ShallowWater,
-    DeepWater
+    Beach, // Coastal land tile with at least one neighboring water tile with a depth of 1 (shallow water)
+    Coast, // Coastal land tile with at least one neighboring water tile with a depth of 2 (deep water)
+    Inland, // Land tile with no neighboring water tiles
+    CoastalWater, // Water tile with at least one neighboring land tile
+    ShallowWater, // Water tile with a depth of 1
+    DeepWater // Water tile with a depth of 2 or more
 }
 
 /// Zone of a tile (dynamic)
 export enum Zone 
 {
-    Neutral,       // Preferd by traditional faction
+    Neutral,       // Preferd by traditional faction (default)
     Industrial,    // Preferd by industrial faction
     Ecological,    // Preferd by eco faction      
     Metropolitan   // Prefered by tech faction

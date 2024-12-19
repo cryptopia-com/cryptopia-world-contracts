@@ -4,8 +4,7 @@ import { ethers, upgrades} from "hardhat";
 import { getParamFromEvent} from '../scripts/helpers/events';
 import { encodeRockData, encodeVegetationData, encodeWildlifeData } from '../scripts/maps/helpers/encoders';
 import { REVERT_MODE } from "./settings/config";
-import { resolveEnum } from "../scripts/helpers/enums";
-import { Terrain, Biome, Inventory, Faction } from '../scripts/types/enums';
+import { Terrain, Biome, Inventory, Environment, Zone } from '../scripts/types/enums';
 import { Map } from "../scripts/types/input";
 import { DEFAULT_ADMIN_ROLE, SYSTEM_ROLE } from "./settings/roles";   
 
@@ -16,7 +15,6 @@ import {
     CryptopiaInventories,
     CryptopiaShipToken,
     CryptopiaShipSkinToken,
-    CryptopiaToolToken,
     CryptopiaCrafting,
     CryptopiaGameConsole,
     CryptopiaSkyFlight
@@ -25,11 +23,6 @@ import {
 import { 
     ShipSkinStruct 
 } from "../typechain-types/contracts/source/tokens/ERC721/ships/IShipSkins";
-
-import { 
-    GameConsoleRewardStructOutput 
-} from "../typechain-types/contracts/source/game/console/concrete/titles/CryptopiaSkyFlight";
-
 
 /**
  * GameConsole tests
@@ -135,10 +128,10 @@ describe("GameConsole Contracts", function () {
         sizeX: 2,
         sizeZ: 2,
         tiles: [
-            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Flat, elevationLevel: 5, waterLevel: 5, vegetationData: '0b000110110001101100011011000110110001101100' , rockData: '0b0001101100011011000110110001' , wildlifeData: '0b00011011000110110001', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 1, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 6, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
-            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Flat, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.RainForest, terrain: Terrain.Hills, environment: Environment.Coast, zone: Zone.Ecological, elevationLevel: 5, waterLevel: 5, vegetationData: '0b000110110001101100011011000110110001101100' , rockData: '0b0001101100011011000110110001' , wildlifeData: '0b00011011000110110001', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 1, safety: 50, biome: Biome.Grassland, terrain: Terrain.Flat, environment: Environment.Coast, zone: Zone.Neutral, elevationLevel: 6, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: true, resources: [] },
+            { group: 0, safety: 50, biome: Biome.Reef, terrain: Terrain.Flat, environment: Environment.ShallowWater, zone: Zone.Ecological, elevationLevel: 3, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
+            { group: 0, safety: 50, biome: Biome.None, terrain: Terrain.Hills, environment: Environment.DeepWater, zone: Zone.Neutral, elevationLevel: 2, waterLevel: 5, vegetationData: '0b00000000000000000000000000000000000000000' , rockData: '0b0000000000000000000000000000' , wildlifeData: '0b00000000000000000000', riverFlags: 0, hasRoad: false, hasLake: false, resources: [] },
         ]
     };
 
@@ -554,6 +547,8 @@ describe("GameConsole Contracts", function () {
                 safety: tile.safety,
                 biome: tile.biome,
                 terrain: tile.terrain,
+                environment: tile.environment,
+                zone: tile.zone,
                 elevationLevel: tile.elevationLevel,
                 waterLevel: tile.waterLevel,
                 hasRoad: tile.hasRoad,

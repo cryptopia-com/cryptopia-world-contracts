@@ -121,7 +121,13 @@
                         "allowWallet": false
                     }
                 ],
-                "nonFungible": []
+                "nonFungible": [
+                    {
+                        "asset": "ShipSkinToken",
+                        "item": "",
+                        "allowWallet": true
+                    }
+                ]
             },
             {
                 "name": "Ask",
@@ -370,6 +376,132 @@
                 "probabilityModifierIntelligence": 0,
                 "probabilityModifierStrength": 0,
                 "fungible": [],
+                "nonFungible": []
+            }
+        ]
+    },
+    {
+        "name": "Get wood from the Lumberjack",
+        "level": 0,
+        "hasFactionConstraint": false,
+        "faction": "",
+        "hasSubFactionConstraint": false,
+        "subFaction": "None",
+        "cooldown": 0,
+        "maxCompletions": 1,
+        "maxDuration": 0,
+        "prerequisiteQuest": "",
+        "steps": [
+            {
+                "name": "Gather wood",
+                "hasTileConstraint": true,
+                "tile": 128,
+                "takeFungible": [],
+                "takeNonFungible": [],
+                "giveFungible": [],
+                "giveNonFungible": []
+            }
+        ],
+        "rewards": [
+            {
+                "name": "Take the wood",
+                "xp": 100,
+                "karma": -10,
+                "probability": 10000,
+                "probabilityModifierSpeed": 0,
+                "probabilityModifierCharisma": 0,
+                "probabilityModifierLuck": 0,
+                "probabilityModifierIntelligence": 0,
+                "probabilityModifierStrength": 0,
+                "fungible": [
+                    {
+                        "asset": "AssetToken:Wood",
+                        "amount": "2000000000000000000",
+                        "allowWallet": false
+                    }
+                ],
+                "nonFungible": []
+            },
+            {
+                "name": "Put the wood back",
+                "xp": 100,
+                "karma": 5,
+                "probability": 10000,
+                "probabilityModifierSpeed": 0,
+                "probabilityModifierCharisma": 0,
+                "probabilityModifierLuck": 0,
+                "probabilityModifierIntelligence": 0,
+                "probabilityModifierStrength": 0,
+                "fungible": [
+                    {
+                        "asset": "AssetToken:Wood",
+                        "amount": "2000000000000000000",
+                        "allowWallet": false
+                    }
+                ],
+                "nonFungible": []
+            }
+        ]
+    },
+    {
+        "name": "Get stone from the Miner",
+        "level": 0,
+        "hasFactionConstraint": false,
+        "faction": "",
+        "hasSubFactionConstraint": false,
+        "subFaction": "None",
+        "cooldown": 0,
+        "maxCompletions": 1,
+        "maxDuration": 0,
+        "prerequisiteQuest": "",
+        "steps": [
+            {
+                "name": "Gather stone",
+                "hasTileConstraint": true,
+                "tile": 128,
+                "takeFungible": [],
+                "takeNonFungible": [],
+                "giveFungible": [],
+                "giveNonFungible": []
+            }
+        ],
+        "rewards": [
+            {
+                "name": "Take the stone",
+                "xp": 100,
+                "karma": -10,
+                "probability": 10000,
+                "probabilityModifierSpeed": 0,
+                "probabilityModifierCharisma": 0,
+                "probabilityModifierLuck": 0,
+                "probabilityModifierIntelligence": 0,
+                "probabilityModifierStrength": 0,
+                "fungible": [
+                    {
+                        "asset": "AssetToken:Stone",
+                        "amount": "2000000000000000000",
+                        "allowWallet": false
+                    }
+                ],
+                "nonFungible": []
+            },
+            {
+                "name": "Put the stone back",
+                "xp": 100,
+                "karma": 5,
+                "probability": 10000,
+                "probabilityModifierSpeed": 0,
+                "probabilityModifierCharisma": 0,
+                "probabilityModifierLuck": 0,
+                "probabilityModifierIntelligence": 0,
+                "probabilityModifierStrength": 0,
+                "fungible": [
+                    {
+                        "asset": "AssetToken:Stone",
+                        "amount": "2000000000000000000",
+                        "allowWallet": false
+                    }
+                ],
                 "nonFungible": []
             }
         ]

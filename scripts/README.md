@@ -1,29 +1,29 @@
 ## Scripts
 
 Port:
-npx hardhat run --network localhost ./scripts/port.ts
+npx hardhat run --network opBNBTestnet ./scripts/port.ts
 
 Deploy:
-npx hardhat run --network localhost ./scripts/deploy.ts
+npx hardhat run --network opBNBTestnet ./scripts/deploy.ts
 
 Verify:
-npx hardhat run --network localhost ./scripts/verify.ts
+npx hardhat run --network opBNBTestnet ./scripts/verify.ts
 
 Tools: 
-npx hardhat run --network localhost ./scripts/tools/tools.publish.ts
+npx hardhat run --network opBNBTestnet ./scripts/tools/tools.publish.ts
 
 Quests:
-npx hardhat run --network localhost ./scripts/quests/items.publish.ts
-npx hardhat run --network localhost ./scripts/quests/quests.publish.ts
+npx hardhat run --network opBNBTestnet ./scripts/quests/items.publish.ts
+npx hardhat run --network opBNBTestnet ./scripts/quests/quests.publish.ts
 
 Ships:
-npx hardhat run --network localhost ./scripts/ships/skins.publish.ts
+npx hardhat run --network opBNBTestnet ./scripts/ships/skins.publish.ts
 
 Crafting:
-npx hardhat run --network localhost ./scripts/crafting/recipes.publish.ts
+npx hardhat run --network opBNBTestnet ./scripts/crafting/recipes.publish.ts
 
 Maps:
-npx hardhat run --network localhost ./scripts/maps/maps.publish.ts
+npx hardhat run --network opBNBTestnet ./scripts/maps/maps.publish.ts
 
 Node:
 npx hardhat node

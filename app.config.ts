@@ -351,6 +351,364 @@ const config : AppConfig = {
                 }
             }
         },
+        opBNBTestnet: {
+            version: {
+                major: 1,
+                minor: 2,
+                patch: 0
+            },
+            development: true,
+            confirmations: 2,
+            pollingInterval: 5000,
+            pollingTimeout: 300000,
+            defaultSystem: [
+                "0x485D44ACaEdD5d01b5d8215dE938CE3E7f47530e"
+            ],
+            CryptopiaTreasury: {
+                address: "0xee27be821e9b6ec58f0ec73feb0723124181a676"
+            },
+            CryptopiaAccount: {
+                outputBytecode: false,
+            },
+            ERC721: {
+                TitleDeedToken: {
+                    contractURI: 'https://opbnb-testnet-api.cryptopia.com/ERC721/TitleDeeds/',
+                    baseTokenURI: 'https://opbnb-testnet-api.cryptopia.com/ERC721/TitleDeeds/'
+                },
+                ShipToken: {
+                    contractURI: 'https://opbnb-testnet-api.cryptopia.com/ERC721/Ships/',
+                    baseTokenURI: 'https://opbnb-testnet-api.cryptopia.com/ERC721/Ships/'
+                },
+                ShipSkinToken: {
+                    contractURI: 'https://opbnb-testnet-api.cryptopia.com/ERC721/ShipSkins/',
+                    baseTokenURI: 'https://opbnb-testnet-api.cryptopia.com/ERC721/ShipSkins/'
+                },
+                ToolToken: {
+                    contractURI: 'https://opbnb-testnet-api.cryptopia.com/ERC721/Tools/',
+                    baseTokenURI: 'https://opbnb-testnet-api.cryptopia.com/ERC721/Tools/'
+                },
+                QuestToken: {
+                    contractURI: 'https://opbnb-testnet-api.cryptopia.com/ERC721/Quests/',
+                    baseTokenURI: 'https://opbnb-testnet-api.cryptopia.com/ERC721/Quests/'
+                }
+            },
+            ERC20: {
+                AssetToken: {
+                    resources: [
+                        {
+                            symbol: "FISH",
+                            name: "Fish",
+                            resource: Resource.Fish,
+                            weight: 50, // 0.5kg
+                            system: [
+                                "ResourceGathering"
+                            ]
+                        },
+                        {
+                            symbol: "MEAT",
+                            name: "Meat",
+                            weight: 50, // 0.5kg
+                            resource: Resource.Meat,
+                            system: [
+                                "ResourceGathering"
+                            ]
+                        },
+                        {
+                            symbol: "FRUIT",
+                            name: "Fruit",
+                            weight: 50, // 0.5kg
+                            resource: Resource.Fruit,
+                            system: [
+                                "ResourceGathering"
+                            ]
+                        },
+                        {
+                            symbol: "WOOD",
+                            name: "Wood",
+                            weight: 50, // 0.5kg
+                            resource: Resource.Wood,
+                            system: [
+                                "ResourceGathering"
+                            ]
+                        },
+                        {
+                            symbol: "STONE",
+                            name: "Stone",
+                            weight: 100, // 1kg
+                            resource: Resource.Stone,
+                            system: [
+                                "ResourceGathering"
+                            ]
+                        },
+                        {
+                            symbol: "SAND",
+                            name: "Sand",
+                            weight: 50, // 0.5kg
+                            resource: Resource.Sand,
+                            system: [
+                                "ResourceGathering"
+                            ]
+                        },  
+                        {
+                            symbol: "FE26",
+                            name: "Iron",
+                            resource: Resource.Iron,
+                            weight: 100, // 1kg
+                            system: []
+                        },
+                        {
+                            symbol: "CU29",
+                            name: "Copper",
+                            resource: Resource.Copper,
+                            weight: 100, // 1kg
+                            system: []
+                        },
+                        {
+                            symbol: "AG47",
+                            name: "Silver",
+                            resource: Resource.Silver,
+                            weight: 200, // 2kg
+                            system: []
+                        },
+                        {
+                            symbol: "AU79",
+                            name: "Gold",
+                            resource: Resource.Gold,
+                            weight: 200, // 2kg
+                            system: []
+                        },
+                        {
+                            symbol: "U92",
+                            name: "Uranium",
+                            resource: Resource.Uranium,
+                            weight: 200, // 2kg
+                            system: []
+                        },
+                        {
+                            symbol: "C6",
+                            name: "Carbon",
+                            resource: Resource.Carbon,
+                            weight: 50, // 0.5kg
+                            system: []
+                        },
+                        {
+                            symbol: "DIAMOND",
+                            name: "Diamond",
+                            resource: Resource.Diamond,
+                            weight: 50, // 0.5kg
+                            system: []
+                        },
+                        {
+                            symbol: "OIL",
+                            name: "Oil",
+                            resource: Resource.Oil,
+                            weight: 200, // 2kg
+                            system: []
+                        },
+                        {
+                            symbol: "GLASS",
+                            name: "Glass",
+                            resource: Resource.Glass,
+                            weight: 100, // 1kg
+                            system: []
+                        },
+                        {
+                            symbol: "STEEL",
+                            name: "Steel",
+                            resource: Resource.Steel,
+                            weight: 200, // 2kg
+                            system: []
+                        },
+                        {
+                            symbol: "FUEL",
+                            name: "Fuel",
+                            resource: Resource.Fuel,
+                            weight: 200, // 2kg
+                            system: []
+                        }
+                    ]
+                }
+            }
+        },
+        opBNBMainnet: {
+            version: {
+                major: 1,
+                minor: 2,
+                patch: 0
+            },
+            development: true,
+            confirmations: 2,
+            pollingInterval: 5000,
+            pollingTimeout: 300000,
+            defaultSystem: [
+                "0x485D44ACaEdD5d01b5d8215dE938CE3E7f47530e"
+            ],
+            CryptopiaTreasury: {
+                address: "0xee27be821e9b6ec58f0ec73feb0723124181a676"
+            },
+            CryptopiaAccount: {
+                outputBytecode: false,
+            },
+            ERC721: {
+                TitleDeedToken: {
+                    contractURI: 'https://opbnb-mainnet-api.cryptopia.com/ERC721/TitleDeeds/',
+                    baseTokenURI: 'https://opbnb-mainnet-api.cryptopia.com/ERC721/TitleDeeds/'
+                },
+                ShipToken: {
+                    contractURI: 'https://opbnb-mainnet-api.cryptopia.com/ERC721/Ships/',
+                    baseTokenURI: 'https://opbnb-mainnet-api.cryptopia.com/ERC721/Ships/'
+                },
+                ShipSkinToken: {
+                    contractURI: 'https://opbnb-mainnet-api.cryptopia.com/ERC721/ShipSkins/',
+                    baseTokenURI: 'https://opbnb-mainnet-api.cryptopia.com/ERC721/ShipSkins/'
+                },
+                ToolToken: {
+                    contractURI: 'https://opbnb-mainnet-api.cryptopia.com/ERC721/Tools/',
+                    baseTokenURI: 'https://opbnb-mainnet-api.cryptopia.com/ERC721/Tools/'
+                },
+                QuestToken: {
+                    contractURI: 'https://opbnb-mainnet-api.cryptopia.com/ERC721/Quests/',
+                    baseTokenURI: 'https://opbnb-mainnet-api.cryptopia.com/ERC721/Quests/'
+                }
+            },
+            ERC20: {
+                AssetToken: {
+                    resources: [
+                        {
+                            symbol: "FISH",
+                            name: "Fish",
+                            resource: Resource.Fish,
+                            weight: 50, // 0.5kg
+                            system: [
+                                "ResourceGathering"
+                            ]
+                        },
+                        {
+                            symbol: "MEAT",
+                            name: "Meat",
+                            weight: 50, // 0.5kg
+                            resource: Resource.Meat,
+                            system: [
+                                "ResourceGathering"
+                            ]
+                        },
+                        {
+                            symbol: "FRUIT",
+                            name: "Fruit",
+                            weight: 50, // 0.5kg
+                            resource: Resource.Fruit,
+                            system: [
+                                "ResourceGathering"
+                            ]
+                        },
+                        {
+                            symbol: "WOOD",
+                            name: "Wood",
+                            weight: 50, // 0.5kg
+                            resource: Resource.Wood,
+                            system: [
+                                "ResourceGathering"
+                            ]
+                        },
+                        {
+                            symbol: "STONE",
+                            name: "Stone",
+                            weight: 100, // 1kg
+                            resource: Resource.Stone,
+                            system: [
+                                "ResourceGathering"
+                            ]
+                        },
+                        {
+                            symbol: "SAND",
+                            name: "Sand",
+                            weight: 50, // 0.5kg
+                            resource: Resource.Sand,
+                            system: [
+                                "ResourceGathering"
+                            ]
+                        },  
+                        {
+                            symbol: "FE26",
+                            name: "Iron",
+                            resource: Resource.Iron,
+                            weight: 100, // 1kg
+                            system: []
+                        },
+                        {
+                            symbol: "CU29",
+                            name: "Copper",
+                            resource: Resource.Copper,
+                            weight: 100, // 1kg
+                            system: []
+                        },
+                        {
+                            symbol: "AG47",
+                            name: "Silver",
+                            resource: Resource.Silver,
+                            weight: 200, // 2kg
+                            system: []
+                        },
+                        {
+                            symbol: "AU79",
+                            name: "Gold",
+                            resource: Resource.Gold,
+                            weight: 200, // 2kg
+                            system: []
+                        },
+                        {
+                            symbol: "U92",
+                            name: "Uranium",
+                            resource: Resource.Uranium,
+                            weight: 200, // 2kg
+                            system: []
+                        },
+                        {
+                            symbol: "C6",
+                            name: "Carbon",
+                            resource: Resource.Carbon,
+                            weight: 50, // 0.5kg
+                            system: []
+                        },
+                        {
+                            symbol: "DIAMOND",
+                            name: "Diamond",
+                            resource: Resource.Diamond,
+                            weight: 50, // 0.5kg
+                            system: []
+                        },
+                        {
+                            symbol: "OIL",
+                            name: "Oil",
+                            resource: Resource.Oil,
+                            weight: 200, // 2kg
+                            system: []
+                        },
+                        {
+                            symbol: "GLASS",
+                            name: "Glass",
+                            resource: Resource.Glass,
+                            weight: 100, // 1kg
+                            system: []
+                        },
+                        {
+                            symbol: "STEEL",
+                            name: "Steel",
+                            resource: Resource.Steel,
+                            weight: 200, // 2kg
+                            system: []
+                        },
+                        {
+                            symbol: "FUEL",
+                            name: "Fuel",
+                            resource: Resource.Fuel,
+                            weight: 200, // 2kg
+                            system: []
+                        }
+                    ]
+                }
+            }
+        },
         skaleNebulaTestnet: {
             version: {
                 major: 1,

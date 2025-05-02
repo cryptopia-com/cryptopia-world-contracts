@@ -35,6 +35,26 @@ const config: HardhatUserConfig = {
         count: 10
       }
     },
+    opBNBTestnet: {
+      url: "https://opbnb-testnet-rpc.bnbchain.org",
+      chainId: 5611,
+      accounts: {
+        mnemonic: secret.opBNBTestnet.mnemonic,
+        path: "m/44'/60'/0'/0",
+        initialIndex: 0,
+        count: 10
+      }
+    },
+    opBNBMainnet: {
+      url: "https://opbnb-mainnet-rpc.bnbchain.org",
+      chainId: 204,
+      accounts: {
+        mnemonic: secret.opBNBMainnet.mnemonic,
+        path: "m/44'/60'/0'/0",
+        initialIndex: 0,
+        count: 10
+      }
+    },
     skaleChaos: {
       url: "https://staging-v3.skalenodes.com/v1/staging-fast-active-bellatrix",
       chainId: 1351057110,
